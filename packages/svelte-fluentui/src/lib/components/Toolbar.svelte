@@ -1,8 +1,12 @@
+<script lang="ts" module>
+	import {fluentToolbar} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentToolbar())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import { fluentToolbar, provideFluentDesignSystem } from "@fluentui/web-components";
-
-	provideFluentDesignSystem().register(fluentToolbar());
 
 	type Props = {
 		id?: string;

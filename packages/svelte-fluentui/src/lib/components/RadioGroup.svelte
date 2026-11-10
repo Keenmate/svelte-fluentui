@@ -1,11 +1,13 @@
+<script lang="ts" module>
+	import {fluentRadioGroup} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentRadioGroup())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentRadioGroup, provideFluentDesignSystem} from "@fluentui/web-components"
 	import {setContext} from "svelte"
-
-	provideFluentDesignSystem().register(
-		fluentRadioGroup()
-	)
 
 	type Props = {
 		value?: string | null

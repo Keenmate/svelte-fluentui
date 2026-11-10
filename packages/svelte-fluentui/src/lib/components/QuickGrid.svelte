@@ -1,17 +1,16 @@
+<script lang="ts" module>
+	import {fluentMenu, fluentMenuItem, fluentDivider} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentMenu(), fluentMenuItem(), fluentDivider())
+</script>
+
 <script lang="ts" generics="T">
 	import type {Snippet} from "svelte"
 	import {tick, onMount, onDestroy} from "svelte"
 	import GridCellEditor from "./GridCellEditor.svelte"
 	import Icon from "./Icon.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
-	import {fluentMenu, fluentMenuItem, fluentDivider, provideFluentDesignSystem} from "@fluentui/web-components"
-
-	// Register FluentUI menu components
-	provideFluentDesignSystem().register(
-		fluentMenu(),
-		fluentMenuItem(),
-		fluentDivider()
-	)
 
 	type EditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
 	type EditTrigger = "click" | "dblclick" | "button" | "always" | "navigate"

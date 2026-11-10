@@ -1,11 +1,13 @@
+<script lang="ts" module>
+	import {fluentBreadcrumb} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentBreadcrumb())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentBreadcrumb, provideFluentDesignSystem} from "@fluentui/web-components"
 
-	provideFluentDesignSystem().register(
-		fluentBreadcrumb()
-	)
-	
 	type Props = {
 		children?: Snippet
 	}

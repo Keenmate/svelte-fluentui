@@ -1,10 +1,12 @@
+<script lang="ts" module>
+	import {fluentCheckbox} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentCheckbox())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentCheckbox, provideFluentDesignSystem} from "@fluentui/web-components"
-
-	if (typeof customElements !== "undefined" && !customElements.get("fluent-checkbox")) {
-		provideFluentDesignSystem().register(fluentCheckbox())
-	}
 
 	type Props = {
 		checked: boolean | null;

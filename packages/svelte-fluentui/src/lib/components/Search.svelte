@@ -1,9 +1,13 @@
+<script lang="ts" module>
+	import {fluentSearch} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentSearch())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import { fluentSearch, provideFluentDesignSystem } from "@fluentui/web-components";
 	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
-
-	provideFluentDesignSystem().register(fluentSearch());
 
 	type Props = {
 		class?: string;

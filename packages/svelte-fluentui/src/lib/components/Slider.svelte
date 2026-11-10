@@ -1,10 +1,12 @@
+<script lang="ts" module>
+	import {fluentSlider} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentSlider())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentSlider, provideFluentDesignSystem} from "@fluentui/web-components"
-
-	if (typeof customElements !== "undefined" && !customElements.get("fluent-slider")) {
-		provideFluentDesignSystem().register(fluentSlider())
-	}
 
 	type Props = {
 		id?: string

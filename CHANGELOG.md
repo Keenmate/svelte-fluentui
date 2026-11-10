@@ -72,6 +72,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   bits they relied on in their own styles.
 
 ### Internal
+- FluentUI element registration moved to `<script module>` via `fluent-ui/register.ts` — once per
+  component type instead of on every instance.
 - Snippet props typed as `Snippet` / `Snippet<[...]>` instead of `any` (`SlotType` alias removed).
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]

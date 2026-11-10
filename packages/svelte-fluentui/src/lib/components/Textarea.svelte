@@ -1,9 +1,13 @@
+<script lang="ts" module>
+	import {fluentTextArea} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentTextArea())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import { fluentTextArea, provideFluentDesignSystem } from "@fluentui/web-components"
 	import { setAutocompleteOnShadowInput, whenShadowRoot } from "../utils/shadow-dom.js"
-
-	provideFluentDesignSystem().register(fluentTextArea())
 
 	const activeIndicatorOverride =
 		typeof CSSStyleSheet !== "undefined"

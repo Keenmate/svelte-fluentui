@@ -1,10 +1,12 @@
+<script lang="ts" module>
+	import {fluentBreadcrumbItem} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentBreadcrumbItem())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentBreadcrumbItem, provideFluentDesignSystem} from "@fluentui/web-components"
-
-	provideFluentDesignSystem().register(
-		fluentBreadcrumbItem()
-	)
 
 	type Props = {
 		href?: string

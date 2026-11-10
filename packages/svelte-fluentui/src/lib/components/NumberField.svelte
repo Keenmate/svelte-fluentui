@@ -1,9 +1,13 @@
+<script lang="ts" module>
+	import {fluentNumberField} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentNumberField())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import { fluentNumberField, provideFluentDesignSystem } from "@fluentui/web-components";
 	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
-
-	provideFluentDesignSystem().register(fluentNumberField());
 
 	type Props = {
 		id?: string | null | undefined;

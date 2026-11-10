@@ -29,3 +29,34 @@ in Phase 2 (runes classes) and Phase 4 (`error` → `danger`, positions), so ren
 
 The audit said `trapFocus={false}` is never sent. It isn't sent as an attribute, but `setFocusTrap`
 applies it whenever the dialog opens; e2e `dialog.spec.ts` confirms focus can leave. Dropped from Phase 1.
+
+## Q5 — Prettier: no config and not installed
+
+`npm run format` / `lint` call Prettier, but there is no `.prettierrc` and Prettier isn't a dependency,
+so the planned "Prettier pass" would apply Prettier's defaults (semicolons, 2-space indent) to a
+codebase that is tab-indented, semicolon-free, double-quoted. Measured in `src/lib` (127 files):
+~89% of statements have no `;`, 367 vs 18 double- vs single-quoted imports, `import {x}` 85 vs
+`import { x }` 28. **Proposal** (matches the majority, minimal churn):
+
+```json
+{ "useTabs": true, "semi": false, "singleQuote": false, "bracketSpacing": false,
+  "trailingComma": "none", "printWidth": 120, "plugins": ["prettier-plugin-svelte"] }
+```
+
+plus `prettier` + `prettier-plugin-svelte` as devDependencies. **Skipped until you confirm** (it
+touches every file, and adds dependencies). ESLint is referenced by `lint` but not installed either —
+drop it from the script, or add a config?
+
+## Q6 — Autocomplete e2e is flaky under parallel workers
+
+`e2e/autocomplete.spec.ts` runs 30+ tests against one fixture page with 25+ Autocompletes; with
+4 workers a random test occasionally misses its dropdown (passes on rerun, also flaky before my
+changes). Options: split the fixture into smaller routes, or run that file serially
+(`test.describe.configure({mode: "serial"})`). Not changed yet.
+
+## Q7 — Pre-existing problems noticed (not fixed, outside Phase 1 scope)
+
+- `docs` svelte-check: 25 type errors at baseline (layout, appbar demo, quickgrid demos, text-field
+  demo, order-form). Fix as part of the Phase 4 docs updates, or a separate cleanup commit?
+- `/components/tabs` logs "lock_16_regular.svg not found" — icon referenced by a dynamic name;
+  needs `iconsInclude` in the docs Vite config or a static reference.

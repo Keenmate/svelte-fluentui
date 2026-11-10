@@ -1,9 +1,13 @@
+<script lang="ts" module>
+	import {fluentSwitch} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentSwitch())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentSwitch, provideFluentDesignSystem} from "@fluentui/web-components"
 	import { untrack } from 'svelte'
-
-	provideFluentDesignSystem().register(fluentSwitch())
 
 	type Props = {
 		class?: string

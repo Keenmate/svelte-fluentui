@@ -1,4 +1,9 @@
 <script lang="ts" module>
+	import {fluentMenu, fluentMenuItem} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentMenu(), fluentMenuItem())
+
 	import type {Snippet} from "svelte"
 
 	/**
@@ -49,10 +54,7 @@
 
 <script lang="ts">
 	import { setContext, untrack } from "svelte"
-	import { fluentMenu, fluentMenuItem, provideFluentDesignSystem } from "@fluentui/web-components"
 	import PositioningRegion from "./PositioningRegion.svelte"
-
-	provideFluentDesignSystem().register(fluentMenu(), fluentMenuItem())
 
 	type TabChangeDetail = {
 		tabId: string

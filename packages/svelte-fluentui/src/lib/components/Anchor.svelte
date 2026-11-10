@@ -1,9 +1,13 @@
+<script lang="ts" module>
+	import {fluentAnchor} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentAnchor())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentAnchor, provideFluentDesignSystem} from "@fluentui/web-components"
 	import useActions from "../actions/use-actions.js"
-
-	provideFluentDesignSystem().register(fluentAnchor())
 
 	type Props = {
 		id?: string

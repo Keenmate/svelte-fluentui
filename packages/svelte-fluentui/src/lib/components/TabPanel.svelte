@@ -1,8 +1,12 @@
+<script lang="ts" module>
+	import {fluentTabPanel} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentTabPanel())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentTabPanel, provideFluentDesignSystem} from "@fluentui/web-components"
-
-	provideFluentDesignSystem().register(fluentTabPanel())
 
 	type Props = {
 		class?: string

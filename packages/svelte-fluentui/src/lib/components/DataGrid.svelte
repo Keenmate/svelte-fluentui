@@ -1,8 +1,12 @@
+<script lang="ts" module>
+	import {fluentDataGrid} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentDataGrid())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import { provideFluentDesignSystem, fluentDataGrid } from "@fluentui/web-components";
-
-	provideFluentDesignSystem().register(fluentDataGrid());
 
 	type Props = {
 		class?: string;

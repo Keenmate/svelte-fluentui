@@ -1,4 +1,9 @@
 <script lang="ts" module>
+	import {fluentDialog} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentDialog())
+
 	import type {Snippet} from "svelte"
 	export type HTMLDialogElement = HTMLElement & {
 		show: VoidFunction
@@ -100,14 +105,9 @@
 
 <script lang="ts">
 	import {onDestroy} from "svelte"
-	import {fluentDialog, provideFluentDesignSystem} from "@fluentui/web-components"
 	import Button from "./Button.svelte"
 	import {portal} from "../actions/portal.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
-
-	provideFluentDesignSystem().register(
-		fluentDialog()
-	)
 
 	export type DialogAction = {
 		label: string

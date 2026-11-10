@@ -1,8 +1,12 @@
+<script lang="ts" module>
+	import {fluentButton} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentButton())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentButton, provideFluentDesignSystem} from "@fluentui/web-components"
-
-	provideFluentDesignSystem().register(fluentButton())
 
 	type Props = {
 		class?: string

@@ -1,12 +1,16 @@
+<script lang="ts" module>
+	import {fluentListbox} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentListbox())
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {fluentListbox, provideFluentDesignSystem} from "@fluentui/web-components"
 	import {setContext, untrack} from "svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 	import type {SelectedValue} from "../types/index.js"
 	import {createSelectedOptions} from "../data/selected-options.svelte.js"
-
-	provideFluentDesignSystem().register(fluentListbox())
 
 	type ValueType = string | string[] | null | undefined
 

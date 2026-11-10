@@ -1,10 +1,11 @@
+<script lang="ts" module>
+	import {fluentDivider} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentDivider())
+</script>
+
 <script lang="ts">
-	import {fluentDivider, provideFluentDesignSystem} from "@fluentui/web-components"
-
-	provideFluentDesignSystem().register(
-		fluentDivider()
-	)
-
 	type Props = {
 		class?: string
 		style?: string

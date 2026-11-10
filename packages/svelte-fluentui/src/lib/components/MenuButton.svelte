@@ -1,4 +1,9 @@
 <script lang="ts" module>
+	import {fluentButton, fluentMenu, fluentMenuItem, fluentDivider} from "@fluentui/web-components"
+	import {registerFluentElements} from "../fluent-ui/register.js"
+
+	registerFluentElements(fluentButton(), fluentMenu(), fluentMenuItem(), fluentDivider())
+
 	import type {Snippet} from "svelte"
 
 	export type MenuButtonItem = {
@@ -34,24 +39,10 @@
 </script>
 
 <script lang="ts">
-	import {
-		fluentButton,
-		fluentMenu,
-		fluentMenuItem,
-		fluentDivider,
-		provideFluentDesignSystem
-	} from "@fluentui/web-components"
 	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
 	import Icon from "./Icon.svelte"
 	import { portal } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
-
-	provideFluentDesignSystem().register(
-		fluentButton(),
-		fluentMenu(),
-		fluentMenuItem(),
-		fluentDivider()
-	)
 
 	type Props = {
 		/** Menu items rendered as a dropdown when the button is clicked. */
