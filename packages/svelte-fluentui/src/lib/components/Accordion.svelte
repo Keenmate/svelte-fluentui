@@ -14,8 +14,8 @@
 -->
 
 <script lang="ts">
+	import {accordionContext} from "../contexts.js"
 	import type {Snippet} from "svelte"
-	import {setContext} from "svelte"
 	import type {AccordionSvelteContext} from "../types/index.js"
 
 	type ValueType = string | string[] | null | undefined
@@ -111,7 +111,7 @@
 		toggle,
 		onHeaderKeydown
 	})
-	setContext("fluent-accordion", ctx)
+	accordionContext.set(ctx)
 
 	$effect(() => {
 		ctx.expandedIds = normalizeToIds(value)

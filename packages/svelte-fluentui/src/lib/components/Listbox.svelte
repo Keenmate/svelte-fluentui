@@ -6,10 +6,10 @@
 </script>
 
 <script lang="ts">
+	import {selectedOptionsContext} from "../contexts.js"
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import {setContext, untrack} from "svelte"
-	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
+	import {untrack} from "svelte"
 	import type {SelectedValue} from "../types/index.js"
 	import {createSelectedOptions} from "../data/selected-options.svelte.js"
 
@@ -72,7 +72,7 @@
 
 	// svelte-ignore state_referenced_locally
 	const selectedOptions = createSelectedOptions(value, multi)
-	setContext<SelectedOptionSvelteContext>("selected-options", selectedOptions)
+	selectedOptionsContext.set(selectedOptions)
 
 	// The context holds an array; the public `value` is a string in single mode.
 	function fromContext(current: SelectedValue): ValueType {

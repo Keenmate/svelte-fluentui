@@ -1,7 +1,7 @@
 <script lang="ts">
+	import {tabsContext} from "../contexts.js"
 	import type {Snippet} from "svelte"
-	import { getContext, onDestroy, untrack } from "svelte"
-	import { TABS_CONTEXT_KEY, type TabsContext } from "./Tabs.svelte"
+	import { onDestroy, untrack } from "svelte"
 
 	type Props = {
 		class?: string
@@ -56,7 +56,7 @@
 		oncloseclick = undefined
 	}: Props = $props()
 
-	const ctx = getContext<TabsContext | undefined>(TABS_CONTEXT_KEY)
+	const ctx = tabsContext.get()
 
 	if (!ctx && typeof console !== "undefined") {
 		console.warn("<Tab> must be placed inside a <Tabs> component. Nothing will render.")

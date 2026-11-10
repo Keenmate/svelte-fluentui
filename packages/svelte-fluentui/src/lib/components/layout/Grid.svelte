@@ -6,9 +6,9 @@
 </script>
 
 <script lang="ts">
+	import {gridContext} from "../../contexts.js"
 	import type {Snippet} from "svelte"
 	import {onMount, onDestroy} from "svelte"
-	import {setContext} from "svelte"
 	import {getEffectiveBreakpoints, type GridBreakpoints} from "./containerQueries.js"
 
 	type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly"
@@ -74,7 +74,7 @@
 	const effectiveBreakpoints = $derived(getEffectiveBreakpoints(containerBreakpoints))
 
 	// Set context for child GridItem components
-	setContext("grid", {
+	gridContext.set({
 		get currentSize() {
 			return currentSize
 		},

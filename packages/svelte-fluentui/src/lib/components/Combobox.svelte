@@ -19,9 +19,10 @@
 -->
 
 <script lang="ts">
+	import {selectedOptionsContext} from "../contexts.js"
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import {setContext, untrack, tick} from "svelte"
+	import {untrack, tick} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Chip from "./Chip.svelte"
 	import Option from "./Option.svelte"
@@ -180,7 +181,7 @@
 		}
 	}
 
-	setContext<SelectedOptionSvelteContext>("selected-options", ctx)
+	selectedOptionsContext.set(ctx)
 
 	// prop value -> internal state
 	$effect(() => {

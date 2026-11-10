@@ -1,13 +1,13 @@
 <script lang="ts">
+	import {gridContext} from "../../contexts.js"
 	import {attrs} from "../../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import {getContext, onMount} from "svelte"
+	import {onMount} from "svelte"
 	import {
 		acquireContainer,
 		DEFAULT_GRID_BREAKPOINTS,
 		ensureAutoConfigured,
-		warnIfContainerMissing,
-		type GridBreakpoints
+		warnIfContainerMissing
 	} from "./containerQueries.js"
 
 	type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly"
@@ -45,15 +45,7 @@
 		style = ""
 	}: Props = $props()
 
-	const grid = getContext<{
-		currentSize: string | undefined
-		adaptiveRendering: boolean
-		container?: boolean
-		cqName?: string
-		external?: boolean
-		breakpoints?: GridBreakpoints
-		explicitBreakpoints?: boolean
-	}>("grid")
+	const grid = gridContext.get()
 
 	const noBreakpointsDefined = $derived(xs == null && sm == null && md == null && lg == null && xl == null && xxl == null)
 

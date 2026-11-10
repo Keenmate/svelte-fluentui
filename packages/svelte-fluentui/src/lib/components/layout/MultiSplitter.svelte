@@ -24,7 +24,8 @@
 </script>
 
 <script lang="ts">
-	import {setContext, onMount} from "svelte"
+	import {multiSplitterContext} from "../../contexts.js"
+	import {onMount} from "svelte"
 	import type {MultiSplitterContext, PaneHandle, PaneRegistration} from "../../types/multi-splitter.js"
 
 	type Orientation = "horizontal" | "vertical"
@@ -828,7 +829,7 @@
 		onGutterDblClick: handleGutterDblClick,
 		onPaneClick: handlePaneClick
 	}
-	setContext<MultiSplitterContext>("multi-splitter", ctx)
+	multiSplitterContext.set(ctx)
 
 	// ---------- Initial size resolution ----------
 	// Panes register one-by-one in onMount; we want to apply initial sizing

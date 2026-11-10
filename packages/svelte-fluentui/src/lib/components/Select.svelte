@@ -17,8 +17,9 @@
 -->
 
 <script lang="ts">
+	import {selectedOptionsContext} from "../contexts.js"
 	import type {Snippet} from "svelte"
-	import {setContext, untrack, tick} from "svelte"
+	import {untrack, tick} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
@@ -133,7 +134,7 @@
 		}
 	}
 
-	setContext<SelectedOptionSvelteContext>("selected-options", ctx)
+	selectedOptionsContext.set(ctx)
 
 	// prop value -> internal state
 	$effect(() => {

@@ -6,9 +6,9 @@
 </script>
 
 <script lang="ts">
+	import {radioGroupContext} from "../contexts.js"
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import {getContext} from "svelte"
 
 	type Props = {
 		value: string
@@ -42,7 +42,7 @@
 		children = undefined
 	}: Props = $props()
 
-	const ctx: any = getContext("radio-group")
+	const ctx = radioGroupContext.get()
 
 	// Determine if checked - explicit prop takes precedence over context
 	const isChecked = $derived(checked !== undefined ? checked : (ctx?.value === value))

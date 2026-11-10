@@ -6,9 +6,9 @@
 </script>
 
 <script lang="ts">
+	import {radioGroupContext} from "../contexts.js"
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import {setContext} from "svelte"
 
 	type Props = {
 		value?: string | null
@@ -51,7 +51,7 @@
 		setValue
 	})
 
-	setContext("radio-group", ctx)
+	radioGroupContext.set(ctx)
 
 	function setValue(newValue: string) {
 		if (disabled || readonly || newValue === value) {

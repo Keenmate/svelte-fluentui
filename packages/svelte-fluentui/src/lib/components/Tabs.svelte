@@ -49,11 +49,11 @@
 		unregister: (id: string) => void
 	}
 
-	export const TABS_CONTEXT_KEY = Symbol("fluent-tabs-context")
 </script>
 
 <script lang="ts">
-	import { setContext, untrack } from "svelte"
+	import {tabsContext} from "../contexts.js"
+	import { untrack } from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 
 	type TabChangeDetail = {
@@ -131,7 +131,7 @@
 
 	let tabs = $state<TabEntry[]>([])
 
-	setContext<TabsContext>(TABS_CONTEXT_KEY, {
+	tabsContext.set({
 		register: (entry) => {
 			const idx = tabs.findIndex(t => t.id === entry.id)
 			if (idx >= 0) tabs[idx] = entry

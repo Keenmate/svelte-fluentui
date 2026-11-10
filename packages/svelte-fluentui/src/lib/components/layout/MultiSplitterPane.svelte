@@ -15,9 +15,10 @@
 -->
 
 <script lang="ts">
+	import {multiSplitterContext} from "../../contexts.js"
 	import type {Snippet} from "svelte"
-	import {getContext, onMount, onDestroy} from "svelte"
-	import type {MultiSplitterContext, PaneHandle} from "../../types/multi-splitter.js"
+	import {onMount, onDestroy} from "svelte"
+	import type {PaneHandle} from "../../types/multi-splitter.js"
 
 	type Props = {
 		children?: Snippet
@@ -43,10 +44,7 @@
 		style = ""
 	}: Props = $props()
 
-	const ctx = getContext<MultiSplitterContext>("multi-splitter")
-	if (!ctx) {
-		throw new Error("MultiSplitterPane must be a direct child of MultiSplitter")
-	}
+	const ctx = multiSplitterContext.getRequired("MultiSplitterPane must be a direct child of MultiSplitter")
 
 	let paneEl: HTMLDivElement | undefined = $state()
 	let gutterEl: HTMLDivElement | undefined = $state()

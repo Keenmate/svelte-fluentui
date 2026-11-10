@@ -13,9 +13,8 @@
 -->
 
 <script lang="ts">
+	import {accordionContext} from "../contexts.js"
 	import type {Snippet} from "svelte"
-	import {getContext} from "svelte"
-	import type {AccordionSvelteContext} from "../types/index.js"
 
 	type Props = {
 		/** Unique item identifier. Required. */
@@ -52,7 +51,7 @@
 		onchange = undefined
 	}: Props = $props()
 
-	const ctx = getContext<AccordionSvelteContext>("fluent-accordion")
+	const ctx = accordionContext.get()
 
 	// Explicit `expanded` prop wins; otherwise follow the parent's value state.
 	const isExpanded = $derived(expanded !== undefined ? expanded : (ctx?.isExpanded(id) ?? false))

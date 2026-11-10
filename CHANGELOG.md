@@ -72,6 +72,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   bits they relied on in their own styles.
 
 ### Internal
+- `lib/contexts.ts`: every parent→child context (Accordion, Select/Combobox/Listbox→Option, Grid,
+  MultiSplitter, RadioGroup, Tabs) uses a Symbol key and a typed `get`/`set` pair instead of string
+  keys (`"grid"`, `"radio-group"`, …) that could collide with an app's own contexts.
 - `helpers/attrs.ts` (`attrs()`, `boolAttr()`): one spread per element instead of ~180
   `{...(x ? { x } : {})}` lines across 24 wrappers; rendered attributes verified unchanged.
 - FluentUI element registration moved to `<script module>` via `fluent-ui/register.ts` — once per

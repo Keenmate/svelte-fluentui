@@ -18,10 +18,9 @@
 -->
 
 <script lang="ts">
+	import {selectedOptionsContext} from "../contexts.js"
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import {getContext} from "svelte"
-	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 
 	type Props = {
 		value: string
@@ -51,7 +50,7 @@
 			children
 		}: Props = $props()
 
-	const selectedValue = getContext<SelectedOptionSvelteContext | undefined>("selected-options")
+	const selectedValue = selectedOptionsContext.get()
 
 	// Selection is either forced via the `selected` prop or derived from the
 	// shared context. Reading ctx.value here tracks the parent's selection state.
