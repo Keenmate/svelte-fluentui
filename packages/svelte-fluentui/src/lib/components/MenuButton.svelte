@@ -241,7 +241,7 @@
 					class={item.danger ? "danger" : ""}
 					role="menuitem"
 					tabindex="-1"
-					disabled={item.disabled || undefined}
+					disabled={item.disabled || null}
 					onclick={() => runItem(item)}
 				>
 					{#if item.icon}

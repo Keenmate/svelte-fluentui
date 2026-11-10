@@ -19,6 +19,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   `value` into an array, assigning `value` from outside didn't move the selection, and the
   `multiple` attribute was never set. A non-existent `selected-options` attribute (an uncalled
   function) is no longer rendered.
+- **RadioGroup — arrow keys update `bind:value`.** Moving the selection with the keyboard
+  checked the radio but left the bound value (and `onchange`) stale. Clicking the already-checked
+  radio no longer fires `onchange`.
+- **MenuButton — enabled items no longer get `disabled="undefined"`** on `<fluent-menu-item>`.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

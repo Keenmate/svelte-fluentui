@@ -51,12 +51,19 @@
 	setContext("radio-group", ctx)
 
 	function setValue(newValue: string) {
-		if (disabled || readonly) {
+		if (disabled || readonly || newValue === value) {
 			return
 		}
 
 		value = newValue
 		onchange?.(newValue)
+	}
+
+	// Arrow keys move the checked radio inside FAST's group without a click;
+	// the group then reports its new value via `change`.
+	function handleGroupChange(ev: Event) {
+		const next = (ev.currentTarget as HTMLElement & {value?: string}).value
+		if (next) setValue(next)
 	}
 </script>
 
@@ -83,6 +90,7 @@
 	{...(ariaLabel ? { "aria-label": ariaLabel } : {})}
 	{...(className ? { class: className } : {})}
 	{...(style ? { style } : {})}
+	onchange={handleGroupChange}
 >
 	{@render children?.()}
 </fluent-radio-group>
