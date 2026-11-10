@@ -49,15 +49,33 @@ export function setAttributeOnShadowInput(
 ): void {
 	if (!element) return
 
-	const trySetAttribute = () => {
-		const input = element.shadowRoot?.querySelector(selector)
-		if (input) {
-			if (value == null) input.removeAttribute(name)
-			else input.setAttribute(name, String(value))
-		} else if (element.shadowRoot === null) {
-			setTimeout(trySetAttribute, 10)
-		}
-	}
+	whenShadowRoot(element, (root) => {
+		const input = root.querySelector(selector)
+		if (!input) return
+		if (value == null) input.removeAttribute(name)
+		else input.setAttribute(name, String(value))
+	})
+}
 
-	trySetAttribute()
+/**
+ * Runs `callback` with the element's open shadow root once the custom element has
+ * upgraded. Waits for `customElements.whenDefined()` and then a few frames for FAST to
+ * attach the root; gives up if the element is removed or never gets a root, instead
+ * of polling forever.
+ */
+export function whenShadowRoot(element: HTMLElement, callback: (root: ShadowRoot) => void): void {
+	if (element.shadowRoot) {
+		callback(element.shadowRoot)
+		return
+	}
+	if (typeof customElements === "undefined") return
+
+	customElements.whenDefined(element.localName).then(() => {
+		let frames = 0
+		const check = () => {
+			if (element.shadowRoot) callback(element.shadowRoot)
+			else if (element.isConnected && ++frames < 10) requestAnimationFrame(check)
+		}
+		check()
+	})
 }

@@ -2102,6 +2102,7 @@
 		document.removeEventListener('contextmenu', handleDocumentContextMenuForContextMenu, true)
 		document.removeEventListener('keydown', handleKeyDownForContextMenu)
 		window.removeEventListener('scroll', handleScroll, true)
+		if (rowActionHideTimeout) clearTimeout(rowActionHideTimeout)
 	})
 
 	let computedClass = $derived(`quickgrid ${striped ? "striped" : ""} ${hoverable ? "hoverable" : ""} ${editable ? "editable" : ""} ${isNavigateMode ? "navigate-mode" : ""} ${className}`.trim())

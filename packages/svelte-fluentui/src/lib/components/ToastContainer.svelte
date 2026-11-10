@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {toast, type ToastInstance, type ToastPosition} from "../stores/toast.js"
-	import {onMount} from "svelte"
+	import {onDestroy} from "svelte"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 	import {portal} from "../actions/portal.js"
 
@@ -53,9 +53,10 @@
 	})
 
 	// Subscribe to toast store
-	toast.subscribe((value) => {
+	const unsubscribe = toast.subscribe((value) => {
 		toasts = value
 	})
+	onDestroy(unsubscribe)
 
 	// Icons for variants
 	const icons: Record<string, string> = {
@@ -73,26 +74,16 @@
 		toast.dismiss(id)
 	}
 
-	onMount(() => {
-		// Mark all existing toasts as mounted for animation
-		toasts.forEach((t) => {
-			setTimeout(() => {
-				mountedToasts.add(t.id)
-				mountedToasts = new Set(mountedToasts)
-			}, 10)
-		})
-	})
-
-	// Watch for new toasts and trigger show animation
+	// Mark new toasts as mounted one tick after they render so the show
+	// animation runs. One timer per change (cleared on re-run / destroy), and ids
+	// of dismissed toasts are dropped so the set doesn't grow forever.
 	$effect(() => {
-		toasts.forEach((t) => {
-			if (!mountedToasts.has(t.id)) {
-				setTimeout(() => {
-					mountedToasts.add(t.id)
-					mountedToasts = new Set(mountedToasts)
-				}, 10)
-			}
-		})
+		const current = toasts.map((t) => t.id)
+		if (current.every((id) => mountedToasts.has(id)) && mountedToasts.size === current.length) return
+		const timer = setTimeout(() => {
+			mountedToasts = new Set(current)
+		}, 10)
+		return () => clearTimeout(timer)
 	})
 </script>
 

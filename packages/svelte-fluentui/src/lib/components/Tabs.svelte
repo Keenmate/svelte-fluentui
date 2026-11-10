@@ -296,6 +296,8 @@
 	$effect(() => {
 		if (!tablistRef) return
 		const list = tablistRef
+		// Re-run when tabs are added/removed so late-added buttons are observed too.
+		void orderedTabs.length
 		list.addEventListener("scroll", onTablistScroll)
 		const ro = new ResizeObserver(() => {
 			updateScrollState()
@@ -304,11 +306,12 @@
 		ro.observe(list)
 		list.querySelectorAll<HTMLElement>("button[data-tab-id]").forEach(btn => ro.observe(btn))
 		// Re-run once after layout
-		requestAnimationFrame(() => {
+		const frame = requestAnimationFrame(() => {
 			updateScrollState()
 			updateIndicator()
 		})
 		return () => {
+			cancelAnimationFrame(frame)
 			list.removeEventListener("scroll", onTablistScroll)
 			ro.disconnect()
 		}
@@ -586,8 +589,11 @@
 		const ro = new ResizeObserver(() => measureVisibleCount())
 		ro.observe(realList)
 		ro.observe(shadowList)
-		requestAnimationFrame(() => measureVisibleCount())
-		return () => ro.disconnect()
+		const frame = requestAnimationFrame(() => measureVisibleCount())
+		return () => {
+			cancelAnimationFrame(frame)
+			ro.disconnect()
+		}
 	})
 
 	/*

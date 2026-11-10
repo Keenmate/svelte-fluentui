@@ -1012,6 +1012,12 @@
 		return () => {
 			resizeObserver?.disconnect()
 			if (reflowTimer != null) clearTimeout(reflowTimer)
+			// Unmounted mid-drag: drop the window listeners the drag installed and
+			// make a still-scheduled processMove() frame a no-op.
+			pendingMove = null
+			window.removeEventListener("pointermove", onWindowPointerMove)
+			window.removeEventListener("pointerup", onWindowPointerUp)
+			window.removeEventListener("pointercancel", onWindowPointerUp)
 		}
 	})
 

@@ -50,6 +50,14 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **QuickGrid select/combobox editor — keyboard highlight scrolls into view.** Arrowing past the
   visible rows never scrolled the list: the portalled dropdown was looked up inside the editor (not
   found) and the lookup ran before the DOM update.
+- **Leaks on unmount fixed.** ToastContainer never unsubscribed from the toast store and scheduled
+  a duplicate timer per toast on every change (and kept dismissed ids forever); QuickGrid's
+  row-toolbar hide timer, MultiSplitter's window drag listeners (unmounted mid-drag) and Tabs'
+  layout frames outlived the component; FluentUI shadow-root polling (Textarea, TextField
+  autocomplete/attributes) retried every 10 ms forever when the element never upgraded — it now
+  waits for `customElements.whenDefined` and gives up after a few frames.
+- **Tabs — tabs added later are measured.** The tab-strip ResizeObserver only watched the buttons
+  present on first render, so the indicator/scroll arrows ignored size changes of later tabs.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

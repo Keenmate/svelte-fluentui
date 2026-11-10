@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fluentTextArea, provideFluentDesignSystem } from "@fluentui/web-components"
 	import type { SlotType } from "../types/index.js"
-	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js"
+	import { setAutocompleteOnShadowInput, whenShadowRoot } from "../utils/shadow-dom.js"
 
 	provideFluentDesignSystem().register(fluentTextArea())
 
@@ -106,16 +106,10 @@
 	// resize handle. Make active match focus-within (full-width line).
 	$effect(() => {
 		if (!element || typeof CSSStyleSheet === "undefined") return
-		const adopt = () => {
-			const root = element?.shadowRoot
-			if (!root) {
-				setTimeout(adopt, 10)
-				return
-			}
+		whenShadowRoot(element, (root) => {
 			if (root.adoptedStyleSheets.includes(activeIndicatorOverride)) return
 			root.adoptedStyleSheets = [...root.adoptedStyleSheets, activeIndicatorOverride]
-		}
-		adopt()
+		})
 	})
 
 	// Sizing: by default the host opts out of parent flex stretching (matches the
