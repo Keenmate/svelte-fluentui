@@ -84,11 +84,13 @@
 
 	function handleInput(e: Event) {
 		const target = e.target as HTMLTextAreaElement
+		value = target.value
 		if (oninput) oninput(target.value)
 	}
 
 	function handleChange(e: Event) {
 		const target = e.target as HTMLTextAreaElement
+		value = target.value
 		if (onchange) onchange(target.value)
 	}
 

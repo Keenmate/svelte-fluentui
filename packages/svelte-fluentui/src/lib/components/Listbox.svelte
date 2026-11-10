@@ -3,6 +3,7 @@
 	import type {SlotType} from "../types/index.js"
 	import {setContext, untrack} from "svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
+	import type {SelectedValue} from "../types/index.js"
 	import {createSelectedOptions} from "../data/selected-options.svelte.js"
 
 	provideFluentDesignSystem().register(fluentListbox())
@@ -45,7 +46,7 @@
 
 	// Combine width/height with style (default width: 100%)
 	// Note: height uses --listbox-max-height CSS variable which the FluentUI web component uses internally
-	let computedStyle = $derived(() => {
+	const computedStyle = $derived.by(() => {
 		const styles: string[] = [`width: ${width || '100%'}`]
 		if (height) {
 			styles.push(`--listbox-max-height: ${height}`)
@@ -68,23 +69,30 @@
 	const selectedOptions = createSelectedOptions(value, multi)
 	setContext<SelectedOptionSvelteContext>("selected-options", selectedOptions)
 
+	// The context holds an array; the public `value` is a string in single mode.
+	function fromContext(current: SelectedValue): ValueType {
+		return multi ? (current ?? []) : (current?.[0] ?? null)
+	}
+
+	// Option click → context → bound value
 	$effect(() => {
-		const current = selectedOptions.value
-		if (JSON.stringify(current) !== JSON.stringify(value)) {
-			value = current
-		}
+		const next = fromContext(selectedOptions.value)
+		untrack(() => {
+			if (JSON.stringify(next) !== JSON.stringify(value)) value = next
+		})
 	})
 
-	let selectedOptionsAttr = $derived(() =>
-		typeof value === "string" ? value : Array.isArray(value) ? value.join(",") : undefined
-	)
+	// External value assignment → context
+	$effect(() => {
+		const next = selectedOptions.toContextValue(value)
+		untrack(() => {
+			if (JSON.stringify(next) !== JSON.stringify(selectedOptions.value)) selectedOptions.set(value)
+		})
+	})
 
+	// Selection is owned by the Option children (via context); the native
+	// change event is only forwarded.
 	function handleOnChange(ev: Event) {
-		const target = ev.target as HTMLSelectElement
-		if (!target) return
-
-		const selected = Array.from(target.selectedOptions).map((opt) => opt.value)
-		value = multi ? selected : selected[0]
 		onchange?.(ev)
 	}
 </script>
@@ -96,15 +104,14 @@
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-listbox
 	bind:this={element}
-	selected-options={selectedOptionsAttr}
 	{...(disabled ? { disabled } : {})}
 	{...(autofocus ? { autofocus } : {})}
 	{...(name ? { name } : {})}
 	{...(size !== undefined ? { size } : {})}
 	aria-label={ariaLabel || null}
 	class={className || null}
-	style={computedStyle()}
-	multiple={multi}
+	style={computedStyle}
+	multiple={multi || null}
 	onchange={handleOnChange}
 >
 	{@render children?.()}

@@ -12,6 +12,14 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 
 ### Changed — BREAKING
 
+### Fixed
+- **Textarea — `bind:value` is two-way.** Typing never wrote back to the bound value (only
+  `oninput`/`onchange` saw the text); the value is now updated on `input` and `change`.
+- **Listbox — single mode binds a string, `multi` works.** Clicking an option turned a single-select
+  `value` into an array, assigning `value` from outside didn't move the selection, and the
+  `multiple` attribute was never set. A non-existent `selected-options` attribute (an uncalled
+  function) is no longer rendered.
+
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 
 ### Fixed
