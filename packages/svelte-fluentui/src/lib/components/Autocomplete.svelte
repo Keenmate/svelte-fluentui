@@ -139,6 +139,22 @@
 	let isSearching = $state(false)
 	let isFocused = $state(false)
 	let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined
+	let optionsListElement = $state<HTMLElement | undefined>(undefined)
+	// Bumped on every search (and on unmount) so a slow response that arrives
+	// after a newer search, or after the component is gone, is dropped.
+	let searchSeq = 0
+
+	$effect(() => () => {
+		searchSeq++
+		if (debounceTimer) clearTimeout(debounceTimer)
+	})
+
+	/** Inside this control or its own portalled options list (not another component's popup). */
+	function isInsideOwnSurface(target: Element): boolean {
+		if (containerElement?.contains(target)) return true
+		const surface = optionsListElement?.closest(".positioning-region") ?? optionsListElement
+		return !!surface?.contains(target)
+	}
 
 	// Compute effective multi/single select mode
 	// If multiple is explicitly set, use it. Otherwise, infer from maxSelectedOptions
@@ -158,12 +174,21 @@
 
 	// Perform the actual search
 	async function performSearch(text: string) {
+		const seq = ++searchSeq
 		// Show loading state (either from prop or internal state)
 		isSearching = true
 
 		try {
 			if (onoptionssearch) {
-				const results = await onoptionssearch(text)
+				let results: OptionItem[]
+				try {
+					results = await onoptionssearch(text)
+				} catch (error) {
+					if (seq !== searchSeq) return
+					console.error("[Autocomplete] onoptionssearch failed:", error)
+					results = []
+				}
+				if (seq !== searchSeq) return
 				// Exclude already-selected options so a picked value can't reappear in
 				// the list and be selected twice — matching the client-side branch below.
 				filteredOptions = results.filter(r => !isSelected(r.value)).slice(0, maxOptionsSearch)
@@ -179,7 +204,7 @@
 
 			isOpen = filteredOptions.length > 0 || showOverlayOnEmptyResults
 		} finally {
-			isSearching = false
+			if (seq === searchSeq) isSearching = false
 		}
 	}
 
@@ -193,6 +218,8 @@
 
 		// Handle empty search text (no debounce needed)
 		if (!text || !text.trim()) {
+			searchSeq++ // drop any in-flight search for the previous text
+			isSearching = false
 			// Show initial options if enabled
 			if (showInitialOptions && options.length > 0) {
 				const limit = initialOptionsCount ?? maxOptionsSearch
@@ -212,6 +239,7 @@
 		// Why: against large/async option sets, searching on a single character
 		// is wasteful (UX noise) or expensive (triggers consumer API calls).
 		if (minSearchLength && text.trim().length < minSearchLength) {
+			searchSeq++
 			filteredOptions = []
 			isOpen = false
 			isSearching = false
@@ -473,8 +501,7 @@
 	function handleOutsidePointerDown(event: PointerEvent) {
 		const target = event.target as Element | null
 		if (!target) return
-		if (containerElement && containerElement.contains(target)) return
-		if (target.closest?.('.options-list, .positioning-region')) return
+		if (isInsideOwnSurface(target)) return
 		closeDropdown()
 	}
 
@@ -486,8 +513,7 @@
 	function handleOutsideFocusIn(event: FocusEvent) {
 		const target = event.target as Element | null
 		if (!target) return
-		if (containerElement && containerElement.contains(target)) return
-		if (target.closest?.('.options-list, .positioning-region')) return
+		if (isInsideOwnSurface(target)) return
 		// The options list is portalled OUT of our control's DOM subtree (top layer),
 		// so a modal dialog's focus trap treats it as "outside" and yanks focus back
 		// to an element inside the dialog (e.g. its close button). That bounce would
@@ -508,10 +534,10 @@
 	function handleOutsideScroll(event: Event) {
 		const target = event.target as Node | null
 		if (!target) return
-		// Allow scroll inside our own anchor container (input + inline chips, etc.)
+		// Allow scroll inside our own control (input + inline chips) or our own
+		// portalled options list.
+		if (target instanceof Element && isInsideOwnSurface(target)) return
 		if (containerElement && containerElement.contains(target)) return
-		// Allow scroll inside the popover surface (options-list lives in a portal).
-		if (target instanceof Element && target.closest('.options-list, .positioning-region')) return
 		closeDropdown()
 	}
 
@@ -776,7 +802,7 @@
 				matchWidth={!dropdownWidth}
 				style="z-index: var(--fluent-z-popover, 1060); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12); {dropdownWidth ? `width: ${dropdownWidth}; ` : ''}{maxDropdownHeight ? `--autocomplete-listbox-max-height: ${maxDropdownHeight}; ` : ''}max-height: min(var(--available-height, 100vh), var(--autocomplete-listbox-max-height, 300px)); overflow-y: auto; overscroll-behavior: contain;"
 			>
-				<div class="options-list">
+				<div class="options-list" bind:this={optionsListElement}>
 					{#if headerContent}
 						<div class="options-header">
 							{@render headerContent()}

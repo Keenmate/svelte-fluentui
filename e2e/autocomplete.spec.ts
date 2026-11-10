@@ -565,3 +565,13 @@ test("clear button (single mode): appears after pick; click clears the input", a
 	await expect(inputOf(wrap)).toHaveValue("")
 	await expect(page.locator("#single-value")).toHaveAttribute("data-value", "")
 })
+
+test("async: a slower response for an older query is dropped", async ({page}) => {
+	const wrap = await open(page, "stale")
+	await inputOf(wrap).pressSequentially("ab", {delay: 20})
+	await expect(optionByText(page, "Fresh result")).toBeVisible()
+	// The "a" response lands ~600ms after it was sent; it must not replace "ab"'s results.
+	await page.waitForTimeout(800)
+	await expect(optionByText(page, "Fresh result")).toBeVisible()
+	await expect(optionByText(page, "Stale result")).toHaveCount(0)
+})

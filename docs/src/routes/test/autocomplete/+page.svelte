@@ -37,6 +37,14 @@
 		return fruits.filter((f) => f.text.toLowerCase().includes(q))
 	}
 
+	// Out-of-order responses: a one-letter query answers slower than a longer one
+	let staleSelected = $state<string[]>([])
+	async function outOfOrderSearch(text: string): Promise<Fruit[]> {
+		const slow = text.length === 1
+		await new Promise(r => setTimeout(r, slow ? 600 : 50))
+		return slow ? [{value: "stale", text: "Stale result"}] : [{value: "fresh", text: "Fresh result"}]
+	}
+
 	// Slow async search for loading-indicator assertion
 	async function slowAsyncSearch(text: string): Promise<Fruit[]> {
 		await new Promise((r) => setTimeout(r, 400))
@@ -399,4 +407,11 @@
 		/>
 	</div>
 	<div id="dismiss-count" data-value={dismissCount}></div>
+</div>
+
+<div class="fixture">
+	<div class="fixture-label">out-of-order async — the older, slower response must be dropped</div>
+	<div id="stale-wrap" style="max-width: 320px">
+		<Autocomplete id="stale" onoptionssearch={outOfOrderSearch} bind:selectedOptions={staleSelected} />
+	</div>
 </div>

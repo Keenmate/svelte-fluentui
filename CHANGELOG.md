@@ -39,6 +39,12 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **InputFile — `formatInputFileSize` handles ≥ 1 TB and < 1 byte** (printed `undefined` / `NaN`).
 - **No debug output in the console.** Removed leftover `console.log` calls in the theme store and
   the listbox selection context.
+- **Autocomplete — async search is race-safe.** A slower `onoptionssearch` response for an older
+  query could overwrite the results of a newer one, a rejected promise surfaced as an unhandled
+  rejection, and a pending debounce could fire after unmount. Responses are now sequenced (stale
+  ones dropped), errors are logged and shown as no results, and timers are cleared on destroy.
+- **Autocomplete — outside-click only ignores its own dropdown.** Clicks inside *any* component's
+  popup (`.positioning-region`) were treated as inside, so an open Autocomplete stayed open.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 
