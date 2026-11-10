@@ -170,7 +170,7 @@
 			Toggle orientation (current: {orientation})
 		</Button>
 		<div class="splitter-container">
-			<MultiSplitter {orientation}>
+			<MultiSplitter {orientation} height="100%">
 				<MultiSplitterPane size="40%" min="20%" max="80%">
 					<Card>
 						<h4>Top / Left</h4>

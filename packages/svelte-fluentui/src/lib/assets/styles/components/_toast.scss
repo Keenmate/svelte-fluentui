@@ -11,7 +11,7 @@
 // Fixed container for toast notifications
 .fluent-toast-container {
 	position: fixed;
-	z-index: $z-index-toast;
+	z-index: var(--fluent-z-toast, #{$z-index-toast});
 	pointer-events: none;
 	display: flex;
 	flex-direction: column;

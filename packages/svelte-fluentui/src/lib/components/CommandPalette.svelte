@@ -375,7 +375,7 @@
 	.cp-root {
 		position: fixed;
 		inset: 0;
-		z-index: var(--fluent-z-modal, 1070);
+		z-index: var(--fluent-z-modal, 1050);
 		display: flex;
 		justify-content: center;
 		align-items: flex-start;

@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **MultiSplitter is content-height by default.** Leftover Blazor splitter CSS forced `height: 100%`
+  on the splitter and `overflow: hidden` on panes, overriding the component; removed. Pass
+  `height="100%"` to fill a sized parent.
 - **Store types renamed: `Toast` → `ToastInstance`, `SiteSettings` → `SiteSettingsState`.** They were
   shadowed by the `Toast` / `SiteSettings` component exports and unreachable from the package root.
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
@@ -58,6 +61,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   waits for `customElements.whenDefined` and gives up after a few frames.
 - **Tabs — tabs added later are measured.** The tab-strip ResizeObserver only watched the buttons
   present on first render, so the indicator/scroll arrows ignored size changes of later tabs.
+- **Z-index fixes.** CommandPalette's `--fluent-z-modal` fallback was 1070 (tooltip level) instead
+  of 1050; toasts now use `var(--fluent-z-toast)` so a theme can move them.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 
