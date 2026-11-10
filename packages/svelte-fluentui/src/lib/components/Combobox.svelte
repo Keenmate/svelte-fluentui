@@ -25,6 +25,7 @@
 	import Option from "./Option.svelte"
 	import OptionGroup from "./OptionGroup.svelte"
 	import type {OptionItem, SelectedValue, SlotType} from "../types/index.js"
+	import {pushLayer} from "../helpers/layer-stack.js"
 	import type {
 		SelectedOptionSvelteContext,
 		ValueType,
@@ -434,6 +435,12 @@
 		isOpen = true
 		tick().then(() => { applyFilter(); highlightInitial() })
 	}
+
+	// Escape goes to the topmost open layer (helpers/layer-stack.ts), so inside a
+	// Dialog/Panel it closes this dropdown first and leaves the container open.
+	$effect(() => {
+		if (isOpen) return pushLayer({onEscape: () => closeDropdown()})
+	})
 
 	function closeDropdown(refocus = true) {
 		if (!isOpen) return

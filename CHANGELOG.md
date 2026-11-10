@@ -29,6 +29,11 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   the top of the script. The locale default now falls back to `en-US` without `navigator`.
 - **Checkbox / Switch — hydration-stable ids.** The fallback id for the value label came from
   `Math.random()` (different on server and client); it now uses `$props.id()`.
+- **Escape inside a Dialog/Panel closes the open dropdown first.** Dialog and Panel grabbed Escape
+  in the capture phase, so pressing Escape in an open Combobox/Select/Autocomplete/DatePicker/
+  TimePicker/MenuButton/ContextMenu inside them closed the *dialog* and left the dropdown orphaned
+  on screen. A shared layer stack (`helpers/layer-stack.ts`) now hands Escape to the topmost open
+  layer only; the next Escape closes the dialog.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

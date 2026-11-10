@@ -13,6 +13,7 @@
 	import type {SlotType} from "../types/index.js"
 	import type DayFormat from "../fluent-ui/calendar/day-format.js"
 	import {defaultLocale} from "../helpers/locale.js"
+	import {pushLayer} from "../helpers/layer-stack.js"
 
 	type Props = {
 		id?: string
@@ -125,18 +126,13 @@
 			setOpen(false)
 		}
 
-		function handleKeyDown(event: KeyboardEvent) {
-			if (event.key === "Escape") {
-				event.stopPropagation()
-				setOpen(false)
-			}
-		}
+		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
+		const popLayer = pushLayer({onEscape: () => setOpen(false)})
 
 		document.addEventListener("pointerdown", handlePointerDown, true)
-		document.addEventListener("keydown", handleKeyDown, true)
 		return () => {
 			document.removeEventListener("pointerdown", handlePointerDown, true)
-			document.removeEventListener("keydown", handleKeyDown, true)
+			popLayer()
 		}
 	})
 

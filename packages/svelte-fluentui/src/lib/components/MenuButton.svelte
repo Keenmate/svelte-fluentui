@@ -44,6 +44,7 @@
 	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
 	import Icon from "./Icon.svelte"
 	import { portal } from "../actions/portal.js"
+	import { pushLayer } from "../helpers/layer-stack.js"
 
 	provideFluentDesignSystem().register(
 		fluentButton(),
@@ -188,17 +189,12 @@
 			if (menuEl?.contains(target)) return
 			closeMenu()
 		}
-		function onKey(e: KeyboardEvent) {
-			if (e.key === "Escape") {
-				e.stopPropagation()
-				closeMenu()
-			}
-		}
+		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
+		const popLayer = pushLayer({onEscape: () => closeMenu()})
 		document.addEventListener("mousedown", onDocPointer, true)
-		document.addEventListener("keydown", onKey, true)
 		return () => {
 			document.removeEventListener("mousedown", onDocPointer, true)
-			document.removeEventListener("keydown", onKey, true)
+			popLayer()
 		}
 	})
 </script>

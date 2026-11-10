@@ -3,6 +3,7 @@
 	import { SvelteMap } from "svelte/reactivity"
 	import Icon from "./Icon.svelte"
 	import { portal } from "../actions/portal.js"
+	import { pushLayer } from "../helpers/layer-stack.js"
 	import type { SlotType } from "../types/index.js"
 	import type { MenuButtonItem } from "./MenuButton.svelte"
 
@@ -303,10 +304,10 @@
 			if (isInsideAnyMenu(e.target)) return
 			closeMenu()
 		}
-		function onKey(e: KeyboardEvent) {
-			if (e.key === "Escape") {
-				e.stopPropagation()
-				// Escape pops submenus one at a time before closing the root.
+		// Escape goes to the topmost open layer (helpers/layer-stack.ts) and
+		// pops submenus one at a time before closing the root.
+		const popLayer = pushLayer({
+			onEscape: () => {
 				if (openSubmenus.size > 0) {
 					const deepest = Array.from(openSubmenus.keys()).pop()
 					if (deepest) closeSubmenuTree(deepest)
@@ -314,7 +315,7 @@
 					closeMenu()
 				}
 			}
-		}
+		})
 		/*
 		 * A second right-click anywhere else should re-open the menu at
 		 * the new position, not just close the old one. The document-level
@@ -346,12 +347,11 @@
 			closeMenu()
 		}
 		document.addEventListener("mousedown", onDocPointer, true)
-		document.addEventListener("keydown", onKey, true)
 		document.addEventListener("contextmenu", onContext, true)
 		document.addEventListener("scroll", onScroll, true)
 		return () => {
 			document.removeEventListener("mousedown", onDocPointer, true)
-			document.removeEventListener("keydown", onKey, true)
+			popLayer()
 			document.removeEventListener("contextmenu", onContext, true)
 			document.removeEventListener("scroll", onScroll, true)
 		}

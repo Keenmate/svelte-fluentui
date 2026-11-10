@@ -21,6 +21,7 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import type {SlotType} from "../types/index.js"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
+	import {pushLayer} from "../helpers/layer-stack.js"
 
 	type SelectChangeDetail = {
 		value: string
@@ -232,6 +233,12 @@
 			scrollHighlightedIntoView()
 		})
 	}
+
+	// Escape goes to the topmost open layer (helpers/layer-stack.ts), so inside a
+	// Dialog/Panel it closes this dropdown first and leaves the container open.
+	$effect(() => {
+		if (isOpen) return pushLayer({onEscape: () => closeDropdown()})
+	})
 
 	function closeDropdown(refocus = true) {
 		if (!isOpen) return

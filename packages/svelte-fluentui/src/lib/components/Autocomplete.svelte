@@ -11,6 +11,7 @@
 	import type { Snippet } from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Chip from "./Chip.svelte"
+	import {pushLayer} from "../helpers/layer-stack.js"
 
 	type OptionItem<T = any> = {
 		value: T
@@ -322,6 +323,19 @@
 		if (labelCache[value] != null) return labelCache[value]
 		return String(value)
 	}
+
+	// Escape goes to the topmost open layer (helpers/layer-stack.ts), so inside a
+	// Dialog/Panel it closes this dropdown first and leaves the container open.
+	$effect(() => {
+		if (!isOpen) return
+		return pushLayer({
+			onEscape: () => {
+				closeDropdown()
+				searchText = ""
+				filteredOptions = []
+			}
+		})
+	})
 
 	// Close dropdown and call ondismissed callback
 	function closeDropdown() {

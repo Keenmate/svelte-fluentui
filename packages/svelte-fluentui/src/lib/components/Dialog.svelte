@@ -6,11 +6,9 @@
 	}
 
 	/**
-	 * Global stack of currently-open Dialog instances. Used so a single
-	 * document-level keydown listener can always route Escape to the
-	 * topmost open dialog, regardless of where focus lives. The listener
-	 * is installed lazily when the first dialog opens and torn down when
-	 * the last one closes.
+	 * Global stack of currently-open Dialog instances, used to keep the FAST
+	 * focus trap on the topmost one. Escape is routed by the shared layer stack
+	 * (helpers/layer-stack.ts), so a dropdown open inside a dialog gets it first.
 	 */
 	type DialogHandle = {
 		closeOnEscape: () => boolean
@@ -21,7 +19,6 @@
 		setFocusTrap: (active: boolean) => void
 	}
 	const openDialogStack: DialogHandle[] = []
-	let escListenerAttached = false
 
 	/**
 	 * Keep the FAST focus trap active on only the topmost open dialog.
@@ -39,35 +36,23 @@
 		}
 	}
 
-	function handleGlobalEscape(e: KeyboardEvent) {
-		if (e.key !== "Escape") return
-		const top = openDialogStack[openDialogStack.length - 1]
-		if (!top) return
-		if (top.preventClose()) return
-		if (!top.closeOnEscape()) return
-		const beforeClose = top.onbeforeclose
-		if (beforeClose && beforeClose() === false) return
-		e.preventDefault()
-		e.stopPropagation()
-		top.hide()
+	/** Escape on the topmost layer; `false` declines (the key passes through). */
+	function escapeDialog(handle: DialogHandle): boolean {
+		if (handle.preventClose()) return false
+		if (!handle.closeOnEscape()) return false
+		if (handle.onbeforeclose() === false) return false
+		handle.hide()
+		return true
 	}
 
 	function pushDialog(handle: DialogHandle) {
 		openDialogStack.push(handle)
-		if (!escListenerAttached && typeof document !== "undefined") {
-			document.addEventListener("keydown", handleGlobalEscape, true)
-			escListenerAttached = true
-		}
 		syncFocusTrap()
 	}
 
 	function popDialog(handle: DialogHandle) {
 		const idx = openDialogStack.lastIndexOf(handle)
 		if (idx >= 0) openDialogStack.splice(idx, 1)
-		if (openDialogStack.length === 0 && escListenerAttached && typeof document !== "undefined") {
-			document.removeEventListener("keydown", handleGlobalEscape, true)
-			escListenerAttached = false
-		}
 		syncFocusTrap()
 	}
 
@@ -118,6 +103,7 @@
 	import type {SlotType} from "../types/index.js"
 	import Button from "./Button.svelte"
 	import {portal} from "../actions/portal.js"
+	import {pushLayer} from "../helpers/layer-stack.js"
 
 	provideFluentDesignSystem().register(
 		fluentDialog()
@@ -278,7 +264,11 @@
 	$effect(() => {
 		if (visible) {
 			pushDialog(handle)
-			return () => popDialog(handle)
+			const popLayer = pushLayer({onEscape: () => escapeDialog(handle)})
+			return () => {
+				popLayer()
+				popDialog(handle)
+			}
 		}
 	})
 

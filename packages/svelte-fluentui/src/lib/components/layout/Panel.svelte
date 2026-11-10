@@ -1,41 +1,5 @@
-<script lang="ts" module>
-	type PanelHandle = {
-		closeOnEscape: () => boolean
-		hide: () => void
-	}
-	const openPanelStack: PanelHandle[] = []
-	let escListenerAttached = false
-
-	function handleGlobalEscape(e: KeyboardEvent) {
-		if (e.key !== "Escape") return
-		const top = openPanelStack[openPanelStack.length - 1]
-		if (!top) return
-		if (!top.closeOnEscape()) return
-		e.preventDefault()
-		e.stopPropagation()
-		top.hide()
-	}
-
-	function pushPanel(handle: PanelHandle) {
-		openPanelStack.push(handle)
-		if (!escListenerAttached && typeof document !== "undefined") {
-			document.addEventListener("keydown", handleGlobalEscape, true)
-			escListenerAttached = true
-		}
-	}
-
-	function popPanel(handle: PanelHandle) {
-		const idx = openPanelStack.lastIndexOf(handle)
-		if (idx >= 0) openPanelStack.splice(idx, 1)
-		if (openPanelStack.length === 0 && escListenerAttached && typeof document !== "undefined") {
-			document.removeEventListener("keydown", handleGlobalEscape, true)
-			escListenerAttached = false
-		}
-	}
-</script>
-
 <script lang="ts">
-	import {onDestroy} from "svelte"
+	import {pushLayer} from "../../helpers/layer-stack.js"
 	import type {SlotType} from "../../types/index.js"
 
 	type Side = "left" | "right" | "start" | "end"
@@ -73,21 +37,15 @@
 	let panelEl: HTMLElement | undefined = $state()
 	let isRTL = $state(false)
 
-	const handle: PanelHandle = {
-		closeOnEscape: () => closeOnEscape,
-		hide: () => close()
-	}
-
-	let wasOpen = false
+	// Escape closes the topmost open layer (a dropdown inside the panel first).
 	$effect(() => {
-		if (pinned) return
-		if (open && !wasOpen) {
-			pushPanel(handle)
-			wasOpen = true
-		} else if (!open && wasOpen) {
-			popPanel(handle)
-			wasOpen = false
-		}
+		if (pinned || !open) return
+		return pushLayer({
+			onEscape: () => {
+				if (!closeOnEscape) return false
+				close()
+			}
+		})
 	})
 
 	// Document-level outside-click detection — only needed when there's no
@@ -109,10 +67,6 @@
 		if (panelEl.contains(e.target as Node)) return
 		close()
 	}
-
-	onDestroy(() => {
-		if (wasOpen) popPanel(handle)
-	})
 
 	function close() {
 		open = false
