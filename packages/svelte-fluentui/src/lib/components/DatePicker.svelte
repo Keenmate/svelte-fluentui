@@ -14,6 +14,7 @@
 	import type DayFormat from "../fluent-ui/calendar/day-format.js"
 	import {defaultLocale} from "../helpers/locale.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {isAfterDay, isBeforeDay} from "../helpers/date.js"
 
 	type Props = {
 		id?: string
@@ -153,8 +154,9 @@
 
 	// Check if date is disabled — composes minDate/maxDate, disabledDateFunc, and selectableDates.
 	function isDateDisabled(date: Date): boolean {
-		if (minDate && date < minDate) return true
-		if (maxDate && date > maxDate) return true
+		// By calendar day: a minDate of today 14:00 must not disable today.
+		if (minDate && isBeforeDay(date, minDate)) return true
+		if (maxDate && isAfterDay(date, maxDate)) return true
 		if (disabledDateFunc?.(date)) return true
 		if (selectableDates && !selectableDates(date)) return true
 		return false

@@ -34,6 +34,11 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   TimePicker/MenuButton/ContextMenu inside them closed the *dialog* and left the dropdown orphaned
   on screen. A shared layer stack (`helpers/layer-stack.ts`) now hands Escape to the topmost open
   layer only; the next Escape closes the dialog.
+- **DatePicker — `minDate`/`maxDate` compare calendar days.** A `minDate` with a time of day (e.g.
+  `new Date()`) disabled that whole day, because the comparison used timestamps.
+- **InputFile — `formatInputFileSize` handles ≥ 1 TB and < 1 byte** (printed `undefined` / `NaN`).
+- **No debug output in the console.** Removed leftover `console.log` calls in the theme store and
+  the listbox selection context.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

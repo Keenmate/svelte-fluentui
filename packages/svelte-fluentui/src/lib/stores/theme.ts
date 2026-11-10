@@ -8,7 +8,6 @@ function createThemeStore() {
 	const getInitialTheme = (): Theme => {
 		if (!BROWSER) return "light"
 		const stored = localStorage.getItem("fluent-theme")
-		console.log('[Svelte FluentUI Theme Store] getInitialTheme:', stored || 'light (default)')
 		return (stored === "light" || stored === "dark") ? stored : "light"
 	}
 
@@ -17,12 +16,10 @@ function createThemeStore() {
 
 	function updateFluentUITheme(theme: Theme) {
 		if (!BROWSER) return
-		console.log('[Svelte FluentUI Theme Store] updateFluentUITheme called with:', theme)
 		baseLayerLuminance.setValueFor(
 			document.body,
 			theme === "dark" ? StandardLuminance.DarkMode : StandardLuminance.LightMode
 		)
-		console.log('[Svelte FluentUI Theme Store] baseLayerLuminance.setValueFor() completed - this will regenerate --neutral-layer-* colors!')
 	}
 
 	// Swap the palette without letting interactive-feedback transitions animate the

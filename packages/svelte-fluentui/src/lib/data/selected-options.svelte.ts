@@ -46,7 +46,6 @@ export function createSelectedOptions(initialValue: ValueType, isMulti?: boolean
 					newValue = [val]
 				}
 
-				console.log("toggle", {result: newValue, val})
 				ctx.value = newValue
 			}
 		}
