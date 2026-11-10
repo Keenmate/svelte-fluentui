@@ -28,7 +28,7 @@
 	]
 
 	const editableSlots: Property[] = [
-		{name: "cellTemplate", type: "SlotType", default: "undefined", description: "Custom cell template for rendering cell content (applies to all columns unless overridden by column.snippet)"}
+		{name: "cellTemplate", type: "Snippet", default: "undefined", description: "Custom cell template for rendering cell content (applies to all columns unless overridden by column.snippet)"}
 	]
 
 	const propertyColumns = [

@@ -42,7 +42,7 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Additional message or markup content"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Additional message or markup content"}
 	]
 
 	const propertyColumns = [

@@ -21,7 +21,7 @@
 	const appBarCallbacks: Property[] = []
 
 	const appBarSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "AppBarItem components"}
+		{name: "children", type: "Snippet", default: "undefined", description: "AppBarItem components"}
 	]
 
 	const appBarItemProperties: Property[] = [
@@ -37,8 +37,8 @@
 	]
 
 	const appBarItemSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Item label content"},
-		{name: "icon", type: "SlotType", default: "undefined", description: "Icon rendered above the label"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Item label content"},
+		{name: "icon", type: "Snippet", default: "undefined", description: "Icon rendered above the label"}
 	]
 
 	const propertyColumns = [

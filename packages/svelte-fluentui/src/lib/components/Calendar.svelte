@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import Calendar from "./Calendar.svelte"
-	import type {SlotType} from "../types/index.js"
 	import {CalendarDay} from "../fluent-ui/calendar/calendar-day.js"
 	import {CalendarMonth} from "../fluent-ui/calendar/calendar-month.js"
 	import {CalendarYear} from "../fluent-ui/calendar/calendar-year.js"
@@ -52,7 +52,7 @@
 		onPickerMonthChange?: (month: Date) => void
 		/** Fires when the cursor enters a day cell (with that day) or leaves the day grid (with `null`). Pure observation — does not affect highlighting. */
 		onDayHover?: (date: Date | null) => void
-		day?: SlotType
+		day?: Snippet<[day: CalendarDay]>
 		class?: string
 	}
 

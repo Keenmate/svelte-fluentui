@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentAnchor, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 	import useActions from "../actions/use-actions.js"
 
 	provideFluentDesignSystem().register(fluentAnchor())
@@ -18,9 +18,9 @@
 		target?: string
 		type?: string
 		appearance?: "neutral" | "accent" | "hypertext" | "stealth" | "transparent"
-		iconStart?: SlotType
-		iconEnd?: SlotType
-		children?: SlotType
+		iconStart?: Snippet
+		iconEnd?: Snippet
+		children?: Snippet
 		preventDefault?: boolean
 		use?: ((node: HTMLElement) => any) | undefined
 		onClick?: (event: MouseEvent) => void

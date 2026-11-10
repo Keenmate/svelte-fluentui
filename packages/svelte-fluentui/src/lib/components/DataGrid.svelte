@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import { provideFluentDesignSystem, fluentDataGrid } from "@fluentui/web-components";
-	import type { SlotType } from "../types/index.js";
 
 	provideFluentDesignSystem().register(fluentDataGrid());
 
@@ -14,7 +14,7 @@
 		role?: string;
 		onCloseColumnOptions?: (e: Event) => void;
 		onCloseColumnResize?: (e: Event) => void;
-		children?: SlotType;
+		children?: Snippet;
 	};
 
 	let {

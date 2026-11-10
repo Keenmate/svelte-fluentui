@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import { fluentTextArea, provideFluentDesignSystem } from "@fluentui/web-components"
-	import type { SlotType } from "../types/index.js"
 	import { setAutocompleteOnShadowInput, whenShadowRoot } from "../utils/shadow-dom.js"
 
 	provideFluentDesignSystem().register(fluentTextArea())
@@ -40,8 +40,8 @@
 		label?: string
 		ariaLabel?: string
 		fullWidth?: boolean
-		labelTemplate?: SlotType
-		children?: SlotType
+		labelTemplate?: Snippet
+		children?: Snippet
 		oninput?: (value: string) => void
 		onchange?: (value: string) => void
 	}

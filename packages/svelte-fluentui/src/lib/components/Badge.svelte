@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	/**
 	 * Custom Badge Component - FluentUI styled
 	 *
@@ -8,7 +9,6 @@
 	 *
 	 * Built-in colors: brand, danger, important, informative, severe, subtle, success, warning
 	 */
-	import type {SlotType} from "../types/index.js"
 
 	type BadgeColor = "brand" | "danger" | "important" | "informative" | "severe" | "subtle" | "success" | "warning" | (string & {})
 	type BadgeAppearance = "accent" | "lightweight" | "neutral" | "outline" | "tint" | (string & {})
@@ -23,7 +23,7 @@
 		pill?: boolean
 		radius?: string
 		/** Icon slot rendered before the label. */
-		icon?: SlotType
+		icon?: Snippet
 		/**
 		 * Truncate overflowing text with an ellipsis. Requires a width
 		 * constraint (`maxWidth`) to take effect. Pair with `title` so the
@@ -40,7 +40,7 @@
 		maxWidth?: string
 		/** Native tooltip; surface the full text here when truncating. */
 		title?: string
-		children?: SlotType
+		children?: Snippet
 		onclick?: (ev: MouseEvent) => void
 		class?: string
 		style?: string

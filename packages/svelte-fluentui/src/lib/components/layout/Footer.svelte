@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 
 	type Props = {
-		start?: SlotType
-		center?: SlotType
-		end?: SlotType
-		children?: SlotType
+		start?: Snippet
+		center?: Snippet
+		end?: Snippet
+		children?: Snippet
 		/** Stack to a single column below 600px container width. Only applies in 3-part mode. */
 		stack?: boolean
 		class?: string

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import { fluentToolbar, provideFluentDesignSystem } from "@fluentui/web-components";
-	import type { SlotType } from "../types/index.js";
 
 	provideFluentDesignSystem().register(fluentToolbar());
 
@@ -9,7 +9,7 @@
 		class?: string;
 		style?: string;
 		orientation?: "horizontal" | "vertical";
-		children?: SlotType;
+		children?: Snippet;
 	};
 
 	let {

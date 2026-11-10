@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 
 	type Props = {
-		children?: SlotType
+		children?: Snippet
 		orientation?: "vertical" | "horizontal"
 		horizontalAlign?: "start" | "center" | "end" | "stretch" | "space-between" | "space-around"
 		verticalAlign?: "start" | "center" | "end" | "stretch" | "space-between" | "space-around"

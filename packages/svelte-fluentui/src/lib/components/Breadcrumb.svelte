@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../types/index.js"
+	import type {Snippet} from "svelte"
 	import {fluentBreadcrumb, provideFluentDesignSystem} from "@fluentui/web-components"
 
 	provideFluentDesignSystem().register(
@@ -7,7 +7,7 @@
 	)
 	
 	type Props = {
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

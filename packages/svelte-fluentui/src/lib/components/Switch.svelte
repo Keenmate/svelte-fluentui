@@ -1,7 +1,7 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentSwitch, provideFluentDesignSystem} from "@fluentui/web-components"
 	import { untrack } from 'svelte'
-	import type {SlotType} from "../types/index.js"
 
 	provideFluentDesignSystem().register(fluentSwitch())
 
@@ -18,11 +18,11 @@
 		labelPosition?: "top" | "start"
 		checked?: boolean
 		required?: boolean
-		checkedMessage?: string | SlotType
-		uncheckedMessage?: string | SlotType
+		checkedMessage?: string | Snippet
+		uncheckedMessage?: string | Snippet
 		onchange?: (checked: boolean) => void
-		children?: SlotType
-		labelTemplate?: SlotType
+		children?: Snippet
+		labelTemplate?: Snippet
 	}
 
 	let {
@@ -116,7 +116,7 @@
 		{#if checkedMessage}
 			<span slot="checked-message" class="switch-message">
 				{#if isCheckedMessageSnippet}
-					{@render (checkedMessage as SlotType)?.()}
+					{@render (checkedMessage as Snippet)?.()}
 				{:else}
 					{checkedMessage}
 				{/if}
@@ -126,7 +126,7 @@
 		{#if uncheckedMessage}
 			<span slot="unchecked-message" class="switch-message">
 				{#if isUncheckedMessageSnippet}
-					{@render (uncheckedMessage as SlotType)?.()}
+					{@render (uncheckedMessage as Snippet)?.()}
 				{:else}
 					{uncheckedMessage}
 				{/if}

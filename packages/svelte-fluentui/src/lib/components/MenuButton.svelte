@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { SlotType } from "../types/index.js"
+	import type {Snippet} from "svelte"
 
 	export type MenuButtonItem = {
 		/** Stable id used as an each-block key and to remember per-section expand state. Falls back to label when omitted. */
@@ -72,11 +72,11 @@
 		position?: "bottom" | "top"
 		/** Bindable open state. */
 		open?: boolean
-		children?: SlotType
+		children?: Snippet
 		/** Slot rendered inside the button's `start` slot (icon before label). */
-		start?: SlotType
+		start?: Snippet
 		/** Slot rendered inside the button's `end` slot (icon after label). */
-		end?: SlotType
+		end?: Snippet
 		onopen?: () => void
 		onclose?: () => void
 	}

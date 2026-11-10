@@ -19,12 +19,13 @@
 -->
 
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {setContext, untrack, tick} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Chip from "./Chip.svelte"
 	import Option from "./Option.svelte"
 	import OptionGroup from "./OptionGroup.svelte"
-	import type {OptionItem, SelectedValue, SlotType} from "../types/index.js"
+	import type {OptionItem, SelectedValue} from "../types/index.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import type {
 		SelectedOptionSvelteContext,
@@ -37,7 +38,7 @@
 		id: string
 		value?: SelectedValue
 		options?: OptionItem[]
-		children?: SlotType
+		children?: Snippet
 		autocomplete?: "inline" | "list" | "both" | "none"
 		open?: boolean
 		/** Accepted for API compatibility (no-op — value is option-based). */
@@ -55,7 +56,7 @@
 		class?: string
 		style?: string
 		label?: string
-		labelTemplate?: SlotType
+		labelTemplate?: Snippet
 		ariaLabel?: string
 		title?: string
 		width?: string
@@ -84,7 +85,7 @@
 		/** Text shown inside the dropdown when the filter matches no options. */
 		noDataText?: string
 		/** Custom content shown when the filter matches no options; overrides noDataText. */
-		noDataTemplate?: SlotType
+		noDataTemplate?: Snippet
 		/** Debounced notification that the query changed. When provided, the parent
 		 * owns the data: update `options` with the results and the component skips
 		 * its own client-side filtering (the server/parent already filtered). */

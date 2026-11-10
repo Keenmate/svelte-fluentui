@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 	import {getContext, onMount} from "svelte"
 	import {
 		acquireContainer,
@@ -13,7 +13,7 @@
 	type GridItemHidden = "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xs-up" | "sm-up" | "md-up" | "lg-up" | "xl-up" | "xxl-up" | "xs-down" | "sm-down" | "md-down" | "lg-down" | "xl-down" | "xxl-down"
 
 	type Props = {
-		children?: SlotType
+		children?: Snippet
 		xs?: number
 		sm?: number
 		md?: number

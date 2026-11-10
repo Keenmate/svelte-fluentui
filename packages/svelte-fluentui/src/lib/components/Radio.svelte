@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentRadio, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 	import {getContext} from "svelte"
 
 	provideFluentDesignSystem().register(
@@ -10,7 +10,7 @@
 	type Props = {
 		value: string
 		label?: string
-		labelTemplate?: SlotType
+		labelTemplate?: Snippet
 		ariaLabel?: string
 		name?: string
 		readonly?: boolean
@@ -20,7 +20,7 @@
 		autofocus?: boolean
 		class?: string
 		style?: string
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

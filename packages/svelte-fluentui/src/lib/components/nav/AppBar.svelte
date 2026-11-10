@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 	import {AppBarOrientation} from "../../fluent-ui/constants/app-bar.js"
 	import {classList} from "../../helpers/html.js"
 
 	type Props = {
 		orientation?: AppBarOrientation
-		children?: SlotType
+		children?: Snippet
 		class?: string
 	}
 

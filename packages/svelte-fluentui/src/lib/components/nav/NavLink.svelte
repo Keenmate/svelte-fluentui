@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 	import PositioningRegion from "../PositioningRegion.svelte"
 	import ContentRegion from "../ContentRegion.svelte"
 	import NavIcon from "./NavIcon.svelte"
@@ -11,9 +11,9 @@
 		title?: string
 		disabled?: boolean
 		onClick?: (ev: MouseEvent) => void
-		icon?: SlotType
-		afterText?: SlotType
-		children?: SlotType
+		icon?: Snippet
+		afterText?: Snippet
+		children?: Snippet
 		linkAction?: (node: HTMLElement) => void
 		class?: string
 	}

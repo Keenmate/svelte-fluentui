@@ -1,12 +1,12 @@
 <script lang="ts">
 	import {Dialog, Select, Option, Switch, Button, Divider, TextField, Stack} from "svelte-fluentui"
 	import {settings, accentColors, type ThemeMode} from "svelte-fluentui"
-	import type {SlotType} from "svelte-fluentui"
+	import type {Snippet} from "svelte"
 
 	type Props = {
 		open?: boolean
 		onClose?: () => void
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

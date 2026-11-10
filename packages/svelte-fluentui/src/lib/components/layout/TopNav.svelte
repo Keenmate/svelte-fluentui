@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 	import Panel from "./Panel.svelte"
 	import NavMenu from "../nav/NavMenu.svelte"
 	import NavGroup from "../nav/NavGroup.svelte"
@@ -24,17 +24,17 @@
 	type Props = {
 		brand?: string
 		brandHref?: string
-		brandTemplate?: SlotType
+		brandTemplate?: Snippet
 		items?: NavItem[]
-		children?: SlotType
+		children?: Snippet
 		navigationGroups?: NavGroupItem[]
-		drawerContent?: SlotType
+		drawerContent?: Snippet<[close: () => void]>
 		collapse?: CollapseMode
 		drawerPinned?: boolean
 		drawerWidth?: string
 		height?: number
 		menuToggleSize?: number
-		menuToggleTemplate?: SlotType
+		menuToggleTemplate?: Snippet<[{open: boolean; toggle: () => void}]>
 		class?: string
 		style?: string
 	}

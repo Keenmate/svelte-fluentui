@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	/**
 	 * CompositeBadge — a three-section chip: [icon][label][button].
 	 * Use for notification pills, status + count, or interactive/dismissible
@@ -9,7 +10,6 @@
 	 * success chip with a red `danger` dismiss button). Colours resolve from the
 	 * shared semantic palette (`--fluent-color-<name>-*`).
 	 */
-	import type {SlotType} from "../types/index.js"
 
 	type CompositeColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark"
 
@@ -20,11 +20,11 @@
 		/** Override only the button (right) section colour. Defaults to `color`. */
 		buttonColor?: CompositeColor
 		/** Icon slot (left section). Section is omitted when not provided. */
-		icon?: SlotType
+		icon?: Snippet
 		/** Label content (middle section). */
-		label?: SlotType
+		label?: Snippet
 		/** Button content (right section). Defaults to a `×` dismiss glyph. */
-		button?: SlotType
+		button?: Snippet
 		/** Render the button section. */
 		showButton?: boolean
 		/** Accessible title/tooltip for the button. */

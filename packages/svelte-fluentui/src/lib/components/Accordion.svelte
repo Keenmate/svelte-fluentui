@@ -14,8 +14,9 @@
 -->
 
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {setContext} from "svelte"
-	import type {AccordionSvelteContext, SlotType} from "../types/index.js"
+	import type {AccordionSvelteContext} from "../types/index.js"
 
 	type ValueType = string | string[] | null | undefined
 
@@ -32,7 +33,7 @@
 		/** Gap between accordion items (any CSS length, e.g. "0.5rem"). Defaults
 		 * to the FluentUI spacing. */
 		gap?: string
-		children?: SlotType
+		children?: Snippet
 		/** Fires when the set of expanded items changes. */
 		onchange?: (value: ValueType) => void
 	}

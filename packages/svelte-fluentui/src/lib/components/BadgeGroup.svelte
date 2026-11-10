@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	/**
 	 * BadgeGroup — a flex-wrap container that limits how many child badges are
 	 * visible. Ported from pure-admin's `pa-badge-group`, with the visible limit
@@ -14,7 +15,6 @@
 	 * Hidden children stay in the DOM (so filtering/sorting still see them) —
 	 * they're just `display: none`. `showAll` forces everything visible.
 	 */
-	import type {SlotType} from "../types/index.js"
 
 	type Props = {
 		/** Max badges shown before the overflow is hidden. */
@@ -29,7 +29,7 @@
 		lessLabel?: string
 		/** Gap between badges (any CSS length). */
 		gap?: string
-		children?: SlotType
+		children?: Snippet
 		class?: string
 		style?: string
 	}

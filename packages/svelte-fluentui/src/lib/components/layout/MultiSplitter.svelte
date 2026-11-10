@@ -16,6 +16,7 @@
 -->
 
 <script lang="ts" module>
+	import type {Snippet} from "svelte"
 	export type {MultiSplitterContext, PaneHandle, PaneRegistration} from "../../types/multi-splitter.js"
 
 	export type MultiSplitterResizeDetail = {index: number; pane: HTMLElement; size: number}
@@ -24,13 +25,12 @@
 
 <script lang="ts">
 	import {setContext, onMount} from "svelte"
-	import type {SlotType} from "../../types/index.js"
 	import type {MultiSplitterContext, PaneHandle, PaneRegistration} from "../../types/multi-splitter.js"
 
 	type Orientation = "horizontal" | "vertical"
 
 	type Props = {
-		children?: SlotType
+		children?: Snippet
 		orientation?: Orientation
 		/** localStorage persistence key — saves under "fluent-multi-splitter:<id>". */
 		id?: string

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentButton, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 
 	provideFluentDesignSystem().register(fluentButton())
 
@@ -17,8 +17,8 @@
 		onPrevious?: () => void
 		onNext?: () => void
 		onLast?: () => void
-		summaryTemplate?: SlotType
-		paginationTextTemplate?: SlotType
+		summaryTemplate?: Snippet
+		paginationTextTemplate?: Snippet
 	}
 
 	let {

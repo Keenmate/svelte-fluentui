@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../types/index.js"
+	import type {Snippet} from "svelte"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 
 	type Intent = 'info' | 'success' | 'warning' | 'danger'
@@ -11,8 +11,8 @@
 		class?: string
 		style?: string
 		ondismiss?: () => void
-		icon?: SlotType
-		children?: SlotType
+		icon?: Snippet
+		children?: Snippet
 	}
 
 	let {

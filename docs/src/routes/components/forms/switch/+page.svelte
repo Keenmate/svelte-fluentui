@@ -35,8 +35,8 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Additional content"},
-		{name: "labelTemplate", type: "SlotType", default: "undefined", description: "Custom label markup"},
+		{name: "children", type: "Snippet", default: "undefined", description: "Additional content"},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label markup"},
 		{name: "checked-message", type: "string", default: "undefined", description: "Message when on"},
 		{name: "unchecked-message", type: "string", default: "undefined", description: "Message when off"}
 	]

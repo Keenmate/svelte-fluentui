@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentRadioGroup, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 	import {setContext} from "svelte"
 
 	provideFluentDesignSystem().register(
@@ -11,7 +11,7 @@
 		value?: string | null
 		name?: string
 		label?: string
-		labelTemplate?: SlotType
+		labelTemplate?: Snippet
 		ariaLabel?: string
 		orientation?: "horizontal" | "vertical"
 		readonly?: boolean
@@ -21,7 +21,7 @@
 		placeholder?: string
 		class?: string
 		style?: string
-		children?: SlotType
+		children?: Snippet
 		onchange?: (value: string) => void
 	}
 

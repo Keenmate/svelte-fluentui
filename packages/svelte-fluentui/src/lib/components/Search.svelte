@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import { fluentSearch, provideFluentDesignSystem } from "@fluentui/web-components";
-	import type { SlotType } from "../types/index.js";
 	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
 
 	provideFluentDesignSystem().register(fluentSearch());
@@ -26,10 +26,10 @@
 		appearance?: "outline" | "filled";
 		ariaLabel?: string;
 		label?: string;
-		labelTemplate?: SlotType;
-		children?: SlotType;
-		start?: SlotType;
-		end?: SlotType;
+		labelTemplate?: Snippet;
+		children?: Snippet;
+		start?: Snippet;
+		end?: Snippet;
 		// New props from Blazor API
 		immediate?: boolean;
 		immediateDelay?: number;

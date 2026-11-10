@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import { getContext, onDestroy, untrack } from "svelte"
-	import type { SlotType } from "../types/index.js"
 	import { TABS_CONTEXT_KEY, type TabsContext } from "./Tabs.svelte"
 
 	type Props = {
@@ -10,10 +10,10 @@
 		disabled?: boolean
 		ariaLabel?: string
 		label?: string
-		icon?: SlotType
-		header?: SlotType
-		content?: SlotType
-		childContent?: SlotType
+		icon?: Snippet
+		header?: Snippet
+		content?: Snippet
+		childContent?: Snippet
 		labelEditable?: boolean
 		showClose?: boolean
 		visible?: boolean

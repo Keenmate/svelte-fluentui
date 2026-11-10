@@ -31,7 +31,7 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "DataGridRow / DataGridCell structure"}
+		{name: "children", type: "Snippet", default: "undefined", description: "DataGridRow / DataGridCell structure"}
 	]
 
 	const propertyColumns = [

@@ -71,7 +71,7 @@
 	const topNavCallbacks: Property[] = []
 
 	const topNavSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Action area rendered after the items, separated by a divider (e.g. Sign-in button)"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Action area rendered after the items, separated by a divider (e.g. Sign-in button)"}
 	]
 
 	const propertyColumns = [

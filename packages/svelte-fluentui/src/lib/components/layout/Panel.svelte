@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {pushLayer} from "../../helpers/layer-stack.js"
-	import type {SlotType} from "../../types/index.js"
 
 	type Side = "left" | "right" | "start" | "end"
 
@@ -14,7 +14,7 @@
 		closeOnEscape?: boolean
 		pinned?: boolean
 		onclose?: () => void
-		children?: SlotType
+		children?: Snippet
 		class?: string
 		style?: string
 	}

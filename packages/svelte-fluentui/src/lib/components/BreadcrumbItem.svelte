@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../types/index.js"
+	import type {Snippet} from "svelte"
 	import {fluentBreadcrumbItem, provideFluentDesignSystem} from "@fluentui/web-components"
 
 	provideFluentDesignSystem().register(
@@ -8,8 +8,8 @@
 
 	type Props = {
 		href?: string
-		separator?: SlotType
-		children?: SlotType
+		separator?: Snippet
+		children?: Snippet
 	}
 
 	let {

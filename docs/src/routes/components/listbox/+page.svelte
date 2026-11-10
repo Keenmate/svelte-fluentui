@@ -29,7 +29,7 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Option elements"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Option elements"}
 	]
 
 	const propertyColumns = [

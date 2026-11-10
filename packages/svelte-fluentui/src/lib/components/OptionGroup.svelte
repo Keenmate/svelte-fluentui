@@ -18,14 +18,14 @@
 -->
 
 <script lang="ts">
-	import type {SlotType} from "../types/index.js"
+	import type {Snippet} from "svelte"
 
 	type Props = {
 		/** Group heading text. */
 		label?: string
 		class?: string
 		style?: string
-		children: SlotType
+		children: Snippet
 	}
 
 	let {

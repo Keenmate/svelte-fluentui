@@ -7,10 +7,10 @@
 -->
 
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import TextField from "./TextField.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Button from "./Button.svelte"
-	import type {SlotType} from "../types/index.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 
 	type Props = {
@@ -22,7 +22,7 @@
 		required?: boolean
 		autofocus?: boolean
 		label?: string
-		labelTemplate?: SlotType
+		labelTemplate?: Snippet
 		appearance?: string
 		use24Hours?: boolean
 		/** When set, forces AM/PM on (true) or off (false). Overrides `use24Hours`. Null/undefined = use `use24Hours`. */

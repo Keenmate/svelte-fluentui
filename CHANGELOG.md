@@ -71,6 +71,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   `div[dragged-over]` (move cursor, blinking grey). Removed; QuickGrid and InputFile keep the
   bits they relied on in their own styles.
 
+### Internal
+- Snippet props typed as `Snippet` / `Snippet<[...]>` instead of `any` (`SlotType` alias removed).
+
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 
 ### Fixed

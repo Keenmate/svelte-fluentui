@@ -18,9 +18,9 @@
 -->
 
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {getContext} from "svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
-	import type { SlotType } from "../types/index.js"
 
 	type Props = {
 		value: string
@@ -33,8 +33,8 @@
 		/** Arbitrary context data passed to onchange when this option is selected */
 		data?: Record<string, unknown>
 		/** Icon slot rendered before option text */
-		icon?: SlotType
-		children: SlotType
+		icon?: Snippet
+		children: Snippet
 	}
 
 	let {

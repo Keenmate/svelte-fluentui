@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 	import Stack from "../layout/Stack.svelte"
 	import {StackHorizontalAlign, StackOrientation, StackVerticalAlign} from "../../fluent-ui/constants/stack.js"
 
@@ -9,8 +9,8 @@
 		count?: number
 		active?: boolean
 		onClick?: (ev: MouseEvent) => void
-		icon?: SlotType
-		children?: SlotType
+		icon?: Snippet
+		children?: Snippet
 		class?: string
 	}
 

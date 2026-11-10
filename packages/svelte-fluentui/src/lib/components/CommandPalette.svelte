@@ -1,8 +1,8 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {onMount, tick} from "svelte"
 	import Icon from "./Icon.svelte"
 	import {portal} from "../actions/portal.js"
-	import type {SlotType} from "../types/index.js"
 	import type {CommandPaletteItem, CommandPaletteFilter} from "./CommandPalette.types.js"
 
 	type Props = {
@@ -33,11 +33,11 @@
 		onopen?: () => void
 		onclose?: () => void
 		/** Replace a result row's rendering. Receives the item and whether it's the active row. */
-		item?: SlotType
+		item?: Snippet<[item: CommandPaletteItem, selected: boolean]>
 		/** Replace the empty-state body. Receives the current query. */
-		empty?: SlotType
+		empty?: Snippet<[query: string]>
 		/** Replace the footer hints. */
-		footer?: SlotType
+		footer?: Snippet
 	}
 
 	let {

@@ -64,13 +64,13 @@
 	]
 
 	const radioGroupSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Radio button elements inside the group"},
-		{name: "labelTemplate", type: "SlotType", default: "undefined", description: "Custom label content for the group"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Radio button elements inside the group"},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label content for the group"}
 	]
 
 	const radioSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Label content for the radio button"},
-		{name: "labelTemplate", type: "SlotType", default: "undefined", description: "Custom label content rendered above the radio"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Label content for the radio button"},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label content rendered above the radio"}
 	]
 
 	const propertyColumns = [

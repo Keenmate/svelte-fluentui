@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../types/index.js"
+	import type {Snippet} from "svelte"
 	import {onMount, onDestroy, untrack} from "svelte"
 	import {portal} from "../actions/portal.js"
 	import {
@@ -26,7 +26,7 @@
 		delay?: number
 		/** Preferred placement; flips to opposite if no room. */
 		position?: Position
-		children?: SlotType
+		children?: Snippet
 		/** Max width for wrapping long content. */
 		maxWidth?: string
 	}

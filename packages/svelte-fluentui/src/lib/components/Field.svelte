@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type {SlotType} from "../types/index.js"
+	import type {Snippet} from "svelte"
 
 	export type ValidationState = "none" | "warning" | "error" | "success"
 	export type FieldOrientation = "vertical" | "horizontal"
 
 	type Props = {
 		label?: string | null | undefined
-		labelTemplate?: SlotType | null | undefined
+		labelTemplate?: Snippet | null | undefined
 		required?: boolean
 		hint?: string | null | undefined
 		validationState?: ValidationState
@@ -20,7 +20,7 @@
 		id?: string | null | undefined
 		class?: string
 		style?: string
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

@@ -114,9 +114,9 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Label content (alternative to label prop)"},
-		{name: "start", type: "SlotType", default: "undefined", description: "Content/icon before the input"},
-		{name: "end", type: "SlotType", default: "undefined", description: "Content/icon after the input"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Label content (alternative to label prop)"},
+		{name: "start", type: "Snippet", default: "undefined", description: "Content/icon before the input"},
+		{name: "end", type: "Snippet", default: "undefined", description: "Content/icon after the input"}
 	]
 
 	const propertyColumns = [

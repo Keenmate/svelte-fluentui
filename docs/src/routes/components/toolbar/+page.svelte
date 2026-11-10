@@ -21,7 +21,7 @@
 	const callbacks: Property[] = []
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Elements to include in the toolbar (e.g., buttons, icons)"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Elements to include in the toolbar (e.g., buttons, icons)"}
 	]
 
 	const propertyColumns = [

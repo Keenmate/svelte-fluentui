@@ -1,7 +1,6 @@
 <script lang="ts" generics="T">
 	import type {Snippet} from "svelte"
 	import {tick, onMount, onDestroy} from "svelte"
-	import type {SlotType} from "../types/index.js"
 	import GridCellEditor from "./GridCellEditor.svelte"
 	import Icon from "./Icon.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
@@ -275,7 +274,7 @@
 		columnMinWidth?: string
 		class?: string
 		style?: string
-		cellTemplate?: SlotType
+		cellTemplate?: Snippet
 		// Editing props
 		editable?: boolean
 		editTrigger?: EditTrigger

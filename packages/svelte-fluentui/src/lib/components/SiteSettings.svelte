@@ -1,12 +1,12 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {Dialog, Select, Option, Switch, Button, Divider, TextField, Stack} from "../index.js"
 	import {settings, accentColors, type ThemeMode} from "../stores/settings.js"
-	import type {SlotType} from "../types/index.js"
 
 	type Props = {
 		open?: boolean
 		onClose?: () => void
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

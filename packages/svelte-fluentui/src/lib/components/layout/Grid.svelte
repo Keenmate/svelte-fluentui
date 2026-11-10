@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 	import {onMount, onDestroy} from "svelte"
 	import {setContext} from "svelte"
 	import {getEffectiveBreakpoints, type GridBreakpoints} from "./containerQueries.js"
@@ -15,7 +15,7 @@
 	type GridItemSize = "xs" | "sm" | "md" | "lg" | "xl" | "xxl"
 
 	type Props = {
-		children?: SlotType
+		children?: Snippet
 		spacing?: number
 		justify?: JustifyContent
 		adaptiveRendering?: boolean

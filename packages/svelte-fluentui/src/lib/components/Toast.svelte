@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentAnchor, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js";
 	import DismissIcon from "./icons/DismissIcon.svelte"
 
 	provideFluentDesignSystem().register(fluentAnchor())
@@ -17,7 +17,7 @@
 		ontopactionclick?: () => void
 		onprimaryactionclick?: () => void
 		onsecondaryactionclick?: () => void
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

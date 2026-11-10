@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 	import NavItem from "./NavItem.svelte"
 	import NavLink from "./NavLink.svelte"
 
@@ -11,9 +11,9 @@
 		disabled?: boolean
 		group?: boolean
 		onClick?: (ev: MouseEvent) => void
-		icon?: SlotType
-		afterText?: SlotType
-		children?: SlotType
+		icon?: Snippet
+		afterText?: Snippet
+		children?: Snippet
 		linkAction?: (node: HTMLElement) => void
 	}
 

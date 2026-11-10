@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../types/index.js"
+	import type {Snippet} from "svelte"
 	import {portal} from "../actions/portal.js"
 	import {
 		computePosition,
@@ -34,7 +34,7 @@
 		 * on a scroll container inside, so the dropdown stays inside the viewport
 		 * regardless of which side flip() picks. */
 		availableHeight?: boolean
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

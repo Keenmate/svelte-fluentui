@@ -21,7 +21,7 @@
 		{name: "start", type: "Snippet", default: "undefined", description: "Inline-start (left in LTR / right in RTL) section. Providing any of start/center/end switches to a 3-part CSS Grid layout (1fr | auto | 1fr)."},
 		{name: "center", type: "Snippet", default: "undefined", description: "Truly centered section — sits at the footer midpoint regardless of start/end widths."},
 		{name: "end", type: "Snippet", default: "undefined", description: "Inline-end (right in LTR / left in RTL) section."},
-		{name: "children", type: "SlotType", default: "undefined", description: "Default slot — used when none of start/center/end are provided. Backward-compatible fallback for the single-children case."}
+		{name: "children", type: "Snippet", default: "undefined", description: "Default slot — used when none of start/center/end are provided. Backward-compatible fallback for the single-children case."}
 	]
 
 	const propertyColumns = [

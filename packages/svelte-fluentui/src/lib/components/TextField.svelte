@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentTextField, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 	import {setAutocompleteOnShadowInput, setAttributeOnShadowInput} from "../utils/shadow-dom.js"
 
 	provideFluentDesignSystem().register(fluentTextField())
@@ -16,7 +16,7 @@
 		type?: string | null | undefined
 		name?: string | null | undefined
 		label?: string | null | undefined
-		labelTemplate?: SlotType | null | undefined
+		labelTemplate?: Snippet | null | undefined
 		autofocus?: boolean | null | undefined
 		autocomplete?: string | null | undefined
 		/** Max length of the typed value. Forwarded to the shadow-DOM `<input>` since fluent-text-field doesn't expose it. */
@@ -25,11 +25,11 @@
 		minlength?: number | null | undefined
 		/** Regex pattern attribute on the inner `<input>` — participates in native form validity (ValidityState.patternMismatch). */
 		pattern?: string | null | undefined
-		children?: SlotType | null | undefined
+		children?: Snippet | null | undefined
 		/** Leading content (icon, prefix) rendered inside the input via the underlying `<fluent-text-field>`'s `start` slot. */
-		start?: SlotType | null | undefined
+		start?: Snippet | null | undefined
 		/** Trailing content (icon, suffix, action) rendered inside the input via the underlying `<fluent-text-field>`'s `end` slot. */
-		end?: SlotType | null | undefined
+		end?: Snippet | null | undefined
 		style?: string | null | undefined
 		title?: string | null | undefined
 

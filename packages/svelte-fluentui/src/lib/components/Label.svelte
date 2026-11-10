@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	/**
 	 * Label — a lightweight, tag-style indicator: tinted background + coloured
 	 * border in the variant colour, medium weight. Sits alongside Badge for
@@ -7,7 +8,6 @@
 	 * Colours resolve from the shared semantic palette
 	 * (`--fluent-color-<name>-*`, see fluent-blazor-compat.scss).
 	 */
-	import type {SlotType} from "../types/index.js"
 
 	type LabelColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info"
 	type LabelSize = "xs" | "sm" | "medium" | "lg" | "xl"
@@ -18,8 +18,8 @@
 		/** Transparent background; fills with the tint on hover. */
 		outline?: boolean
 		/** Icon slot rendered before the label text. */
-		icon?: SlotType
-		children?: SlotType
+		icon?: Snippet
+		children?: Snippet
 		onclick?: (ev: MouseEvent) => void
 		class?: string
 		style?: string

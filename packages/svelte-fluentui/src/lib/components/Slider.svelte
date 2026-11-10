@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentSlider, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 
 	if (typeof customElements !== "undefined" && !customElements.get("fluent-slider")) {
 		provideFluentDesignSystem().register(fluentSlider())
@@ -18,11 +18,11 @@
 		required?: boolean
 		name?: string
 		label?: string
-		labelTemplate?: SlotType
+		labelTemplate?: Snippet
 		ariaLabel?: string
 		class?: string
 		style?: string
-		children?: SlotType
+		children?: Snippet
 		onchange?: (value: number) => void
 		oninput?: (value: number) => void
 	}

@@ -48,8 +48,8 @@
 	]
 
 	const slots: Property[] = [
-		{name: "summaryTemplate", type: "SlotType", default: "undefined", description: "Custom summary markup"},
-		{name: "paginationTextTemplate", type: "SlotType", default: "undefined", description: "Custom page info markup"}
+		{name: "summaryTemplate", type: "Snippet", default: "undefined", description: "Custom summary markup"},
+		{name: "paginationTextTemplate", type: "Snippet", default: "undefined", description: "Custom page info markup"}
 	]
 
 	const propertyColumns = [

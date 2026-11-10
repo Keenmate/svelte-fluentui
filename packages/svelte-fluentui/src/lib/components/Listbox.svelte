@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentListbox, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 	import {setContext, untrack} from "svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 	import type {SelectedValue} from "../types/index.js"
@@ -23,7 +23,7 @@
 		size?: number
 		class?: string
 		style?: string
-		children?: SlotType
+		children?: Snippet
 		onchange?: (ev: Event) => void
 	}
 

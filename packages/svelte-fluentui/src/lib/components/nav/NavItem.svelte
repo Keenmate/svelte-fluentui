@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 
 	type Props = {
 		disabled?: boolean
 		group?: boolean
 		onClick?: (ev: MouseEvent) => void
-		children?: SlotType
+		children?: Snippet
 		class?: string
 	}
 

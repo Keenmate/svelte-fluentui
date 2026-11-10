@@ -33,7 +33,7 @@
 	]
 
 	const panelSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Panel content — header, body, footer are the consumer's responsibility"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Panel content — header, body, footer are the consumer's responsibility"}
 	]
 
 	const propertyColumns = [

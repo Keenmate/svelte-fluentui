@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 	import NavItem from "./NavItem.svelte"
 	import NavLink from "./NavLink.svelte"
 	import ExpandIcon from "../icons/ExpandIcon.svelte"
@@ -11,9 +11,9 @@
 		title?: string // Unique identifier for persistence
 		expanded?: boolean
 		disabled?: boolean
-		linkIcon?: SlotType
-		linkText?: SlotType
-		children?: SlotType
+		linkIcon?: Snippet
+		linkText?: Snippet
+		children?: Snippet
 		class?: string
 	}
 

@@ -21,6 +21,21 @@ Verification notes: Textarea bind bug, Listbox `selected-options`, Progress tag 
 
 ## Phase 1 — Bugs (no API decisions needed)
 
+**Status 2026-11-11: done** (commits 1697ddf … 0910c9a, each with e2e coverage where testable; the suite
+is at `e2e/`, fixtures at `docs/src/routes/test/*`). Outcomes that differ from the list below:
+- Progress: removed (decision #1) instead of fixed. Stubs removed in 6752817.
+- Dialog `trapFocus={false}`: **not a bug** (works via `setFocusTrap`; e2e proves it).
+- Escape layering: fixed with the Phase 2 helper `helpers/layer-stack.ts`, already used by Dialog, Panel,
+  Combobox, Select, Autocomplete, DatePicker, TimePicker, MenuButton, ContextMenu. Still on their own
+  listeners (Phase 3): QuickGrid context menu, InputFile, Tabs overflow, CommandPalette, GridCellEditor.
+- `--error-*` tokens: **deferred to Phase 5** — defining them globally would override the dark-mode
+  fallbacks that are hard-coded per component.
+- GridCellEditor scroll never worked at all (portalled dropdown looked up inside the editor).
+- MultiSplitter: removing the Blazor CSS made the default content-height (documented intent) — logged
+  under Behaviour changes.
+- Autocomplete e2e had 9 stale failures (selectors from before the shared Chip) — fixed.
+- Also added: `helpers/locale.ts`, `helpers/date.ts`, `utils/shadow-dom.ts#whenShadowRoot`.
+
 - Textarea `bind:value` one-way (Textarea:85-88).
 - Listbox: uncalled `$derived` fn on non-existent `selected-options` attr; `multiple={multi}` undefined.
 - Progress renders `<fluent-progress-bar>` but registers `fluent-progress`.

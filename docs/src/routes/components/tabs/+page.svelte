@@ -30,7 +30,7 @@
 	]
 
 	const tabsSlots: Property[] = [
-		{name: "childContent", type: "SlotType", default: "undefined", description: "Slot containing the child <Tab> elements"}
+		{name: "childContent", type: "Snippet", default: "undefined", description: "Slot containing the child <Tab> elements"}
 	]
 
 	const tabProperties: Property[] = [
@@ -53,10 +53,10 @@
 	]
 
 	const tabSlots: Property[] = [
-		{name: "icon", type: "SlotType", default: "undefined", description: "Optional icon slot rendered before the label"},
-		{name: "header", type: "SlotType", default: "undefined", description: "Fully custom header content (replaces the icon + label default)"},
-		{name: "content", type: "SlotType", default: "undefined", description: "Tab panel content"},
-		{name: "childContent", type: "SlotType", default: "undefined", description: "Alternative content slot, rendered after `content`"}
+		{name: "icon", type: "Snippet", default: "undefined", description: "Optional icon slot rendered before the label"},
+		{name: "header", type: "Snippet", default: "undefined", description: "Fully custom header content (replaces the icon + label default)"},
+		{name: "content", type: "Snippet", default: "undefined", description: "Tab panel content"},
+		{name: "childContent", type: "Snippet", default: "undefined", description: "Alternative content slot, rendered after `content`"}
 	]
 
 	const propertyColumns = [

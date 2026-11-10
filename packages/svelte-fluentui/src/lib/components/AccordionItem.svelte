@@ -13,8 +13,9 @@
 -->
 
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {getContext} from "svelte"
-	import type {AccordionSvelteContext, SlotType} from "../types/index.js"
+	import type {AccordionSvelteContext} from "../types/index.js"
 
 	type Props = {
 		/** Unique item identifier. Required. */
@@ -27,12 +28,12 @@
 		expanded?: boolean
 		/** Disable the item: not togglable and skipped in keyboard navigation. */
 		disabled?: boolean
-		heading?: SlotType
-		start?: SlotType
-		end?: SlotType
+		heading?: Snippet
+		start?: Snippet
+		end?: Snippet
 		/** Custom expand/collapse icon. Receives the current isExpanded boolean. */
-		icon?: SlotType
-		children?: SlotType
+		icon?: Snippet<[isExpanded: boolean]>
+		children?: Snippet
 		/** Fires when this item expands or collapses. */
 		onchange?: (ev: Event, isExpanded: boolean) => void
 	}

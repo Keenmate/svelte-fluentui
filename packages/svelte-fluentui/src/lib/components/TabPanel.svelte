@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentTabPanel, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 
 	provideFluentDesignSystem().register(fluentTabPanel())
 
@@ -10,7 +10,7 @@
 		id?: string
 		active?: boolean
 		defer?: boolean
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

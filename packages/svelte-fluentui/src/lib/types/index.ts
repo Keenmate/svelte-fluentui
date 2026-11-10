@@ -1,5 +1,3 @@
-export type SlotType = any
-
 export type OptionItem = {
 	value: string
 	label: string

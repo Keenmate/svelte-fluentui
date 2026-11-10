@@ -1,9 +1,9 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 
-	import type {SlotType} from "../types/index.js"
 
 	type Props = {
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

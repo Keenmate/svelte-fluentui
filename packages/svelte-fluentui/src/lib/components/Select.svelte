@@ -17,9 +17,9 @@
 -->
 
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {setContext, untrack, tick} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
-	import type {SlotType} from "../types/index.js"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 
@@ -63,9 +63,9 @@
 		dropdownWidth?: string
 		/** Multi mode: cap visible option rows, enables internal scroll. */
 		maxVisibleOptions?: number
-		labelTemplate?: SlotType
-		indicatorTemplate?: SlotType
-		children?: SlotType
+		labelTemplate?: Snippet
+		indicatorTemplate?: Snippet
+		children?: Snippet
 		onchange?: (detail: SelectChangeDetail) => void
 	}
 

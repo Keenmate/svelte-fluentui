@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 
 	type Orientation = "horizontal" | "vertical"
 
 	type Props = {
-		children?: SlotType
+		children?: Snippet
 		orientation?: Orientation
 		class?: string
 		style?: string

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentButton, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 
 	provideFluentDesignSystem().register(fluentButton())
 
@@ -17,9 +17,9 @@
 		name?: string
 		type?: string
 		value?: string
-		start?: SlotType
-		end?: SlotType
-		children?: SlotType
+		start?: Snippet
+		end?: Snippet
+		children?: Snippet
 		style?: string
 		class?: string
 		"aria-label"?: string

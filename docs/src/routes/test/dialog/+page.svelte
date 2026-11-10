@@ -3,8 +3,8 @@
 
 	let noTrapOpen = $state(false)
 	let comboOpen = $state(false)
-	let combo = $state<string | string[] | null | undefined>(null)
-	let selectValue = $state<string | string[] | null | undefined>(null)
+	let combo = $state<string[] | null | undefined>(null)
+	let selectValue = $state<string | string[] | undefined>(undefined)
 	let date = $state<Date | null>(null)
 </script>
 

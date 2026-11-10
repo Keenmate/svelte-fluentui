@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {fluentCheckbox, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 
 	if (typeof customElements !== "undefined" && !customElements.get("fluent-checkbox")) {
 		provideFluentDesignSystem().register(fluentCheckbox())
@@ -11,14 +11,14 @@
 		withIntermediate?: boolean;
 		threeStateOrderUncheckToIntermediate?: boolean;
 		autofocus?: boolean;
-		children?: SlotType;
+		children?: Snippet;
 		disabled?: boolean;
 		readonly?: boolean;
 		required?: boolean;
 		id?: string;
 		name?: string;
 		label?: string;
-		labelTemplate?: SlotType;
+		labelTemplate?: Snippet;
 		labelPosition?: "top" | "start" | "end";
 		ariaLabel?: string;
 		class?: string;
@@ -27,9 +27,9 @@
 		// uncheckedMessage. The intermediateMessage shows when checked is null
 		// (only reachable when withIntermediate is true). Each accepts either a
 		// plain string or a Snippet for richer content.
-		checkedMessage?: string | SlotType;
-		uncheckedMessage?: string | SlotType;
-		intermediateMessage?: string | SlotType;
+		checkedMessage?: string | Snippet;
+		uncheckedMessage?: string | Snippet;
+		intermediateMessage?: string | Snippet;
 		onclick?: (ev: PointerEvent, previousValue: boolean | null) => void
 	}
 
@@ -173,7 +173,7 @@
 	{#if currentMessage}
 		<span class="checkbox-message">
 			{#if isCurrentMessageSnippet}
-				{@render (currentMessage as SlotType)?.()}
+				{@render (currentMessage as Snippet)?.()}
 			{:else}
 				{currentMessage}
 			{/if}

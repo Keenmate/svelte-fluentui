@@ -46,7 +46,7 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Additional content"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Additional content"}
 	]
 
 	const actions: Property[] = [

@@ -16,7 +16,7 @@
 	const callbacks: Property[] = []
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Body content"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Body content"}
 	]
 
 	const propertyColumns = [

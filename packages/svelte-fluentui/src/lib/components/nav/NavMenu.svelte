@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../../types/index.js"
+	import type {Snippet} from "svelte"
 	import NavExpander from "./NavExpander.svelte"
 	import {styleList} from "../../helpers/html.js"
 
@@ -7,7 +7,7 @@
 		width?: string
 		collapsed?: boolean
 		collapsible?: boolean
-		children?: SlotType
+		children?: Snippet
 		class?: string
 	}
 

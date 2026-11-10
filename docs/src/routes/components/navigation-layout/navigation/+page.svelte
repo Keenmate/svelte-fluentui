@@ -23,7 +23,7 @@
 	const navMenuCallbacks: Property[] = []
 
 	const navMenuSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "NavLinkItem, NavGroup and nested NavMenu components"}
+		{name: "children", type: "Snippet", default: "undefined", description: "NavLinkItem, NavGroup and nested NavMenu components"}
 	]
 
 	const navGroupProperties: Property[] = [
@@ -36,9 +36,9 @@
 	const navGroupCallbacks: Property[] = []
 
 	const navGroupSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "NavLinkItem or nested NavGroup components"},
-		{name: "linkIcon", type: "SlotType", default: "undefined", description: "Icon rendered at the start of the group header"},
-		{name: "linkText", type: "SlotType", default: "undefined", description: "Custom header text content"}
+		{name: "children", type: "Snippet", default: "undefined", description: "NavLinkItem or nested NavGroup components"},
+		{name: "linkIcon", type: "Snippet", default: "undefined", description: "Icon rendered at the start of the group header"},
+		{name: "linkText", type: "Snippet", default: "undefined", description: "Custom header text content"}
 	]
 
 	const navLinkItemProperties: Property[] = [
@@ -56,9 +56,9 @@
 	]
 
 	const navLinkItemSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Link label content"},
-		{name: "icon", type: "SlotType", default: "undefined", description: "Icon rendered before the label"},
-		{name: "afterText", type: "SlotType", default: "undefined", description: "Content rendered after the label (e.g. badges)"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Link label content"},
+		{name: "icon", type: "Snippet", default: "undefined", description: "Icon rendered before the label"},
+		{name: "afterText", type: "Snippet", default: "undefined", description: "Content rendered after the label (e.g. badges)"}
 	]
 
 	const navItemProperties: Property[] = [
@@ -72,7 +72,7 @@
 	]
 
 	const navItemSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Generic item content"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Generic item content"}
 	]
 
 	const propertyColumns = [

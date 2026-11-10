@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {SlotType} from "../types/index.js"
+	import type {Snippet} from "svelte"
 
 	type Props = {
 		width?: string | number
@@ -8,7 +8,7 @@
 		class?: string
 		style?: string
 		minimalStyle?: boolean
-		children?: SlotType
+		children?: Snippet
 	}
 
 	let {

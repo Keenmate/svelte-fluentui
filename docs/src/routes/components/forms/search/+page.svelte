@@ -97,10 +97,10 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Default slot content"},
-		{name: "start", type: "SlotType", default: "undefined", description: "Content/icon placed before the search input"},
-		{name: "end", type: "SlotType", default: "undefined", description: "Content/icon placed after the search input"},
-		{name: "labelTemplate", type: "SlotType", default: "undefined", description: "Custom label content rendered above the input"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Default slot content"},
+		{name: "start", type: "Snippet", default: "undefined", description: "Content/icon placed before the search input"},
+		{name: "end", type: "Snippet", default: "undefined", description: "Content/icon placed after the search input"},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label content rendered above the input"}
 	]
 
 	const propertyColumns = [

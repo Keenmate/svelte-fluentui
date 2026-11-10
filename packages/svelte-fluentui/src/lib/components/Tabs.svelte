@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { SlotType } from "../types/index.js"
+	import type {Snippet} from "svelte"
 
 	/**
 	 * Shape of a registered tab entry inside the Tabs context. Tab.svelte
@@ -9,10 +9,10 @@
 	export type TabEntry = {
 		id: string
 		label?: string
-		icon?: SlotType
-		header?: SlotType
-		content?: SlotType
-		childContent?: SlotType
+		icon?: Snippet
+		header?: Snippet
+		content?: Snippet
+		childContent?: Snippet
 		disabled?: boolean
 		ariaLabel?: string
 		labelEditable?: boolean
@@ -66,7 +66,7 @@
 		orientation?: "horizontal" | "vertical"
 		activeId?: string
 		showActiveIndicator?: boolean
-		childContent?: SlotType
+		childContent?: Snippet
 		/** Legacy prop kept for API compat — the overflow dropdown was rarely used and is not re-implemented in the Svelte rewrite. Consumers who need an overflow menu should render their own dropdown next to `<Tabs>` or use `responsive="menu"`. */
 		overflow?: { label: string; onclick?: () => void }[]
 		moreButtonId?: string

@@ -1,10 +1,10 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
 	import { SvelteMap } from "svelte/reactivity"
 	import Icon from "./Icon.svelte"
 	import { portal } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
-	import type { SlotType } from "../types/index.js"
 	import type { MenuButtonItem } from "./MenuButton.svelte"
 
 	type Props = {
@@ -25,7 +25,7 @@
 		 */
 		offsetMenuY?: number
 		/** Children rendered inside the context-menu trigger zone. */
-		children?: SlotType
+		children?: Snippet
 		onopen?: (detail: { x: number; y: number }) => void
 		onclose?: () => void
 	}

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import { fluentNumberField, provideFluentDesignSystem } from "@fluentui/web-components";
-	import type { SlotType } from "../types/index.js";
 	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
 
 	provideFluentDesignSystem().register(fluentNumberField());
@@ -15,7 +15,7 @@
 		required?: boolean;
 		name?: string;
 		label?: string;
-		labelTemplate?: SlotType | null | undefined;
+		labelTemplate?: Snippet | null | undefined;
 		autofocus?: boolean;
 		autocomplete?: string;
 		step?: number;
@@ -32,9 +32,9 @@
 		height?: string;
 		class?: string;
 		style?: string;
-		children?: SlotType;
-		start?: SlotType;
-		end?: SlotType;
+		children?: Snippet;
+		start?: Snippet;
+		end?: Snippet;
 
 		oninput?: (ev: InputEvent) => void;
 		onchange?: (ev: Event) => void;

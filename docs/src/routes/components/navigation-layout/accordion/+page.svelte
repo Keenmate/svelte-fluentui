@@ -43,7 +43,7 @@
 	]
 
 	const accordionSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "AccordionItem components"}
+		{name: "children", type: "Snippet", default: "undefined", description: "AccordionItem components"}
 	]
 
 	const accordionItemProperties: Property[] = [
@@ -59,11 +59,11 @@
 	]
 
 	const accordionItemSlots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Body content rendered when the item is expanded"},
-		{name: "heading", type: "SlotType", default: "undefined", description: "Custom heading content (overrides the `header` string prop)"},
-		{name: "start", type: "SlotType", default: "undefined", description: "Content rendered at the start of the header"},
-		{name: "end", type: "SlotType", default: "undefined", description: "Content rendered at the end of the header"},
-		{name: "icon", type: "SlotType", default: "undefined", description: "Custom expand/collapse icon. Receives isExpanded boolean"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Body content rendered when the item is expanded"},
+		{name: "heading", type: "Snippet", default: "undefined", description: "Custom heading content (overrides the `header` string prop)"},
+		{name: "start", type: "Snippet", default: "undefined", description: "Content rendered at the start of the header"},
+		{name: "end", type: "Snippet", default: "undefined", description: "Content rendered at the end of the header"},
+		{name: "icon", type: "Snippet", default: "undefined", description: "Custom expand/collapse icon. Receives isExpanded boolean"}
 	]
 
 	const propertyColumns = [

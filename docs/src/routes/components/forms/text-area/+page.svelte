@@ -47,8 +47,8 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "SlotType", default: "undefined", description: "Additional content rendered inside <fluent-text-area>"},
-		{name: "labelTemplate", type: "SlotType", default: "undefined", description: "Custom label markup"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Additional content rendered inside <fluent-text-area>"},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label markup"}
 	]
 
 	const actions: Property[] = [

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import { provideFluentDesignSystem, fluentDataGridRow } from "@fluentui/web-components";
-	import type { SlotType } from "../types/index.js";
 
 	provideFluentDesignSystem().register(fluentDataGridRow());
 
@@ -13,7 +13,7 @@
 		onclick?: (e: MouseEvent) => void;
 		ondblclick?: (e: MouseEvent) => void;
 		onfocus?: (e: FocusEvent) => void;
-		children?: SlotType;
+		children?: Snippet;
 	};
 
 	let {

@@ -116,7 +116,7 @@
 	]
 
 	const slots: Property[] = [
-		{name: "day", type: "SlotType", default: "undefined", description: ""}
+		{name: "day", type: "Snippet", default: "undefined", description: ""}
 	]
 
 	const propertyColumns = [

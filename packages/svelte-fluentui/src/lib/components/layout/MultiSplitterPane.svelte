@@ -15,12 +15,12 @@
 -->
 
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import {getContext, onMount, onDestroy} from "svelte"
-	import type {SlotType} from "../../types/index.js"
 	import type {MultiSplitterContext, PaneHandle} from "../../types/multi-splitter.js"
 
 	type Props = {
-		children?: SlotType
+		children?: Snippet
 		/** Initial size: "200px" or "30%". If omitted, shares leftover with other unsized panes. */
 		size?: string
 		/** Min size: "150px" or "10%". Default 0. */

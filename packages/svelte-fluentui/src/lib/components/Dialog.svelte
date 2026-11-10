@@ -1,4 +1,5 @@
 <script lang="ts" module>
+	import type {Snippet} from "svelte"
 	export type HTMLDialogElement = HTMLElement & {
 		show: VoidFunction
 		hide: VoidFunction
@@ -100,7 +101,6 @@
 <script lang="ts">
 	import {onDestroy} from "svelte"
 	import {fluentDialog, provideFluentDesignSystem} from "@fluentui/web-components"
-	import type {SlotType} from "../types/index.js"
 	import Button from "./Button.svelte"
 	import {portal} from "../actions/portal.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
@@ -129,17 +129,17 @@
 		/** Title text shown in the header row (left side). Ignored when `header` snippet is provided. */
 		title?: string
 		/** Fully custom header content (replaces the default title + close button row). */
-		header?: SlotType
+		header?: Snippet
 		/** Default slot — body content. */
-		children?: SlotType
+		children?: Snippet
 		/** Fully custom footer content (replaces primary/secondary action buttons and the legacy `actions` slot). */
-		footer?: SlotType
+		footer?: Snippet
 		/** Convenience action — renders as a styled button (default `appearance="accent"`) on the right side of the footer. */
 		primaryAction?: DialogAction
 		/** Convenience action — renders as a styled button (default `appearance="neutral"`) next to the primary action. */
 		secondaryAction?: DialogAction
-		actions?: SlotType
-		dismissButtonText?: SlotType
+		actions?: Snippet
+		dismissButtonText?: Snippet
 		onClose?: () => void
 		onbeforeclose?: () => boolean | void
 		closeOnEscape?: boolean

@@ -7,10 +7,10 @@
 -->
 
 <script lang="ts">
+	import type {Snippet} from "svelte"
 	import TextField from "./TextField.svelte"
 	import Calendar from "./Calendar.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
-	import type {SlotType} from "../types/index.js"
 	import type DayFormat from "../fluent-ui/calendar/day-format.js"
 	import {defaultLocale} from "../helpers/locale.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
@@ -25,7 +25,7 @@
 		required?: boolean
 		autofocus?: boolean
 		label?: string
-		labelTemplate?: SlotType
+		labelTemplate?: Snippet
 		appearance?: string
 		culture?: Intl.Locale
 		dateFormat?: Intl.DateTimeFormatOptions
@@ -60,7 +60,7 @@
 		class?: string
 		style?: string
 		/** Custom render for each day cell in the calendar popup. Receives CalendarDay properties. */
-		day?: SlotType
+		day?: Snippet
 		onValueChange?: (value: Date | null) => void
 		onOpenChange?: (open: boolean) => void
 		/** Fires when the user navigates months/years inside the calendar popup. */
