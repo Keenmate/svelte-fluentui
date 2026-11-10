@@ -25,7 +25,8 @@
 		class?: string
 		style?: string
 		children?: Snippet
-		onchange?: (value: string) => void
+		/** Fires when the user selects a different radio. */
+		onChange?: (ctx: {value: string}) => void
 	}
 
 	let {
@@ -43,7 +44,7 @@
 		class: className = undefined,
 		style = undefined,
 		children = undefined,
-		onchange = undefined
+		onChange = undefined
 	}: Props = $props()
 
 	const ctx = $state({
@@ -59,7 +60,7 @@
 		}
 
 		value = newValue
-		onchange?.(newValue)
+		onChange?.({value: newValue})
 	}
 
 	// Arrow keys move the checked radio inside FAST's group without a click;

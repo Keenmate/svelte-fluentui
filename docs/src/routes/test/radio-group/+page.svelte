@@ -6,7 +6,7 @@
 </script>
 
 <section id="group-wrap">
-	<RadioGroup bind:value name="letters" onchange={(v) => changes.push(v)}>
+	<RadioGroup bind:value name="letters" onChange={({value}) => changes.push(value)}>
 		<Radio value="a">Alpha</Radio>
 		<Radio value="b">Bravo</Radio>
 		<Radio value="c">Charlie</Radio>

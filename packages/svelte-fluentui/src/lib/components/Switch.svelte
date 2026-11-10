@@ -25,7 +25,8 @@
 		required?: boolean
 		checkedMessage?: string | Snippet
 		uncheckedMessage?: string | Snippet
-		onchange?: (checked: boolean) => void
+		/** Fires when the switch is toggled. */
+		onChange?: (ctx: {checked: boolean}) => void
 		children?: Snippet
 		labelTemplate?: Snippet
 	}
@@ -45,7 +46,7 @@
 		required = undefined,
 		checkedMessage = undefined,
 		uncheckedMessage = undefined,
-		onchange = undefined,
+		onChange = undefined,
 		children = undefined,
 		labelTemplate = undefined
 	}: Props = $props()
@@ -73,10 +74,7 @@
 			checked = newChecked
 		})
 
-		// Call onchange callback if provided
-		if (onchange) {
-			onchange(newChecked)
-		}
+		onChange?.({checked: newChecked})
 	}
 </script>
 

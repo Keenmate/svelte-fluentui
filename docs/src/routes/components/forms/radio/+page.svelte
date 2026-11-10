@@ -16,7 +16,7 @@
 	let callbackMessage = $state<string>("")
 
 	// Callback handler
-	function handleChange(value: string) {
+	function handleChange({value}: {value: string}) {
 		callbackMessage = `Selected: ${value}`
 	}
 
@@ -41,7 +41,7 @@
 		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder hint text"},
 		{name: "class", type: "string", default: "undefined", description: "CSS class name"},
 		{name: "style", type: "string", default: "undefined", description: "Inline CSS styles"},
-		{name: "onchange", type: "(value: string) => void", default: "undefined", description: "Callback when selection changes"}
+		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user selects a different radio"}
 	]
 
 	const radioProperties: Property[] = [
@@ -60,7 +60,7 @@
 	]
 
 	const radioCallbacks: Property[] = [
-		{name: "onchange", type: "(value: string) => void", default: "undefined", description: "Fires when the selected radio value changes (RadioGroup only)"}
+		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user selects a different radio (RadioGroup only)"}
 	]
 
 	const radioGroupSlots: Property[] = [
@@ -174,7 +174,7 @@
 
 			<GridItem>
 				<h3>onChange Callback</h3>
-				<RadioGroup bind:value={callbackValue} name="callback-radio" orientation="vertical" onchange={handleChange}>
+				<RadioGroup bind:value={callbackValue} name="callback-radio" orientation="vertical" onChange={handleChange}>
 					<Radio value="apple">Apple</Radio>
 					<Radio value="banana">Banana</Radio>
 					<Radio value="cherry">Cherry</Radio>

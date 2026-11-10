@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Switch:** `onchange(checked)` → `onChange({checked})`
+- **Slider:** `onchange(value)`, `oninput(value)` → `onChange({value})`; live value via `bind:value`
+- **RadioGroup:** `onchange(value)` → `onChange({value})`
+- **Textarea:** `oninput(value)`, `onchange(value)` → `onChange({value})` on commit; `oninput` / `onchange` are now the native events
 - **Removed placeholder components `Menu`, `MenuItem`, `Tree`, `TreeItem`, `ProgressBar`.** They
   rendered an empty FluentUI element and accepted no props.
 - **MultiSplitter is content-height by default.** Leftover Blazor splitter CSS forced `height: 100%`
@@ -72,6 +76,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   bits they relied on in their own styles.
 
 ### Internal
+- Docs app type-checks against the library source (`kit.alias`), not the stale `dist/` typings.
+- `CalendarDay` is exported as a type (it is the argument of the Calendar / DatePicker `day` snippet).
 - `lib/contexts.ts`: every parent→child context (Accordion, Select/Combobox/Listbox→Option, Grid,
   MultiSplitter, RadioGroup, Tabs) uses a Symbol key and a typed `get`/`set` pair instead of string
   keys (`"grid"`, `"radio-group"`, …) that could collide with an app's own contexts.

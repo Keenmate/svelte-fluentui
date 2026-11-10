@@ -52,6 +52,7 @@ export type {
 	CalendarSelectionError,
 	CalendarSelectionErrorCode
 } from "./fluent-ui/calendar/fluent-calendar.js"
+export type {CalendarDay} from "./fluent-ui/calendar/calendar-day.js"
 export {default as Card} from "./components/Card.svelte"
 export {default as ContentRegion} from "./components/ContentRegion.svelte"
 export {default as DatePicker} from "./components/DatePicker.svelte"

@@ -26,8 +26,8 @@
 		class?: string
 		style?: string
 		children?: Snippet
-		onchange?: (value: number) => void
-		oninput?: (value: number) => void
+		/** Fires when the user commits a new value; the live value while dragging is `bind:value`. */
+		onChange?: (ctx: {value: number}) => void
 	}
 
 	let {
@@ -47,8 +47,7 @@
 		class: className = "",
 		style = "",
 		children = undefined,
-		onchange = undefined,
-		oninput = undefined
+		onChange = undefined
 	}: Props = $props()
 
 	let element: (HTMLElement & {value: string; valueAsNumber: number}) | undefined = $state()
@@ -70,7 +69,7 @@
 		const numeric = Number(target.valueAsNumber)
 		if (!Number.isNaN(numeric)) {
 			value = numeric
-			onchange?.(numeric)
+			onChange?.({value: numeric})
 		}
 	}
 
@@ -79,7 +78,6 @@
 		const numeric = Number(target.valueAsNumber)
 		if (!Number.isNaN(numeric)) {
 			value = numeric
-			oninput?.(numeric)
 		}
 	}
 </script>

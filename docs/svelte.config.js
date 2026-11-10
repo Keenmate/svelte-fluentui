@@ -8,6 +8,11 @@ const config = {
 	preprocess: vitePreprocess({ script: true }),
 
 	kit: {
+		// Resolve the library from source for type-checking too (vite.config.ts already does
+		// it for the dev server); otherwise svelte-check reads the stale dist/ typings.
+		alias: {
+			'svelte-fluentui': '../packages/svelte-fluentui/src/lib'
+		},
 		// Using adapter-static for static site generation
 		adapter: adapter({
 			pages: 'build',

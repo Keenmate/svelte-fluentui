@@ -15,6 +15,7 @@
 	import {defaultLocale} from "../helpers/locale.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {isAfterDay, isBeforeDay} from "../helpers/date.js"
+	import type {CalendarDay} from "../fluent-ui/calendar/calendar-day.js"
 
 	type Props = {
 		id?: string
@@ -60,7 +61,7 @@
 		class?: string
 		style?: string
 		/** Custom render for each day cell in the calendar popup. Receives CalendarDay properties. */
-		day?: Snippet
+		day?: Snippet<[day: CalendarDay]>
 		onValueChange?: (value: Date | null) => void
 		onOpenChange?: (open: boolean) => void
 		/** Fires when the user navigates months/years inside the calendar popup. */

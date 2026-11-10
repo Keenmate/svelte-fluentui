@@ -47,8 +47,12 @@
 		fullWidth?: boolean
 		labelTemplate?: Snippet
 		children?: Snippet
-		oninput?: (value: string) => void
-		onchange?: (value: string) => void
+		/** Fires when the user commits an edit (blur / change). The live value is `bind:value`. */
+		onChange?: (ctx: {value: string}) => void
+		/** Native `input` event, forwarded untouched. */
+		oninput?: (event: Event) => void
+		/** Native `change` event, forwarded untouched. */
+		onchange?: (event: Event) => void
 	}
 
 	let {
@@ -77,6 +81,7 @@
 		fullWidth = false,
 		labelTemplate = undefined,
 		children = undefined,
+		onChange = undefined,
 		oninput = undefined,
 		onchange = undefined
 	}: Props = $props()
@@ -90,13 +95,14 @@
 	function handleInput(e: Event) {
 		const target = e.target as HTMLTextAreaElement
 		value = target.value
-		if (oninput) oninput(target.value)
+		oninput?.(e)
 	}
 
 	function handleChange(e: Event) {
 		const target = e.target as HTMLTextAreaElement
 		value = target.value
-		if (onchange) onchange(target.value)
+		onchange?.(e)
+		onChange?.({value: target.value})
 	}
 
 	// Apply autocomplete attribute via shadow DOM (use 'textarea' selector)

@@ -31,11 +31,11 @@
 		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder hint text"},
 		{name: "class", type: "string", default: "undefined", description: "CSS class name"},
 		{name: "style", type: "string", default: "undefined", description: "Inline CSS styles"},
-		{name: "onchange", type: "(value: string) => void", default: "undefined", description: "Callback when selection changes"}
+		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user selects a different radio"}
 	]
 
 	const radioGroupCallbacks: Property[] = [
-		{name: "onchange", type: "(value: string) => void", default: "undefined", description: "Fires when the selected radio value changes"}
+		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user selects a different radio"}
 	]
 
 	const radioGroupSlots: Property[] = [

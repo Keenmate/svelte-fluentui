@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {DatePicker, Card, Stack, Button, Grid, GridItem, QuickGrid} from "svelte-fluentui"
+	import type {CalendarDay} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
 	let basicDate = $state<Date | null>(new Date())
@@ -166,7 +167,7 @@
 				label="Paydays highlighted"
 				placeholder="Choose a date"
 			>
-				{#snippet day(d: any)}
+				{#snippet day(d: CalendarDay)}
 					<div style="display: flex; flex-direction: column; align-items: center; line-height: 1;">
 						<span>{d.dayNumber}</span>
 						{#if isPayday(d.date)}

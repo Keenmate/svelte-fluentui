@@ -31,7 +31,7 @@
 	const actions: Property[] = []
 
 	const callbacks: Property[] = [
-		{name: "onChange", type: "(checked: boolean) => void", default: "undefined", description: "Fires when the checked state changes"}
+		{name: "onChange", type: "(ctx: {checked: boolean}) => void", default: "undefined", description: "Fires when the switch is toggled"}
 	]
 
 	const slots: Property[] = [
@@ -139,7 +139,7 @@
 
 		<h3>Controlled switch</h3>
 		<p>
-			<Switch label="Custom toggle" bind:checked={switchState} onchange={(val) => switchState = val} />
+			<Switch label="Custom toggle" bind:checked={switchState} onChange={({checked}) => switchState = checked} />
 			<br />
 			State: {switchState ? "ON" : "OFF"}
 		</p>

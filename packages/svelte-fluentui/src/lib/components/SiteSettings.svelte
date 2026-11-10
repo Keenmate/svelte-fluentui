@@ -30,7 +30,7 @@
 		settings.setNeutralColor(target.value)
 	}
 
-	function handleDirectionChange(checked: boolean) {
+	function handleDirectionChange({checked}: {checked: boolean}) {
 		settings.setDirection(checked ? 'ltr' : 'rtl')
 	}
 
@@ -109,7 +109,7 @@
 		<div style="margin-bottom: 1.5rem;">
 			<Switch
 				checked={localSettings.direction === 'ltr'}
-				onchange={handleDirectionChange}
+				onChange={handleDirectionChange}
 			>
 				Direction
 				{#snippet checkedMessage()}

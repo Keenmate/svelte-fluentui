@@ -42,8 +42,8 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "oninput", type: "(value: string) => void", default: "undefined", description: "Fires as value is typed"},
-		{name: "onchange", type: "(value: string) => void", default: "undefined", description: "Fires when value changes on blur"}
+		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user commits an edit (blur); the live value is bind:value"},
+		{name: "oninput / onchange", type: "(event: Event) => void", default: "undefined", description: "Native events, forwarded untouched"}
 	]
 
 	const slots: Property[] = [
