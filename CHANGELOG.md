@@ -47,6 +47,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   ones dropped), errors are logged and shown as no results, and timers are cleared on destroy.
 - **Autocomplete — outside-click only ignores its own dropdown.** Clicks inside *any* component's
   popup (`.positioning-region`) were treated as inside, so an open Autocomplete stayed open.
+- **QuickGrid select/combobox editor — keyboard highlight scrolls into view.** Arrowing past the
+  visible rows never scrolled the list: the portalled dropdown was looked up inside the editor (not
+  found) and the lookup ran before the DOM update.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

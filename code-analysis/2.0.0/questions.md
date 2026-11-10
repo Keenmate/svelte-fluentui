@@ -18,3 +18,14 @@ The plan puts the ActionItem port (core `/actions`) in `lib/actions/`, but that 
 Svelte actions (`portal.ts`, `use-actions.ts`). **Proposal:** put the ActionItem model in
 `lib/action-items/` (types + `resolveActionItem` / `resolveMenuEntries` / `runAction`) and leave
 `lib/actions/` for `use:` actions (or move those to `lib/attachments/` when they become attachments).
+
+## Q3 — Names for the renamed store types
+
+`Toast` (store) → `ToastInstance`, `SiteSettings` (store) → `SiteSettingsState` (commit cf07faf).
+They clashed with the component names. Fine, or prefer other names? Both stores get reworked again
+in Phase 2 (runes classes) and Phase 4 (`error` → `danger`, positions), so renaming is cheap now.
+
+## Q4 — Dialog `trapFocus={false}`: not a bug
+
+The audit said `trapFocus={false}` is never sent. It isn't sent as an attribute, but `setFocusTrap`
+applies it whenever the dialog opens; e2e `dialog.spec.ts` confirms focus can leave. Dropped from Phase 1.

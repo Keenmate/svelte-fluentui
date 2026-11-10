@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import { onMount, tick } from 'svelte'
 	import PositioningRegion from "./PositioningRegion.svelte"
 
 	type EditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
@@ -230,10 +230,13 @@
 		oncommit(newValue)
 	}
 
-	// Scroll highlighted option into view
-	function scrollHighlightedIntoView() {
+	// Scroll highlighted option into view. Waits for the DOM update: called
+	// right after `highlightedIndex` changes, the `.highlighted` class is still
+	// on the previous row.
+	async function scrollHighlightedIntoView() {
+		await tick()
 		if (highlightedIndex < 0) return
-		const dropdown = editorElement?.querySelector('.cell-dropdown')
+		const dropdown = dropdownElement
 		const highlighted = dropdown?.querySelector('.cell-dropdown-option.highlighted') as HTMLElement
 		if (highlighted && dropdown) {
 			highlighted.scrollIntoView({ block: 'nearest' })
