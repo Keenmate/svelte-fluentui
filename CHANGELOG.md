@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Store types renamed: `Toast` → `ToastInstance`, `SiteSettings` → `SiteSettingsState`.** They were
+  shadowed by the `Toast` / `SiteSettings` component exports and unreachable from the package root.
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Fixed

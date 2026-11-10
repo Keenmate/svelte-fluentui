@@ -20,7 +20,7 @@ export interface ToastOptions {
 	persistent?: boolean
 }
 
-export interface Toast extends Required<Omit<ToastOptions, "title" | "message">> {
+export interface ToastInstance extends Required<Omit<ToastOptions, "title" | "message">> {
 	id: string
 	title: string
 	message: string
@@ -47,7 +47,7 @@ const titles: Record<ToastVariant, string> = {
 
 // Create the toast store
 function createToastStore() {
-	const {subscribe, update} = writable<Toast[]>([])
+	const {subscribe, update} = writable<ToastInstance[]>([])
 
 	/**
 	 * Add a new toast to the store
@@ -67,7 +67,7 @@ function createToastStore() {
 		const id = `fluent-toast-${++toastCounter}`
 
 		// Create toast object
-		const toast: Toast = {
+		const toast: ToastInstance = {
 			id,
 			variant,
 			title,

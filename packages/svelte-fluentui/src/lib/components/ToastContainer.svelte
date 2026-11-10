@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {toast, type Toast, type ToastPosition} from "../stores/toast.js"
+	import {toast, type ToastInstance, type ToastPosition} from "../stores/toast.js"
 	import {onMount} from "svelte"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 	import {portal} from "../actions/portal.js"
@@ -31,12 +31,12 @@
 		}
 	}
 
-	let toasts = $state<Toast[]>([])
+	let toasts = $state<ToastInstance[]>([])
 	let mountedToasts = $state(new Set<string>())
 
 	// Group toasts by position
 	let toastsByPosition = $derived.by(() => {
-		const grouped: Record<ToastPosition, Toast[]> = {
+		const grouped: Record<ToastPosition, ToastInstance[]> = {
 			"top-right": [],
 			"top-left": [],
 			"top-center": [],

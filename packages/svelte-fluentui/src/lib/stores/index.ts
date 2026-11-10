@@ -1,6 +1,6 @@
 export {theme} from "./theme.js"
 export {settings, accentColors} from "./settings.js"
-export type {SiteSettings, ThemeMode, Direction} from "./settings.js"
+export type {SiteSettingsState, ThemeMode, Direction} from "./settings.js"
 export {toast} from "./toast.js"
-export type {ToastOptions, ToastVariant, ToastPosition, Toast} from "./toast.js"
+export type {ToastOptions, ToastVariant, ToastPosition, ToastInstance} from "./toast.js"
 export {navigationStore} from "./navigation.js"

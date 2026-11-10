@@ -3,14 +3,14 @@ import { writable } from 'svelte/store'
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type Direction = 'ltr' | 'rtl'
 
-export interface SiteSettings {
+export interface SiteSettingsState {
 	themeMode: ThemeMode
 	accentColor: string
 	neutralColor: string
 	direction: Direction
 }
 
-const defaultSettings: SiteSettings = {
+const defaultSettings: SiteSettingsState = {
 	themeMode: 'system',
 	accentColor: 'OneDrive',
 	neutralColor: '#FAFAFA', // Light gray, close to white for light mode
@@ -46,7 +46,7 @@ export const accentColors = {
 	Yammer: '#106ebe'
 }
 
-function loadSettings(): SiteSettings {
+function loadSettings(): SiteSettingsState {
 	if (typeof window === 'undefined') return defaultSettings
 
 	try {
@@ -61,7 +61,7 @@ function loadSettings(): SiteSettings {
 	return defaultSettings
 }
 
-function saveSettings(settings: SiteSettings) {
+function saveSettings(settings: SiteSettingsState) {
 	if (typeof window === 'undefined') return
 
 	try {
@@ -90,7 +90,7 @@ function contrastForeground(hex: unknown): string {
 	return luminance > 0.6 ? '#000000' : '#ffffff'
 }
 
-function applySettings(s: SiteSettings) {
+function applySettings(s: SiteSettingsState) {
 	if (typeof document === 'undefined') return
 	const root = document.documentElement
 
@@ -132,12 +132,12 @@ function applySettings(s: SiteSettings) {
 
 function createSettingsStore() {
 	const initial = loadSettings()
-	const { subscribe, set, update } = writable<SiteSettings>(initial)
+	const { subscribe, set, update } = writable<SiteSettingsState>(initial)
 
 	// Browser-only: apply settings to the document on every change, and react
 	// to OS-level light/dark changes when themeMode is 'system'.
 	if (typeof document !== 'undefined') {
-		let current: SiteSettings = initial
+		let current: SiteSettingsState = initial
 		subscribe((s) => {
 			current = s
 			applySettings(s)
@@ -152,11 +152,11 @@ function createSettingsStore() {
 
 	return {
 		subscribe,
-		set: (value: SiteSettings) => {
+		set: (value: SiteSettingsState) => {
 			set(value)
 			saveSettings(value)
 		},
-		update: (updater: (value: SiteSettings) => SiteSettings) => {
+		update: (updater: (value: SiteSettingsState) => SiteSettingsState) => {
 			update((current) => {
 				const newValue = updater(current)
 				saveSettings(newValue)
