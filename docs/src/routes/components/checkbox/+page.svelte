@@ -71,8 +71,8 @@
 	let callbackValue = $state(false);
 	let callbackMessage = $state("");
 
-	function handleCallback(ev: PointerEvent, previousValue: boolean | null) {
-		callbackMessage = `Changed from ${previousValue} to ${!previousValue}`;
+	function handleCallback({checked}: {checked: boolean | null}) {
+		callbackMessage = `Changed to ${checked}`;
 	}
 
 	type Property = {
@@ -103,7 +103,8 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onclick", type: "(ev: PointerEvent, previousValue: boolean | null) => void", default: "undefined", description: "Called on click with the previous checked value"}
+		{name: "onChange", type: "(ctx: {checked: boolean | null}) => void", default: "undefined", description: "Fires when the user changes the state (null = indeterminate)"},
+		{name: "onclick", type: "(event: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"}
 	]
 
 	const slots: Property[] = [
@@ -208,7 +209,7 @@
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<Checkbox checked={allChecked} withIntermediate onclick={handleAllClick}>
+					<Checkbox checked={allChecked} withIntermediate onChange={handleAllClick}>
 						All ({allChecked === null ? 'Indeterminate' : allChecked ? 'True' : 'False'})
 					</Checkbox>
 					<div style="margin-left: 1.5rem;">
@@ -355,8 +356,8 @@
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>With onclick callback</strong>
-					<Checkbox bind:checked={callbackValue} onclick={handleCallback}>
+					<strong>With onChange callback</strong>
+					<Checkbox bind:checked={callbackValue} onChange={handleCallback}>
 						Click me
 					</Checkbox>
 					<small>{callbackMessage || "Click the checkbox to see the callback"}</small>

@@ -39,7 +39,7 @@
 	]
 
 	const accordionCallbacks: Property[] = [
-		{name: "onchange", type: "(value: string | string[] | null) => void", default: "undefined", description: "Fires when the set of expanded items changes"}
+		{name: "onChange", type: "(ctx: {value: string | string[] | null}) => void", default: "undefined", description: "Fires when the user expands or collapses an item"}
 	]
 
 	const accordionSlots: Property[] = [
@@ -55,7 +55,7 @@
 	]
 
 	const accordionItemCallbacks: Property[] = [
-		{name: "onchange", type: "(ev: Event, isExpanded: boolean) => void", default: "undefined", description: "Fires when this item expands or collapses"}
+		{name: "onExpandedChange", type: "(ctx: {expanded: boolean; sourceEvent: Event}) => void", default: "undefined", description: "Fires when the user expands or collapses this item"}
 	]
 
 	const accordionItemSlots: Property[] = [

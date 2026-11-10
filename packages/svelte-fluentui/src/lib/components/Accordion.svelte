@@ -35,7 +35,8 @@
 		gap?: string
 		children?: Snippet
 		/** Fires when the set of expanded items changes. */
-		onchange?: (value: ValueType) => void
+		/** Fires when the user expands or collapses an item; carries the new `value`. */
+		onChange?: (ctx: {value: ValueType}) => void
 	}
 
 	let {
@@ -44,7 +45,7 @@
 		togglePosition = "end",
 		gap = undefined,
 		children = undefined,
-		onchange = undefined
+		onChange = undefined
 	}: Props = $props()
 
 	let rootEl: HTMLDivElement | undefined = $state()
@@ -62,7 +63,7 @@
 		} else {
 			value = value === id ? null : id
 		}
-		onchange?.(value)
+		onChange?.({value})
 	}
 
 	// Roving focus between item headers (ArrowUp/Down wrap, Home/End jump).

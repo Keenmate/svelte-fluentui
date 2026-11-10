@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Accordion:** `onchange(value)` → `onChange({value})`
+- **AccordionItem:** `onchange(ev, isExpanded)` → `onExpandedChange({expanded, sourceEvent})`
+- **Checkbox:** `onclick(ev, previousValue)` → `onChange({checked})` (`null` = indeterminate); `onclick` is now the native click event
+- **Listbox:** `onchange(ev)` → `onChange({value})` on user selection; `onchange` is the native event
 - **Switch:** `onchange(checked)` → `onChange({checked})`
 - **Slider:** `onchange(value)`, `oninput(value)` → `onChange({value})`; live value via `bind:value`
 - **RadioGroup:** `onchange(value)` → `onChange({value})`

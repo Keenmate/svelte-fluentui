@@ -29,7 +29,10 @@
 		class?: string
 		style?: string
 		children?: Snippet
-		onchange?: (ev: Event) => void
+		/** Fires when the user selects or deselects an option. */
+		onChange?: (ctx: {value: ValueType}) => void
+		/** Native `change` event, forwarded untouched. */
+		onchange?: (event: Event) => void
 	}
 
 	let {
@@ -46,6 +49,7 @@
 		class: className = "",
 		style = "",
 		children = undefined,
+		onChange = undefined,
 		onchange = undefined
 	}: Props = $props()
 
@@ -77,6 +81,15 @@
 	// The context holds an array; the public `value` is a string in single mode.
 	function fromContext(current: SelectedValue): ValueType {
 		return multi ? (current ?? []) : (current?.[0] ?? null)
+	}
+
+	// An Option click toggles the context; that is the only user-driven change,
+	// so onChange fires from here (not from external `value` assignments).
+	const toggleOption = selectedOptions.toggle
+	selectedOptions.toggle = (optionValue) => {
+		toggleOption.call(selectedOptions, optionValue)
+		value = fromContext(selectedOptions.value)
+		onChange?.({value})
 	}
 
 	// Option click → context → bound value

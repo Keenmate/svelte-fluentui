@@ -34,7 +34,8 @@
 		icon?: Snippet<[isExpanded: boolean]>
 		children?: Snippet
 		/** Fires when this item expands or collapses. */
-		onchange?: (ev: Event, isExpanded: boolean) => void
+		/** Fires when the user expands or collapses this item. */
+		onExpandedChange?: (ctx: {expanded: boolean; sourceEvent: Event}) => void
 	}
 
 	let {
@@ -48,7 +49,7 @@
 		icon = undefined,
 		disabled = false,
 		children = undefined,
-		onchange = undefined
+		onExpandedChange = undefined
 	}: Props = $props()
 
 	const ctx = accordionContext.get()
@@ -60,7 +61,7 @@
 	function handleClick(ev: MouseEvent) {
 		if (disabled) return
 		ctx?.toggle(id)
-		onchange?.(ev, !isExpanded)
+		onExpandedChange?.({expanded: !isExpanded, sourceEvent: ev})
 	}
 
 	function handleKeydown(ev: KeyboardEvent) {

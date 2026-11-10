@@ -33,7 +33,10 @@
 		checkedMessage?: string | Snippet;
 		uncheckedMessage?: string | Snippet;
 		intermediateMessage?: string | Snippet;
-		onclick?: (ev: PointerEvent, previousValue: boolean | null) => void
+		/** Fires when the user changes the state; `null` is indeterminate. */
+		onChange?: (ctx: {checked: boolean | null}) => void
+		/** Native `click` event, forwarded untouched. */
+		onclick?: (event: MouseEvent) => void
 	}
 
 	let {
@@ -56,6 +59,7 @@
 		checkedMessage = undefined,
 		uncheckedMessage = undefined,
 		intermediateMessage = undefined,
+		onChange = undefined,
 		onclick = undefined
 	}: Props = $props()
 
@@ -136,7 +140,8 @@
 			checked = (ev as any).target.checked
 		}
 
-		onclick?.(ev, previousValue)
+		onclick?.(ev)
+		if (checked !== previousValue) onChange?.({checked})
 	}
 </script>
 

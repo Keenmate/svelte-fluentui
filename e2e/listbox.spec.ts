@@ -37,3 +37,11 @@ test("multi: sets the multiple attribute and binds an array", async ({page}) => 
 	await wrap.getByRole("option", {name: "Charlie"}).click()
 	await expect(page.locator("#multi-value")).toHaveText('["a","c"]')
 })
+
+test("single: onChange fires for a click, not for an external assignment", async ({page}) => {
+	const wrap = page.locator("#single-wrap")
+	await page.locator("#single-set").click()
+	await expect(wrap.getByRole("option", {name: "Charlie"})).toHaveAttribute("aria-selected", "true")
+	await wrap.getByRole("option", {name: "Alpha"}).click()
+	await expect(page.locator("#single-changes")).toHaveText('"a"')
+})

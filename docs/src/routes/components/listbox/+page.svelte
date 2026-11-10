@@ -25,7 +25,8 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onchange", type: "(ev: Event) => void", default: "undefined", description: "Called when selection changes"}
+		{name: "onChange", type: "(ctx: {value: string | string[] | null}) => void", default: "undefined", description: "Fires when the user selects or deselects an option"},
+		{name: "onchange", type: "(event: Event) => void", default: "undefined", description: "Native change event, forwarded untouched"}
 	]
 
 	const slots: Property[] = [
