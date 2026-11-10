@@ -9,7 +9,7 @@ import {test, expect, type Page, type Locator} from "@playwright/test"
  *
  * Selectors target the wrapper DOM in the Autocomplete component
  * (`.fluent-autocomplete`, `.autocomplete-native-input`, `.option-item`,
- * `.inline-chip`, `.chip-remove`, `.clear-button`).
+ * `.inline-chip`, `.fluent-chip-remove`, `.clear-button`).
  */
 
 const PAGE = "/test/autocomplete"
@@ -23,7 +23,7 @@ function inputOf(wrap: Locator): Locator {
 }
 
 function chipsOf(wrap: Locator): Locator {
-	return wrap.locator(".inline-chip, .external-chip")
+	return wrap.locator(".fluent-chip")
 }
 
 // The dropdown is portaled to document.body via PositioningRegion's use:portal,
@@ -132,7 +132,7 @@ test.describe("multi mode", () => {
 		await expect(chipsOf(wrap)).toHaveCount(2)
 
 		// Remove the first chip (apple); banana should remain
-		await chipsOf(wrap).first().locator(".chip-remove").click()
+		await chipsOf(wrap).first().locator(".fluent-chip-remove").click()
 
 		await expect(chipsOf(wrap)).toHaveCount(1)
 		await expect(chipsOf(wrap).first()).toContainText("Banana")
@@ -260,7 +260,7 @@ test.describe("disabled / readonly component", () => {
 test.describe("label rendering", () => {
 	test("label + required: renders <label> text and a `*` indicator", async ({page}) => {
 		const wrap = wrapById(page, "labeled")
-		const label = wrap.locator("label.fluent-label")
+		const label = wrap.locator("label.fluent-field-label")
 		await expect(label).toBeVisible()
 		await expect(label).toContainText("Fruit")
 		await expect(label.locator(".required-indicator")).toHaveText("*")
