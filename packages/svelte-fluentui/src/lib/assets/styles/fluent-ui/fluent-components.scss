@@ -52,20 +52,6 @@ fluent-anchored-region > * {
 //	width: 100%;
 //}
 
-a .stack-vertical {
-	padding: calc(var(--design-unit) * 1px) calc(var(--appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
-	height: 100%;
-}
-
-div[part="label"] {
-	color: var(--neutral-foreground-rest);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	width: 100%;
-	text-align: center;
-}
-
 .fluent-appbar[orientation=vertical] .fluent-appbar-item:not([inpopover="true"]) a.active::before {
 	content: "";
 	position: absolute;
@@ -232,15 +218,6 @@ th.col-justify-center svg {
 	display: grid;
 }
 
-.grid thead,
-.grid tbody {
-	display: contents;
-}
-
-.grid tr {
-	display: contents;
-}
-
 .fluent-data-grid tbody tr .hover {
 	background: var(--neutral-fill-stealth-hover);
 }
@@ -354,21 +331,6 @@ td.grid-cell-placeholder:after {
 	overflow: auto;
 	word-break: break-word;
 	align-content: start;
-}
-
-// Tag-qualified (`th.column-header`, not bare `.column-header`) so this
-// Blazor-legacy table styling can't leak onto FluentUI's data-grid cell host,
-// which carries `class="column-header"` for its own `:host(.column-header)`
-// styling. A bare rule overrode the cell's shadow padding with `… 1px …`
-// (1px sides vs the cell's normal ~12px) and centered the text, shoving the
-// header labels left and out of line with the left-aligned data cells. QuickGrid
-// renders `<th class="column-header">` and styles it with its own component-
-// scoped rules, so it is unaffected.
-th.column-header {
-	font-weight: 600;
-	text-align: center;
-	position: relative;
-	padding: calc((var(--design-unit) + var(--focus-stroke-width) - var(--stroke-width)) * 1px) 1px calc((var(--design-unit) + var(--focus-stroke-width) - var(--stroke-width)) * 1px);
 }
 
 .col-sort-button {
@@ -1066,15 +1028,6 @@ fluent-dialog .fluent-dialog-body {
 }
 
 /* _content/Microsoft.FluentUI.AspNetCore.Components/Components/Drag/FluentDropZone.razor.rz.scp.css */
-div[draggable='true'] {
-	cursor: move;
-}
-
-div[dragged-over="true"] {
-	background-color: lightgray;
-	opacity: 0.6;
-	animation: blinker 1s linear infinite;
-}
 
 
 /* _content/Microsoft.FluentUI.AspNetCore.Components/Components/Forms/FluentValidationMessage.razor.rz.scp.css */

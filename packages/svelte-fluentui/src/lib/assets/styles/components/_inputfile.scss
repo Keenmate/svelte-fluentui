@@ -621,6 +621,9 @@
 			border-color: var(--accent-fill-rest);
 			box-shadow: 0 0 0 1px var(--accent-fill-rest);
 		}
+		&[draggable="true"] {
+			cursor: move;
+		}
 		&.error {
 			border-color: var(--error-foreground-rest, #c50f1f);
 		}

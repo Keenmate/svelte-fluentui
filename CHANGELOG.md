@@ -63,6 +63,11 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   present on first render, so the indicator/scroll arrows ignored size changes of later tabs.
 - **Z-index fixes.** CommandPalette's `--fluent-z-modal` fallback was 1070 (tooltip level) instead
   of 1050; toasts now use `var(--fluent-z-toast)` so a theme can move them.
+- **Global CSS no longer restyles your page.** Leftover Blazor rules matched consumer markup:
+  `.grid thead/tbody/tr { display: contents }` (any table with class `grid`), `a .stack-vertical`,
+  `div[part="label"]` (centred, ellipsised), `th.column-header`, and `div[draggable=true]` /
+  `div[dragged-over]` (move cursor, blinking grey). Removed; QuickGrid and InputFile keep the
+  bits they relied on in their own styles.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

@@ -2627,6 +2627,7 @@
 		border-bottom: 2px solid var(--neutral-stroke-layer-rest, #e0e0e0);
 		text-align: left;
 		user-select: none;
+		position: relative;
 	}
 
 	.column-header.sortable {
