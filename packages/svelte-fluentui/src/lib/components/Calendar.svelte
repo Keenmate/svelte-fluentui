@@ -12,6 +12,7 @@
 	import {CalendarVerticalPosition} from "../fluent-ui/constants/calendar-vertical-position.js"
 	import {tick} from "svelte"
 	import {getLargest, getSmallest} from "../helpers/array.js"
+	import {defaultLocale} from "../helpers/locale.js"
 
 	type Props = {
 		value?: Date
@@ -60,7 +61,7 @@
 		    selectedDates                   = [],
 		    pickerMonth                     = $bindable(new Date()),
 		    view                            = "days",
-		    culture                         = new Intl.Locale(window.navigator.language),
+		    culture                         = defaultLocale(),
 		    firstDayOfWeek                  = undefined,
 		    disabledCheckAllDaysOfMonthYear = undefined,
 		    animatePeriodChanges            = undefined,

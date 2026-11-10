@@ -12,6 +12,7 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import type {SlotType} from "../types/index.js"
 	import type DayFormat from "../fluent-ui/calendar/day-format.js"
+	import {defaultLocale} from "../helpers/locale.js"
 
 	type Props = {
 		id?: string
@@ -75,7 +76,7 @@
 		label = undefined,
 		labelTemplate = undefined,
 		appearance = undefined,
-		culture = new Intl.Locale(window.navigator.language),
+		culture = defaultLocale(),
 		dateFormat = { year: 'numeric', month: 'long', day: 'numeric' },
 		minDate = undefined,
 		maxDate = undefined,

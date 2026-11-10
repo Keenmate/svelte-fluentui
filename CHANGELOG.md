@@ -11,6 +11,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Fixed
 - **Textarea — `bind:value` is two-way.** Typing never wrote back to the bound value (only
@@ -23,6 +24,11 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   checked the radio but left the bound value (and `onchange`) stale. Clicking the already-checked
   radio no longer fires `onchange`.
 - **MenuButton — enabled items no longer get `disabled="undefined"`** on `<fluent-menu-item>`.
+- **SSR — no crash at import/render for Calendar, DatePicker, Checkbox, Slider.** The `culture`
+  default read `window.navigator.language`, and Checkbox/Slider called `customElements.get()` at
+  the top of the script. The locale default now falls back to `en-US` without `navigator`.
+- **Checkbox / Switch — hydration-stable ids.** The fallback id for the value label came from
+  `Math.random()` (different on server and client); it now uses `$props.id()`.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

@@ -2,7 +2,7 @@
 	import {fluentCheckbox, provideFluentDesignSystem} from "@fluentui/web-components"
 	import type {SlotType} from "../types/index.js"
 
-	if (!customElements.get('fluent-checkbox')) {
+	if (typeof customElements !== "undefined" && !customElements.get("fluent-checkbox")) {
 		provideFluentDesignSystem().register(fluentCheckbox())
 	}
 
@@ -58,8 +58,9 @@
 
 	// Stable fallback id so <label for={...}> always links to the checkbox —
 	// without it, clicking the value label on an id-less <Checkbox /> wouldn't
-	// toggle the box.
-	const fallbackId = `fluent-checkbox-${Math.random().toString(36).slice(2, 11)}`
+	// toggle the box. $props.id() matches between SSR and hydration.
+	const uid = $props.id()
+	const fallbackId = `fluent-checkbox-${uid}`
 	const effectiveId = $derived(id ?? fallbackId)
 
 	// Checkbox label always describes the value next to the control — never a

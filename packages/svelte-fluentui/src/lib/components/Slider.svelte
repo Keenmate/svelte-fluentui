@@ -2,7 +2,7 @@
 	import {fluentSlider, provideFluentDesignSystem} from "@fluentui/web-components"
 	import type {SlotType} from "../types/index.js"
 
-	if (!customElements.get("fluent-slider")) {
+	if (typeof customElements !== "undefined" && !customElements.get("fluent-slider")) {
 		provideFluentDesignSystem().register(fluentSlider())
 	}
 

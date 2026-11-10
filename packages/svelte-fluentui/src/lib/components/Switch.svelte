@@ -46,8 +46,9 @@
 	}: Props = $props()
 
 	// Stable fallback id so <label for={...}> always toggles the switch even
-	// when the caller didn't provide an id.
-	const fallbackId = `fluent-switch-${Math.random().toString(36).slice(2, 11)}`
+	// when the caller didn't provide an id. $props.id() matches between SSR and hydration.
+	const uid = $props.id()
+	const fallbackId = `fluent-switch-${uid}`
 	const effectiveId = $derived(id ?? fallbackId)
 
 	// Switch label always describes the value next to the control — never a
