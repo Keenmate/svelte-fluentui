@@ -71,7 +71,6 @@
 
 		// Feedback
 		{group: "Feedback", name: "Dialog", description: "Modal dialog box", href: "/components/dialog"},
-		{group: "Feedback", name: "Progress", description: "Progress indicator", href: "/components/progress"},
 		{group: "Feedback", name: "Toast", description: "Declarative toast notification", href: "/components/toast"},
 		{group: "Feedback", name: "Toast Service", description: "Programmatic toast notification system", href: "/components/toast-service"},
 		{group: "Feedback", name: "Tooltip", description: "Hover tooltip", href: "/components/tooltip"},
@@ -83,8 +82,6 @@
 		{group: "Data Display", name: "Paginator", description: "Pagination control", href: "/components/paginator"},
 		{group: "Data Display", name: "QuickGrid", description: "Advanced data grid with sorting, filtering, and pagination", href: "/components/quickgrid"},
 		{group: "Data Display", name: "Toolbar", description: "Toolbar container", href: "/components/toolbar"},
-		{group: "Data Display", name: "Tree", description: "Hierarchical tree view", href: "/components/tree"},
-		{group: "Data Display", name: "TreeItem", description: "Tree item node", href: "/components/tree"}
 	]
 
 	const componentColumns = [

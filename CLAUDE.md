@@ -128,10 +128,7 @@ These wrap `<fluent-*>` web components from `@fluentui/web-components`:
 - **Dialog** → `<fluent-dialog>`
 - **Divider** → `<fluent-divider>`
 - **Listbox** → `<fluent-listbox>`
-- **Menu** → `<fluent-menu>`
-- **MenuItem** → `<fluent-menu-item>`
 - **NumberField** → `<fluent-number-field>`
-- **Progress** → `<fluent-progress>`
 - **Radio** → `<fluent-radio>`
 - **RadioGroup** → `<fluent-radio-group>`
 - **Search** → `<fluent-search>`
@@ -142,8 +139,6 @@ These wrap `<fluent-*>` web components from `@fluentui/web-components`:
 - **TextField** → `<fluent-text-field>`
 - **Toolbar** → `<fluent-toolbar>`
 - **Tooltip** → `<fluent-tooltip>`
-- **Tree** → `<fluent-tree-view>`
-- **TreeItem** → `<fluent-tree-item>`
 
 **IMPORTANT for Wrapper Components:**
 - Only include properties that are actually supported by the underlying `<fluent-*>` component

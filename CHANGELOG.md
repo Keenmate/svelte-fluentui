@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Removed placeholder components `Menu`, `MenuItem`, `Tree`, `TreeItem`, `ProgressBar`.** They
+  rendered an empty FluentUI element and accepted no props.
 - **MultiSplitter is content-height by default.** Leftover Blazor splitter CSS forced `height: 100%`
   on the splitter and `overflow: hidden` on panes, overriding the component; removed. Pass
   `height="100%"` to fill a sized parent.
