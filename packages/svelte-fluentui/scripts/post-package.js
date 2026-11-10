@@ -1,5 +1,5 @@
 import {execSync} from 'child_process';
-import {copyFileSync} from 'fs';
+import {copyFileSync, cpSync, rmSync} from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -29,6 +29,17 @@ try {
 	console.log('✓ LICENSE copied from workspace root');
 } catch (error) {
 	console.error('Error copying LICENSE:', error.message);
+	process.exit(1);
+}
+
+// Copy release-notes/ from workspace root to package
+try {
+	const target = path.join(rootDir, 'release-notes');
+	rmSync(target, {recursive: true, force: true});
+	cpSync(path.join(workspaceRoot, 'release-notes'), target, {recursive: true});
+	console.log('✓ release-notes/ copied from workspace root');
+} catch (error) {
+	console.error('Error copying release-notes/:', error.message);
 	process.exit(1);
 }
 

@@ -28,7 +28,8 @@
 		"!dist/**/*.test.*",
 		"!dist/**/*.spec.*",
 		"README.md",
-		"LICENSE"
+		"LICENSE",
+		"release-notes"
 	],
 	"sideEffects": [
 		"**/*.css"

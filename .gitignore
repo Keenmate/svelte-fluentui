@@ -56,3 +56,6 @@ check-errors*.txt
 *.bak
 Makefile.backup
 package.json.backup
+
+# Synced from workspace root by post-package.js
+packages/svelte-fluentui/release-notes/

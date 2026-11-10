@@ -235,38 +235,40 @@ Variables are organized by their component/purpose:
 <Toast topCTAType="Timestamp" />
 ```
 
-### Event Handler Naming
+### Event Handler Naming (2.0.0 — option B)
 
-**IMPORTANT**: All event handlers follow Svelte 5's lowercase convention:
+**IMPORTANT**: The casing tells consumers what the handler receives. Full model: `code-analysis/2.0.0/05-callbacks-events.md` (BlissFramework D-NC-29 / C-NC-14).
 
-#### Standard DOM Event Handlers
-- Use **lowercase** for all event handler props
-- Examples: `onclick`, `onchange`, `oninput`, `onkeydown`, `onkeyup`, `onfocus`, `onblur`, `ondblclick`
-- ❌ Never use: `onClick`, `onChange`, `onInput` (capitalized camelCase)
+#### Native DOM events — lowercase
+- Only names the **browser** dispatches, forwarded **untouched** (via `...rest` or explicit forwarding); the handler gets the native `Event`.
+- Examples: `onclick`, `oninput`, `onkeydown`, `onfocus`, `onblur`, `ondragenter`
+- ❌ Never re-shape a native handler (`onclick(ev, previousValue)`, `onchange(value)`).
 
-#### Custom Event Handlers
-For custom component-specific callbacks, use lowercase with descriptive names:
-- Examples: `ondismiss`, `ontopactionclick`, `onprimaryactionclick`, `onoptionssearch`, `onselectedoptionschange`
-- ❌ Never use: `onDismiss`, `onTopActionClick`, `onOptionsSearch` (capitalized camelCase)
+#### Component events — camelCase, one `ctx` object
+- Everything the component defines, even when it sounds native: `on` + PascalCase, single `ctx` argument.
+- State change: `on<State>Change` carrying the new state (`onOpenChange({ open })`); a single act: `on<Domain><Verb>` (`onFileUpload`, `onTabClose`). `onChange({ value })` is reserved for the form value.
+- ❌ Never a lowercase name the browser doesn't dispatch (`onopenchange`, `onselectedoptionschange`).
+
+#### Callbacks (return value is used)
+- `before*Callback(ctx)` — veto: `false` rejects, `undefined` continues, other value replaces; may be async.
+- `get*Callback(ctx)` paired with a `*Member` string shortcut.
+- plain `*Callback(ctx)` — behaviour providers (`searchCallback({ term, signal })`, `uploadCallback`).
 
 #### Examples
 
 ✅ **Correct:**
 ```svelte
 <Button onclick={handleClick} />
-<TextField oninput={handleInput} onchange={handleChange} />
-<Checkbox onclick={handleCheck} />
-<Toast ondismiss={handleDismiss} ontopactionclick={handleAction} />
-<Autocomplete onoptionssearch={searchOptions} onselectedoptionschange={handleSelection} />
+<TextField oninput={handleInput} onChange={({ value }) => save(value)} />
+<Dialog bind:open onOpenChange={({ open }) => log(open)} beforeCloseCallback={confirmLeave} />
+<Combobox searchCallback={({ term, signal }) => api.search(term, { signal })} />
 ```
 
 ❌ **Incorrect:**
 ```svelte
-<Button onClick={handleClick} />
-<TextField onInput={handleInput} onChange={handleChange} />
-<Checkbox onClick={handleCheck} />
-<Toast onDismiss={handleDismiss} onTopActionClick={handleAction} />
-<Autocomplete onOptionsSearch={searchOptions} onSelectedOptionsChange={handleSelection} />
+<Toast ondismiss={handleDismiss} />                 <!-- component event → onDismiss -->
+<Autocomplete onselectedoptionschange={handle} />   <!-- → onChange({ value }) -->
+<Checkbox onclick={(ev, previous) => {}} />         <!-- re-shaped native handler -->
 ```
 
-**Rationale**: Svelte 5 standardizes on lowercase event attributes (matching the DOM standard), making components more consistent with web platform conventions and avoiding confusion between different naming styles.
+**Rationale**: Svelte 5 event attributes on elements are case-sensitive and must match the DOM event name, so native names stay lowercase. Component props have no such constraint; making every component-defined event camelCase means consumers learn a handful of native exceptions instead of a split API.

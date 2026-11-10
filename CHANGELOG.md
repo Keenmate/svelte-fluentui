@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc01] - 2026-11-10
+
+Major release: pre-public-release API consistency revision. Upgrade guide:
+[`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
+
+### Changed — BREAKING
+
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 
 ### Fixed
