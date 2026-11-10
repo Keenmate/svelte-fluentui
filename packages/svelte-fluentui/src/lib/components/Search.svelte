@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
 
@@ -163,23 +164,13 @@
 
 <fluent-search
 	bind:this={element}
-	{...(className ? { class: className } : {})}
-	{...(computedStyle ? { style: computedStyle } : {})}
-	{...(id ? { id } : {})}
-	{...(name ? { name } : {})}
-	{...(readonly ? { readonly } : {})}
-	{...(autofocus ? { autofocus } : {})}
-	{...(autocomplete ? { autocomplete } : {})}
-	{...(placeholder ? { placeholder } : {})}
+	{...attrs({
+		class: className, style: computedStyle, id, name, readonly, autofocus, autocomplete,
+		placeholder, maxlength, minlength, pattern, size, disabled, required
+	})}
 	{...(dataList || list ? { list: dataList || list } : {})}
-	{...(maxlength !== undefined ? { maxlength } : {})}
 	value={value ?? ""}
-	{...(minlength !== undefined ? { minlength } : {})}
-	{...(pattern ? { pattern } : {})}
-	{...(size !== undefined ? { size } : {})}
 	{...(spellcheck !== undefined ? { spellcheck } : {})}
-	{...(disabled ? { disabled } : {})}
-	{...(required ? { required } : {})}
 	appearance={appearance ?? "outline"}
 	{...(ariaLabel || label ? { "aria-label": ariaLabel || label } : {})}
 	{...titleProps}

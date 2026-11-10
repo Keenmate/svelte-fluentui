@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 
 	type Props = {
@@ -26,10 +27,8 @@
 </script>
 
 <fluent-toolbar
-	{...(id ? { id } : {})}
+	{...attrs({id, style, orientation})}
 	class={className}
-	{...(style ? { style } : {})}
-	{...(orientation ? { orientation } : {})}
 >
 	{#if children}
 		{@render children?.()}

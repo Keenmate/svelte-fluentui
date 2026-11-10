@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 
 	type Props = {
@@ -60,22 +61,12 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-button
-	{...(type ? { type } : {})}
-	{...(name ? { name } : {})}
+	{...attrs({
+		type, name, appearance, autofocus, formaction, form, formenctype, formmethod,
+		formnovalidate, formtarget, disabled, style, class: className, "aria-label": ariaLabel,
+		title
+	})}
 	{...(value != null ? { value } : {})}
-	{...(appearance ? { appearance } : {})}
-	{...(autofocus ? { autofocus } : {})}
-	{...(formaction ? { formaction } : {})}
-	{...(form ? { form } : {})}
-	{...(formenctype ? { formenctype } : {})}
-	{...(formmethod ? { formmethod } : {})}
-	{...(formnovalidate ? { formnovalidate } : {})}
-	{...(formtarget ? { formtarget } : {})}
-	{...(disabled ? { disabled } : {})}
-	{...(style ? { style } : {})}
-	{...(className ? { class: className } : {})}
-	{...(ariaLabel ? { "aria-label": ariaLabel } : {})}
-	{...(title ? { title } : {})}
 	{onclick}
 >
 	{#if start}

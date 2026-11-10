@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import { setAutocompleteOnShadowInput, whenShadowRoot } from "../utils/shadow-dom.js"
 
@@ -164,26 +165,12 @@
 <fluent-text-area
 	bind:this={element}
 	class={className}
-	{...(style ? { style } : {})}
-	{...(readonly ? { readonly } : {})}
-	{...(resize ? { resize } : {})}
-	{...(autofocus ? { autofocus } : {})}
-	{...(autocomplete ? { autocomplete } : {})}
-	{...(form ? { form } : {})}
-	{...(list ? { list } : {})}
-	{...(maxlength !== undefined ? { maxlength } : {})}
-	{...(minlength !== undefined ? { minlength } : {})}
-	{...(placeholder ? { placeholder } : {})}
-	{...(cols !== undefined ? { cols } : {})}
-	{...(rows !== undefined ? { rows } : {})}
+	{...attrs({
+		style, readonly, resize, autofocus, autocomplete, form, list, maxlength, minlength,
+		placeholder, cols, rows, id, name, disabled, required, appearance, "aria-label": ariaLabel
+	})}
 	{...(spellcheck != null ? { spellcheck } : {})}
-	{...(id ? { id } : {})}
-	{...(name ? { name } : {})}
-	{...(disabled ? { disabled } : {})}
-	{...(required ? { required } : {})}
-	{...(appearance ? { appearance } : {})}
 	{...(value != null ? { value } : {})}
-	{...(ariaLabel ? { "aria-label": ariaLabel } : {})}
 	oninput={handleInput}
 	onchange={handleChange}
 >

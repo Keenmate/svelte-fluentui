@@ -18,6 +18,7 @@
 -->
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 
 	type Props = {
@@ -40,7 +41,7 @@
 	class={`option-group${className ? ` ${className}` : ""}`}
 	role="group"
 	aria-label={label ?? null}
-	{...(style ? {style} : {})}
+	{...attrs({style})}
 >
 	{#if label}
 		<div class="option-group-label" aria-hidden="true">{label}</div>

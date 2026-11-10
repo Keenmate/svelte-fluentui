@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 
 	type Props = {
@@ -22,7 +23,7 @@
 </script>
 
 <fluent-breadcrumb-item
-	{...(href ? { href } : {})}
+	{...attrs({href})}
 >
 	{#if separator}
 		<span slot="separator">

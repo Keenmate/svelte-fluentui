@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import useActions from "../actions/use-actions.js"
 
@@ -72,18 +73,10 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <fluent-anchor
 	bind:this={element}
-	{...(id ? { id } : {})}
-	{...(className ? { class: className } : {})}
-	{...(style ? { style } : {})}
-	{...(download ? { download } : {})}
-	{...(href ? { href } : {})}
-	{...(hreflang ? { hreflang } : {})}
-	{...(ping ? { ping } : {})}
-	{...(referrerpolicy ? { referrerpolicy } : {})}
-	{...(rel ? { rel } : {})}
-	{...(target ? { target } : {})}
-	{...(type ? { type } : {})}
-	{...(appearance ? { appearance } : {})}
+	{...attrs({
+		id, class: className, style, download, href, hreflang, ping, referrerpolicy, rel, target,
+		type, appearance
+	})}
 	onclick={handleClick}
 >
 	{#if iconStart}

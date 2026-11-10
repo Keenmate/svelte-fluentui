@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 
 	type Props = {
@@ -93,18 +94,8 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <fluent-slider
 	bind:this={element}
-	{...(id ? { id } : {})}
-	{...(min !== undefined ? { min } : {})}
-	{...(max !== undefined ? { max } : {})}
-	{...(step !== undefined ? { step } : {})}
-	{...(orientation ? { orientation } : {})}
-	{...(disabled ? { disabled } : {})}
-	{...(readonly ? { readonly } : {})}
-	{...(required ? { required } : {})}
-	{...(name ? { name } : {})}
+	{...attrs({id, min, max, step, orientation, disabled, readonly, required, name, class: className, style})}
 	{...(ariaLabel || label ? { "aria-label": ariaLabel || label } : {})}
-	{...(className ? { class: className } : {})}
-	{...(style ? { style } : {})}
 	onchange={handleChange}
 	oninput={handleInput}
 >

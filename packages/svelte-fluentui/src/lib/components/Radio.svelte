@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import {getContext} from "svelte"
 
@@ -69,15 +70,10 @@
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-radio
 	{value}
-	{...(name ? { name } : {})}
-	{...(disabled ? { disabled } : {})}
-	{...(readonly ? { readonly } : {})}
-	{...(required ? { required } : {})}
-	{...(isChecked ? { checked: isChecked } : {})}
-	{...(autofocus ? { autofocus } : {})}
-	{...(ariaLabel ? { "aria-label": ariaLabel } : {})}
-	{...(className ? { class: className } : {})}
-	{...(style ? { style } : {})}
+	{...attrs({
+		name, disabled, readonly, required, checked: isChecked, autofocus, "aria-label": ariaLabel,
+		class: className, style
+	})}
 	onclick={handleOnClick}
 >
 	{@render children?.()}

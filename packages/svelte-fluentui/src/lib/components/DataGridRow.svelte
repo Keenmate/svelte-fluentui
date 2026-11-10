@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 
 	type Props = {
@@ -52,9 +53,7 @@
 <!-- svelte-ignore a11y_interactive_supports_focus -->
 <fluent-data-grid-row
 	class={className}
-	{...(style ? { style } : {})}
-	{...(rowIndex !== undefined ? { "data-row-index": rowIndex } : {})}
-	{...(rowType ? { "row-type": rowType } : {})}
+	{...attrs({style, "data-row-index": rowIndex, "row-type": rowType})}
 	role="row"
 	onkeydown={handleKeyDown}
 	onclick={handleClick}

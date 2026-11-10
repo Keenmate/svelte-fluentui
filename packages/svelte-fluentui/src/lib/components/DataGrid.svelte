@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 
 	type Props = {
@@ -56,11 +57,10 @@
 
 <fluent-data-grid
 	class={className}
-	{...(mergedStyle ? { style: mergedStyle } : {})}
-	{...(id ? { id } : {})}
-	{...(ariaRowCount !== undefined ? { "aria-rowcount": ariaRowCount } : {})}
-	{...(generateHeader ? { "generate-header": generateHeader } : {})}
-	{...(gridTemplateColumns ? { "grid-template-columns": gridTemplateColumns } : {})}
+	{...attrs({
+		style: mergedStyle, id, "aria-rowcount": ariaRowCount, "generate-header": generateHeader,
+		"grid-template-columns": gridTemplateColumns
+	})}
 	role={role}
 	onclosecolumnoptions={handleCloseColumnOptions}
 	onclosecolumnresize={handleCloseColumnResize}

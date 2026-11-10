@@ -1,4 +1,5 @@
 <script lang="ts">
+	import {attrs} from "../../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import PositioningRegion from "../PositioningRegion.svelte"
 	import ContentRegion from "../ContentRegion.svelte"
@@ -47,7 +48,7 @@
 <svelte:element
 	this={renderElement}
 	{...(href ? {href, rel} : {})}
-	{...(target ? {target} : {})}
+	{...attrs({target})}
 	{title}
 	aria-disabled={disabled}
 	class="fluent-nav-link {className || ''}"

@@ -18,6 +18,7 @@
 -->
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import {getContext} from "svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
@@ -82,7 +83,7 @@
 	data-option-label={label ?? null}
 	data-option-context={data ? JSON.stringify(data) : null}
 	{...(disabled ? {disabled: "", "aria-disabled": "true"} : {})}
-	{...(style ? {style} : {})}
+	{...attrs({style})}
 	onclick={handleOnClick}
 >
 	{#if icon}

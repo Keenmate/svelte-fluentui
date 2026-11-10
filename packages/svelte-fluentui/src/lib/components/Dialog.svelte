@@ -104,6 +104,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import {onDestroy} from "svelte"
 	import Button from "./Button.svelte"
 	import {portal} from "../actions/portal.js"
@@ -310,12 +311,8 @@
 <fluent-dialog
 	use:portal
 	bind:this={element}
-	{...(modal ? { modal } : {})}
+	{...attrs({modal, trapFocus, ariaDescribedby, ariaLabelledby, ariaLabel})}
 	hidden={!visible}
-	{...(trapFocus ? { trapFocus } : {})}
-	{...(ariaDescribedby ? { ariaDescribedby } : {})}
-	{...(ariaLabelledby ? { ariaLabelledby } : {})}
-	{...(ariaLabel ? { ariaLabel } : {})}
 	class="dialog-positioned"
 	style={dialogStyle + (style ? ` ${style}` : '')}
 >

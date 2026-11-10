@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 
 	type Props = {
@@ -160,15 +161,9 @@
 		bind:this={element}
 		{...(checked === true ? { checked: true } : {})}
 		{...(checked === null ? { indeterminate: true } : {})}
-		{...(autofocus ? { autofocus } : {})}
-		{...(readonly ? { readonly } : {})}
-		{...(disabled ? { disabled } : {})}
-		{...(required ? { required } : {})}
+		{...attrs({autofocus, readonly, disabled, required, name, class: className, style})}
 		id={effectiveId}
-		{...(name ? { name } : {})}
 		{...(ariaLabel || label ? { "aria-label": ariaLabel || label } : {})}
-		{...(className ? { class: className } : {})}
-		{...(style ? { style } : {})}
 		onclick={handleOnClick}
 	></fluent-checkbox>
 

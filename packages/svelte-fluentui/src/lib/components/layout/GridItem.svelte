@@ -1,4 +1,5 @@
 <script lang="ts">
+	import {attrs} from "../../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import {getContext, onMount} from "svelte"
 	import {
@@ -164,12 +165,10 @@
 				: xs !== undefined
 					? { "data-xs": xs }
 					: {})}
-		{...(sm !== undefined ? { "data-sm": sm } : {})}
-		{...(md !== undefined ? { "data-md": md } : {})}
-		{...(lg !== undefined ? { "data-lg": lg } : {})}
-		{...(xl !== undefined ? { "data-xl": xl } : {})}
-		{...(xxl !== undefined ? { "data-xxl": xxl } : {})}
-		{...(hiddenWhen !== undefined ? { "data-hidden-when": hiddenWhen } : {})}
+		{...attrs({
+			"data-sm": sm, "data-md": md, "data-lg": lg, "data-xl": xl, "data-xxl": xxl,
+			"data-hidden-when": hiddenWhen
+		})}
 	>
 		{@render children?.()}
 	</div>

@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import {setContext} from "svelte"
 
@@ -82,16 +83,10 @@
 
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-radio-group
-	{...(value ? { value } : {})}
-	{...(name ? { name } : {})}
-	{...(orientation ? { orientation } : {})}
-	{...(readonly ? { readonly } : {})}
-	{...(disabled ? { disabled } : {})}
-	{...(autofocus ? { autofocus } : {})}
-	{...(placeholder ? { placeholder } : {})}
-	{...(ariaLabel ? { "aria-label": ariaLabel } : {})}
-	{...(className ? { class: className } : {})}
-	{...(style ? { style } : {})}
+	{...attrs({
+		value, name, orientation, readonly, disabled, autofocus, placeholder,
+		"aria-label": ariaLabel, class: className, style
+	})}
 	onchange={handleGroupChange}
 >
 	{@render children?.()}

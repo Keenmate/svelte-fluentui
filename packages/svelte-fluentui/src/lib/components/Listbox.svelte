@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import {setContext, untrack} from "svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
@@ -108,10 +109,7 @@
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-listbox
 	bind:this={element}
-	{...(disabled ? { disabled } : {})}
-	{...(autofocus ? { autofocus } : {})}
-	{...(name ? { name } : {})}
-	{...(size !== undefined ? { size } : {})}
+	{...attrs({disabled, autofocus, name, size})}
 	aria-label={ariaLabel || null}
 	class={className || null}
 	style={computedStyle}

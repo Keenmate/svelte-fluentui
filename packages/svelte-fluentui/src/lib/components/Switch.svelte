@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import { untrack } from 'svelte'
 
@@ -104,15 +105,9 @@
 	     mere presence as `true`. -->
 	<fluent-switch
 		class={className}
-		{...(style ? { style } : {})}
-		{...(readonly ? { readonly } : {})}
+		{...attrs({style, readonly, disabled, autofocus, name, required, checked})}
 		id={effectiveId}
-		{...(disabled ? { disabled } : {})}
-		{...(autofocus ? { autofocus } : {})}
-		{...(name ? { name } : {})}
 		{...(ariaLabel || label ? { "aria-label": ariaLabel || label } : {})}
-		{...(required ? { required } : {})}
-		{...(checked ? { checked } : {})}
 		aria-checked={checked ? "true" : "false"}
 		onchange={handleChange}
 		role="switch"

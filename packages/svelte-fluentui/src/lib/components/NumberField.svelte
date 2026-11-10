@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
 
@@ -191,25 +192,11 @@
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-number-field
 	bind:this={element}
-	{...(id ? { id } : {})}
-	{...(className ? { class: className } : {})}
-	{...(computedStyle ? { style: computedStyle } : {})}
-	{...(placeholder ? { placeholder } : {})}
-	{...(appearance ? { appearance } : {})}
-	{...(disabled ? { disabled } : {})}
-	{...(readonly ? { readonly } : {})}
-	{...(required ? { required } : {})}
-	{...(autofocus ? { autofocus } : {})}
-	{...(autocomplete ? { autocomplete } : {})}
-	{...(step !== undefined ? { step } : {})}
-	{...(min !== undefined ? { min } : {})}
-	{...(max !== undefined ? { max } : {})}
-	{...(minlength !== undefined ? { minlength } : {})}
-	{...(maxlength !== undefined ? { maxlength } : {})}
-	{...(size !== undefined ? { size } : {})}
-	{...(list ? { list } : {})}
-	{...(hideStep ? { "hide-step": hideStep } : {})}
-	{...(name ? { name } : {})}
+	{...attrs({
+		id, class: className, style: computedStyle, placeholder, appearance, disabled, readonly,
+		required, autofocus, autocomplete, step, min, max, minlength, maxlength, size, list,
+		"hide-step": hideStep, name
+	})}
 	{...(ariaLabel || label ? { "aria-label": ariaLabel ?? label } : {})}
 	{...(value != null ? { value } : {})}
 	{...titleProps}

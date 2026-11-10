@@ -39,6 +39,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
 	import Icon from "./Icon.svelte"
 	import { portal } from "../actions/portal.js"
@@ -194,10 +195,8 @@
 <span bind:this={anchorEl} class="fluent-menu-button-anchor">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<fluent-button
-		{...(appearance ? { appearance } : {})}
-		{...(disabled ? { disabled } : {})}
+		{...attrs({appearance, disabled, style})}
 		class={className}
-		{...(style ? { style } : {})}
 		aria-haspopup="menu"
 		aria-expanded={open}
 		onclick={toggleMenu}

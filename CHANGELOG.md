@@ -72,6 +72,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   bits they relied on in their own styles.
 
 ### Internal
+- `helpers/attrs.ts` (`attrs()`, `boolAttr()`): one spread per element instead of ~180
+  `{...(x ? { x } : {})}` lines across 24 wrappers; rendered attributes verified unchanged.
 - FluentUI element registration moved to `<script module>` via `fluent-ui/register.ts` — once per
   component type instead of on every instance.
 - Snippet props typed as `Snippet` / `Snippet<[...]>` instead of `any` (`SlotType` alias removed).

@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import {setAutocompleteOnShadowInput, setAttributeOnShadowInput} from "../utils/shadow-dom.js"
 
@@ -183,19 +184,11 @@
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-text-field
 	bind:this={element}
-	{...(id ? { id } : {})}
+	{...attrs({
+		id, placeholder, appearance, disabled, readonly, required, type, name, autofocus,
+		autocomplete, style, title
+	})}
 	{...(value != null ? { value } : {})}
-	{...(placeholder ? { placeholder } : {})}
-	{...(appearance ? { appearance } : {})}
-	{...(disabled ? { disabled } : {})}
-	{...(readonly ? { readonly } : {})}
-	{...(required ? { required } : {})}
-	{...(type ? { type } : {})}
-	{...(name ? { name } : {})}
-	{...(autofocus ? { autofocus } : {})}
-	{...(autocomplete ? { autocomplete } : {})}
-	{...(style ? { style } : {})}
-	{...(title ? { title } : {})}
 	{...(label || labelTemplate ? { "aria-label": label } : {})}
 	oninput={handleOnInput}
 	onchange={handleOnChange}

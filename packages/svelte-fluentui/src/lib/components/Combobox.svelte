@@ -19,6 +19,7 @@
 -->
 
 <script lang="ts">
+	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import {setContext, untrack, tick} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
@@ -817,7 +818,7 @@
 		class:multiple
 		class:tags-inline={inlineTags}
 		style={controlStyle()}
-		{...(title ? {title} : {})}
+		{...attrs({title})}
 		onclick={handleControlClick}
 	>
 		<!-- Wrapping main box: chips + input. Kept as its own flex:1 box (rather than
