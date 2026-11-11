@@ -11,7 +11,7 @@
 
 	const properties: Property[] = [
 		{name: "value", type: "string | string[]", default: "undefined", description: "Selected value(s) (bindable)"},
-		{name: "multi", type: "boolean", default: "false", description: "Enable multiple selection"},
+		{name: "multiple", type: "boolean", default: "false", description: "Enable multiple selection"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the component"},
 		{name: "autofocus", type: "boolean", default: "false", description: "Auto-focus on mount"},
 		{name: "name", type: "string", default: "undefined", description: "Form field name"},
@@ -240,7 +240,7 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<small>Use Ctrl/Cmd + click to select multiple items</small>
-					<Listbox value={[]} multi>
+					<Listbox value={[]} multiple>
 						<Option value="option1">Option 1</Option>
 						<Option value="option2">Option 2</Option>
 						<Option value="option3">Option 3</Option>

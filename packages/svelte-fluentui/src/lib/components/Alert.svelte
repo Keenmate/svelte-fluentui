@@ -7,7 +7,7 @@
 	type Props = {
 		intent?: Intent
 		title?: string
-		dismissable?: boolean
+		dismissible?: boolean
 		class?: string
 		style?: string
 		/** Fires when the user dismisses the alert. */
@@ -19,7 +19,7 @@
 	let {
 		intent = 'info',
 		title = undefined,
-		dismissable = false,
+		dismissible = false,
 		class: classParam = undefined,
 		style: styleParam = undefined,
 		onDismiss = undefined,
@@ -70,7 +70,7 @@
 			{/if}
 		</div>
 
-		{#if dismissable}
+		{#if dismissible}
 			<button
 				class="fluent-alert__dismiss"
 				aria-label="Dismiss"

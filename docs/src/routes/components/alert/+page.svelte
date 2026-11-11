@@ -12,7 +12,7 @@
 	const properties: Property[] = [
 		{name: "intent", type: "'info' | 'success' | 'warning' | 'danger'", default: "'info'", description: "The intent/severity level of the alert"},
 		{name: "title", type: "string", default: "undefined", description: "The header/title text"},
-		{name: "dismissable", type: "boolean", default: "false", description: "Whether the alert can be dismissed"},
+		{name: "dismissible", type: "boolean", default: "false", description: "Whether the alert can be dismissed"},
 		{name: "class", type: "string", default: "undefined", description: "Custom CSS classes"},
 		{name: "style", type: "string", default: "undefined", description: "Inline styles"}
 	]
@@ -96,14 +96,14 @@
 	</Card>
 
 	<Card>
-		<h2 class="content-subhead">Dismissable</h2>
+		<h2 class="content-subhead">Dismissible</h2>
 		<p style="margin-bottom: 1rem;">Dismissed count: {dismissCount}</p>
 		<Stack orientation="vertical" gap="1rem">
-			<Alert intent="info" title="Dismissable Alert" dismissable onDismiss={handleDismiss}>
+			<Alert intent="info" title="Dismissible Alert" dismissible onDismiss={handleDismiss}>
 				Click the X button to dismiss this alert.
 			</Alert>
 
-			<Alert intent="warning" title="Another Dismissable" dismissable onDismiss={handleDismiss}>
+			<Alert intent="warning" title="Another Dismissible" dismissible onDismiss={handleDismiss}>
 				This warning can also be dismissed.
 			</Alert>
 		</Stack>

@@ -30,7 +30,7 @@
 		{name: "modal", type: "boolean", default: "undefined", description: "Modal behavior"},
 		{name: "open", type: "boolean", default: "undefined", description: "Whether the dialog is open (bindable)"},
 		{name: "preventClose", type: "boolean", default: "false", description: "Hide the close button and ignore Escape / overlay clicks"},
-		{name: "dismissable", type: "boolean", default: "false", description: "Show dismiss button"},
+		{name: "dismissible", type: "boolean", default: "false", description: "Show dismiss button"},
 		{name: "trapFocus", type: "boolean", default: "undefined", description: "Trap focus"},
 		{name: "size", type: '"small" | "medium" | "large" | "extra-large" | "full"', default: '"medium"', description: "Predefined dialog size"},
 		{name: "width", type: "string", default: "undefined", description: "Custom width (overrides size)"},

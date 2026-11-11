@@ -251,7 +251,7 @@
 			{#if maxFiveAlertShown && maxFiveError}
 				<Alert
 					intent="danger"
-					dismissable
+					dismissible
 					onDismiss={() => maxFiveAlertShown = false}
 					style="margin-bottom: 0.5rem;"
 				>

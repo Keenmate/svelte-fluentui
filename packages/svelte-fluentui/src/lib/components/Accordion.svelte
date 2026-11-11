@@ -8,7 +8,7 @@
  * (gap), per-item `disabled`, and a real expand/collapse animation, with no
  * shadow-DOM upgrade cost.
  *
- * The parent owns the value/multi state and exposes it — plus toggle and
+ * The parent owns the value/multiple state and exposes it — plus toggle and
  * keyboard-nav helpers — to <AccordionItem> children via the
  * 'fluent-accordion' context.
 -->
@@ -21,12 +21,13 @@
 	type ValueType = string | string[] | null | undefined
 
 	type Props = {
-		/** Expanded item id(s). String (single) or string[] (multi). In multi
+		/** Expanded item id(s). String (single) or string[] (multiple). In multiple
 		 * mode set to an array of every item id to expand all at once; null
 		 * collapses all. */
 		value?: ValueType
 		/** Allow multiple items open at once. */
-		multi?: boolean
+		/** Allow more than one item to be expanded at a time. */
+		multiple?: boolean
 		/** Side the expand/collapse chevron sits on. "end" (default) = right in
 		 * LTR, "start" = left. */
 		togglePosition?: "start" | "end"
@@ -41,7 +42,7 @@
 
 	let {
 		value = $bindable(),
-		multi = false,
+		multiple = false,
 		togglePosition = "end",
 		gap = undefined,
 		children = undefined,
@@ -56,7 +57,7 @@
 	}
 
 	function toggle(id: string) {
-		if (multi) {
+		if (multiple) {
 			const ids = normalizeToIds(value)
 			const next = ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]
 			value = next.length ? next : null

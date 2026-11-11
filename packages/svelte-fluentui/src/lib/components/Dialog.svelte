@@ -125,7 +125,7 @@
 		/** Whether the dialog is open (bindable). */
 		open?: boolean
 		preventClose?: boolean
-		dismissable?: boolean
+		dismissible?: boolean
 		trapFocus?: boolean
 		ariaDescribedby?: string
 		ariaLabelledby?: string
@@ -167,7 +167,7 @@
 		    ariaLabelledby = undefined,
 		    ariaLabel = undefined,
 		    preventClose = false,
-		    dismissable = false,
+		    dismissible = false,
 		    title = undefined,
 		    header = undefined,
 		    children = undefined,
@@ -312,7 +312,7 @@
 	}
 
 	const hasFooterContent = $derived(
-		!!footer || !!actions || dismissable || !!primaryAction || !!secondaryAction
+		!!footer || !!actions || dismissible || !!primaryAction || !!secondaryAction
 	)
 	// A dedicated header row is rendered only when there's an actual title or custom
 	// header snippet — otherwise the close X floats in the top-right corner so legacy
@@ -378,7 +378,7 @@
 							{@render actions()}
 						</div>
 					{/if}
-					{#if dismissable}
+					{#if dismissible}
 						<Button onclick={() => requestClose("dismiss")}>
 							{#if dismissButtonText}
 								{@render dismissButtonText()}

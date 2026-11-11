@@ -23,7 +23,7 @@ export type SelectedValue = OptionItem["value"][] | undefined | null
 
 /**
  * Context provided by the custom <Accordion> and consumed by each
- * <AccordionItem>. The parent owns the value/multi state; items read their
+ * <AccordionItem>. The parent owns the value/multiple state; items read their
  * expanded state and delegate clicks / keyboard nav back to the parent.
  */
 export type AccordionSvelteContext = {
@@ -33,7 +33,7 @@ export type AccordionSvelteContext = {
 	togglePosition: "start" | "end"
 	/** Whether the given item id is currently expanded. */
 	isExpanded(id: string): boolean
-	/** Toggle the given item, applying single/multi expand rules. */
+	/** Toggle the given item, applying single/multiple expand rules. */
 	toggle(id: string): void
 	/** Handle Arrow/Home/End roving focus between item headers. */
 	onHeaderKeydown(id: string, event: KeyboardEvent): void

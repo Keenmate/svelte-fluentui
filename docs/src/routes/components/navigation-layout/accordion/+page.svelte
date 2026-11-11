@@ -4,7 +4,7 @@
 	let accordionValue = $state<string | string[] | null>(null)
 	let deletedField = $state<string | null>(null)
 
-	// Expand / collapse all (multi mode). In multi mode the bound `value` IS the
+	// Expand / collapse all (multiple mode). In multiple mode the bound `value` IS the
 	// list of open item ids, so there's no imperative "open all" call: setting
 	// value to an array of every id expands all, and null (or []) collapses all.
 	// Each AccordionItem derives its own state from `value.includes(id)`, so one
@@ -32,8 +32,8 @@
 	}
 
 	const accordionProperties: Property[] = [
-		{name: "value", type: "string | string[]", default: "null", description: "Expanded item ID(s). In multi mode, set to an array of every item id to expand all at once; null collapses all"},
-		{name: "multi", type: "boolean", default: "undefined", description: "Allow multiple items open"},
+		{name: "value", type: "string | string[]", default: "null", description: "Expanded item ID(s). In multiple mode, set to an array of every item id to expand all at once; null collapses all"},
+		{name: "multiple", type: "boolean", default: "false", description: "Allow multiple items open"},
 		{name: "togglePosition", type: '"start" | "end"', default: '"end"', description: "Side the expand/collapse chevron sits on. \"end\" = right (LTR default), \"start\" = left"},
 		{name: "gap", type: "string", default: "undefined", description: "Gap between items (any CSS length, e.g. \"0.5rem\"). Defaults to the FluentUI spacing"}
 	]
@@ -115,7 +115,7 @@
 
 			<GridItem xs={12} xl={6} xxl={4}>
 				<h3>Accordion with multiple expand allowed</h3>
-				<Accordion multi={true}>
+				<Accordion multiple>
 					{#snippet children()}
 						<AccordionItem id="multi-1" header="First">
 							<p>Multi mode - first item content.</p>
@@ -193,10 +193,10 @@
 					<Button appearance="accent" onclick={() => (expandAllValue = [...expandAllIds])}>Expand all</Button>
 					<Button onclick={() => (expandAllValue = null)}>Collapse all</Button>
 				</Stack>
-				<Accordion multi={true} bind:value={expandAllValue}>
+				<Accordion multiple bind:value={expandAllValue}>
 					{#snippet children()}
 						<AccordionItem id="exp-1" header="First">
-							<p>In multi mode, set value to an array of every item id.</p>
+							<p>In multiple mode, set value to an array of every item id.</p>
 						</AccordionItem>
 						<AccordionItem id="exp-2" header="Second">
 							<p>Setting value to null collapses everything.</p>
@@ -302,7 +302,7 @@
 					slot keeps a trailing inset in <code>togglePosition="start"</code> so the chip clears the
 					card edge.
 				</p>
-				<Accordion togglePosition="start" multi={true}>
+				<Accordion togglePosition="start" multiple>
 					{#snippet children()}
 						{#each standardFields as f (f.id)}
 							<AccordionItem id={f.id}>

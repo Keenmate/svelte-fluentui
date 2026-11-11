@@ -58,7 +58,7 @@
 					</div>
 
 					<div>
-						<Accordion bind:value={expandedAccordionItemMulti} multi>
+						<Accordion bind:value={expandedAccordionItemMulti} multiple>
 							<AccordionItem id="my-multi-accordion-1" header="Item 1">Content 1</AccordionItem>
 							<AccordionItem id="my-multi-accordion-2" header="Item 2">Content 2</AccordionItem>
 							<AccordionItem id="my-multi-accordion-3" header="Item 3">Content 3</AccordionItem>

@@ -147,7 +147,7 @@
 			<!--	</div>-->
 
 			<!--	<div>-->
-			<!--		<Listbox bind:value={listboxMultiValue} multi>-->
+			<!--		<Listbox bind:value={listboxMultiValue} multiple>-->
 			<!--			<Option value="listbox-option-1">Option 1</Option>-->
 			<!--			<Option value="listbox-option-2">Option 2</Option>-->
 			<!--			<Option value="listbox-option-3">Option 3</Option>-->

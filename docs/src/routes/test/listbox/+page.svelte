@@ -18,7 +18,7 @@
 </section>
 
 <section id="multi-wrap">
-	<Listbox bind:value={multiple} multi>
+	<Listbox bind:value={multiple} multiple>
 		<Option value="a">Alpha</Option>
 		<Option value="b">Bravo</Option>
 		<Option value="c">Charlie</Option>

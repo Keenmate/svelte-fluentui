@@ -17,7 +17,8 @@
 
 	type Props = {
 		value: ValueType
-		multi?: boolean
+		/** Allow selecting more than one option. */
+		multiple?: boolean
 		disabled?: boolean
 		autofocus?: boolean
 		name?: string
@@ -37,7 +38,7 @@
 
 	let {
 		value = $bindable(),
-		multi = undefined,
+		multiple = undefined,
 		disabled = undefined,
 		autofocus = undefined,
 		name = undefined,
@@ -75,12 +76,12 @@
 		| undefined = $state()
 
 	// svelte-ignore state_referenced_locally
-	const selectedOptions = createSelectedOptions(value, multi)
+	const selectedOptions = createSelectedOptions(value, multiple)
 	selectedOptionsContext.set(selectedOptions)
 
 	// The context holds an array; the public `value` is a string in single mode.
 	function fromContext(current: SelectedValue): ValueType {
-		return multi ? (current ?? []) : (current?.[0] ?? null)
+		return multiple ? (current ?? []) : (current?.[0] ?? null)
 	}
 
 	// An Option click toggles the context; that is the only user-driven change,
@@ -126,7 +127,7 @@
 	aria-label={ariaLabel || null}
 	class={className || null}
 	style={computedStyle}
-	multiple={multi || null}
+	multiple={multiple || null}
 	onchange={handleOnChange}
 >
 	{@render children?.()}
