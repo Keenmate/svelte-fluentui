@@ -36,7 +36,7 @@
 		/** Maximum allowed time in HH:mm or HH:mm:ss format. */
 		maxTime?: string
 		/** Custom predicate marking a specific (h, m, s) triplet as disabled. Composes with minTime/maxTime/disabledTimes. */
-		disabledTimeFunc?: (hour: number, minute: number, second: number) => boolean
+		getIsTimeDisabledCallback?: (ctx: {hour: number; minute: number; second: number}) => boolean
 		/** Convenience shorthand for booked / blocked time slots. Each entry in "HH:mm" or "HH:mm:ss" form. */
 		disabledTimes?: string[]
 		/** When true (default), the popup closes when the user clicks OK. */
@@ -49,8 +49,10 @@
 		title?: string
 		class?: string
 		style?: string
-		onValueChange?: (value: string | null) => void
-		onOpenChange?: (open: boolean) => void
+		/** Fires when the user picks or clears a time. */
+		onChange?: (ctx: {value: string | null}) => void
+		/** Fires when the clock popup opens or closes. */
+		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
 	let {
@@ -72,7 +74,7 @@
 		secondStep = 1,
 		minTime = undefined,
 		maxTime = undefined,
-		disabledTimeFunc = undefined,
+		getIsTimeDisabledCallback = undefined,
 		disabledTimes = undefined,
 		autoClose = true,
 		openOnInputClick = true,
@@ -81,7 +83,7 @@
 		title = undefined,
 		class: className = "",
 		style = "",
-		onValueChange = undefined,
+		onChange = undefined,
 		onOpenChange = undefined
 	}: Props = $props()
 
@@ -94,7 +96,7 @@
 	function setOpen(next: boolean) {
 		if (open === next) return
 		open = next
-		onOpenChange?.(next)
+		onOpenChange?.({open: next})
 	}
 
 	// Parse min/max time into total minutes for easy comparison.
@@ -124,7 +126,7 @@
 		const total = h * 3600 + m * 60 + s
 		if (minTotal != null && total < minTotal) return true
 		if (maxTotal != null && total > maxTotal) return true
-		if (disabledTimeFunc?.(h, m, s)) return true
+		if (getIsTimeDisabledCallback?.({hour: h, minute: m, second: s})) return true
 		if (disabledTimesSet.has(`${h}:${m}:${s}`)) return true
 		return false
 	}
@@ -319,14 +321,14 @@
 		if (isTimeDisabled(h, selectedMinute, showSeconds ? selectedSecond : 0)) return
 		value = generateTimeValue()
 		if (autoClose) setOpen(false)
-		onValueChange?.(value)
+		onChange?.({value})
 	}
 
 	// Handle clear
 	function handleClear() {
 		value = null
 		setOpen(false)
-		onValueChange?.(null)
+		onChange?.({value: null})
 	}
 
 	// Generate hour options

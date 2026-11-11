@@ -30,7 +30,7 @@
 	let maxFiveError     = $state<CalendarSelectionError | null>(null)
 	let maxFiveAlertShown = $state(false)
 
-	function selectOneWeek(date: Date): Date[] {
+	function selectOneWeek({date}: {date: Date}): Date[] {
 		const day     = date.getDay()
 		const diff    = day === 0 ? -6 : 1 - day
 		const monday  = new Date(date)
@@ -44,7 +44,7 @@
 		return week
 	}
 
-	function selectThreeDays(date: Date): Date[] {
+	function selectThreeDays({date}: {date: Date}): Date[] {
 		const result: Date[] = []
 		for (let i = -1; i <= 1; i++) {
 			const d = new Date(date)
@@ -66,16 +66,16 @@
 		return date.toISOString().substring(0, 11)
 	}
 
-	function getIsDateDisabled(date: Date): boolean {
+	function getIsDateDisabled({date}: {date: Date}): boolean {
 		return disabledDates.includes(toDateISOString(date))
 	}
 
-	function onDateSelected(date: Date) {
-		value = date
+	function onDateSelected({value: date}: {value: Date | Date[]}) {
+		value = date as Date
 	}
 
-	function onDatesSelected(dates: Date[]) {
-		values = dates
+	function onDatesSelected({value: dates}: {value: Date | Date[]}) {
+		values = dates as Date[]
 	}
 
 	type Property = {
@@ -93,26 +93,26 @@
 		{name: "view", type: '"days" | "months" | "years"', default: '"days"', description: "Calendar view mode"},
 		{name: "selectMode", type: '"single" | "multiple" | "range"', default: '"single"', description: "Selection mode"},
 		{name: "checkIfSelectedValueHasChanged", type: "boolean", default: "false", description: "Verify value changes before updating"},
-		{name: "disabledDateFunc", type: "(date: Date) => boolean", default: "undefined", description: "Function to disable specific dates"},
+		{name: "getIsDateDisabledCallback", type: "(ctx: {date: Date}) => boolean", default: "undefined", description: "Return true to disable a date"},
+		{name: "getIsDateSelectableCallback", type: "(ctx: {date: Date}) => boolean", default: "undefined", description: "Inverse: return true to allow a date; a date must pass both"},
 		{name: "disabledCheckAllDaysOfMonthYear", type: "boolean", default: "false", description: "Check all days when disabling"},
 		{name: "animatePeriodChanges", type: "boolean", default: "false", description: "Animate month/year transitions"},
 		{name: "disabledSelectable", type: "boolean", default: "false", description: "Allow selecting disabled dates"},
 		{name: "dayFormat", type: "string", default: "undefined", description: "Custom day number format"},
 		{name: "readonly", type: "boolean", default: "false", description: "Blocks day/month/year/title interaction without visual de-emphasis. ARIA: sets aria-readonly on the host."},
 		{name: "disabled", type: "boolean", default: "false", description: "Blocks interaction AND visually de-emphasizes the whole calendar (reduced opacity, not-allowed cursor on interactive cells). ARIA: sets aria-disabled on the host."},
-		{name: "highlightDates", type: "(date: Date) => Date[]", default: "undefined", description: "Hover-preview function — returns the dates to visually highlight when the cursor is over a day"},
-		{name: "selectDates", type: "(date: Date) => Date[]", default: "undefined", description: "Click-selection function — returns the dates to select on click. Multiple mode unions with existing; range mode replaces"},
-		{name: "maxSelectableDays", type: "number", default: "undefined", description: "Upper bound on selected dates (multiple/range). Exceeding fires onSelectionError and leaves the selection untouched"}
+		{name: "getDatesToHighlightCallback", type: "(ctx: {date: Date}) => Date[]", default: "undefined", description: "Hover preview — returns the dates to highlight when the cursor is over a day"},
+		{name: "getDatesToSelectCallback", type: "(ctx: {date: Date}) => Date[]", default: "undefined", description: "Click selection — returns the dates to select on click. Multiple mode unions with existing; range mode replaces"},
+		{name: "maxSelectableDays", type: "number", default: "undefined", description: "Upper bound on selected dates (multiple/range). Exceeding fires onSelectionReject and leaves the selection untouched"}
 	]
 
 	const actions: Property[] = []
 
 	const callbacks: Property[] = [
-		{name: "onDatesSelected", type: "(values: Date[]) => void", default: "undefined", description: "Fires when selected dates change (multi/range)"},
-		{name: "onDateSelected", type: "(value: Date) => void", default: "undefined", description: "Fires when a date is selected (single)"},
-		{name: "onSelectionError", type: "(error: CalendarSelectionError) => void", default: "undefined", description: "Fires when an attempted selection would exceed maxSelectableDays"},
-		{name: "onPickerMonthChange", type: "(month: Date) => void", default: "undefined", description: "Fires when the user navigates months/years"},
-		{name: "onDayHover", type: "(date: Date | null) => void", default: "undefined", description: "Fires when the cursor enters a day cell (date) or leaves the day grid (null)"}
+		{name: "onChange", type: "(ctx: {value: Date | Date[]}) => void", default: "undefined", description: "Fires when the user changes the selection: Date in single mode, Date[] in multiple/range mode"},
+		{name: "onSelectionReject", type: "(ctx: CalendarSelectionError) => void", default: "undefined", description: "Fires when an attempted selection would exceed maxSelectableDays"},
+		{name: "onPickerMonthChange", type: "(ctx: {pickerMonth: Date}) => void", default: "undefined", description: "Fires when the user navigates months/years"},
+		{name: "onDayHover", type: "(ctx: {date: Date | null}) => void", default: "undefined", description: "Fires when the cursor enters a day cell (date) or leaves the day grid (null)"}
 	]
 
 	const slots: Property[] = [
@@ -158,8 +158,8 @@
 			<Calendar
 				bind:pickerMonth
 				{value}
-				disabledDateFunc={getIsDateDisabled}
-				{onDateSelected}
+				getIsDateDisabledCallback={getIsDateDisabled}
+				onChange={onDateSelected}
 			/>
 		</div>
 		<div class="calendar-item">
@@ -171,8 +171,8 @@
 				bind:pickerMonth
 				{value}
 				view="months"
-				disabledDateFunc={getIsDateDisabled}
-				{onDateSelected}
+				getIsDateDisabledCallback={getIsDateDisabled}
+				onChange={onDateSelected}
 			/>
 		</div>
 		<div class="calendar-item">
@@ -184,8 +184,8 @@
 				bind:pickerMonth
 				{value}
 				view="years"
-				disabledDateFunc={getIsDateDisabled}
-				{onDateSelected}
+				getIsDateDisabledCallback={getIsDateDisabled}
+				onChange={onDateSelected}
 			/>
 		</div>
 	</div>
@@ -197,8 +197,8 @@
 				bind:pickerMonth
 				selectedDates={values}
 				selectMode="range"
-				disabledDateFunc={getIsDateDisabled}
-				{onDatesSelected}
+				getIsDateDisabledCallback={getIsDateDisabled}
+				onChange={onDatesSelected}
 			/>
 			<p>Selected</p>
 			<ul>
@@ -213,8 +213,8 @@
 				bind:pickerMonth
 				selectedDates={values}
 				selectMode="multiple"
-				disabledDateFunc={getIsDateDisabled}
-				{onDatesSelected}
+				getIsDateDisabledCallback={getIsDateDisabled}
+				onChange={onDatesSelected}
 			/>
 			<p>Selected</p>
 			<ul>
@@ -233,10 +233,10 @@
 				bind:pickerMonth
 				selectedDates={weekValues}
 				selectMode="range"
-				disabledDateFunc={getIsDateDisabled}
-				highlightDates={selectOneWeek}
-				selectDates={selectOneWeek}
-				onDatesSelected={(dates) => weekValues = dates}
+				getIsDateDisabledCallback={getIsDateDisabled}
+				getDatesToHighlightCallback={selectOneWeek}
+				getDatesToSelectCallback={selectOneWeek}
+				onChange={({value}) => weekValues = value as Date[]}
 			/>
 			<p>Selected</p>
 			<ul>
@@ -263,9 +263,9 @@
 				selectedDates={maxFiveValues}
 				selectMode="multiple"
 				maxSelectableDays={5}
-				disabledDateFunc={getIsDateDisabled}
-				onDatesSelected={(dates) => maxFiveValues = dates}
-				onSelectionError={handleMaxFiveError}
+				getIsDateDisabledCallback={getIsDateDisabled}
+				onChange={({value}) => maxFiveValues = value as Date[]}
+				onSelectionReject={handleMaxFiveError}
 			/>
 			<p>Selected</p>
 			<ul>
@@ -281,11 +281,11 @@
 				bind:pickerMonth
 				selectedDates={threeDayValues}
 				selectMode="multiple"
-				disabledDateFunc={getIsDateDisabled}
-				highlightDates={selectThreeDays}
-				selectDates={selectThreeDays}
-				onDatesSelected={(dates) => threeDayValues = dates}
-				onDayHover={(date) => threeDayHovered = date}
+				getIsDateDisabledCallback={getIsDateDisabled}
+				getDatesToHighlightCallback={selectThreeDays}
+				getDatesToSelectCallback={selectThreeDays}
+				onChange={({value}) => threeDayValues = value as Date[]}
+				onDayHover={({date}) => threeDayHovered = date}
 			/>
 			<p>Hovering: {threeDayHovered ? threeDayHovered.toLocaleDateString() : "—"}</p>
 			<p>Selected</p>
@@ -311,7 +311,7 @@
 			<Calendar
 				bind:pickerMonth
 				{value}
-				{onDateSelected}
+				onChange={onDateSelected}
 			/>
 		</div>
 		<div class="calendar-item">
@@ -320,7 +320,7 @@
 				bind:pickerMonth
 				{value}
 				readonly={true}
-				{onDateSelected}
+				onChange={onDateSelected}
 			/>
 		</div>
 		<div class="calendar-item">
@@ -329,7 +329,7 @@
 				bind:pickerMonth
 				{value}
 				disabled={true}
-				{onDateSelected}
+				onChange={onDateSelected}
 			/>
 		</div>
 	</div>

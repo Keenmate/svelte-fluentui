@@ -32,10 +32,10 @@
 		dateFormat?: Intl.DateTimeFormatOptions
 		minDate?: Date
 		maxDate?: Date
-		/** Custom date-disable predicate (composes with minDate/maxDate and selectableDates). */
-		disabledDateFunc?: (date: Date) => boolean
-		/** Inverse of disabledDateFunc — return true to allow a date. Composes with disabledDateFunc. */
-		selectableDates?: (date: Date) => boolean
+		/** Return `true` to disable a date (composes with minDate/maxDate and getIsDateSelectableCallback). */
+		getIsDateDisabledCallback?: (ctx: {date: Date}) => boolean
+		/** Inverse of `getIsDateDisabledCallback` — return `true` to allow a date. A date must pass both. */
+		getIsDateSelectableCallback?: (ctx: {date: Date}) => boolean
 		/** Apply disabled styling to unselectable dates. Default true. */
 		disabledSelectable?: boolean
 		/** When true, treat a month/year as disabled only if every contained day is disabled. */
@@ -62,10 +62,12 @@
 		style?: string
 		/** Custom render for each day cell in the calendar popup. Receives CalendarDay properties. */
 		day?: Snippet<[day: CalendarDay]>
-		onValueChange?: (value: Date | null) => void
-		onOpenChange?: (open: boolean) => void
+		/** Fires when the user picks, types or clears a date. */
+		onChange?: (ctx: {value: Date | null}) => void
+		/** Fires when the calendar popup opens or closes. */
+		onOpenChange?: (ctx: {open: boolean}) => void
 		/** Fires when the user navigates months/years inside the calendar popup. */
-		onPickerMonthChange?: (month: Date) => void
+		onPickerMonthChange?: (ctx: {pickerMonth: Date}) => void
 	}
 
 	let {
@@ -83,8 +85,8 @@
 		dateFormat = { year: 'numeric', month: 'long', day: 'numeric' },
 		minDate = undefined,
 		maxDate = undefined,
-		disabledDateFunc = undefined,
-		selectableDates = undefined,
+		getIsDateDisabledCallback = undefined,
+		getIsDateSelectableCallback = undefined,
 		disabledSelectable = undefined,
 		disabledCheckAllDaysOfMonthYear = undefined,
 		dayFormat = undefined,
@@ -100,7 +102,7 @@
 		class: className = "",
 		style = "",
 		day: daySnippet = undefined,
-		onValueChange = undefined,
+		onChange = undefined,
 		onOpenChange = undefined,
 		onPickerMonthChange = undefined
 	}: Props = $props()
@@ -111,7 +113,7 @@
 	function setOpen(next: boolean) {
 		if (open === next) return
 		open = next
-		onOpenChange?.(next)
+		onOpenChange?.({open: next})
 	}
 	let wrapperElement = $state<HTMLElement | undefined>(undefined)
 	let popupElement = $state<HTMLElement | undefined>(undefined)
@@ -153,13 +155,13 @@
 		inputValue = formatDate(value)
 	})
 
-	// Check if date is disabled — composes minDate/maxDate, disabledDateFunc, and selectableDates.
+	// Check if date is disabled — composes minDate/maxDate and the two callbacks.
 	function isDateDisabled(date: Date): boolean {
 		// By calendar day: a minDate of today 14:00 must not disable today.
 		if (minDate && isBeforeDay(date, minDate)) return true
 		if (maxDate && isAfterDay(date, maxDate)) return true
-		if (disabledDateFunc?.(date)) return true
-		if (selectableDates && !selectableDates(date)) return true
+		if (getIsDateDisabledCallback?.({date})) return true
+		if (getIsDateSelectableCallback && !getIsDateSelectableCallback({date})) return true
 		return false
 	}
 
@@ -167,7 +169,7 @@
 	function handleDateSelected(selectedDate: Date) {
 		value = selectedDate
 		if (autoClose) setOpen(false)
-		onValueChange?.(selectedDate)
+		onChange?.({value: selectedDate})
 	}
 
 	// Handle input click to open calendar
@@ -196,7 +198,7 @@
 			const parsed = new Date(target.value)
 			if (!isNaN(parsed.getTime()) && !isDateDisabled(parsed)) {
 				value = parsed
-				onValueChange?.(parsed)
+				onChange?.({value: parsed})
 			}
 		} catch {
 			// Invalid date, ignore
@@ -209,7 +211,7 @@
 		value = null
 		inputValue = ""
 		setOpen(false)
-		onValueChange?.(null)
+		onChange?.({value: null})
 	}
 </script>
 
@@ -291,8 +293,8 @@
 						{cellSize}
 						{gap}
 						{animatePeriodChanges}
-						disabledDateFunc={isDateDisabled}
-						onDateSelected={handleDateSelected}
+						getIsDateDisabledCallback={({date}) => isDateDisabled(date)}
+						onChange={({value}) => handleDateSelected(value as Date)}
 						{onPickerMonthChange}
 						day={daySnippet}
 					/>

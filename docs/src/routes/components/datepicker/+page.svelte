@@ -45,8 +45,8 @@
 		{name: "dateFormat", type: "Intl.DateTimeFormatOptions", default: '{ year: "numeric", month: "long", day: "numeric" }', description: "Format options passed to Intl.DateTimeFormat to control how the selected date is displayed."},
 		{name: "minDate", type: "Date", default: "undefined", description: "Minimum selectable date. Dates before this are disabled in the calendar."},
 		{name: "maxDate", type: "Date", default: "undefined", description: "Maximum selectable date. Dates after this are disabled in the calendar."},
-		{name: "disabledDateFunc", type: "(date: Date) => boolean", default: "undefined", description: "Custom predicate marking a date as disabled. Composes with minDate/maxDate and selectableDates."},
-		{name: "selectableDates", type: "(date: Date) => boolean", default: "undefined", description: "Inverse of disabledDateFunc — return true to allow a date. Composes with the other date filters."},
+		{name: "getIsDateDisabledCallback", type: "(ctx: {date: Date}) => boolean", default: "undefined", description: "Return true to disable a date. Composes with minDate/maxDate and getIsDateSelectableCallback."},
+		{name: "getIsDateSelectableCallback", type: "(ctx: {date: Date}) => boolean", default: "undefined", description: "Inverse of getIsDateDisabledCallback — return true to allow a date. Composes with the other date filters."},
 		{name: "disabledSelectable", type: "boolean", default: "undefined", description: "When true, disabled days still receive disabled styling rather than being hidden."},
 		{name: "disabledCheckAllDaysOfMonthYear", type: "boolean", default: "undefined", description: "When true, a month/year is treated as disabled only if every day inside it is disabled."},
 		{name: "dayFormat", type: '"two_digit" | null', default: "undefined", description: 'Day cell format. "two_digit" renders "01" instead of "1".'},
@@ -63,9 +63,9 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onValueChange", type: "(value: Date | null) => void", default: "undefined", description: "Called when the selected date changes, either by calendar selection or manual text entry. Receives the new Date value or null when cleared."},
-		{name: "onOpenChange", type: "(open: boolean) => void", default: "undefined", description: "Called when the calendar popup opens or closes."},
-		{name: "onPickerMonthChange", type: "(month: Date) => void", default: "undefined", description: "Called when the user navigates to a different month/year inside the popup."},
+		{name: "onChange", type: "(ctx: {value: Date | null}) => void", default: "undefined", description: "Fires when the user picks, types or clears a date (null when cleared)."},
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the calendar popup opens or closes."},
+		{name: "onPickerMonthChange", type: "(ctx: {pickerMonth: Date}) => void", default: "undefined", description: "Fires when the user navigates to a different month/year inside the popup."},
 	]
 
 	const slots: Property[] = [
@@ -145,15 +145,15 @@
 			<p style="margin: 0;">Selected: {customFormatDate ? customFormatDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }) : 'None'}</p>
 		</Stack>
 
-		<h3>DatePicker with selectableDates (weekdays only)</h3>
-		<p>Inverse of <code>disabledDateFunc</code> — return <code>true</code> for dates the user is allowed to pick. Here we only allow Mon–Fri.</p>
+		<h3>DatePicker with getIsDateSelectableCallback (weekdays only)</h3>
+		<p>Inverse of <code>getIsDateDisabledCallback</code> — return <code>true</code> for dates the user is allowed to pick. Here we only allow Mon–Fri.</p>
 
 		<Stack orientation="vertical" gap="1rem" style="max-width: 400px;">
 			<DatePicker
 				bind:value={weekdaysOnlyDate}
 				label="Weekdays only"
 				placeholder="Mon–Fri"
-				selectableDates={(d) => d.getDay() !== 0 && d.getDay() !== 6}
+				getIsDateSelectableCallback={({date}) => date.getDay() !== 0 && date.getDay() !== 6}
 			/>
 			<p style="margin: 0;">Selected: {weekdaysOnlyDate ? weekdaysOnlyDate.toLocaleDateString() : 'None'}</p>
 		</Stack>
@@ -187,7 +187,7 @@
 				bind:value={pickerMonthDate}
 				label="Watch the displayed month"
 				placeholder="Open and navigate"
-				onPickerMonthChange={(m) => pickerMonthLabel = m.toLocaleDateString(undefined, {year: 'numeric', month: 'long'})}
+				onPickerMonthChange={({pickerMonth}) => pickerMonthLabel = pickerMonth.toLocaleDateString(undefined, {year: 'numeric', month: 'long'})}
 			/>
 			<p style="margin: 0;">Currently viewing: {pickerMonthLabel || '(open the popup and click ▲/▼)'}</p>
 		</Stack>

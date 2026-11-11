@@ -24,9 +24,10 @@
 		view?: CalendarView
 		selectMode?: CalendarSelectMode
 		checkIfSelectedValueHasChanged?: boolean
-		disabledDateFunc?: (date: Date) => boolean
-		/** Inverse of disabledDateFunc — return true to allow a date. When both are set, disabledDateFunc wins. */
-		selectableDates?: (date: Date) => boolean
+		/** Return `true` to disable a date. */
+		getIsDateDisabledCallback?: (ctx: {date: Date}) => boolean
+		/** Inverse of `getIsDateDisabledCallback` — return `true` to allow a date. When both are set, a date must pass both. */
+		getIsDateSelectableCallback?: (ctx: {date: Date}) => boolean
 		disabledCheckAllDaysOfMonthYear?: boolean
 		animatePeriodChanges?: boolean
 		disabledSelectable?: boolean
@@ -38,27 +39,27 @@
 		readonly?: boolean
 		/** When true, the calendar is non-interactive AND visually de-emphasized (opacity, not-allowed cursor on interactive cells, `aria-disabled="true"` on the host). Stricter than `readonly`, which blocks interaction without visual treatment. */
 		disabled?: boolean
-		/** Hover-preview function: given the day under the cursor, returns the set of dates to visually highlight. Defaults to `[date]`. */
-		highlightDates?: (date: Date) => Date[]
-		/** Click-selection function: given the clicked day, returns the dates to select. In multiple mode, the result is unioned with existing `selectedDates` (or removed wholesale if the clicked day was already selected). In range mode, the result replaces the range. Defaults to `[date]`. */
-		selectDates?: (date: Date) => Date[]
-		/** Upper bound for the number of dates that can be selected in multiple mode. When exceeded, `onSelectionError` fires and the selection is not modified. */
+		/** Hover preview: given the day under the cursor, returns the dates to highlight. Defaults to `[date]`. */
+		getDatesToHighlightCallback?: (ctx: {date: Date}) => Date[]
+		/** Click selection: given the clicked day, returns the dates to select. In multiple mode, the result is unioned with existing `selectedDates` (or removed wholesale if the clicked day was already selected). In range mode, the result replaces the range. Defaults to `[date]`. */
+		getDatesToSelectCallback?: (ctx: {date: Date}) => Date[]
+		/** Upper bound for the number of dates that can be selected in multiple mode. When exceeded, `onSelectionReject` fires and the selection is not modified. */
 		maxSelectableDays?: number
-		/** Fires when an attempted selection violates `maxSelectableDays`. The current `selectedDates` is left untouched. */
-		onSelectionError?: (error: CalendarSelectionError) => void
-		onDatesSelected?: (values: Date[]) => void
-		onDateSelected?: (value: Date) => void
+		/** Fires when an attempted selection is rejected (exceeds `maxSelectableDays`). The selection is left untouched. */
+		onSelectionReject?: (ctx: CalendarSelectionError) => void
+		/** Fires when the user changes the selection: a `Date` in single mode (also bound to `value`), a `Date[]` in multiple/range mode (also bound to `selectedDates`). */
+		onChange?: (ctx: {value: Date | Date[]}) => void
 		/** Fires when the user navigates months/years (prev/next buttons). */
-		onPickerMonthChange?: (month: Date) => void
+		onPickerMonthChange?: (ctx: {pickerMonth: Date}) => void
 		/** Fires when the cursor enters a day cell (with that day) or leaves the day grid (with `null`). Pure observation — does not affect highlighting. */
-		onDayHover?: (date: Date | null) => void
+		onDayHover?: (ctx: {date: Date | null}) => void
 		day?: Snippet<[day: CalendarDay]>
 		class?: string
 	}
 
 	let {
-		    value                           = new Date(),
-		    selectedDates                   = [],
+		    value                           = $bindable(new Date()),
+		    selectedDates                   = $bindable([]),
 		    pickerMonth                     = $bindable(new Date()),
 		    view                            = "days",
 		    culture                         = defaultLocale(),
@@ -73,14 +74,13 @@
 		    dayFormat                       = undefined,
 		    cellSize                        = undefined,
 		    gap                             = undefined,
-		    disabledDateFunc                = undefined,
-		    selectableDates                 = undefined,
-		    highlightDates                  = undefined,
-		    selectDates                     = undefined,
+		    getIsDateDisabledCallback       = undefined,
+		    getIsDateSelectableCallback     = undefined,
+		    getDatesToHighlightCallback     = undefined,
+		    getDatesToSelectCallback        = undefined,
 		    maxSelectableDays               = undefined,
-		    onSelectionError                = undefined,
-		    onDatesSelected                 = undefined,
-		    onDateSelected                  = undefined,
+		    onSelectionReject               = undefined,
+		    onChange                        = undefined,
 		    onPickerMonthChange             = undefined,
 		    onDayHover                      = undefined,
 		    day: daySnippet                 = undefined,
@@ -95,10 +95,10 @@
 
 	const canBeAnimated             = $derived(animatePeriodChanges ?? (view !== "days" && view !== "years"))
 	const calendarExtended          = $derived(new CalendarExtended(culture, pickerMonth, firstDayOfWeek ?? undefined))
-	// Merge disabledDateFunc with the inverse of selectableDates so the existing logic stays simple.
+	// Merge the disabled callback with the inverse of the selectable one so the existing logic stays simple.
 	const effectiveDisabledFunc = $derived<(date: Date) => boolean>((date) => {
-		if (disabledDateFunc?.(date)) return true
-		if (selectableDates && !selectableDates(date)) return true
+		if (getIsDateDisabledCallback?.({date})) return true
+		if (getIsDateSelectableCallback && !getIsDateSelectableCallback({date})) return true
 		return false
 	})
 	const calendar: IFluentCalendar = $derived({
@@ -108,7 +108,7 @@
 		dayFormat,
 		// Default to true so a month/year is only marked disabled when EVERY day in it is.
 		// With false (Blazor parity), date-range restrictions like min/maxDate make Jan 1 of every
-		// year fail the disabledDateFunc check, blocking the year picker entirely.
+		// year fail the disabled-date check, blocking the year picker entirely.
 		disabledCheckAllDaysOfMonthYear: disabledCheckAllDaysOfMonthYear ?? true,
 		disabledSelectable:              disabledSelectable ?? false,
 		// Treat `disabled` as effectively-readonly for the title/month/year selection gates.
@@ -178,8 +178,8 @@
 	}
 
 	function fireMaxExceeded(attempted: Date[]) {
-		onSelectionError?.({
-			code:      "max_selectable_days_exceeded",
+		onSelectionReject?.({
+			code:      "max-selectable-days-exceeded",
 			message:   `You can select a maximum of ${maxSelectableDays} day${maxSelectableDays === 1 ? "" : "s"}. Delete a day to select a new one.`,
 			attempted,
 			current:   selectedDates,
@@ -238,7 +238,7 @@
 				break
 		}
 		pickerMonth = new Date(pickerMonth)
-		onPickerMonthChange?.(pickerMonth)
+		onPickerMonthChange?.({pickerMonth})
 	}
 
 	async function onNextButtonHandlerAsync(e: MouseEvent) {
@@ -258,7 +258,7 @@
 				break
 		}
 		pickerMonth = new Date(pickerMonth)
-		onPickerMonthChange?.(pickerMonth)
+		onPickerMonthChange?.({pickerMonth})
 	}
 
 	async function onSelectDayHandlerAsync(value_: Date, dayDisabled: boolean) {
@@ -267,15 +267,16 @@
 		switch (selectMode) {
 			// Single selection
 			case "single":
-				onDateSelected?.(value_)
+				value = value_
+				onChange?.({value: value_})
 				break
 
 			// Multiple selection — toggle the clicked group (single day by default,
-			// or whatever selectDates returns). The clicked day determines the
+			// or whatever getDatesToSelectCallback returns). The clicked day determines the
 			// toggle pivot: if it's already in selectedDates, the entire group is
 			// removed; otherwise the group is unioned in.
 			case "multiple": {
-				const group     = selectDates ? selectDates(value_) : [value_]
+				const group     = getDatesToSelectCallback ? getDatesToSelectCallback({date: value_}) : [value_]
 				const isRemoving = selectedDates.some(d => sameDay(d, value_))
 
 				let newSelectedDates: Date[]
@@ -290,24 +291,24 @@
 					return
 				}
 
-				onDatesSelected?.(newSelectedDates)
+				selectDates(newSelectedDates)
 				break
 			}
 
 			// Range of dates
 			case "range": {
-				// When selectDates is provided, clicking any day defines the
+				// When getDatesToSelectCallback is provided, clicking any day defines the
 				// entire range via the function. The result is taken verbatim —
 				// callers control skip/jump-over behavior for disabled days.
-				if (selectDates) {
-					const group = selectDates(value_)
+				if (getDatesToSelectCallback) {
+					const group = getDatesToSelectCallback({date: value_})
 					if (maxSelectableDays !== undefined && group.length > maxSelectableDays) {
 						fireMaxExceeded(group)
 						return
 					}
 					_rangeSelector.start = getSmallest(group)
 					_rangeSelector.end   = getLargest(group)
-					onDatesSelected?.(group)
+					selectDates(group)
 					_selectedDatesMouseOver = []
 					break
 				}
@@ -346,7 +347,7 @@
 					return
 				}
 
-				onDatesSelected?.(newSelectedDates)
+				selectDates(newSelectedDates)
 				break
 			}
 		}
@@ -356,18 +357,18 @@
 		// Pure-observation hover callback fires regardless of selectMode or
 		// disabled state — consumers may want to react to inactive days too
 		// (e.g., tooltip explaining why the day is disabled).
-		onDayHover?.(value)
+		onDayHover?.({date: value})
 
 		if (dayDisabled || selectMode === "single") {
 			return
 		}
 
-		// Highlight set is whatever highlightDates returns (verbatim — no
+		// Highlight set is whatever getDatesToHighlightCallback returns (verbatim — no
 		// internal disabled filtering). Falls back to the existing in-progress
 		// range preview ([rangeStart, hovered]) for range mode when no
-		// highlightDates function is provided.
-		if (highlightDates) {
-			_selectedDatesMouseOver = highlightDates(value)
+		// getDatesToHighlightCallback is provided.
+		if (getDatesToHighlightCallback) {
+			_selectedDatesMouseOver = getDatesToHighlightCallback({date: value})
 			return
 		}
 
@@ -387,7 +388,8 @@
 		}
 
 		const newValue = new Date(year, month, 1, 0, 0, 0, 0)
-		onDateSelected?.(newValue)
+		value = newValue
+		onChange?.({value: newValue})
 	}
 
 	async function onSelectYearHandlerAsync(year: number, isReadOnly: boolean) {
@@ -396,11 +398,12 @@
 		}
 
 		const newValue = new Date(year, 0, 1, 0, 0, 0, 0)
-		onDateSelected?.(newValue)
+		value = newValue
+		onChange?.({value: newValue})
 	}
 
 	function allDaysAreDisabled(start: Date, end: Date) {
-		if (!disabledDateFunc && !selectableDates) {
+		if (!getIsDateDisabledCallback && !getIsDateSelectableCallback) {
 			return false
 		}
 
@@ -423,6 +426,11 @@
 
 	function getYearProperties(year?: number) {
 		return new CalendarYear(calendar, new Date(year ?? 0, 0, 1))
+	}
+
+	function selectDates(dates: Date[]) {
+		selectedDates = dates
+		onChange?.({value: dates})
 	}
 
 	function pickerMonthSelectAsync(month?: Date) {
@@ -521,7 +529,7 @@
 
 			{#if view === "days"}
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="days" part="days" onmouseleave={ev => { _selectedDatesMouseOver = []; onDayHover?.(null) }}>
+				<div class="days" part="days" onmouseleave={ev => { _selectedDatesMouseOver = []; onDayHover?.({date: null}) }}>
 					<!-- Titles: Mon, Tue, ... -->
 					<div class="week-days" part="week-days">
 						{#each calendarExtended.getDayNames() as weekDay}
@@ -623,7 +631,7 @@
 		<Calendar
 			view="months"
 			value={pickerMonth}
-			onDateSelected={pickerMonthSelectAsync}
+			onChange={({value: month}) => pickerMonthSelectAsync(month as Date)}
 			checkIfSelectedValueHasChanged={false}
 			{readonly}
 			{disabled}
@@ -631,7 +639,7 @@
 			{disabledSelectable}
 			{animatePeriodChanges}
 			disabledCheckAllDaysOfMonthYear={disabledCheckAllDaysOfMonthYear}
-			{disabledDateFunc}
+			{getIsDateDisabledCallback}
 			{cellSize}
 			{gap}
 		/>
@@ -641,7 +649,7 @@
 		<Calendar
 			view="years"
 			value={pickerMonth}
-			onDateSelected={pickerYearSelectAsync}
+			onChange={({value: year}) => pickerYearSelectAsync(year as Date)}
 			checkIfSelectedValueHasChanged={false}
 			{readonly}
 			{disabled}
@@ -649,7 +657,7 @@
 			disabledSelectable={disabledSelectable}
 			{animatePeriodChanges}
 			disabledCheckAllDaysOfMonthYear={disabledCheckAllDaysOfMonthYear}
-			{disabledDateFunc}
+			{getIsDateDisabledCallback}
 			{cellSize}
 			{gap}
 		/>
@@ -658,7 +666,7 @@
 
 <style>
 	/* Visual treatment for the host-level disabled state. Per-cell `aria-disabled` (e.g. dates filtered
-	   out by minDate/maxDate/disabledDateFunc) already has its own strikethrough rule in
+	   out by minDate/maxDate/getIsDateDisabledCallback) already has its own strikethrough rule in
 	   fluent-components.scss — these selectors only target the WHOLE-control disabled state
 	   (`.fluent-calendar[aria-disabled="true"]`, etc., set when the consumer passes `disabled`). */
 	:global(.fluent-calendar[aria-disabled="true"]),

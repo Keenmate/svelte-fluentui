@@ -25,8 +25,8 @@
 		{name: "secondStep", type: "number", default: "1", description: "Step interval for the seconds column."},
 		{name: "minTime", type: "string", default: "undefined", description: "Minimum allowed time in HH:mm or HH:mm:ss format."},
 		{name: "maxTime", type: "string", default: "undefined", description: "Maximum allowed time in HH:mm or HH:mm:ss format."},
-		{name: "disabledTimeFunc", type: "(h, m, s) => boolean", default: "undefined", description: "Custom predicate marking a specific (h, m, s) triplet as disabled. Composes with minTime/maxTime and disabledTimes."},
-		{name: "disabledTimes", type: "string[]", default: "undefined", description: 'Convenience shorthand for booked / blocked slots, e.g. ["10:15", "10:30"]. Composes with disabledTimeFunc.'},
+		{name: "getIsTimeDisabledCallback", type: "(ctx: {hour, minute, second}) => boolean", default: "undefined", description: "Return true to disable a specific time. Composes with minTime/maxTime and disabledTimes."},
+		{name: "disabledTimes", type: "string[]", default: "undefined", description: 'Convenience shorthand for booked / blocked slots, e.g. ["10:15", "10:30"]. Composes with getIsTimeDisabledCallback.'},
 		{name: "autoClose", type: "boolean", default: "true", description: "When true, the popup closes when the user clicks OK."},
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the popup (matching FluentUI Blazor). Set false to require clicking the clock icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the popup."},
@@ -36,7 +36,8 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onValueChange", type: "(value: string | null) => void", default: "undefined", description: "Called when the user confirms a time selection or clears the value. Receives the new time string (HH:mm or HH:mm:ss) or null if cleared."}
+		{name: "onChange", type: "(ctx: {value: string | null}) => void", default: "undefined", description: "Fires when the user confirms a time or clears the value (HH:mm or HH:mm:ss, or null)."},
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the clock popup opens or closes."}
 	]
 
 	const slots: Property[] = []
