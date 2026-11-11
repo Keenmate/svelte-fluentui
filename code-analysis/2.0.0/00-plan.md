@@ -87,10 +87,13 @@ Order: popup layer (dismiss + Escape + floating + listbox nav) across Select, Co
 - Renames done: `visible`→`open` (Dialog), `multi`→`multiple`, `selectedOptions`→`value`,
   `dismissable`→`dismissible`, `threeState`, `hourCycle`, AccordionItem `heading`, `start`/`end`
   snippets, kebab values (`2-digit`, `edit-start`, `move-up`), `maxFiles` dropped, stub components removed.
-- **Left:** intent palette (Toast `error`→`danger`; Field — see Q11), positions → logical, size scale,
-  limits (`maxSelectedOptions` → `maxSelectionCount`, Q8), QuickGrid `is*` props, empty-state /
-  debounce / close-behaviour names, `...rest` on the remaining components, bindable gaps, type
-  exports (QuickGrid types), drop `ProgressBar`/`AnchorButton` aliases + deprecated QuickGrid props.
+- Done 2026-11-11: positions → logical (Tooltip, PositioningRegion, Toast, Panel start/end only),
+  size scale (Badge/Label extra-small…extra-large, InputFile cardSize), QuickGrid `is*` props, aliases +
+  deprecated props dropped, `...rest` on every rendering component, bindable gaps, QuickGrid types
+  exported, generic `OptionItem<T>` with `label`, `FieldValidationState`, Escape on the layer stack
+  everywhere, docs svelte-check at 0 errors.
+- **Left:** intent palette (Q11), limits (Q8), empty-state / debounce / close-behaviour names,
+  `InputFileUpload*` / `FluentDialogElement` renames, one `Orientation`, decisions Q13–Q22.
 
 - Callbacks & events per [05-callbacks-events](05-callbacks-events.md): camelCase component events with one `ctx` (`onChange({ value })`), lowercase only for untouched native DOM events via `...rest`, `before*Callback` / `get*Callback` / `*Callback` contracts, `ActionItem` + one `onAction` for every menu/toolbar/dialog/palette/toast surface (port of core `/actions` into `lib/actions/`).
 - Value casing: `two_digit`, `max_selectable_days_exceeded`, `moveUp/moveDown`, `oneditstart/ondropdownopen`, accent color keys, Stack enums.
