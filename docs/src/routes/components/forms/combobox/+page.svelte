@@ -173,7 +173,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "id", type: "string", default: "Required", description: "Unique identifier"},
+		{name: "id", type: "string", default: "generated", description: "Id of the input (also the label's for); generated when omitted"},
 		{name: "value", type: "string[]", default: "[]", description: "Selected value(s) (bindable)"},
 		{name: "options", type: "OptionItem[]", default: "undefined", description: "Array of option items"},
 		{name: "multiple", type: "boolean", default: "false", description: "Multi-select: selected values render as removable chips and the input stays a filter. value/onChange carry the full array."},
@@ -202,6 +202,7 @@
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text"},
 		{name: "width", type: "string", default: "undefined", description: "Component width (e.g., '300px', '100%')"},
 		{name: "height", type: "string", default: "undefined", description: "Component height"},
+		{name: "currentValue", type: "string", default: "undefined", description: "Read-only bindable (bind:currentValue): the text currently in the input — the typed filter while searching, otherwise the selected option's label"},
 		{name: "maxDropdownHeight", type: "string", default: "undefined (280px cap)", description: "Cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
@@ -209,7 +210,8 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onChange", type: "(ctx: {value: string[]}) => void", default: "undefined", description: "Fires when the user changes the selection"}
+		{name: "onChange", type: "(ctx: {value: string[]}) => void", default: "undefined", description: "Fires when the user changes the selection"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (display: contents; id goes to the input)"}
 	]
 
 	const slots: Property[] = [

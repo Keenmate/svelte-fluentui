@@ -10,13 +10,14 @@
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import {untrack} from "svelte"
-	import type {SelectedValue} from "../types/index.js"
+	import type {NativeEventHandler, RestProps, SelectedValue} from "../types/index.js"
 	import {createSelectedOptions} from "../data/selected-options.svelte.js"
 
 	type ValueType = string | string[] | null | undefined
 
-	type Props = {
-		value: ValueType
+	type OwnProps = {
+		/** Selected value (array when `multiple`). Bindable. */
+		value?: ValueType
 		/** Allow selecting more than one option. */
 		multiple?: boolean
 		disabled?: boolean
@@ -33,8 +34,11 @@
 		/** Fires when the user selects or deselects an option. */
 		onChange?: (ctx: {value: ValueType}) => void
 		/** Native `change` event, forwarded untouched. */
-		onchange?: (event: Event) => void
+		onchange?: NativeEventHandler
 	}
+
+	/** Other native attributes and events (`onkeydown`, `onfocus`, …) go to `<fluent-listbox>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		value = $bindable(),
@@ -51,7 +55,8 @@
 		style = "",
 		children = undefined,
 		onChange = undefined,
-		onchange = undefined
+		onchange = undefined,
+		...rest
 	}: Props = $props()
 
 	// Combine width/height with style (default width: 100%)
@@ -123,6 +128,7 @@
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-listbox
 	bind:this={element}
+	{...rest}
 	{...attrs({disabled, autofocus, name, size})}
 	aria-label={ariaLabel || null}
 	class={className || null}

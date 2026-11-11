@@ -14,207 +14,31 @@
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {resolveMenuEntries, runAction, type ActionEventDetail, type ActionItem, type MenuDivider, type MenuEntry, type ResolvedActionItem} from "../action-items/index.js"
 
-	type EditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
-	type EditTrigger = "click" | "dblclick" | "button" | "always" | "navigate"
-	type OptionsLoadTrigger = "immediate" | "edit-start" | "dropdown-open"
-	type DateOutputFormat = "date" | "iso" | "timestamp"
+	import type {
+		QuickGridColumn as Column,
+		QuickGridEditorType as EditorType,
+		QuickGridEditTrigger as EditTrigger,
+		QuickGridEditorOption as EditorOption,
+		QuickGridCustomEditorContext as CustomEditorContext,
+		QuickGridCellValidationState as CellValidationState,
+		QuickGridBeforeCommitContext as BeforeCommitContext,
+		QuickGridBeforeCommitResult as BeforeCommitResult,
+		QuickGridRowChangeDetail as RowChangeDetail,
+		QuickGridRowToolbarAction as RowToolbarAction,
+		QuickGridRowContext as RowContext,
+		QuickGridRowToolbarItem as RowToolbarItem,
+		QuickGridRowToolbarConfig as RowToolbarConfig,
+		QuickGridContextMenuContext as ContextMenuContext,
+		QuickGridContextMenuAction as ContextMenuAction,
+		QuickGridContextMenuConfig as ContextMenuConfig,
+		QuickGridActionDetail,
+		GridCellEditorOptions
+	} from "./QuickGrid.types.js"
+	import type {RestProps} from "../types/index.js"
 
-	type EditorOption = {
-		value: string | number | boolean
-		label: string
-		[key: string]: unknown  // Allow extra properties
-	}
+	// Public model types live in QuickGrid.types.ts (exported from the package root).
 
-	type EditorOptions = {
-		// === SHARED (select/autocomplete) ===
-		options?: EditorOption[]
-		/** Loads the options for this row. `signal` aborts when a newer load for the column starts or the grid unmounts. */
-		loadOptionsCallback?: (ctx: {row: T; column: Column<T>; signal: AbortSignal}) => Promise<EditorOption[]>
-		optionsLoadTrigger?: OptionsLoadTrigger  // Default: "edit-start"
-		valueMember?: string    // Property to use as value (default: "value")
-		displayMember?: string  // Property to use as display (default: "label")
-		allowEmpty?: boolean    // Allow null/empty selection
-		emptyLabel?: string     // Label for empty option (default: "-- Select --")
-
-		// === TEXT ===
-		maxLength?: number
-		placeholder?: string
-		pattern?: string
-		inputMode?: "text" | "numeric" | "email" | "tel" | "url"
-
-		// === NUMBER ===
-		min?: number
-		max?: number
-		step?: number
-		decimalPlaces?: number
-		allowNegative?: boolean
-
-		// === CHECKBOX ===
-		trueValue?: unknown     // Value to store when checked (default: true)
-		falseValue?: unknown    // Value to store when unchecked (default: false)
-
-		// === DATE ===
-		minDate?: Date | string
-		maxDate?: Date | string
-		outputFormat?: DateOutputFormat  // What to store: Date object, ISO string, or timestamp
-
-		// === AUTOCOMPLETE ===
-		initialOptions?: EditorOption[]  // Show before search (popular items)
-		/** Server-side search for the autocomplete editor. */
-		searchCallback?: (ctx: {term: string; row: T; column: Column<T>; signal?: AbortSignal}) => Promise<EditorOption[]>
-		minSearchLength?: number         // Min chars before search (default: 1)
-		debounceMs?: number              // Debounce search calls (default: 300)
-		multiple?: boolean               // Allow multiple selections
-		maxSelections?: number           // Max items when multiple=true
-	}
-
-	type CustomEditorContext<T> = {
-		value: any
-		row: T
-		rowIndex: number
-		field: string
-		column: Column<T>
-		commit: (newValue: any) => void
-		cancel: () => void
-	}
-
-	// Validation types
-	type CellValidationState = {
-		rowKey: string
-		field: string
-		error: string
-	}
-
-	type ValidationResult = {
-		valid: boolean
-		message?: string
-		transformedValue?: unknown
-	}
-
-	type BeforeCommitContext<T> = {
-		value: unknown
-		oldValue: unknown
-		row: T
-		rowIndex: number
-		field: string
-		column: Column<T>
-	}
-
-	// beforeCommitCallback can return:
-	// - ValidationResult object
-	// - boolean (true = valid, false = invalid with no message)
-	// - string (error message = invalid)
-	// - null/undefined (valid)
-	type BeforeCommitResult = ValidationResult | boolean | string | null | undefined
-
-	type Column<T> = {
-		field: keyof T | string
-		title: string
-		headerInfo?: string  // Info tooltip shown next to header title (displays ⓘ icon)
-		sortable?: boolean
-		filterable?: boolean
-		/** Explicit column width. Accepts any CSS length (px, %, rem, ch, etc.). Ignored when `autoWidth` is true. */
-		width?: string
-		/** CSS min-width for the column. */
-		minWidth?: string
-		/** CSS max-width for the column. */
-		maxWidth?: string
-		/** When true, the column sizes to its header content and does not stretch to fill remaining table width.
-		 *  Effectively sets `width: 1%; white-space: nowrap` on the header cell. Works best in combination with
-		 *  the grid-level `fillerColumn` prop so the freed-up space is absorbed by a trailing empty column
-		 *  instead of redistributing to other columns. */
-		autoWidth?: boolean
-		/** When true, body cells in this column never wrap (`white-space: nowrap`). Pairs with `maxWidth` to
-		 *  truncate long content with an ellipsis. Pairs with `autoWidth` to size the column to the wider of
-		 *  the header text and the longest cell value. Without `maxWidth`, very long values will widen the
-		 *  column unbounded — set a `maxWidth` if you want a hard cap. */
-		nowrap?: boolean
-		align?: "start" | "center" | "end"
-		/** Formats the cell's value for display. */
-		getDisplayValueCallback?: (ctx: {value: any; row: T; column: Column<T>}) => string
-		/** Renders the whole cell as an HTML string (takes precedence over getDisplayValueCallback). */
-		renderCellCallback?: (ctx: {row: T; column: Column<T>}) => string
-		snippet?: Snippet<[T]>
-		// Custom filter predicate. When set, replaces the built-in substring match for this
-		// column. Called once per row with the raw filter input string and the row.
-		// Returns `true` to keep the row, `false` to exclude it, or `null` when the input
-		// is syntactically invalid (e.g. user has only typed `>` so far) — `null` causes
-		// the filter to be ignored entirely (all rows pass) AND the filter input gets a
-		// `.invalid` class so the UI can surface the bad-syntax state. Assumes the
-		// validity is a property of the input string, not the row, so the grid only
-		// probes the first row to decide validity.
-		filterCallback?: (ctx: {term: string; row: T; column: Column<T>}) => boolean | null
-		// Editing props
-		/** Cells in this column can be edited (when the grid is `editable`). Default `false`. */
-		editable?: boolean
-		/** Per-row decision (e.g. only leaf rows in a tree); wins over `editable`. */
-		getIsEditableCallback?: (ctx: {row: T; column: Column<T>}) => boolean
-		editor?: EditorType
-		editTrigger?: EditTrigger  // Per-column override
-		editorOptions?: EditorOptions
-		/** Validates a new value: return an error message, or null when valid. Prefer beforeCommitCallback. */
-		validateCallback?: (ctx: {value: any; row: T; column: Column<T>}) => string | null | Promise<string | null>
-		/** Validates and optionally transforms a value before it is committed (see BeforeCommitResult). */
-		beforeCommitCallback?: (ctx: BeforeCommitContext<T>) => BeforeCommitResult | Promise<BeforeCommitResult>
-		/** Custom editor (`editor: "custom"`): open your own UI, then call `ctx.commit(value)` or `ctx.cancel()`. */
-		editCallback?: (ctx: CustomEditorContext<T>) => void
-		// Show edit button in cell
-		showEditButton?: boolean
-		/** Tree mode: render this column with indent + expand/collapse chevron (never editable). */
-		tree?: boolean
-	}
-
-	type RowChangeDetail<T> = {
-		row: T                    // Original row (unchanged)
-		draftRow: T              // Draft row with user's changes (including invalid)
-		rowIndex: number
-		field: string
-		oldValue: any
-		newValue: any
-		isValid: boolean
-		validationError?: string | null
-	}
-
-	// Row toolbar — action items (see lib/action-items). Built-ins are presets (icon,
-	// text, danger styling); what they *do* is up to you, in `onAction` / `onClick`.
-	type RowToolbarAction = 'add' | 'delete' | 'duplicate' | 'move-up' | 'move-down'
-
-	type RowContext<T> = {
-		row: T
-		rowIndex: number
-	}
-
-	type RowToolbarItem<T> = ActionItem<RowContext<T>, RowToolbarAction> & {
-		/** Toolbar line, 1 = closest to the grid row (default). Higher lines stack above. */
-		toolbarRow?: number
-		/** Show `text` next to the icon; otherwise it is the tooltip / accessible name only. */
-		isTextVisible?: boolean
-	}
-
-	// Shorthand: a built-in name, a full item, or a `{divider: true}` separator.
-	type RowToolbarConfig<T> = RowToolbarAction | RowToolbarItem<T> | MenuDivider
-
-	// Context menu types
-	type ContextMenuContext<T> = {
-		row: T
-		rowIndex: number
-		columnIndex: number
-		column: Column<T>
-		cellValue: unknown
-	}
-
-	// Built-in context-menu actions (they do the work themselves, and only show in tree mode
-	// where relevant). `expand-all` / `collapse-all` act on the right-clicked row's branch;
-	// `expand-tree` / `collapse-tree` on the entire dataset.
-	type ContextMenuAction = 'expand-all' | 'collapse-all' | 'expand-tree' | 'collapse-tree'
-
-	// Shorthand: a built-in name, or a full MenuEntry (item or divider).
-	type ContextMenuConfig<T> = ContextMenuAction | MenuEntry<ContextMenuContext<T>, ContextMenuAction>
-
-	/** What `onAction` / `beforeActionCallback` receive — the row (and, from the context menu, the cell). */
-	type QuickGridActionDetail<T> = ActionEventDetail<RowContext<T> & Partial<Omit<ContextMenuContext<T>, "row" | "rowIndex">>>
-
-	type Props<T> = {
+	type OwnProps<T> = {
 		items: T[]
 		columns: Column<T>[]
 		sortable?: boolean
@@ -289,7 +113,12 @@
 		onAction?: (detail: QuickGridActionDetail<T>) => void
 		/** Called before a row-toolbar or context-menu item runs; return `false` (or a Promise resolving to `false`) to cancel. */
 		beforeActionCallback?: (detail: QuickGridActionDetail<T>) => unknown
+		/** Native `focusout` event on the root, forwarded untouched. */
+		onfocusout?: (event: FocusEvent) => void
 	}
+
+	/** Other native attributes and events go to the root `<div class="quickgrid-container">`. */
+	type Props<T> = OwnProps<T> & RestProps<OwnProps<T>>
 
 	let {
 		items = [],
@@ -340,7 +169,9 @@
 		onEditCancel = undefined,
 		onValidationError = undefined,
 		onAction = undefined,
-		beforeActionCallback = undefined
+		beforeActionCallback = undefined,
+		onfocusout = undefined,
+		...rest
 	}: Props<T> = $props()
 
 	const resolvedShowToolbar = $derived(showRowToolbar)
@@ -882,9 +713,10 @@
 	}
 
 	// Build editor options for GridCellEditor, wrapping callbacks with row context
-	function getEditorOptionsForCell(column: Column<T>, row: T): Record<string, unknown> {
-		const baseOptions: Record<string, unknown> = {
-			...column.editorOptions,
+	function getEditorOptionsForCell(column: Column<T>, row: T): GridCellEditorOptions {
+		const {loadOptionsCallback: _load, searchCallback: _search, ...shared} = column.editorOptions ?? {}
+		const baseOptions: GridCellEditorOptions = {
+			...shared,
 			options: getOptionsForColumn(column)
 		}
 
@@ -1295,6 +1127,7 @@
 	}
 
 	function handleGridFocusOut(e: FocusEvent) {
+		onfocusout?.(e)
 		// Clear focusedCell when focus leaves the grid entirely
 		const relatedTarget = e.relatedTarget as HTMLElement
 		if (!relatedTarget || !tableElement?.contains(relatedTarget)) {
@@ -2015,7 +1848,7 @@
 	let computedClass = $derived(`quickgrid ${striped ? "striped" : ""} ${hoverable ? "hoverable" : ""} ${editable ? "editable" : ""} ${isNavigateMode ? "navigate-mode" : ""} ${className}`.trim())
 </script>
 
-<div bind:this={containerRef} class="quickgrid-container" {style} onfocusout={handleGridFocusOut}>
+<div {...rest} bind:this={containerRef} class="quickgrid-container" {style} onfocusout={handleGridFocusOut}>
 	<!-- Row toolbar (uses fixed positioning to float outside container) -->
 	{#if resolvedShowToolbar && hoveredRowIndex !== null && hoveredRowElement}
 		<PositioningRegion anchor={hoveredRowElement} visible={true} position={toolbarRegionPosition} align={toolbarAlign} matchWidth={false} style="width: auto;">
@@ -2242,8 +2075,8 @@
 												value={getCellRawValue(item, rowIndex, cellField)}
 												options={getEditorOptionsForCell(column, item)}
 												initialSearchQuery={editingCell?.initialSearchQuery}
-												oncommit={(newValue) => commitEdit(rowIndex, column, newValue, item, colIndex)}
-												oncancel={() => cancelEdit(item, rowIndex)}
+												onCommit={({value: newValue}) => commitEdit(rowIndex, column, newValue, item, colIndex)}
+												onCancel={() => cancelEdit(item, rowIndex)}
 												skipBlurCommit={isCommittingFromKeyboard}
 												skipKeyboardCommit={isNavigateMode}
 											/>
@@ -2260,8 +2093,8 @@
 										type={getEditorType(column)}
 										value={getCellRawValue(item, rowIndex, cellField)}
 										options={getEditorOptionsForCell(column, item)}
-										oncommit={(newValue) => commitEdit(rowIndex, column, newValue, item)}
-										oncancel={() => {}}
+										onCommit={({value: newValue}) => commitEdit(rowIndex, column, newValue, item)}
+										onCancel={() => {}}
 									/>
 								{:else}
 									<div class="cell-content">
@@ -2276,8 +2109,8 @@
 													type="checkbox"
 													value={getCellRawValue(item, rowIndex, cellField)}
 													options={getEditorOptionsForCell(column, item)}
-													oncommit={(newValue) => commitEdit(rowIndex, column, newValue, item)}
-													oncancel={() => {}}
+													onCommit={({value: newValue}) => commitEdit(rowIndex, column, newValue, item)}
+													onCancel={() => {}}
 												/>
 											{:else}
 												<input

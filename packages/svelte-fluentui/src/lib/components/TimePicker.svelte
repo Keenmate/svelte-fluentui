@@ -12,8 +12,9 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Button from "./Button.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		id?: string
 		value?: string | null // HH:mm:ss or HH:mm format
 		placeholder?: string
@@ -54,6 +55,9 @@
 		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
+	/** Other native attributes and events go to the root `<div>` (`id` and `title` go to the input). */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		id = undefined,
 		value = $bindable(null),
@@ -82,7 +86,8 @@
 		class: className = "",
 		style = "",
 		onChange = undefined,
-		onOpenChange = undefined
+		onOpenChange = undefined,
+		...rest
 	}: Props = $props()
 
 	const effective24h = $derived(hourCycle !== "h12")
@@ -358,7 +363,7 @@
 	})
 </script>
 
-<div class="fluent-timepicker {className}" style={style}>
+<div {...rest} class="fluent-timepicker {className}" style={style}>
 	{#if label || labelTemplate}
 		<label for={id} class="fluent-field-label">
 			{#if label}{label}{/if}

@@ -26,7 +26,8 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onPageChange", type: "(ctx: {pageIndex: number}) => void", default: "undefined", description: "Fires when the user moves to another page (first / previous / next / last)"}
+		{name: "onPageChange", type: "(ctx: {pageIndex: number}) => void", default: "undefined", description: "Fires when the user moves to another page (first / previous / next / last)"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div>"}
 	]
 
 	const slots: Property[] = [

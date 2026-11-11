@@ -11,7 +11,7 @@
 
 	const properties: Property[] = [
 		{name: "items", type: "T[]", default: "[]", description: "Array of data items to display"},
-		{name: "columns", type: "Column<T>[]", default: "[]", description: "Column definitions"},
+		{name: "columns", type: "QuickGridColumn<T>[]", default: "[]", description: "Column definitions"},
 		{name: "sortable", type: "boolean", default: "false", description: "Enable sorting globally for all columns"},
 		{name: "filterable", type: "boolean", default: "false", description: "Enable filtering globally for all columns"},
 		{name: "pageable", type: "boolean", default: "false", description: "Enable pagination"},
@@ -25,21 +25,23 @@
 		{name: "checkboxAlwaysEditable", type: "boolean", default: "false", description: "Make checkbox cells always interactive regardless of edit trigger"},
 		{name: "invalidCells", type: "CellValidationState[]", default: "[]", description: "Bindable array of cells with validation errors"},
 		{name: "showRowToolbar", type: "boolean", default: "false", description: "Show floating row toolbar with action buttons"},
-		{name: "rowToolbar", type: "RowToolbarConfig<T>[]", default: "undefined", description: 'Toolbar items — predefined strings ("add", "delete", "duplicate", "move-up", "move-down") or custom objects'},
+		{name: "rowToolbar", type: "QuickGridRowToolbarConfig<T>[]", default: "undefined", description: 'Toolbar items — predefined strings ("add", "delete", "duplicate", "move-up", "move-down") or custom objects'},
 		{name: "toolbarAlign", type: '"center" | "top"', default: '"center"', description: "Vertical alignment of the row toolbar"},
 		{name: "toolbarTrigger", type: '"hover" | "click" | "button"', default: '"hover"', description: "How to reveal the row toolbar"},
-		{name: "contextMenu", type: "ContextMenuItem<T>[]", default: "undefined", description: "Context menu items shown on right-click"},
+		{name: "contextMenu", type: "QuickGridContextMenuConfig<T>[]", default: "undefined", description: 'Context menu entries shown on right-click — built-in names ("expand-all", "collapse-all", "expand-tree", "collapse-tree"), menu items, or {divider: true}'},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class applied to the grid wrapper"},
 		{name: "style", type: "string", default: '""', description: "Inline CSS style applied to the grid wrapper"}
 	]
 
 	const callbacks: Property[] = [
-		{name: "onRowChange", type: "(ctx: RowChangeDetail<T>) => void", default: "undefined", description: "Fired when a cell value is committed during inline editing. Detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
+		{name: "onRowChange", type: "(ctx: QuickGridRowChangeDetail<T>) => void", default: "undefined", description: "Fired when a cell value is committed during inline editing. Detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
 		{name: "onEditStart", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Fired when a cell enters edit mode"},
 		{name: "onEditCancel", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Fired when editing is cancelled (e.g. Escape key)"},
 		{name: "onValidationError", type: "(ctx: { row, rowIndex, field, column, error }) => void", default: "undefined", description: "Fired when a commit is blocked by a validation error"},
-		{name: "ontoolbarclick", type: "(detail: ToolbarClickDetail<T>) => void", default: "undefined", description: "Fired when a row toolbar button is clicked. Detail includes item, rowIndex, row"},
-		{name: "oncontextmenuopen", type: "(context: ContextMenuContext<T>) => void", default: "undefined", description: "Fired when the context menu is opened. Receives row, rowIndex, colIndex, column, cellValue"}
+		{name: "onAction", type: "(detail: QuickGridActionDetail<T>) => void", default: "undefined", description: "Fired after a row-toolbar or context-menu item ran (detail.source says which). Context includes row, rowIndex and, from the context menu, the cell"},
+		{name: "beforeActionCallback", type: "(detail: QuickGridActionDetail<T>) => unknown", default: "undefined", description: "Called before a row-toolbar or context-menu item runs; return false (or a Promise resolving to false) to cancel"},
+		{name: "onContextMenuOpen", type: "(ctx: QuickGridContextMenuContext<T>) => void", default: "undefined", description: "Fired when the context menu is opened. Receives row, rowIndex, columnIndex, column, cellValue"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (.quickgrid-container)"}
 	]
 
 	const slots: Property[] = [
@@ -260,6 +262,7 @@
 
 	<Card>
 		<h2>Column Definition</h2>
+		<p>Type <code>QuickGridColumn&lt;T&gt;</code>. All QuickGrid model types are exported from the package root: <code>import type &#123;QuickGridColumn, QuickGridRowChangeDetail, QuickGridActionDetail&#125; from "svelte-fluentui"</code>.</p>
 		<table class="member-table">
 			<thead>
 				<tr>

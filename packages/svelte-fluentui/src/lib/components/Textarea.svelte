@@ -9,6 +9,7 @@
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import { setAutocompleteOnShadowInput, whenShadowRoot } from "../utils/shadow-dom.js"
+	import type {NativeEventHandler, RestProps} from "../types/index.js"
 
 	const activeIndicatorOverride =
 		typeof CSSStyleSheet !== "undefined"
@@ -21,7 +22,7 @@
 				})()
 			: (undefined as unknown as CSSStyleSheet)
 
-	type Props = {
+	type OwnProps = {
 		class?: string
 		style?: string
 		readonly?: boolean
@@ -50,10 +51,13 @@
 		/** Fires when the user commits an edit (blur / change). The live value is `bind:value`. */
 		onChange?: (ctx: {value: string}) => void
 		/** Native `input` event, forwarded untouched. */
-		oninput?: (event: Event) => void
+		oninput?: NativeEventHandler
 		/** Native `change` event, forwarded untouched. */
-		onchange?: (event: Event) => void
+		onchange?: NativeEventHandler
 	}
+
+	/** Other native attributes and events (`onkeydown`, `onfocus`, `onblur`, …) go to `<fluent-text-area>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		class: className = "",
@@ -83,7 +87,8 @@
 		children = undefined,
 		onChange = undefined,
 		oninput = undefined,
-		onchange = undefined
+		onchange = undefined,
+		...rest
 	}: Props = $props()
 
 	let element: HTMLElement | undefined
@@ -170,6 +175,7 @@
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-text-area
 	bind:this={element}
+	{...rest}
 	class={className}
 	{...attrs({
 		style, readonly, resize, autofocus, autocomplete, form, list, maxlength, minlength,

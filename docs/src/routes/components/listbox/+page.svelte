@@ -26,7 +26,8 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {value: string | string[] | null}) => void", default: "undefined", description: "Fires when the user selects or deselects an option"},
-		{name: "onchange", type: "(event: Event) => void", default: "undefined", description: "Native change event, forwarded untouched"}
+		{name: "onchange", type: "(event: Event) => void", default: "undefined", description: "Native change event, forwarded untouched"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to <fluent-listbox>"}
 	]
 
 	const slots: Property[] = [

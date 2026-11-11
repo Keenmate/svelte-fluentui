@@ -17,14 +17,14 @@
 	]
 
 	const properties: PropertyRow[] = [
-		{name: "contextMenu", type: "(built-in name | MenuEntry)[]", default: "undefined", description: "Right-click menu: menu items, {divider: true} entries, and built-ins (expand-all, collapse-all, expand-tree, collapse-tree)"},
-		{name: "beforeActionCallback", type: "(detail) => unknown", default: "undefined", description: "Return false (or resolve to false) to cancel an item"},
-		{name: "onContextMenuOpen", type: "(ctx: ContextMenuContext) => void", default: "undefined", description: "Fires when the context menu opens, receives the click context"}
+		{name: "contextMenu", type: "QuickGridContextMenuConfig<T>[]", default: "undefined", description: "Right-click menu: menu items, {divider: true} entries, and built-ins (expand-all, collapse-all, expand-tree, collapse-tree)"},
+		{name: "beforeActionCallback", type: "(detail: QuickGridActionDetail<T>) => unknown", default: "undefined", description: "Return false (or resolve to false) to cancel an item"},
+		{name: "onContextMenuOpen", type: "(ctx: QuickGridContextMenuContext<T>) => void", default: "undefined", description: "Fires when the context menu opens, receives the click context"}
 	]
 
 	const callbacks: PropertyRow[] = [
-		{name: "onContextMenuOpen", type: "(ctx: ContextMenuContext) => void", default: "—", description: "Fires when the context menu opens. Receives row, rowIndex, columnIndex, column and cellValue"},
-		{name: "onAction", type: "(detail) => void", default: "—", description: "Fires after a menu item ran: {action, id, item, source: \"context-menu\", row, rowIndex, column, columnIndex, cellValue}"}
+		{name: "onContextMenuOpen", type: "(ctx: QuickGridContextMenuContext<T>) => void", default: "—", description: "Fires when the context menu opens. Receives row, rowIndex, columnIndex, column and cellValue"},
+		{name: "onAction", type: "(detail: QuickGridActionDetail<T>) => void", default: "—", description: "Fires after a menu item ran: {action, id, item, source: \"context-menu\", row, rowIndex, column, columnIndex, cellValue}"}
 	]
 
 	const slots: PropertyRow[] = [
@@ -72,7 +72,7 @@
 		{name: "row", type: "T", description: "The full data object for the right-clicked row"},
 		{name: "rowIndex", type: "number", description: "Zero-based index of the row in the currently displayed items"},
 		{name: "columnIndex", type: "number", description: "Zero-based index of the clicked column"},
-		{name: "column", type: "Column<T>", description: "The column definition object for the clicked cell"},
+		{name: "column", type: "QuickGridColumn<T>", description: "The column definition object for the clicked cell"},
 		{name: "cellValue", type: "unknown", description: "The raw value of the clicked cell"}
 	]
 
@@ -405,7 +405,7 @@
 	</Card>
 
 	<Card>
-		<h2>ContextMenuContext Properties</h2>
+		<h2>QuickGridContextMenuContext Properties</h2>
 		<QuickGrid items={contextMenuContext} columns={contextMenuContextColumns} sortable filterable striped />
 	</Card>
 </Stack>

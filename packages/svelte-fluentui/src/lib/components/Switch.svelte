@@ -9,8 +9,9 @@
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import { untrack } from 'svelte'
+	import type {NativeEventHandler, RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		class?: string
 		style?: string
 		readonly?: boolean
@@ -27,9 +28,14 @@
 		uncheckedMessage?: string | Snippet
 		/** Fires when the switch is toggled. */
 		onChange?: (ctx: {checked: boolean}) => void
+		/** Native `change` event, forwarded untouched. */
+		onchange?: NativeEventHandler
 		children?: Snippet
 		labelTemplate?: Snippet
 	}
+
+	/** Other native attributes and events (`onclick`, `onkeydown`, `onfocus`, …) go to `<fluent-switch>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		class: className = "",
@@ -48,7 +54,9 @@
 		uncheckedMessage = undefined,
 		onChange = undefined,
 		children = undefined,
-		labelTemplate = undefined
+		labelTemplate = undefined,
+		onchange = undefined,
+		...rest
 	}: Props = $props()
 
 	// Stable fallback id so <label for={...}> always toggles the switch even
@@ -74,6 +82,7 @@
 			checked = newChecked
 		})
 
+		onchange?.(e)
 		onChange?.({checked: newChecked})
 	}
 </script>
@@ -102,6 +111,7 @@
 	     removes the attribute, since the boolean-attribute convention treats
 	     mere presence as `true`. -->
 	<fluent-switch
+		{...rest}
 		class={className}
 		{...attrs({style, readonly, disabled, autofocus, name, required, checked})}
 		id={effectiveId}

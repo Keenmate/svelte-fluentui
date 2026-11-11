@@ -83,7 +83,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "checked", type: "boolean | null", default: "undefined", description: "The checked state (bindable). null = indeterminate"},
+		{name: "checked", type: "boolean | null", default: "false", description: "The checked state (bindable). null = indeterminate"},
 		{name: "threeState", type: "boolean", default: "false", description: "Enable three-state mode (true/null/false cycling)"},
 		{name: "threeStateOrder", type: '"checked-first" | "indeterminate-first"', default: '"checked-first"', description: "Cycle order. checked-first: Unchecked→Checked→Indeterminate. indeterminate-first: Unchecked→Indeterminate→Checked"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disable user interaction"},
@@ -104,7 +104,8 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {checked: boolean | null}) => void", default: "undefined", description: "Fires when the user changes the state (null = indeterminate)"},
-		{name: "onclick", type: "(event: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"}
+		{name: "onclick", type: "(event: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to <fluent-checkbox>"}
 	]
 
 	const slots: Property[] = [

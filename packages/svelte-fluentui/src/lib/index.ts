@@ -81,6 +81,29 @@ export type {
 export {default as Paginator} from "./components/Paginator.svelte"
 export {default as PositioningRegion} from "./components/PositioningRegion.svelte"
 export {default as QuickGrid} from "./components/QuickGrid.svelte"
+export type {
+	QuickGridColumn,
+	QuickGridEditorType,
+	QuickGridEditTrigger,
+	QuickGridOptionsLoadTrigger,
+	QuickGridDateOutputFormat,
+	QuickGridEditorOption,
+	QuickGridEditorOptions,
+	QuickGridCustomEditorContext,
+	QuickGridCellValidationState,
+	QuickGridValidationResult,
+	QuickGridBeforeCommitContext,
+	QuickGridBeforeCommitResult,
+	QuickGridRowChangeDetail,
+	QuickGridRowToolbarAction,
+	QuickGridRowContext,
+	QuickGridRowToolbarItem,
+	QuickGridRowToolbarConfig,
+	QuickGridContextMenuContext,
+	QuickGridContextMenuAction,
+	QuickGridContextMenuConfig,
+	QuickGridActionDetail
+} from "./components/QuickGrid.types.js"
 export {default as SiteSettings} from "./components/SiteSettings.svelte"
 export {default as Tab} from "./components/Tab.svelte"
 export {default as TabPanel} from "./components/TabPanel.svelte"

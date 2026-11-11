@@ -131,7 +131,8 @@
 	];
 
 	const callbacks: Property[] = [
-		{name: "onChange", type: "(ctx: { value: string | string[], option?: { value, text, data? } }) => void", default: "undefined", description: "Fires when the user changes the selection; value is an array when multiple"}
+		{name: "onChange", type: "(ctx: { value: string | string[], option?: { value, text, data? } }) => void", default: "undefined", description: "Fires when the user changes the selection; value is an array when multiple"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (display: contents; id/class/style go to the trigger)"}
 	];
 
 	const slots: Property[] = [

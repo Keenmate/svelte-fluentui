@@ -9,8 +9,9 @@
 	import {radioGroupContext} from "../contexts.js"
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {NativeEventHandler, RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		value?: string | null
 		name?: string
 		label?: string
@@ -27,7 +28,12 @@
 		children?: Snippet
 		/** Fires when the user selects a different radio. */
 		onChange?: (ctx: {value: string}) => void
+		/** Native `change` event, forwarded untouched. */
+		onchange?: NativeEventHandler
 	}
+
+	/** Other native attributes and events (`onkeydown`, `onfocusin`, …) go to `<fluent-radio-group>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		value = $bindable(),
@@ -44,7 +50,9 @@
 		class: className = undefined,
 		style = undefined,
 		children = undefined,
-		onChange = undefined
+		onChange = undefined,
+		onchange = undefined,
+		...rest
 	}: Props = $props()
 
 	const ctx = $state({
@@ -66,6 +74,7 @@
 	// Arrow keys move the checked radio inside FAST's group without a click;
 	// the group then reports its new value via `change`.
 	function handleGroupChange(ev: Event) {
+		onchange?.(ev)
 		const next = (ev.currentTarget as HTMLElement & {value?: string}).value
 		if (next) setValue(next)
 	}
@@ -84,6 +93,7 @@
 
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-radio-group
+	{...rest}
 	{...attrs({
 		value, name, orientation, readonly, disabled, autofocus, placeholder,
 		"aria-label": ariaLabel, class: className, style

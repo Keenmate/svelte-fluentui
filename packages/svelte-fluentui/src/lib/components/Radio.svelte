@@ -9,8 +9,9 @@
 	import {radioGroupContext} from "../contexts.js"
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		value: string
 		label?: string
 		labelTemplate?: Snippet
@@ -24,7 +25,12 @@
 		class?: string
 		style?: string
 		children?: Snippet
+		/** Native `click` event, forwarded untouched. */
+		onclick?: (event: MouseEvent) => void
 	}
+
+	/** Other native attributes and events (`onkeydown`, `onfocus`, …) go to `<fluent-radio>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		value,
@@ -39,7 +45,9 @@
 		autofocus = undefined,
 		class: className = undefined,
 		style = undefined,
-		children = undefined
+		children = undefined,
+		onclick = undefined,
+		...rest
 	}: Props = $props()
 
 	const ctx = radioGroupContext.get()
@@ -48,6 +56,7 @@
 	const isChecked = $derived(checked !== undefined ? checked : (ctx?.value === value))
 
 	function handleOnClick(ev: MouseEvent) {
+		onclick?.(ev)
 		if (disabled || readonly) {
 			return
 		}
@@ -69,6 +78,7 @@
 
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-radio
+	{...rest}
 	{value}
 	{...attrs({
 		name, disabled, readonly, required, checked: isChecked, autofocus, "aria-label": ariaLabel,

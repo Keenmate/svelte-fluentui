@@ -89,6 +89,7 @@
 		{name: "value", type: "Date | null", default: "undefined", description: "Selected date value (bindable)"},
 		{name: "selectedDates", type: "Date[]", default: "undefined", description: "Selected dates for multi/range mode (bindable)"},
 		{name: "pickerMonth", type: "Date", default: "new Date()", description: "Currently displayed month (bindable)"},
+		{name: "class / style", type: "string", default: "undefined", description: "Applied to the root <div> (style is merged with the cellSize/gap variables)"},
 		{name: "culture", type: "Intl.Locale", default: "navigator.language", description: "Locale for formatting"},
 		{name: "view", type: '"days" | "months" | "years"', default: '"days"', description: "Calendar view mode"},
 		{name: "selectMode", type: '"single" | "multiple" | "range"', default: '"single"', description: "Selection mode"},
@@ -112,7 +113,8 @@
 		{name: "onChange", type: "(ctx: {value: Date | Date[]}) => void", default: "undefined", description: "Fires when the user changes the selection: Date in single mode, Date[] in multiple/range mode"},
 		{name: "onSelectionReject", type: "(ctx: CalendarSelectionError) => void", default: "undefined", description: "Fires when an attempted selection would exceed maxSelectableDays"},
 		{name: "onPickerMonthChange", type: "(ctx: {pickerMonth: Date}) => void", default: "undefined", description: "Fires when the user navigates months/years"},
-		{name: "onDayHover", type: "(ctx: {date: Date | null}) => void", default: "undefined", description: "Fires when the cursor enters a day cell (date) or leaves the day grid (null)"}
+		{name: "onDayHover", type: "(ctx: {date: Date | null}) => void", default: "undefined", description: "Fires when the cursor enters a day cell (date) or leaves the day grid (null)"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div>"}
 	]
 
 	const slots: Property[] = [

@@ -13,6 +13,7 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Chip from "./Chip.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import type {RestProps} from "../types/index.js"
 
 	type OptionItem<T = any> = {
 		value: T
@@ -20,7 +21,7 @@
 		disabled?: boolean
 	}
 
-	type Props<T = any> = {
+	type OwnProps<T = any> = {
 		/** Selected option values (bindable). */
 		value?: T[]
 		options?: OptionItem<T>[]
@@ -84,6 +85,9 @@
 		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
+	/** Other native attributes and events go to the root `<div>`. */
+	type Props<T = any> = OwnProps<T> & RestProps<OwnProps<T>>
+
 	let {
 		value: selectedOptions = $bindable([]),
 		options = [],
@@ -126,7 +130,8 @@
 		initialSearchQuery = "",
 		searchCallback = undefined,
 		onChange = undefined,
-		onOpenChange = undefined
+		onOpenChange = undefined,
+		...rest
 	}: Props = $props()
 
 	let searchText = $state("")
@@ -655,6 +660,7 @@
 
 <!-- svelte-ignore a11y_label_has_associated_control -->
 <div
+	{...rest}
 	class="fluent-autocomplete {className}"
 	style="{style}{width ? ` width: ${width};` : ''}{height ? ` height: ${height};` : ''}"
 	{...id ? { id } : {}}

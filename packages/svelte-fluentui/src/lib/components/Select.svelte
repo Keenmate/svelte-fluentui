@@ -23,6 +23,7 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import type {RestProps} from "../types/index.js"
 
 	/** The option the user picked, as passed to `onChange`. */
 	type SelectChangeOption = {
@@ -31,7 +32,7 @@
 		data?: Record<string, unknown>
 	}
 
-	type Props = {
+	type OwnProps = {
 		id?: string
 		class?: string
 		style?: string
@@ -72,6 +73,9 @@
 		onChange?: (ctx: {value: string | string[]; option?: SelectChangeOption}) => void
 	}
 
+	/** Other native attributes and events go to the root `<div>` (`display: contents`); `id`, `class`, `style` and `title` go to the trigger / inline listbox. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		id = undefined,
 		class: className = "",
@@ -97,7 +101,8 @@
 		labelTemplate = undefined,
 		indicatorTemplate = undefined,
 		children = undefined,
-		onChange = undefined
+		onChange = undefined,
+		...rest
 	}: Props = $props()
 
 	// ---------- Selection state (shared with <Option> via context) ----------
@@ -539,7 +544,7 @@
 
 <!-- Single DOM root so consumers see one element, not 2–4 siblings. Uses
      display:contents so it's transparent to flex/grid layout in the parent. -->
-<div class="select-root">
+<div {...rest} class="select-root">
 
 <!-- svelte-ignore a11y_label_has_associated_control -->
 {#if hasLabel}

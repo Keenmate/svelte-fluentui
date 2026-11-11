@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {QuickGrid, Stack, Grid, GridItem, Card, Dialog, Button, Select, Option} from "svelte-fluentui"
-	import type {ActionItem, MenuDivider} from "svelte-fluentui"
+	import type {ActionItem, MenuDivider, QuickGridCellValidationState, QuickGridCustomEditorContext} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
 	// === API Documentation ===
@@ -18,11 +18,11 @@
 		{name: "editTrigger", type: "'click' | 'dblclick' | 'button' | 'always' | 'navigate'", default: "'dblclick'", description: "How to trigger cell editing at the grid level (can be overridden per column)"},
 		{name: "dropdownShowOnFocus", type: "boolean", default: "true", description: "Auto-show editor for dropdown types (select, combobox, autocomplete) when cell is focused in navigate mode"},
 		{name: "checkboxAlwaysEditable", type: "boolean", default: "false", description: "Make checkboxes always interactive, even when editTrigger is 'navigate'"},
-		{name: "invalidCells", type: "CellValidationState[]", default: "[]", description: "Bindable array of invalid cells; each entry has rowIndex, field, and error"}
+		{name: "invalidCells", type: "QuickGridCellValidationState[]", default: "[]", description: "Bindable array of invalid cells; each entry has rowKey, field, and error"}
 	]
 
 	const editableCallbacks: Property[] = [
-		{name: "onRowChange", type: "(ctx: RowChangeDetail) => void", default: "undefined", description: "Called when a cell value is committed; detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
+		{name: "onRowChange", type: "(ctx: QuickGridRowChangeDetail<T>) => void", default: "undefined", description: "Called when a cell value is committed; detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
 		{name: "onEditStart", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Called when a cell enters edit mode"},
 		{name: "onEditCancel", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Called when editing is cancelled (e.g. Escape key)"},
 		{name: "onValidationError", type: "(ctx: { row, rowIndex, field, column, error }) => void", default: "undefined", description: "Called when a value fails validation"}
@@ -49,15 +49,11 @@
 		city: string
 		active: boolean
 		role?: string
-		metadata?: Record<string, any>
+		metadata?: Record<string, any> | null
 	}
 
-	// Type for validation state
-	type CellValidationState = {
-		rowIndex: number
-		field: string
-		error: string
-	}
+	// Type for validation state (exported by the library)
+	type CellValidationState = QuickGridCellValidationState
 
 	let sampleData: Person[] = $state([
 		{id: 1, name: "Alice Johnson", email: "alice@example.com", age: 28, city: "New York", active: true, role: "admin", metadata: {theme: "dark", notifications: true}},
@@ -143,14 +139,8 @@
 	]
 
 	// Custom JSON editor columns
-	type CustomEditorContext = {
-		value: any
-		row: Person
-		rowIndex: number
-		field: string
-		commit: (newValue: any) => void
-		cancel: () => void
-	}
+	// The editor dialog is shared by grids with different row shapes.
+	type CustomEditorContext = QuickGridCustomEditorContext<any>
 
 	let jsonDialogOpen = $state(false)
 	let jsonEditorContext = $state<CustomEditorContext | null>(null)
@@ -1593,7 +1583,7 @@ function clearError(rowIndex, field) {
 	</Card>
 
 	<Card>
-		<h2>CustomEditorContext</h2>
+		<h2>QuickGridCustomEditorContext</h2>
 		<p>The context object passed to <code>editCallback</code>:</p>
 		<table class="member-table">
 			<thead>
@@ -1615,7 +1605,8 @@ function clearError(rowIndex, field) {
 	</Card>
 
 	<Card>
-		<h2>EditorOptions</h2>
+		<h2>QuickGridEditorOptions</h2>
+		<p>All QuickGrid model types (<code>QuickGridColumn</code>, <code>QuickGridEditorOptions</code>, <code>QuickGridRowChangeDetail</code>, …) are exported: <code>import type &#123;QuickGridColumn&#125; from "svelte-fluentui"</code>.</p>
 		<p>Options available in <code>editorOptions</code> depending on editor type:</p>
 		<table class="member-table">
 			<thead>
@@ -1627,20 +1618,20 @@ function clearError(rowIndex, field) {
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>options</td><td>EditorOption[]</td><td>select, autocomplete</td><td>Static options array</td></tr>
-				<tr><td>loadOptionsCallback</td><td>(&#123;row, column, signal&#125;) =&gt; Promise&lt;EditorOption[]&gt;</td><td>select, autocomplete</td><td>Dynamic options loader</td></tr>
+				<tr><td>options</td><td>QuickGridEditorOption[]</td><td>select, autocomplete</td><td>Static options array</td></tr>
+				<tr><td>loadOptionsCallback</td><td>(&#123;row, column, signal&#125;) =&gt; Promise&lt;QuickGridEditorOption[]&gt;</td><td>select, autocomplete</td><td>Dynamic options loader</td></tr>
 				<tr><td>optionsLoadTrigger</td><td>"immediate" | "edit-start" | "dropdown-open"</td><td>select, autocomplete</td><td>When to load dynamic options</td></tr>
 				<tr><td>min</td><td>number</td><td>number</td><td>Minimum value</td></tr>
 				<tr><td>max</td><td>number</td><td>number</td><td>Maximum value</td></tr>
 				<tr><td>step</td><td>number</td><td>number</td><td>Step increment</td></tr>
 				<tr><td>maxLength</td><td>number</td><td>text</td><td>Maximum character length</td></tr>
-				<tr><td>onSearch</td><td>(query, row) =&gt; Promise&lt;EditorOption[]&gt;</td><td>autocomplete</td><td>Search callback for autocomplete</td></tr>
+				<tr><td>searchCallback</td><td>(&#123;term, row, column, signal&#125;) =&gt; Promise&lt;QuickGridEditorOption[]&gt;</td><td>autocomplete</td><td>Server-side search for the autocomplete editor</td></tr>
 				<tr><td>valueMember</td><td>string</td><td>select, autocomplete</td><td>Property to use as value (default: "value")</td></tr>
 				<tr><td>displayMember</td><td>string</td><td>select, autocomplete</td><td>Property to use for display (default: "label")</td></tr>
 				<tr><td>allowEmpty</td><td>boolean</td><td>select, autocomplete</td><td>Allow null/empty selection</td></tr>
 				<tr><td>emptyLabel</td><td>string</td><td>select</td><td>Label for empty option (default: "-- Select --")</td></tr>
 				<tr><td>placeholder</td><td>string</td><td>text, number, autocomplete</td><td>Input placeholder text</td></tr>
-				<tr><td>initialOptions</td><td>EditorOption[]</td><td>autocomplete</td><td>Options shown before search</td></tr>
+				<tr><td>initialOptions</td><td>QuickGridEditorOption[]</td><td>autocomplete</td><td>Options shown before search</td></tr>
 				<tr><td>minSearchLength</td><td>number</td><td>autocomplete</td><td>Min chars before search (default: 1)</td></tr>
 				<tr><td>debounceMs</td><td>number</td><td>autocomplete</td><td>Search debounce delay (default: 300)</td></tr>
 				<tr><td>trueValue</td><td>any</td><td>checkbox</td><td>Value to store when checked (default: true)</td></tr>
@@ -1653,7 +1644,7 @@ function clearError(rowIndex, field) {
 	</Card>
 
 	<Card>
-		<h2>RowChangeDetail</h2>
+		<h2>QuickGridRowChangeDetail</h2>
 		<p>The detail object passed to <code>onRowChange</code>:</p>
 		<table class="member-table">
 			<thead>
@@ -1678,7 +1669,7 @@ function clearError(rowIndex, field) {
 	</Card>
 
 	<Card>
-		<h2>BeforeCommitContext</h2>
+		<h2>QuickGridBeforeCommitContext</h2>
 		<p>The context object passed to <code>beforeCommitCallback</code>:</p>
 		<table class="member-table">
 			<thead>
@@ -1699,7 +1690,7 @@ function clearError(rowIndex, field) {
 	</Card>
 
 	<Card>
-		<h2>ValidationResult</h2>
+		<h2>QuickGridValidationResult</h2>
 		<p><code>beforeCommitCallback</code> can return various types:</p>
 		<table class="member-table">
 			<thead>
@@ -1720,7 +1711,7 @@ function clearError(rowIndex, field) {
 	</Card>
 
 	<Card>
-		<h2>CellValidationState</h2>
+		<h2>QuickGridCellValidationState</h2>
 		<p>The <code>invalidCells</code> array contains objects with this shape:</p>
 		<table class="member-table">
 			<thead>
@@ -1731,7 +1722,7 @@ function clearError(rowIndex, field) {
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>rowIndex</td><td>number</td><td>Row index of the invalid cell</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable key of the invalid cell's row (idMember / tree path / row index)</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name of the invalid cell</td></tr>
 				<tr><td>error</td><td>string</td><td>Validation error message</td></tr>
 			</tbody>

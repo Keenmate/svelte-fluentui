@@ -182,7 +182,8 @@
 	const callbacks: Property[] = [
 		{name: "searchCallback", type: "(ctx: {term: string, signal: AbortSignal}) => Promise<OptionItem[]> | OptionItem[]", default: "undefined", description: "Called when the user types. Return matching options (sync or async); signal aborts when a newer search starts. If omitted, a case-insensitive contains filter is used."},
 		{name: "onChange", type: "(ctx: {value: T[]}) => void", default: "undefined", description: "Fires when the user adds or removes a selection."},
-		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the dropdown opens or closes."}
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the dropdown opens or closes."},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div>"}
 	]
 
 	const slots: Property[] = [

@@ -16,8 +16,9 @@
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {isAfterDay, isBeforeDay} from "../helpers/date.js"
 	import type {CalendarDay} from "../fluent-ui/calendar/calendar-day.js"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		id?: string
 		value?: Date | null
 		placeholder?: string
@@ -70,6 +71,9 @@
 		onPickerMonthChange?: (ctx: {pickerMonth: Date}) => void
 	}
 
+	/** Other native attributes and events go to the root `<div>` (`id` and `title` go to the input). */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		id = undefined,
 		value = $bindable(null),
@@ -104,7 +108,8 @@
 		day: daySnippet = undefined,
 		onChange = undefined,
 		onOpenChange = undefined,
-		onPickerMonthChange = undefined
+		onPickerMonthChange = undefined,
+		...rest
 	}: Props = $props()
 
 	let inputValue = $state("")
@@ -215,7 +220,7 @@
 	}
 </script>
 
-<div class="fluent-datepicker {className}" style={style}>
+<div {...rest} class="fluent-datepicker {className}" style={style}>
 	{#if label || labelTemplate}
 		<label for={id} class="fluent-field-label">
 			{#if label}{label}{/if}

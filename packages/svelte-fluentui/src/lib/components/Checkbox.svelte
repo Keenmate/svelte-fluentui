@@ -8,9 +8,11 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
-		checked: boolean | null;
+	type OwnProps = {
+		/** Checked state; `null` is indeterminate. Bindable. Defaults to `false`. */
+		checked?: boolean | null;
 		/** Cycle through an indeterminate state (`checked = null`) as well. */
 		threeState?: boolean;
 		/** Click order in three-state mode: `"checked-first"` (unchecked → checked → indeterminate, default) or `"indeterminate-first"` (unchecked → indeterminate → checked, Blazor order). */
@@ -41,8 +43,11 @@
 		onclick?: (event: MouseEvent) => void
 	}
 
+	/** Other native attributes and events (`onkeydown`, `onfocus`, `onblur`, …) go to `<fluent-checkbox>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
-		checked = $bindable(),
+		checked = $bindable(false),
 		threeState = false,
 		threeStateOrder = "checked-first",
 		autofocus = undefined,
@@ -62,7 +67,8 @@
 		uncheckedMessage = undefined,
 		indeterminateMessage = undefined,
 		onChange = undefined,
-		onclick = undefined
+		onclick = undefined,
+		...rest
 	}: Props = $props()
 
 	// Stable fallback id so <label for={...}> always links to the checkbox —
@@ -177,6 +183,7 @@
 	<!-- svelte-ignore a11y_autofocus -->
 	<fluent-checkbox
 		bind:this={element}
+		{...rest}
 		{...(checked === true ? { checked: true } : {})}
 		{...(checked === null ? { indeterminate: true } : {})}
 		{...attrs({autofocus, readonly, disabled, required, name, class: className, style})}

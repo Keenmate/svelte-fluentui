@@ -3,63 +3,20 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
 
-	type EditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
-	type OptionsLoadTrigger = "immediate" | "edit-start" | "dropdown-open"
-	type DateOutputFormat = "date" | "iso" | "timestamp"
-
-	type EditorOption = {
-		value: string | number | boolean
-		label: string
-		[key: string]: unknown
-	}
-
-	type EditorOptions = {
-		// === SHARED (select/autocomplete) ===
-		options?: EditorOption[]
-		loadOptions?: () => Promise<EditorOption[]>
-		optionsLoadTrigger?: OptionsLoadTrigger
-		valueMember?: string
-		displayMember?: string
-		allowEmpty?: boolean
-		emptyLabel?: string
-
-		// === TEXT ===
-		maxLength?: number
-		placeholder?: string
-		pattern?: string
-		inputMode?: "text" | "numeric" | "email" | "tel" | "url"
-
-		// === NUMBER ===
-		min?: number
-		max?: number
-		step?: number
-		decimalPlaces?: number
-		allowNegative?: boolean
-
-		// === CHECKBOX ===
-		trueValue?: unknown
-		falseValue?: unknown
-
-		// === DATE ===
-		minDate?: Date | string
-		maxDate?: Date | string
-		outputFormat?: DateOutputFormat
-
-		// === AUTOCOMPLETE ===
-		initialOptions?: EditorOption[]
-		onSearch?: (query: string, signal?: AbortSignal) => Promise<EditorOption[]>
-		minSearchLength?: number
-		debounceMs?: number
-		multiple?: boolean
-		maxSelections?: number
-	}
+	import type {
+		QuickGridEditorType as EditorType,
+		QuickGridEditorOption as EditorOption,
+		GridCellEditorOptions as EditorOptions
+	} from "./QuickGrid.types.js"
 
 	type Props = {
 		type: EditorType
 		value: unknown
 		options?: EditorOptions
-		oncommit: (newValue: unknown) => void
-		oncancel: () => void
+		/** Commits the edited value. */
+		onCommit: (ctx: {value: unknown}) => void
+		/** Abandons the edit. */
+		onCancel: () => void
 		skipBlurCommit?: boolean
 		skipKeyboardCommit?: boolean
 		initialSearchQuery?: string
@@ -69,8 +26,8 @@
 		type = "text",
 		value,
 		options = {},
-		oncommit,
-		oncancel,
+		onCommit,
+		onCancel,
 		skipBlurCommit = false,
 		skipKeyboardCommit = false,
 		initialSearchQuery = ""
@@ -228,7 +185,7 @@
 		isUserFiltering = false  // Not filtering, just displaying selected value
 		justSelected = true  // Prevent dropdown from reopening on refocus
 		closeDropdown()
-		oncommit(newValue)
+		onCommit({value: newValue})
 	}
 
 	// Scroll highlighted option into view. Waits for the DOM update: called
@@ -281,7 +238,7 @@
 					// Autocomplete can commit freeform text
 					internalValue = filterText.trim()
 					closeDropdown()
-					oncommit(filterText.trim())
+					onCommit({value: filterText.trim()})
 				}
 				break
 			case "Tab":
@@ -552,7 +509,7 @@
 				closeDropdown()
 			} else {
 				cancelledViaEscape = true
-				oncancel()
+				onCancel()
 			}
 		}
 	}))
@@ -577,9 +534,9 @@
 		}
 
 		if (finalValue !== value) {
-			oncommit(finalValue)
+			onCommit({value: finalValue})
 		} else {
-			oncancel()
+			onCancel()
 		}
 	}
 
@@ -588,7 +545,7 @@
 		const falseVal = options.falseValue ?? false
 		const currentIsTrue = internalValue === trueVal || internalValue === true
 		internalValue = currentIsTrue ? falseVal : trueVal
-		oncommit(internalValue)
+		onCommit({value: internalValue})
 	}
 
 	function handleDateChange(e: Event) {
@@ -597,7 +554,7 @@
 
 		if (!dateStr) {
 			internalValue = null
-			oncommit(null)
+			onCommit({value: null})
 			return
 		}
 
@@ -616,7 +573,7 @@
 				internalValue = date
 				break
 		}
-		oncommit(internalValue)
+		onCommit({value: internalValue})
 	}
 
 	// Format date value for input
@@ -773,7 +730,7 @@
 							class:highlighted={highlightedIndex === -1 && (internalValue === null || internalValue === undefined)}
 							role="option"
 							aria-selected={highlightedIndex === -1 && (internalValue === null || internalValue === undefined)}
-							onclick={() => { internalValue = null; closeDropdown(); oncommit(null); }}
+							onclick={() => { internalValue = null; closeDropdown(); onCommit({value: null}); }}
 						>
 							{options.emptyLabel || "-- Select --"}
 						</div>

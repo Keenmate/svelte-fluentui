@@ -31,7 +31,8 @@
 	const actions: Property[] = []
 
 	const callbacks: Property[] = [
-		{name: "onChange", type: "(ctx: {checked: boolean}) => void", default: "undefined", description: "Fires when the switch is toggled"}
+		{name: "onChange", type: "(ctx: {checked: boolean}) => void", default: "undefined", description: "Fires when the switch is toggled"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to <fluent-switch>"}
 	]
 
 	const slots: Property[] = [

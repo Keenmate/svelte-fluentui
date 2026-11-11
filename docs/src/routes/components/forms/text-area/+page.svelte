@@ -43,7 +43,8 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user commits an edit (blur); the live value is bind:value"},
-		{name: "oninput / onchange", type: "(event: Event) => void", default: "undefined", description: "Native events, forwarded untouched"}
+		{name: "oninput / onchange", type: "(event: Event) => void", default: "undefined", description: "Native events, forwarded untouched"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to <fluent-text-area>"}
 	]
 
 	const slots: Property[] = [

@@ -22,7 +22,8 @@
 	const actions: Property[] = []
 
 	const callbacks: Property[] = [
-		{name: "onclick", type: "(event: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"}
+		{name: "onclick", type: "(event: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the option row <div> (OptionGroup: the group <div>)"}
 	]
 
 	const slots: Property[] = [

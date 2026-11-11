@@ -20,8 +20,9 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		/** Group heading text. */
 		label?: string
 		class?: string
@@ -29,15 +30,20 @@
 		children: Snippet
 	}
 
+	/** Other native attributes and events go to the group `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		label = undefined,
 		class: className = undefined,
 		style = undefined,
-		children
+		children,
+		...rest
 	}: Props = $props()
 </script>
 
 <div
+	{...rest}
 	class={`option-group${className ? ` ${className}` : ""}`}
 	role="group"
 	aria-label={label ?? null}

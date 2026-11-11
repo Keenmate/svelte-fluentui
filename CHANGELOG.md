@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Checkbox (`checked`):** required, no default → optional, defaults to `false`
+- **Combobox (`currentValue`):** accepted but ignored → `bind:currentValue` read-only mirror of the input text
+- **Calendar:** unknown props collected, only `class` applied → `class`/`style` are real props; other attributes go to the root `<div>`
 - **Panel (`side`):** `"left"` / `"right"` (default `"right"`) → `"start"` / `"end"` only (default `"end"`; follow the writing direction)
 - **Badge, Label (`size`):** `"xs"` / `"sm"` / `"lg"` / `"xl"` → `"extra-small"` / `"small"` / `"large"` / `"extra-large"` (`"medium"` unchanged)
 - **Badge, Label CSS classes:** `.badge-xs` … `.badge-xl`, `.fluent-label-xs` … `-xl` → `.badge-extra-small` … `.badge-extra-large`, `.fluent-label-extra-small` … `-extra-large`
@@ -124,6 +127,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- Native attributes and events (`...rest`) on the form and data components.
+- QuickGrid model types exported from the package root (`QuickGridColumn`, `QuickGridEditorOptions`, …).
+- Combobox `bind:currentValue`; Combobox `id` optional.
 - **Action items** (`ActionItem`, `MenuItem`, `MenuDivider`, `MenuEntry`, `resolveMenuEntries`,
   `runAction`, …) — one item model + `onAction` / `beforeActionCallback` for menus and toolbars
   (port of web-components-core `/actions`). MenuButton and ContextMenu use it.

@@ -27,7 +27,7 @@
 	import Chip from "./Chip.svelte"
 	import Option from "./Option.svelte"
 	import OptionGroup from "./OptionGroup.svelte"
-	import type {OptionItem, SelectedValue} from "../types/index.js"
+	import type {OptionItem, RestProps, SelectedValue} from "../types/index.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import type {
 		SelectedOptionSvelteContext,
@@ -36,14 +36,16 @@
 		ComboboxFilterOption
 	} from "../types/combobox.js"
 
-	type Props = {
-		id: string
+	type OwnProps = {
+		/** Id of the input (also the label's `for`). Generated when omitted. */
+		id?: string
 		value?: SelectedValue
 		options?: OptionItem[]
 		children?: Snippet
 		autocomplete?: "inline" | "list" | "both" | "none"
 		open?: boolean
-		/** Accepted for API compatibility (no-op — value is option-based). */
+		/** Read-only bindable mirror of the text currently in the input (the typed
+		 * filter while searching, otherwise the selected option's label). Writes are ignored. */
 		currentValue?: string
 		placeholder?: string
 		position?: "top" | "bottom"
@@ -106,14 +108,17 @@
 		onChange?: (ctx: {value: string[]}) => void
 	}
 
+	/** Other native attributes and events go to the root `<div>` (`display: contents`); `id` goes to the input, `class`/`style`/`title` to the control. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
-		id,
+		id = undefined,
 		value = $bindable(),
 		options = undefined,
 		children = undefined,
 		autocomplete = undefined,
 		open = $bindable(undefined),
-		currentValue = undefined,
+		currentValue = $bindable(),
 		placeholder = undefined,
 		position = undefined,
 		disabled = false,
@@ -143,7 +148,8 @@
 		filterCallback = undefined,
 		loading = undefined,
 		loadingText = "Searching…",
-		onChange = undefined
+		onChange = undefined,
+		...rest
 	}: Props = $props()
 
 	// ---------- Selection state (shared with <Option> via context) ----------
@@ -327,6 +333,14 @@
 	// the input is purely a filter — selected values live in chips — so it only
 	// ever shows what's being typed (blank when idle).
 	const inputDisplay = $derived(multiple ? typed : (isFiltering ? typed : displayText))
+
+	// Mirror the input text out through `bind:currentValue`.
+	$effect(() => {
+		const text = inputDisplay
+		untrack(() => {
+			if (currentValue !== text) currentValue = text
+		})
+	})
 
 	// Chips render inside the control only in inline tags mode; above/below push them
 	// to a separate row outside, leaving the control as a plain single-line filter.
@@ -717,7 +731,10 @@
 	})
 
 	const hasLabel = $derived(!!(label || labelTemplate))
-	const listboxId = $derived(id ? `${id}-listbox` : undefined)
+	// Stable fallback so the label/aria-controls wiring works without an explicit id.
+	const uid = $props.id()
+	const inputId = $derived(id ?? `fluent-combobox-${uid}`)
+	const listboxId = $derived(`${inputId}-listbox`)
 
 	// Section the `options` array in SOURCE ORDER: walk the array and start a new
 	// segment whenever the `group` value changes from the previous item. This
@@ -787,11 +804,11 @@
 {/snippet}
 
 <!-- display:contents root so consumers see one element, transparent to layout. -->
-<div class="combobox-root">
+<div {...rest} class="combobox-root">
 
 	<!-- svelte-ignore a11y_label_has_associated_control -->
 	{#if hasLabel}
-		<label class="fluent-field-label" for={id}>
+		<label class="fluent-field-label" for={inputId}>
 			{#if label}{label}{/if}
 			{#if labelTemplate}{@render labelTemplate()}{/if}
 			{#if required}<span class="required-indicator">*</span>{/if}
@@ -845,7 +862,7 @@
 			<!-- svelte-ignore a11y_autofocus -->
 			<input
 				bind:this={inputEl}
-				{id}
+				id={inputId}
 				type="text"
 				class="combobox-input"
 				role="combobox"

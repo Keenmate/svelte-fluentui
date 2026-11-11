@@ -36,7 +36,8 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {value: string | null}) => void", default: "undefined", description: "Fires when the user confirms a time or clears the value (HH:mm or HH:mm:ss, or null)."},
-		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the clock popup opens or closes."}
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the clock popup opens or closes."},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (id and title go to the input)"}
 	]
 
 	const slots: Property[] = []

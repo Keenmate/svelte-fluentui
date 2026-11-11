@@ -36,6 +36,16 @@ test("Combobox: onChange carries an array; filterCallback gets {term, option}", 
 	await expect(page.locator("#combo-log")).toHaveText('["c1"]')
 })
 
+test("Combobox: rest props reach the root; bind:currentValue mirrors the input text", async ({page}) => {
+	await expect(page.locator("[data-testid=combo-root]")).toHaveCount(1)
+	const input = page.locator("#combo-input")
+	await input.click()
+	await input.fill("ch")
+	await expect(page.locator("#combo-current")).toHaveText("ch")
+	await page.getByRole("option", {name: "Charlie"}).click()
+	await expect(page.locator("#combo-current")).toHaveText("Charlie")
+})
+
 test("Combobox: onSearch fires with {term}", async ({page}) => {
 	const input = page.locator("#search-input")
 	await input.click()

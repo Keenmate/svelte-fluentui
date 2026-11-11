@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		/**
 		 * Map of field-name → error message. Falsy values are ignored. Empty/missing
 		 * map renders nothing, so the panel auto-hides when there are no errors.
@@ -24,6 +25,9 @@
 		children?: Snippet
 	}
 
+	/** Other native attributes and events go to the summary `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		errors = {},
 		labels = {},
@@ -31,7 +35,8 @@
 		onFieldClick = undefined,
 		class: className = "",
 		style = "",
-		children = undefined
+		children = undefined,
+		...rest
 	}: Props = $props()
 
 	const errorEntries = $derived(
@@ -52,6 +57,7 @@
 
 {#if errorCount > 0}
 	<div
+		{...rest}
 		class="fluent-validation-summary {className}"
 		role="alert"
 		aria-live="polite"

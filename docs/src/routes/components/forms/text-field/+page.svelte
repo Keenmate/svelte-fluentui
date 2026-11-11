@@ -4,7 +4,7 @@
 	import {References, Meta} from "$lib/components"
 
 	let textValue = $state("")
-	let textField: HTMLElement & {select: Function}
+	let textField: {select: () => void}
 
 	onMount(() => {
 		setTimeout(() => {

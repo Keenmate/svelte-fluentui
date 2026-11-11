@@ -7,8 +7,9 @@
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		class?: string
 		style?: string
 		disabled?: boolean
@@ -26,6 +27,9 @@
 		paginationTextTemplate?: Snippet
 	}
 
+	/** Other native attributes and events go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		class: className = "",
 		style = "",
@@ -37,7 +41,8 @@
 		canGoForwards = undefined,
 		onPageChange = undefined,
 		summaryTemplate = undefined,
-		paginationTextTemplate = undefined
+		paginationTextTemplate = undefined,
+		...rest
 	}: Props = $props()
 
 	const backEnabled = $derived(canGoBack ?? currentPageIndex > 0)
@@ -51,7 +56,7 @@
 	}
 </script>
 
-<div class="paginator {className}" {style} >
+<div {...rest} class="paginator {className}" {style}>
 	{#if totalItemCount !== undefined}
 		<div class="summary">
 			{#if summaryTemplate}

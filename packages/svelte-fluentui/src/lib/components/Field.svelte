@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
 	export type ValidationState = "none" | "warning" | "error" | "success"
 	export type FieldOrientation = "vertical" | "horizontal"
 
-	type Props = {
+	type OwnProps = {
 		label?: string | null | undefined
 		labelTemplate?: Snippet | null | undefined
 		required?: boolean
@@ -23,6 +24,9 @@
 		children?: Snippet
 	}
 
+	/** Other native attributes and events go to the wrapper `<div>` (`id` stays on the label's `for`). */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		label = undefined,
 		labelTemplate = undefined,
@@ -34,7 +38,8 @@
 		id = undefined,
 		class: className = "",
 		style = "",
-		children
+		children,
+		...rest
 	}: Props = $props()
 
 	const showMessage = $derived(
@@ -44,6 +49,7 @@
 </script>
 
 <div
+	{...rest}
 	class="fluent-field fluent-field--{orientation} {className}"
 	data-state={validationState}
 	{style}

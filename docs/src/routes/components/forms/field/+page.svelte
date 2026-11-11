@@ -72,7 +72,8 @@
 		{name: "validationMessage", type: "string", default: "undefined", description: "Inline message below the control. Only renders when validationState !== 'none' and the message is non-empty."},
 		{name: "orientation", type: '"vertical" | "horizontal"', default: '"vertical"', description: "Vertical: label-above-control (default). Horizontal: label and control side-by-side."},
 		{name: "id", type: "string", default: "undefined", description: "Used as the label's for attribute. Pass the same id to the inner control to associate them for label clicks and screen readers."},
-		{name: "class / style", type: "string", default: "undefined", description: "Pass-through to the root <div>."}
+		{name: "class / style", type: "string", default: "undefined", description: "Pass-through to the root <div>."},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (id stays on the label's for)"}
 	]
 
 	const summaryProps: Prop[] = [
@@ -80,7 +81,8 @@
 		{name: "labels", type: "Record<string, string>", default: "{}", description: "Map of field-name → human-readable label. Falls back to the field name if missing."},
 		{name: "title", type: "string", default: '"Please fix the following:"', description: "Heading rendered above the error list."},
 		{name: "onFieldClick", type: "(ctx: {field: string}) => void", default: "undefined", description: "Fires when the user clicks an error link. Typical use: scroll to + focus the offending input."},
-		{name: "children", type: "Snippet", default: "undefined", description: "Optional snippet rendered after the error list (e.g. a 'Contact support' link)."}
+		{name: "children", type: "Snippet", default: "undefined", description: "Optional snippet rendered after the error list (e.g. a 'Contact support' link)."},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the summary <div>"}
 	]
 </script>
 

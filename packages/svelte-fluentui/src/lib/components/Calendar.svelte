@@ -13,10 +13,14 @@
 	import {tick} from "svelte"
 	import {getLargest, getSmallest} from "../helpers/array.js"
 	import {defaultLocale} from "../helpers/locale.js"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
+		/** Selected date in single mode. Bindable. */
 		value?: Date
+		/** Selected dates in multiple/range mode. Bindable. */
 		selectedDates?: Date[]
+		/** Month currently shown. Bindable. */
 		pickerMonth?: Date
 		culture?: Intl.Locale
 		/** First day of the week (0=Sunday, 1=Monday, …, 6=Saturday). Overrides culture's default when set. */
@@ -55,7 +59,11 @@
 		onDayHover?: (ctx: {date: Date | null}) => void
 		day?: Snippet<[day: CalendarDay]>
 		class?: string
+		style?: string
 	}
+
+	/** Other native attributes and events go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		    value                           = $bindable(new Date()),
@@ -84,12 +92,14 @@
 		    onPickerMonthChange             = undefined,
 		    onDayHover                      = undefined,
 		    day: daySnippet                 = undefined,
-		    ...  restProps
+		    class: className                = undefined,
+		    style                           = undefined,
+		    ...rest
 	    }: Props = $props()
 
 	let _rangeSelector                      = $state(new RangeOfDates())
 	let _rangeSelectorMouseOver             = $state(new RangeOfDates())
-	let _pickerView: Props["view"] | null   = $state(null)
+	let _pickerView: OwnProps["view"] | null   = $state(null)
 	let _selectedDatesMouseOver: Date[]             = $state([])
 	let _animationRunning: CalendarVerticalPosition = $state(CalendarVerticalPosition.Unset)
 
@@ -478,14 +488,14 @@
 {/snippet}
 
 <div
-
-	class="{restProps.class || ''}"
+	{...rest}
+	class={className || null}
 	class:fluent-calendar={view === "days"}
 	class:fluent-month={view === "months"}
 	class:fluent-year={view === "years"}
 	aria-readonly={readonly ? "true" : null}
 	aria-disabled={disabled ? "true" : null}
-	style={sizeStyle || null}
+	style={[sizeStyle, style].filter(Boolean).join("; ") || null}
 >
 	{#if !_pickerView || _pickerView === "days"}
 		<div>

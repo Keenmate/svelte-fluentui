@@ -60,7 +60,8 @@
 	]
 
 	const radioCallbacks: Property[] = [
-		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user selects a different radio (RadioGroup only)"}
+		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user selects a different radio (RadioGroup only)"},
+		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to <fluent-radio>"}
 	]
 
 	const radioGroupSlots: Property[] = [

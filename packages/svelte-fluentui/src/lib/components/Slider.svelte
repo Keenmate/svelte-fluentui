@@ -8,8 +8,9 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {NativeEventHandler, RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		id?: string
 		value?: number | null
 		min?: number
@@ -28,7 +29,14 @@
 		children?: Snippet
 		/** Fires when the user commits a new value; the live value while dragging is `bind:value`. */
 		onChange?: (ctx: {value: number}) => void
+		/** Native `change` event, forwarded untouched. */
+		onchange?: NativeEventHandler
+		/** Native `input` event, forwarded untouched. */
+		oninput?: NativeEventHandler
 	}
+
+	/** Other native attributes and events (`onkeydown`, `onpointerdown`, …) go to `<fluent-slider>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		id = undefined,
@@ -47,7 +55,10 @@
 		class: className = "",
 		style = "",
 		children = undefined,
-		onChange = undefined
+		onChange = undefined,
+		onchange = undefined,
+		oninput = undefined,
+		...rest
 	}: Props = $props()
 
 	let element: (HTMLElement & {value: string; valueAsNumber: number}) | undefined = $state()
@@ -65,6 +76,7 @@
 	})
 
 	function handleChange(ev: Event) {
+		onchange?.(ev)
 		const target = ev.target as HTMLElement & {valueAsNumber: number}
 		const numeric = Number(target.valueAsNumber)
 		if (!Number.isNaN(numeric)) {
@@ -74,6 +86,7 @@
 	}
 
 	function handleInput(ev: Event) {
+		oninput?.(ev)
 		const target = ev.target as HTMLElement & {valueAsNumber: number}
 		const numeric = Number(target.valueAsNumber)
 		if (!Number.isNaN(numeric)) {
@@ -92,6 +105,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <fluent-slider
 	bind:this={element}
+	{...rest}
 	{...attrs({id, min, max, step, orientation, disabled, readonly, required, name, class: className, style})}
 	{...(ariaLabel || label ? { "aria-label": ariaLabel || label } : {})}
 	onchange={handleChange}

@@ -9,6 +9,7 @@
 	let comboLog = $state<string[]>([])
 	let terms = $state<string[]>([])
 	let filtered = $state<string[]>([])
+	let currentText = $state<string | undefined>("")
 </script>
 
 <section id="select-single">
@@ -30,7 +31,9 @@
 <section id="combo">
 	<Combobox
 		id="combo-input"
+		data-testid="combo-root"
 		bind:value={combo}
+		bind:currentValue={currentText}
 		onChange={({value}) => comboLog.push(JSON.stringify(value))}
 		filterCallback={({term, option}) => {
 			filtered.push(`${term}:${option.label}`)
@@ -41,6 +44,7 @@
 		<Option value="c2">Delta</Option>
 	</Combobox>
 	<output id="combo-log">{comboLog.join(" | ")}</output>
+	<output id="combo-current">{currentText}</output>
 	<output id="combo-filtered">{filtered.length > 0 ? "called" : ""}</output>
 </section>
 

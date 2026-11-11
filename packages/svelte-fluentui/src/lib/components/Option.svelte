@@ -21,8 +21,9 @@
 	import {selectedOptionsContext} from "../contexts.js"
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		value: string
 		label?: string
 		class?: string
@@ -37,6 +38,9 @@
 		children: Snippet
 	}
 
+	/** Other native attributes and events (`title`, `data-*`, `onpointerenter`, …) go to the row `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 			value,
 			label    = undefined,
@@ -47,7 +51,8 @@
 			onclick  = undefined,
 			data     = undefined,
 			icon     = undefined,
-			children
+			children,
+			...rest
 		}: Props = $props()
 
 	const selectedValue = selectedOptionsContext.get()
@@ -75,6 +80,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
+	{...rest}
 	class={`fluent-option${className ? ` ${className}` : ""}`}
 	role="option"
 	aria-selected={isSelected ? "true" : "false"}
