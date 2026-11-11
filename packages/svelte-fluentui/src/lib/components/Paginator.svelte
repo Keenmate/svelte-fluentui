@@ -13,14 +13,15 @@
 		style?: string
 		disabled?: boolean
 		totalItemCount?: number
+		/** Current page, 0-based (bindable). */
 		currentPageIndex?: number
 		lastPageIndex?: number
+		/** Defaults to `currentPageIndex > 0`. */
 		canGoBack?: boolean
+		/** Defaults to `currentPageIndex < lastPageIndex`. */
 		canGoForwards?: boolean
-		onFirst?: () => void
-		onPrevious?: () => void
-		onNext?: () => void
-		onLast?: () => void
+		/** Fires when the user moves to another page (first / previous / next / last). */
+		onPageChange?: (ctx: {pageIndex: number}) => void
 		summaryTemplate?: Snippet
 		paginationTextTemplate?: Snippet
 	}
@@ -30,17 +31,24 @@
 		style = "",
 		disabled = false,
 		totalItemCount = undefined,
-		currentPageIndex = 0,
+		currentPageIndex = $bindable(0),
 		lastPageIndex = 0,
-		canGoBack = true,
-		canGoForwards = true,
-		onFirst = undefined,
-		onPrevious = undefined,
-		onNext = undefined,
-		onLast = undefined,
+		canGoBack = undefined,
+		canGoForwards = undefined,
+		onPageChange = undefined,
 		summaryTemplate = undefined,
 		paginationTextTemplate = undefined
 	}: Props = $props()
+
+	const backEnabled = $derived(canGoBack ?? currentPageIndex > 0)
+	const forwardsEnabled = $derived(canGoForwards ?? currentPageIndex < lastPageIndex)
+
+	function goTo(pageIndex: number) {
+		const next = Math.max(0, Math.min(pageIndex, lastPageIndex))
+		if (disabled || next === currentPageIndex) return
+		currentPageIndex = next
+		onPageChange?.({pageIndex: next})
+	}
 </script>
 
 <div class="paginator {className}" {style} >
@@ -58,8 +66,8 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<fluent-button
-			onclick={() => onFirst?.()}
-			{...(!canGoBack || disabled ? { disabled: true } : {})}
+			onclick={() => goTo(0)}
+			{...(!backEnabled || disabled ? { disabled: true } : {})}
 			title="Go to first page"
 			aria-label="Go to first page"
 		>
@@ -69,8 +77,8 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<fluent-button
-			onclick={() => onPrevious?.()}
-			{...(!canGoBack || disabled ? { disabled: true } : {})}
+			onclick={() => goTo(currentPageIndex - 1)}
+			{...(!backEnabled || disabled ? { disabled: true } : {})}
 			title="Go to previous page"
 			aria-label="Go to previous page"
 		>
@@ -88,8 +96,8 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<fluent-button
-			onclick={() => onNext?.()}
-			{...(!canGoForwards || disabled ? { disabled: true } : {})}
+			onclick={() => goTo(currentPageIndex + 1)}
+			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}
 			title="Go to next page"
 			aria-label="Go to next page"
 		>
@@ -99,8 +107,8 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<fluent-button
-			onclick={() => onLast?.()}
-			{...(!canGoForwards || disabled ? { disabled: true } : {})}
+			onclick={() => goTo(lastPageIndex)}
+			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}
 			title="Go to last page"
 			aria-label="Go to last page"
 		>

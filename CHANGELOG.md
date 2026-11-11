@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Paginator:** `onFirst()`, `onPrevious()`, `onNext()`, `onLast()` (you moved the page yourself) → `onPageChange({pageIndex})`; `currentPageIndex` is bindable and moved by the paginator; `canGoBack`/`canGoForwards` default from the index
+- **Grid:** `onBreakpointEnter(size)` → `onBreakpointChange({breakpoint})`
+- **MultiSplitter:** `onresize`, `oncollapse`, `onexpand` with `{index, …}` → `onPaneResize`, `onPaneCollapse`, `onPaneExpand` with `{paneIndex, …}`
 - **Alert, Toast:** `ondismiss()` → `onDismiss({sourceEvent})`
 - **Chip:** `onremove(event)` → `onRemove({sourceEvent})`
 - **CompositeBadge:** `onlabelclick(ev)`, `onbuttonclick(ev)` → `onLabelClick({sourceEvent})`, `onButtonClick({sourceEvent})`

@@ -35,7 +35,8 @@
 		// need xs/sm/md breakpoint props; each cell is an equal column.
 		columns?: number
 		gap?: string
-		onBreakpointEnter?: (size: GridItemSize) => void
+		/** Fires when the grid's width crosses into another breakpoint. */
+		onBreakpointChange?: (ctx: {breakpoint: GridItemSize}) => void
 		class?: string
 		style?: string
 	}
@@ -50,7 +51,7 @@
 		containerBreakpoints = undefined,
 		columns = undefined,
 		gap = undefined,
-		onBreakpointEnter = undefined,
+		onBreakpointChange = undefined,
 		class: className = "",
 		style = ""
 	}: Props = $props()
@@ -115,12 +116,12 @@
 
 		if (newSize !== currentSize) {
 			currentSize = newSize
-			onBreakpointEnter?.(newSize)
+			onBreakpointChange?.({breakpoint: newSize})
 		}
 	}
 
 	onMount(() => {
-		if (onBreakpointEnter) {
+		if (onBreakpointChange) {
 			updateBreakpoint()
 			const resizeObserver = new ResizeObserver(updateBreakpoint)
 			if (gridElement) resizeObserver.observe(gridElement)

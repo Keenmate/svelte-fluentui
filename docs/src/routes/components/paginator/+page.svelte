@@ -2,25 +2,10 @@
 	import {Paginator, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
-	let currentPage = 0
+	let currentPage = $state(0)
 	let lastPage = 9
 	let totalItems = 250
-
-	function goFirst() {
-		currentPage = 0
-	}
-
-	function goPrevious() {
-		if (currentPage > 0) currentPage -= 1
-	}
-
-	function goNext() {
-		if (currentPage < lastPage) currentPage += 1
-	}
-
-	function goLast() {
-		currentPage = lastPage
-	}
+	let lastPageEvent = $state("")
 
 	type Property = {
 		name: string
@@ -34,17 +19,14 @@
 		{name: "style", type: "string", default: '""', description: "Custom inline styles"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the paginator"},
 		{name: "totalItemCount", type: "number", default: "undefined", description: "Total items"},
-		{name: "currentPageIndex", type: "number", default: "0", description: "Current page (0-based)"},
+		{name: "currentPageIndex", type: "number", default: "0", description: "Current page (0-based, bindable)"},
 		{name: "lastPageIndex", type: "number", default: "0", description: "Last page (0-based)"},
-		{name: "canGoBack", type: "boolean", default: "true", description: "Allow navigating backwards"},
-		{name: "canGoForwards", type: "boolean", default: "true", description: "Allow navigating forwards"}
+		{name: "canGoBack", type: "boolean", default: "currentPageIndex > 0", description: "Allow navigating backwards"},
+		{name: "canGoForwards", type: "boolean", default: "currentPageIndex < lastPageIndex", description: "Allow navigating forwards"}
 	]
 
 	const callbacks: Property[] = [
-		{name: "onFirst", type: "function", default: "undefined", description: 'Fires when "go first" is clicked'},
-		{name: "onPrevious", type: "function", default: "undefined", description: 'Fires when "go previous" is clicked'},
-		{name: "onNext", type: "function", default: "undefined", description: 'Fires when "go next" is clicked'},
-		{name: "onLast", type: "function", default: "undefined", description: 'Fires when "go last" is clicked'}
+		{name: "onPageChange", type: "(ctx: {pageIndex: number}) => void", default: "undefined", description: "Fires when the user moves to another page (first / previous / next / last)"}
 	]
 
 	const slots: Property[] = [
@@ -85,15 +67,11 @@
 		<h3>Basic paginator</h3>
 		<Paginator
 			totalItemCount={totalItems}
-			currentPageIndex={currentPage}
+			bind:currentPageIndex={currentPage}
 			lastPageIndex={lastPage}
-			canGoBack={currentPage > 0}
-			canGoForwards={currentPage < lastPage}
-			onFirst={goFirst}
-			onPrevious={goPrevious}
-			onNext={goNext}
-			onLast={goLast}
+			onPageChange={({pageIndex}) => lastPageEvent = `Moved to page ${pageIndex + 1}`}
 		/>
+		<p>{lastPageEvent || "Use the buttons to move between pages"}</p>
 
 		<h3>Disabled paginator</h3>
 		<Paginator

@@ -4,8 +4,8 @@
 
 	let currentBreakpoint = $state<string>("unknown")
 
-	function handleBreakpointChange(size: string) {
-		currentBreakpoint = size
+	function handleBreakpointChange({breakpoint}: {breakpoint: string}) {
+		currentBreakpoint = breakpoint
 	}
 
 	// Container-query demo state. cqMax/cbMax are measured from the demo column
@@ -50,7 +50,7 @@
 	]
 
 	const gridCallbacks: Property[] = [
-		{name: "onBreakpointEnter", type: "(size: GridItemSize) => void", default: "undefined", description: "Called when the grid container crosses a responsive breakpoint. Size is one of: xs, sm, md, lg, xl, xxl"}
+		{name: "onBreakpointChange", type: "(ctx: {breakpoint: GridItemSize}) => void", default: "undefined", description: "Fires when the grid container crosses a responsive breakpoint (xs, sm, md, lg, xl, xxl)"}
 	]
 
 	const gridSlots: Property[] = [
@@ -276,7 +276,7 @@
 
 		<h3>Breakpoint Detection</h3>
 		<p>Current breakpoint: <strong>{currentBreakpoint}</strong></p>
-		<Grid spacing={3} onBreakpointEnter={handleBreakpointChange}>
+		<Grid spacing={3} onBreakpointChange={handleBreakpointChange}>
 			<GridItem xs={12}>
 				<Card class="grid-card-layer3">
 					<h4>Responsive Info</h4>

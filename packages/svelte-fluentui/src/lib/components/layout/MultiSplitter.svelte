@@ -19,8 +19,8 @@
 	import type {Snippet} from "svelte"
 	export type {MultiSplitterContext, PaneHandle, PaneRegistration} from "../../types/multi-splitter.js"
 
-	export type MultiSplitterResizeDetail = {index: number; pane: HTMLElement; size: number}
-	export type MultiSplitterToggleDetail = {index: number; pane: HTMLElement}
+	export type MultiSplitterResizeDetail = {paneIndex: number; pane: HTMLElement; size: number}
+	export type MultiSplitterToggleDetail = {paneIndex: number; pane: HTMLElement}
 </script>
 
 <script lang="ts">
@@ -47,9 +47,12 @@
 		style?: string
 		/** Logs drag / minimize transitions to console (development aid). */
 		debug?: boolean
-		onresize?: (detail: MultiSplitterResizeDetail) => void
-		oncollapse?: (detail: MultiSplitterToggleDetail) => void
-		onexpand?: (detail: MultiSplitterToggleDetail) => void
+		/** Fires when a pane's size changes. */
+		onPaneResize?: (ctx: MultiSplitterResizeDetail) => void
+		/** Fires when a pane is minimized (collapsed to its rail). */
+		onPaneCollapse?: (ctx: MultiSplitterToggleDetail) => void
+		/** Fires when a minimized pane is restored. */
+		onPaneExpand?: (ctx: MultiSplitterToggleDetail) => void
 	}
 
 	let {
@@ -64,9 +67,9 @@
 		class: className = "",
 		style = "",
 		debug = false,
-		onresize = undefined,
-		oncollapse = undefined,
-		onexpand = undefined
+		onPaneResize = undefined,
+		onPaneCollapse = undefined,
+		onPaneExpand = undefined
 	}: Props = $props()
 
 	const STORAGE_PREFIX = "fluent-multi-splitter:"
@@ -262,10 +265,10 @@
 			if (p.size >= p.min && !h.state.isMin) {
 				p.lastNonZero = p.size
 			}
-			// Fire onresize when size changed materially. Pre-applySizes the
+			// Fire onPaneResize when size changed materially. Pre-applySizes the
 			// caller already wrote p.size; we don't track previous-frame
 			// size, so fire unconditionally and let consumers debounce.
-			onresize?.({index: i, pane: p.el, size: p.size})
+			onPaneResize?.({paneIndex: i, pane: p.el, size: p.size})
 		}
 
 		// Update each gutter's ARIA. Uses left-pane size for valuenow.
@@ -381,7 +384,7 @@
 				primary.size = railSize
 				clampToConstraints(totalAvailable(), pinnedForAbsorbers(absorbers))
 				applySizes({persist: false})
-				oncollapse?.({index: primaryIdx, pane: primary.el})
+				onPaneCollapse?.({paneIndex: primaryIdx, pane: primary.el})
 				return
 			}
 		}
@@ -393,7 +396,7 @@
 			log("DRAG-OUT-OF-RAIL primary=" + primaryIdx)
 			primaryHandle.state.isMin = false
 			primaryInEscape = true
-			onexpand?.({index: primaryIdx, pane: primary.el})
+			onPaneExpand?.({paneIndex: primaryIdx, pane: primary.el})
 		}
 
 		// While still railed, this frame is a no-op — skip floor/max/rebalance
@@ -442,7 +445,7 @@
 			const handle = panes[primaryIdx]
 			handle.state.isMin = false
 			const primary = internals.get(handle)!
-			onexpand?.({index: primaryIdx, pane: primary.el})
+			onPaneExpand?.({paneIndex: primaryIdx, pane: primary.el})
 		}
 		pendingMove = e[clientCoord]
 		if (rafScheduled) return
@@ -650,7 +653,7 @@
 		const pinned = panes.map(h => h.state.isMin)
 		clampToConstraints(totalAvailable(), pinned)
 		applySizes()
-		oncollapse?.({index: i, pane: p.el})
+		onPaneCollapse?.({paneIndex: i, pane: p.el})
 	}
 
 	function restorePane(i: number) {
@@ -667,7 +670,7 @@
 					if (pj.canMin && !hj.state.isMin) {
 						hj.state.isMin = true
 						pj.size = railSize
-						oncollapse?.({index: j, pane: pj.el})
+						onPaneCollapse?.({paneIndex: j, pane: pj.el})
 					}
 				}
 			}
@@ -701,7 +704,7 @@
 			expandNonMinToFill()
 		}
 		applySizes()
-		onexpand?.({index: i, pane: p.el})
+		onPaneExpand?.({paneIndex: i, pane: p.el})
 	}
 
 	function togglePane(i: number) {

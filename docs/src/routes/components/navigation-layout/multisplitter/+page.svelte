@@ -7,13 +7,13 @@
 	let orientation: "horizontal" | "vertical" = $state("horizontal")
 
 	function handleCollapse(detail: MultiSplitterToggleDetail) {
-		lastEvent = `Collapsed pane ${detail.index}`
+		lastEvent = `Collapsed pane ${detail.paneIndex}`
 	}
 	function handleExpand(detail: MultiSplitterToggleDetail) {
-		lastEvent = `Expanded pane ${detail.index}`
+		lastEvent = `Expanded pane ${detail.paneIndex}`
 	}
 	function handleResize(detail: MultiSplitterResizeDetail) {
-		lastEvent = `Resized pane ${detail.index} to ${Math.round(detail.size)}px`
+		lastEvent = `Resized pane ${detail.paneIndex} to ${Math.round(detail.size)}px`
 	}
 
 	type Property = {
@@ -37,9 +37,9 @@
 	]
 
 	const multiSplitterCallbacks: Property[] = [
-		{name: "onresize", type: "(detail: MultiSplitterResizeDetail) => void", default: "undefined", description: "Fired continuously while a pane is resized. `{ index, pane, size }`."},
-		{name: "oncollapse", type: "(detail: MultiSplitterToggleDetail) => void", default: "undefined", description: "Fired when a pane minimizes to a rail. `{ index, pane }`."},
-		{name: "onexpand", type: "(detail: MultiSplitterToggleDetail) => void", default: "undefined", description: "Fired when a railed pane expands back. `{ index, pane }`."}
+		{name: "onPaneResize", type: "(ctx: MultiSplitterResizeDetail) => void", default: "undefined", description: "Fired continuously while a pane is resized. `{ paneIndex, pane, size }`."},
+		{name: "onPaneCollapse", type: "(ctx: MultiSplitterToggleDetail) => void", default: "undefined", description: "Fired when a pane minimizes to a rail. `{ paneIndex, pane }`."},
+		{name: "onPaneExpand", type: "(ctx: MultiSplitterToggleDetail) => void", default: "undefined", description: "Fired when a railed pane expands back. `{ paneIndex, pane }`."}
 	]
 
 	const multiSplitterPaneProperties: Property[] = [
@@ -108,9 +108,9 @@
 		<p>Last event: <strong>{lastEvent}</strong></p>
 		<MultiSplitter
 			orientation="horizontal"
-			onresize={handleResize}
-			oncollapse={handleCollapse}
-			onexpand={handleExpand}
+			onPaneResize={handleResize}
+			onPaneCollapse={handleCollapse}
+			onPaneExpand={handleExpand}
 		>
 			<MultiSplitterPane size="280px" min="200px" max="60%">
 				<Card>
