@@ -28,8 +28,8 @@
 
 	const properties: Property[] = [
 		{name: "modal", type: "boolean", default: "undefined", description: "Modal behavior"},
-		{name: "visible", type: "boolean", default: "undefined", description: "Visibility state"},
-		{name: "preventClose", type: "boolean", default: "false", description: "Prevent closing"},
+		{name: "open", type: "boolean", default: "undefined", description: "Whether the dialog is open (bindable)"},
+		{name: "preventClose", type: "boolean", default: "false", description: "Hide the close button and ignore Escape / overlay clicks"},
 		{name: "dismissable", type: "boolean", default: "false", description: "Show dismiss button"},
 		{name: "trapFocus", type: "boolean", default: "undefined", description: "Trap focus"},
 		{name: "size", type: '"small" | "medium" | "large" | "extra-large" | "full"', default: '"medium"', description: "Predefined dialog size"},
@@ -46,7 +46,8 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onClose", type: "() => void", default: "undefined", description: "Fires when dialog is closed"}
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the dialog opens or closes"},
+		{name: "beforeCloseCallback", type: "(ctx: {reason}) => unknown", default: "undefined", description: "Called before a user close (escape, close-button, overlay, dismiss, action); return false (or resolve to false) to keep it open"}
 	]
 
 	const slots: Property[] = [
@@ -107,7 +108,7 @@
 		</Stack>
 
 		<!-- Small Dialog -->
-		<Dialog visible={smallDialog} modal={true} size="small" onClose={() => smallDialog = false}>
+		<Dialog bind:open={smallDialog} modal={true} size="small">
 			<h3 style="margin: 0 0 1rem 0;">Small Dialog</h3>
 			<p>This is a small dialog (400px wide).</p>
 			<p>Perfect for simple confirmations or short messages.</p>
@@ -117,7 +118,7 @@
 		</Dialog>
 
 		<!-- Medium Dialog -->
-		<Dialog visible={mediumDialog} modal={true} size="medium" onClose={() => mediumDialog = false}>
+		<Dialog bind:open={mediumDialog} modal={true} size="medium">
 			<h3 style="margin: 0 0 1rem 0;">Medium Dialog</h3>
 			<p>This is a medium dialog (600px wide) - the default size.</p>
 			<p>Suitable for most dialog content including forms and detailed information.</p>
@@ -127,7 +128,7 @@
 		</Dialog>
 
 		<!-- Large Dialog -->
-		<Dialog visible={largeDialog} modal={true} size="large" onClose={() => largeDialog = false}>
+		<Dialog bind:open={largeDialog} modal={true} size="large">
 			<h3 style="margin: 0 0 1rem 0;">Large Dialog</h3>
 			<p>This is a large dialog (800px wide).</p>
 			<p>Great for more complex content, multiple columns, or detailed forms.</p>
@@ -138,7 +139,7 @@
 		</Dialog>
 
 		<!-- Extra Large Dialog -->
-		<Dialog visible={extraLargeDialog} modal={true} size="extra-large" onClose={() => extraLargeDialog = false}>
+		<Dialog bind:open={extraLargeDialog} modal={true} size="extra-large">
 			<h3 style="margin: 0 0 1rem 0;">Extra Large Dialog</h3>
 			<p>This is an extra large dialog (1000px wide).</p>
 			<p>Perfect for dashboards, complex data tables, or multi-step wizards.</p>
@@ -149,7 +150,7 @@
 		</Dialog>
 
 		<!-- Full Dialog -->
-		<Dialog visible={fullDialog} modal={true} size="full" onClose={() => fullDialog = false}>
+		<Dialog bind:open={fullDialog} modal={true} size="full">
 			<h3 style="margin: 0 0 1rem 0;">Full Screen Dialog</h3>
 			<p>This is a full-screen dialog (90vw x 90vh).</p>
 			<p>Use this for immersive experiences that need maximum screen real estate.</p>
@@ -198,12 +199,11 @@
 		</Stack>
 
 		<Dialog
-			visible={scrollDialog}
+			bind:open={scrollDialog}
 			modal={true}
 			title="Override value"
 			width="640px"
 			height="70vh"
-			onClose={() => scrollDialog = false}
 		>
 			<div class="dialog-body-fill">
 				<Tabs class={`scroll-demo-tabs${containScroll ? " contained" : ""}`} activeId="expression">
@@ -270,7 +270,7 @@
 		</Button>
 
 		<!-- Outer (first) modal dialog -->
-		<Dialog visible={outerDialog} modal={true} title="Outer dialog" width="520px" onClose={() => outerDialog = false}>
+		<Dialog bind:open={outerDialog} modal={true} title="Outer dialog" width="520px">
 			<p>This is the first modal dialog. Open a second one on top of it.</p>
 			<TextField placeholder="Try tabbing through these fields" />
 			<TextField placeholder="Focus stays trapped here…" />
@@ -281,7 +281,7 @@
 		</Dialog>
 
 		<!-- Inner (stacked) modal dialog -->
-		<Dialog visible={innerDialog} modal={true} title="Inner dialog" width="400px" onClose={() => innerDialog = false}>
+		<Dialog bind:open={innerDialog} modal={true} title="Inner dialog" width="400px">
 			<p>Now two modal dialogs are open. Tab around — focus is trapped here, not in the outer dialog.</p>
 			<TextField placeholder="Inner field 1" />
 			<TextField placeholder="Inner field 2" />

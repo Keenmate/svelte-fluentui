@@ -4,14 +4,16 @@
 	import type {Snippet} from "svelte"
 
 	type Props = {
+		/** Whether the settings dialog is open (bindable). */
 		open?: boolean
-		onClose?: () => void
+		/** Fires when the dialog opens or closes. */
+		onOpenChange?: (ctx: {open: boolean}) => void
 		children?: Snippet
 	}
 
 	let {
-		    open = false,
-		    onClose,
+		    open = $bindable(false),
+		    onOpenChange,
 		    children
 	    }: Props = $props()
 
@@ -39,7 +41,7 @@
 	}
 </script>
 
-<Dialog visible={open} modal={true} onClose={onClose} size="small" style="z-index: 10000;">
+<Dialog bind:open modal={true} {onOpenChange} size="small" style="z-index: 10000;">
 	<h4 style="margin: 0 0 1.5rem 0;">Site settings</h4>
 
 	<Stack orientation="vertical" gap="1rem">
@@ -145,7 +147,7 @@
 
 		<!-- OK Button -->
 		<div style="display: flex; justify-content: flex-end;">
-			<Button appearance="accent" onclick={onClose}>OK</Button>
+			<Button appearance="accent" onclick={() => { open = false; onOpenChange?.({open: false}) }}>OK</Button>
 		</div>
 	</Stack>
 </Dialog>

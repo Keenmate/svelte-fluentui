@@ -73,3 +73,11 @@ The 05 table doesn't list every function prop. Where the return value is used I 
   kebab-case `max-selectable-days-exceeded` (value-casing rule).
 - `maxSelectableDays` left as is for now; rulebook D-NC-22 would make it `maxSelectedDayCount` —
   will do it with the other limit renames (`maxSelectedOptions` → `maxSelectionCount`) unless you object.
+
+## Q9 — Dialog `preventClose`: kept (the 05 mapping said drop it)
+
+`beforeCloseCallback({reason})` now replaces `onbeforeclose` (veto with `false`, async OK). The table also
+said to drop `preventClose`, but it does more than veto: it hides the × button and makes Escape /
+overlay clicks inert. Without it a "must answer" dialog would show a × that does nothing. **Kept for
+now.** Options: keep it (maybe rename to `closable={false}` / `dismissible`-style), or drop it and add a
+`showCloseButton` prop. Your call.

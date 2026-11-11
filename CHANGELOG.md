@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Dialog:** `visible` (bindable) → `open` (bindable)
+- **Dialog:** `onClose()` → `onOpenChange({open})` (fires on open and close)
+- **Dialog:** `onbeforeclose()` (sync, `false` vetoes) → `beforeCloseCallback({reason})` — may be async; `reason` is `escape` / `close-button` / `overlay` / `dismiss` / `action`; not called for `hide()` from code
+- **SiteSettings:** `onClose()`; `open` not bindable → `onOpenChange({open})`; `open` bindable
 - **Tab:** `canLeave()` (falsy vetoed) → `beforeLeaveCallback({tab, newTab})` — only `false` vetoes (`undefined` continues); may be async; a throw vetoes
 - **Tab:** `canClose()`, `oncloseclick()` → `beforeCloseCallback({tab})`, `onTabClose({tab})`
 - **Tabs:** `ontabchange({tabId, data})` → `onActiveIdChange({activeId, oldActiveId, tab})` — `tab` is `{id, label, data}` (type `TabInfo`)

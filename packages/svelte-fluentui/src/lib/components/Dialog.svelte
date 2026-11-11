@@ -19,7 +19,7 @@
 	type DialogHandle = {
 		closeOnEscape: () => boolean
 		preventClose: () => boolean
-		onbeforeclose: () => boolean | void
+		requestClose: (reason: DialogCloseReason) => void
 		hide: () => void
 		/** Enable/disable this instance's FAST focus trap. See {@link syncFocusTrap}. */
 		setFocusTrap: (active: boolean) => void
@@ -46,8 +46,7 @@
 	function escapeDialog(handle: DialogHandle): boolean {
 		if (handle.preventClose()) return false
 		if (!handle.closeOnEscape()) return false
-		if (handle.onbeforeclose() === false) return false
-		handle.hide()
+		handle.requestClose("escape")
 		return true
 	}
 
@@ -118,9 +117,13 @@
 		onClick?: () => boolean | void | Promise<boolean | void>
 	}
 
+	/** Why a close was requested — passed to `beforeCloseCallback`. */
+	export type DialogCloseReason = "escape" | "close-button" | "overlay" | "dismiss" | "action"
+
 	type Props = {
 		modal?: boolean
-		visible?: boolean
+		/** Whether the dialog is open (bindable). */
+		open?: boolean
 		preventClose?: boolean
 		dismissable?: boolean
 		trapFocus?: boolean
@@ -141,8 +144,14 @@
 		secondaryAction?: DialogAction
 		actions?: Snippet
 		dismissButtonText?: Snippet
-		onClose?: () => void
-		onbeforeclose?: () => boolean | void
+		/** Fires when the dialog opens or closes. */
+		onOpenChange?: (ctx: {open: boolean}) => void
+		/**
+		 * Called before a user-initiated close (Escape, ×, overlay, Dismiss, an action).
+		 * Return `false` (or a Promise resolving to `false`) to keep the dialog open.
+		 * Not called for `hide()` from code.
+		 */
+		beforeCloseCallback?: (ctx: {reason: DialogCloseReason}) => unknown
 		closeOnEscape?: boolean
 		size?: "small" | "medium" | "large" | "extra-large" | "full"
 		width?: string
@@ -152,7 +161,7 @@
 
 	let {
 		    modal = undefined,
-		    visible = $bindable(undefined),
+		    open = $bindable(undefined),
 		    trapFocus = undefined,
 		    ariaDescribedby = undefined,
 		    ariaLabelledby = undefined,
@@ -167,8 +176,8 @@
 		    secondaryAction = undefined,
 		    actions = undefined,
 		    dismissButtonText = undefined,
-		    onClose = undefined,
-		    onbeforeclose = undefined,
+		    onOpenChange = undefined,
+		    beforeCloseCallback = undefined,
 		    closeOnEscape = true,
 		    size = "medium",
 		    width = undefined,
@@ -199,8 +208,10 @@
 			return
 		}
 
-		visible = true
+		if (open) return
+		open = true
 		element.show()
+		onOpenChange?.({open: true})
 	}
 
 	export function hide() {
@@ -208,9 +219,10 @@
 			return
 		}
 
-		visible = false
+		if (!open) return
+		open = false
 		element.hide()
-		onClose?.()
+		onOpenChange?.({open: false})
 	}
 
 	export function toggle() {
@@ -218,18 +230,25 @@
 			return
 		}
 
-		visible = !visible
-		if (visible) {
-			element.show()
-		} else {
-			element.hide()
-			onClose?.()
-		}
+		if (open) hide()
+		else show()
 	}
 
-	function handleClose() {
-		if (onbeforeclose && onbeforeclose() === false) {
-			return
+	// User-initiated close. Runs beforeCloseCallback (may be async; `false` or a
+	// throw keeps the dialog open). A second request while one is pending is ignored.
+	let closing = false
+	async function requestClose(reason: DialogCloseReason) {
+		if (closing) return
+		if (beforeCloseCallback) {
+			closing = true
+			try {
+				if ((await beforeCloseCallback({reason})) === false) return
+			} catch (error) {
+				console.error("[Dialog] beforeCloseCallback failed:", error)
+				return
+			} finally {
+				closing = false
+			}
 		}
 		hide()
 	}
@@ -239,7 +258,7 @@
 	const handle: DialogHandle = {
 		closeOnEscape: () => closeOnEscape,
 		preventClose: () => preventClose,
-		onbeforeclose: () => onbeforeclose?.(),
+		requestClose,
 		hide,
 		// Topmost dialog keeps the trap; the rest release it. We never re-enable a
 		// trap the author explicitly disabled (trapFocus={false}).
@@ -263,7 +282,7 @@
 		}
 	}
 	$effect(() => {
-		if (visible) {
+		if (open) {
 			pushDialog(handle)
 			const popLayer = pushLayer({onEscape: () => escapeDialog(handle)})
 			return () => {
@@ -277,7 +296,7 @@
 	// the dialog don't chain to the document. Non-modal dialogs leave the page
 	// scrollable on purpose.
 	$effect(() => {
-		if (visible && modal) {
+		if (open && modal) {
 			lockBodyScroll()
 			return () => unlockBodyScroll()
 		}
@@ -288,7 +307,7 @@
 	async function runAction(action: DialogAction) {
 		const result = await action.onClick?.()
 		if (result !== false) {
-			hide()
+			await requestClose("action")
 		}
 	}
 
@@ -302,17 +321,17 @@
 	const showFloatingClose = $derived(!hasHeaderRow && !preventClose)
 </script>
 
-{#if visible}
+{#if open}
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div use:portal class="dialog-overlay" onclick={!preventClose ? handleClose : undefined}></div>
+	<div use:portal class="dialog-overlay" onclick={!preventClose ? () => requestClose("overlay") : undefined}></div>
 {/if}
 
 <fluent-dialog
 	use:portal
 	bind:this={element}
 	{...attrs({modal, trapFocus, ariaDescribedby, ariaLabelledby, ariaLabel})}
-	hidden={!visible}
+	hidden={!open}
 	class="dialog-positioned"
 	style={dialogStyle + (style ? ` ${style}` : '')}
 >
@@ -324,7 +343,7 @@
 				{:else}
 					<div class="dialog-title">{title}</div>
 					{#if !preventClose}
-						<Button appearance="stealth" onclick={handleClose} aria-label="Close dialog">
+						<Button appearance="stealth" onclick={() => requestClose("close-button")} aria-label="Close dialog">
 							<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
 								<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
 							</svg>
@@ -336,7 +355,7 @@
 			<button
 				type="button"
 				class="dialog-close-floating"
-				onclick={handleClose}
+				onclick={() => requestClose("close-button")}
 				aria-label="Close dialog"
 			>
 				<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
@@ -360,7 +379,7 @@
 						</div>
 					{/if}
 					{#if dismissable}
-						<Button onclick={hide}>
+						<Button onclick={() => requestClose("dismiss")}>
 							{#if dismissButtonText}
 								{@render dismissButtonText()}
 							{:else}

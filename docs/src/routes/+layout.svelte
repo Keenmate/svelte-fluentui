@@ -242,10 +242,9 @@
 		settingsOpen = true
 	}
 
-	function closeSettings() {
-		settingsOpen = false
+	function handleSettingsOpenChange({open}: {open: boolean}) {
 		// Apply theme settings when dialog closes
-		applyThemeSettings()
+		if (!open) applyThemeSettings()
 	}
 
 	const navigation = [
@@ -570,7 +569,7 @@
 	</TopNav>
 
 	<!-- Site Settings Dialog -->
-	<SiteSettings open={settingsOpen} onClose={closeSettings} />
+	<SiteSettings bind:open={settingsOpen} onOpenChange={handleSettingsOpenChange} />
 
 	<!-- Ctrl/Cmd + K command palette -->
 	<CommandPalette bind:open={paletteOpen} items={paletteItems} placeholder="Search pages and components…" />

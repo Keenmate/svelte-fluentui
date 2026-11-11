@@ -44,3 +44,14 @@ test("Escape closes the DatePicker calendar, not the dialog", async ({page}) => 
 	await expect(page.locator(".fluent-calendar")).toHaveCount(0)
 	await expect(page.locator("#combo-open")).toHaveText("true")
 })
+
+test("beforeCloseCallback can veto; onOpenChange fires on close", async ({page}) => {
+	await page.locator("#open-guarded").click()
+	await page.keyboard.press("Escape")
+	await expect(page.locator("#guard-log")).toHaveText("before:escape")
+	await expect(page.locator("#guarded-open")).toHaveText("true")
+	await page.locator("#allow-close").click()
+	await page.getByRole("button", {name: "Close dialog"}).last().click()
+	await expect(page.locator("#guarded-open")).toHaveText("false")
+	await expect(page.locator("#guard-log")).toHaveText("before:escape,before:close-button,open:false")
+})

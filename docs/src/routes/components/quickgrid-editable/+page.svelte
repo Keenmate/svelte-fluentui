@@ -852,10 +852,10 @@
 
 	<!-- JSON Editor Dialog -->
 	<Dialog
-		visible={jsonDialogOpen}
+		open={jsonDialogOpen}
 		modal
 		size="small"
-		onClose={handleJsonCancel}
+		onOpenChange={({open}) => { if (!open) handleJsonCancel() }}
 	>
 		<div class="json-editor-dialog">
 			<h3>Edit JSON Metadata</h3>
