@@ -32,3 +32,25 @@ test("editing fires onEditStart, beforeCommitCallback errors fire onValidationEr
 	await expect(page.locator("#log")).toContainText("error:Too short")
 	await expect(page.locator("#log")).toContainText("change:A:false")
 })
+
+test("row toolbar: custom item runs onClick then onAction; built-ins report their action", async ({page}) => {
+	const row = page.locator("#toolbar-wrap tbody tr", {hasText: "Banana"})
+	await row.hover()
+	const toolbar = page.locator(".row-toolbar")
+	await expect(toolbar.locator(".row-toolbar-btn")).toHaveCount(2)
+	await expect(toolbar.locator(".row-toolbar-divider")).toHaveCount(1)
+	await toolbar.getByRole("button", {name: "Star"}).click()
+	await expect(page.locator("#log")).toContainText("star:Banana | row-toolbar:custom:star@1")
+	await row.hover()
+	await page.locator(".row-toolbar").getByRole("button", {name: "Delete row"}).click()
+	await expect(page.locator("#log")).toContainText("row-toolbar:delete:-@1")
+})
+
+test("context menu: dynamic text, hidden items and trailing divider dropped, onAction gets the cell", async ({page}) => {
+	await page.locator("#toolbar-wrap td", {hasText: "Cherry"}).click({button: "right"})
+	const menu = page.locator(".context-menu fluent-menu")
+	await expect(menu.locator("fluent-menu-item")).toHaveCount(1)
+	await expect(menu.locator("fluent-divider")).toHaveCount(0)
+	await menu.locator("fluent-menu-item", {hasText: "Copy Name"}).click()
+	await expect(page.locator("#log")).toContainText("copy:Cherry | context-menu:custom:copy@2")
+})

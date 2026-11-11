@@ -17,12 +17,14 @@
 	]
 
 	const properties: PropertyRow[] = [
-		{name: "contextMenu", type: "ContextMenuItem[]", default: "undefined", description: "Array of context menu item configurations shown on right-click"},
-		{name: "oncontextmenuopen", type: "(context: ContextMenuContext) => void", default: "undefined", description: "Callback fired when the context menu opens, receives the click context"}
+		{name: "contextMenu", type: "(built-in name | MenuEntry)[]", default: "undefined", description: "Right-click menu: menu items, {divider: true} entries, and built-ins (expand-all, collapse-all, expand-tree, collapse-tree)"},
+		{name: "beforeActionCallback", type: "(detail) => unknown", default: "undefined", description: "Return false (or resolve to false) to cancel an item"},
+		{name: "onContextMenuOpen", type: "(ctx: ContextMenuContext) => void", default: "undefined", description: "Fires when the context menu opens, receives the click context"}
 	]
 
 	const callbacks: PropertyRow[] = [
-		{name: "oncontextmenuopen", type: "(context: ContextMenuContext) => void", default: "—", description: "Fired when context menu opens. Receives row, rowIndex, colIndex, column, and cellValue"}
+		{name: "onContextMenuOpen", type: "(ctx: ContextMenuContext) => void", default: "—", description: "Fires when the context menu opens. Receives row, rowIndex, columnIndex, column and cellValue"},
+		{name: "onAction", type: "(detail) => void", default: "—", description: "Fires after a menu item ran: {action, id, item, source: \"context-menu\", row, rowIndex, column, columnIndex, cellValue}"}
 	]
 
 	const slots: PropertyRow[] = [
@@ -44,14 +46,14 @@
 	]
 
 	const contextMenuItems: ContextMenuItemRow[] = [
-		{name: "id", type: "string", required: "yes", description: "Unique identifier for the menu item"},
-		{name: "label", type: "string | (context) => string", required: "yes", description: "Display text — can be a static string or a function for dynamic labels based on context"},
-		{name: "icon", type: "string", required: "no", description: "Optional icon displayed before the label (emoji or text)"},
-		{name: "disabled", type: "boolean | (context) => boolean", required: "no", description: "Disables the item; accepts a static boolean or a function evaluated per-click"},
-		{name: "visible", type: "boolean | (context) => boolean", required: "no", description: "Hides the item when false; accepts a static boolean or a function evaluated per-click"},
-		{name: "danger", type: "boolean", required: "no", description: "Applies red/destructive styling to the item"},
-		{name: "dividerBefore", type: "boolean", required: "no", description: "Renders a divider line above this item"},
-		{name: "onclick", type: "(context) => void | Promise<void>", required: "no", description: "Click handler receiving the full ContextMenuContext"}
+		{name: "id", type: "string", required: "no", description: "Identifies the item in onAction"},
+		{name: "text / getTextCallback", type: "string / (ctx) => string", required: "yes", description: "Display text — static, or computed from the context (the callback wins)"},
+		{name: "icon", type: "string | Snippet", required: "no", description: "Fluent icon name or a snippet, displayed before the text"},
+		{name: "isDisabled / getIsDisabledCallback", type: "boolean / (ctx) => boolean", required: "no", description: "Disables the item (the callback wins)"},
+		{name: "isVisible / getIsVisibleCallback", type: "boolean / (ctx) => boolean", required: "no", description: "Hides the item when false (the callback wins)"},
+		{name: "isDanger", type: "boolean", required: "no", description: "Applies red/destructive styling to the item"},
+		{name: "{divider: true}", type: "MenuDivider", required: "—", description: "A separator entry (leading/trailing/double dividers are dropped)"},
+		{name: "onClick", type: "(detail) => void | Promise<void>", required: "no", description: "Runs on click; receives the context plus action/id/item/source"}
 	]
 
 	type ContextMenuContextRow = {
@@ -69,7 +71,7 @@
 	const contextMenuContext: ContextMenuContextRow[] = [
 		{name: "row", type: "T", description: "The full data object for the right-clicked row"},
 		{name: "rowIndex", type: "number", description: "Zero-based index of the row in the currently displayed items"},
-		{name: "colIndex", type: "number", description: "Zero-based index of the clicked column"},
+		{name: "columnIndex", type: "number", description: "Zero-based index of the clicked column"},
 		{name: "column", type: "Column<T>", description: "The column definition object for the clicked cell"},
 		{name: "cellValue", type: "unknown", description: "The raw value of the clicked cell"}
 	]
@@ -129,47 +131,47 @@
 	const readOnlyContextMenu = [
 		{
 			id: 'view',
-			label: 'View Details',
-			icon: '👁️',
-			onclick: (ctx: any) => {
+			text: 'View Details',
+			icon: 'eye',
+			onClick: (ctx: any) => {
 				showMessage(`Viewing: ${ctx.row.name} (ID: ${ctx.row.id})`)
 			}
 		},
 		{
 			id: 'copy-cell',
-			label: (ctx: any) => `Copy "${ctx.column.title}"`,
-			icon: '📋',
-			onclick: (ctx: any) => {
+			getTextCallback: (ctx: any) => `Copy "${ctx.column.title}"`,
+			icon: 'copy',
+			onClick: (ctx: any) => {
 				navigator.clipboard.writeText(String(ctx.cellValue))
 				showMessage(`Copied: ${ctx.cellValue}`)
 			}
 		},
 		{
 			id: 'copy-row',
-			label: 'Copy Row as JSON',
-			icon: '📄',
-			onclick: (ctx: any) => {
+			text: 'Copy Row as JSON',
+			icon: 'document',
+			onClick: (ctx: any) => {
 				navigator.clipboard.writeText(JSON.stringify(ctx.row, null, 2))
 				showMessage('Row copied as JSON')
 			}
 		},
 		{
 			id: 'convert-eur',
-			label: 'Convert to Euro',
-			icon: '💶',
-			visible: (ctx: any) => ctx.column.field === 'price',
-			onclick: (ctx: any) => {
+			text: 'Convert to Euro',
+			icon: 'currency_dollar_euro',
+			getIsVisibleCallback: (ctx: any) => ctx.column.field === 'price',
+			onClick: (ctx: any) => {
 				const eurPrice = (ctx.row.price * 0.92).toFixed(2)
 				alert(`${ctx.row.name}\n\n$${ctx.row.price} USD = €${eurPrice} EUR`)
 				showConversionDialog(ctx.row.name, ctx.row.price)
 			}
 		},
+		{divider: true},
 		{
 			id: 'export',
-			label: 'Export to CSV',
-			icon: '📊',
-			dividerBefore: true,
-			onclick: (ctx: any) => {
+			text: 'Export to CSV',
+			icon: 'arrow_download',
+			onClick: (ctx: any) => {
 				showMessage(`Would export: ${ctx.row.name}`)
 			}
 		}
@@ -195,17 +197,17 @@
 	const editableContextMenu = [
 		{
 			id: 'edit',
-			label: 'Edit Cell',
-			icon: '✏️',
-			onclick: (ctx: any) => {
+			text: 'Edit Cell',
+			icon: 'edit',
+			onClick: (ctx: any) => {
 				showMessage(`Double-click the cell to edit "${ctx.column.title}"`)
 			}
 		},
 		{
 			id: 'duplicate',
-			label: 'Duplicate Row',
-			icon: '📑',
-			onclick: (ctx: any) => {
+			text: 'Duplicate Row',
+			icon: 'document_copy',
+			onClick: (ctx: any) => {
 				const newProduct = {...ctx.row, id: Math.max(...products.map(p => p.id)) + 1}
 				products = [...products.slice(0, ctx.rowIndex + 1), newProduct, ...products.slice(ctx.rowIndex + 1)]
 				showMessage(`Duplicated: ${ctx.row.name}`)
@@ -213,31 +215,31 @@
 		},
 		{
 			id: 'toggle-active',
-			label: (ctx: any) => ctx.row.active ? 'Deactivate' : 'Activate',
-			icon: '🔄',
-			onclick: (ctx: any) => {
+			getTextCallback: (ctx: any) => ctx.row.active ? 'Deactivate' : 'Activate',
+			icon: 'arrow_sync',
+			onClick: (ctx: any) => {
 				products[ctx.rowIndex].active = !products[ctx.rowIndex].active
 				showMessage(`${ctx.row.name} is now ${products[ctx.rowIndex].active ? 'active' : 'inactive'}`)
 			}
 		},
 		{
 			id: 'restock',
-			label: 'Restock (+10)',
-			icon: '📦',
-			visible: (ctx: any) => ctx.row.stock < 20,
-			onclick: (ctx: any) => {
+			text: 'Restock (+10)',
+			icon: 'box',
+			getIsVisibleCallback: (ctx: any) => ctx.row.stock < 20,
+			onClick: (ctx: any) => {
 				products[ctx.rowIndex].stock += 10
 				showMessage(`${ctx.row.name} stock increased to ${products[ctx.rowIndex].stock}`)
 			}
 		},
+		{divider: true},
 		{
 			id: 'delete',
-			label: 'Delete',
-			icon: '🗑️',
-			danger: true,
-			dividerBefore: true,
-			disabled: (ctx: any) => ctx.row.active,
-			onclick: (ctx: any) => {
+			text: 'Delete',
+			icon: 'delete',
+			isDanger: true,
+			getIsDisabledCallback: (ctx: any) => ctx.row.active,
+			onClick: (ctx: any) => {
 				products = products.filter((_, i) => i !== ctx.rowIndex)
 				showMessage(`Deleted: ${ctx.row.name}`)
 			}
@@ -328,7 +330,7 @@
 			columns={readOnlyColumns}
 			sortable
 			contextMenu={readOnlyContextMenu}
-			oncontextmenuopen={handleContextMenuOpen}
+			onContextMenuOpen={handleContextMenuOpen}
 		/>
 
 		<h3>Editable Grid with Context Menu</h3>
@@ -352,25 +354,25 @@
   contextMenu={[
     {
       id: 'view',
-      label: 'View Details',
-      icon: '👁️',
-      onclick: (ctx) => console.log('View:', ctx.row)
+      text: 'View Details',
+      icon: 'eye',
+      onClick: (ctx) => console.log('View:', ctx.row)
     },
     {
       id: 'copy',
-      label: (ctx) => \`Copy "\${ctx.column.title}"\`,
-      icon: '📋',
-      onclick: (ctx) => navigator.clipboard.writeText(String(ctx.cellValue))
+      getTextCallback: (ctx) => \`Copy "\${ctx.column.title}"\`,
+      icon: 'copy',
+      onClick: (ctx) => navigator.clipboard.writeText(String(ctx.cellValue))
     },
+    { divider: true },
     {
       id: 'delete',
-      label: 'Delete',
-      icon: '🗑️',
-      danger: true,
-      dividerBefore: true,
-      disabled: (ctx) => ctx.row.isProtected,
-      visible: (ctx) => ctx.row.canDelete,
-      onclick: (ctx) => deleteRow(ctx.rowIndex)
+      text: 'Delete',
+      icon: 'delete',
+      isDanger: true,
+      getIsDisabledCallback: (ctx) => ctx.row.isProtected,
+      getIsVisibleCallback: (ctx) => ctx.row.canDelete,
+      onClick: (ctx) => deleteRow(ctx.rowIndex)
     }
   ]}
 />`}</code></pre>

@@ -355,7 +355,8 @@
 			contextMenu={[
 				"expand-all",
 				"collapse-all",
-				{id: "expand-tree", type: "expand-tree", dividerBefore: true},
+				{divider: true},
+				"expand-tree",
 				"collapse-tree"
 			]}
 			striped

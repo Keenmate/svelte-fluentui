@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {QuickGrid, Stack, Grid, GridItem, Card, Dialog, Button, Select, Option} from "svelte-fluentui"
+	import type {ActionItem, MenuDivider} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
 	// === API Documentation ===
@@ -719,7 +720,7 @@
 	let toolbarTriggerMode = $state<'hover' | 'click' | 'button'>('hover')
 
 	// Custom async export handler
-	async function handleExportRow(detail: {row: SimpleItem; rowIndex: number}) {
+	async function handleExportRow(detail: RowCtx) {
 		lastToolbarAction = `Exporting "${detail.row.name}"...`
 		// Simulate async operation
 		await new Promise(resolve => setTimeout(resolve, 800))
@@ -727,54 +728,51 @@
 	}
 
 	// Custom preview handler
-	function handlePreviewRow(detail: {row: SimpleItem; rowIndex: number}) {
+	function handlePreviewRow(detail: RowCtx) {
 		lastToolbarAction = `Preview: ${detail.row.name} - Value: $${detail.row.value.toLocaleString()}`
 	}
 
-	// Advanced toolbar with multi-row layout, groups, and custom actions
-	type ToolbarItem = {
-		id: string
-		icon: string
-		title: string
-		label?: string
-		row?: number
-		group?: number
-		type?: 'add' | 'delete' | 'duplicate' | 'move-up' | 'move-down'
-		danger?: boolean
-		disabled?: boolean | ((row: SimpleItem, rowIndex: number) => boolean)
-		onclick?: (detail: {row: SimpleItem; rowIndex: number}) => void | Promise<void>
-	}
+	// Advanced toolbar: two lines, dividers between groups, built-ins and custom actions.
+	// Items are action items (text, icon, onClick, getIsDisabledCallback, …); built-in
+	// names ("add", "delete", …) only bring a preset icon/text — onAction does the work.
+	type RowCtx = {row: SimpleItem; rowIndex: number}
+	type ToolbarEntry =
+		| 'add' | 'delete' | 'duplicate' | 'move-up' | 'move-down'
+		| MenuDivider
+		| (ActionItem<RowCtx, 'add' | 'delete' | 'duplicate' | 'move-up' | 'move-down'> & {toolbarRow?: number; isTextVisible?: boolean})
 
-	const advancedToolbar: (string | ToolbarItem)[] = [
-		// Row 1: Move actions (group 1) | CRUD actions (group 2)
-		{id: 'move-up', type: 'move-up', icon: '↑', title: 'Move up', row: 1, group: 1, disabled: (row, idx) => idx === 0},
-		{id: 'move-down', type: 'move-down', icon: '↓', title: 'Move down', row: 1, group: 1, disabled: (row, idx) => idx === toolbarData.length - 1},
-		{id: 'add', type: 'add', icon: '+', title: 'Add row below', row: 1, group: 2},
-		{id: 'duplicate', type: 'duplicate', icon: '⧉', title: 'Duplicate', row: 1, group: 2},
-		{id: 'delete', type: 'delete', icon: '−', title: 'Delete', danger: true, row: 1, group: 2},
+	const advancedToolbar: ToolbarEntry[] = [
+		// Line 1: move | add, duplicate, delete
+		{action: 'move-up', text: 'Move up', getIsDisabledCallback: ({rowIndex}) => rowIndex === 0},
+		{action: 'move-down', text: 'Move down', getIsDisabledCallback: ({rowIndex}) => rowIndex === toolbarData.length - 1},
+		{divider: true},
+		'add',
+		{action: 'duplicate', text: 'Duplicate'},
+		{action: 'delete', text: 'Delete'},
 
-		// Row 2: Custom actions
-		{id: 'export', icon: '📤', title: 'Export row', row: 2, group: 1, onclick: handleExportRow},
-		{id: 'preview', icon: '👁', title: 'Preview', label: 'View', row: 2, group: 1, onclick: handlePreviewRow},
-		// Test buttons
-		{id: 'test1', icon: '⚡', title: 'Test 1', row: 2, group: 2},
-		{id: 'test2', icon: '🔧', title: 'Test 2', row: 2, group: 2},
-		{id: 'test3', icon: '📋', title: 'Test 3', row: 2, group: 2},
-		{id: 'test4', icon: '🔍', title: 'Test 4', row: 2, group: 2},
-		{id: 'test5', icon: '📊', title: 'Test 5', row: 2, group: 2},
-		{id: 'test6', icon: '⭐', title: 'Test 6', row: 2, group: 3},
-		{id: 'test7', icon: '🎯', title: 'Test 7', row: 2, group: 3},
-		{id: 'test8', icon: '💡', title: 'Test 8', row: 2, group: 3},
-		{id: 'test9', icon: '🔔', title: 'Test 9', row: 2, group: 3},
-		{id: 'test10', icon: '📌', title: 'Test 10', row: 2, group: 3}
+		// Line 2: custom actions (async onClick) | test buttons
+		{id: 'export', icon: 'share', text: 'Export row', toolbarRow: 2, onClick: handleExportRow},
+		{id: 'preview', icon: 'eye', text: 'View', isTextVisible: true, toolbarRow: 2, onClick: handlePreviewRow},
+		{divider: true},
+		{id: 'test1', icon: 'flash', text: 'Test 1', toolbarRow: 2},
+		{id: 'test2', icon: 'wrench', text: 'Test 2', toolbarRow: 2},
+		{id: 'test3', icon: 'clipboard', text: 'Test 3', toolbarRow: 2},
+		{id: 'test4', icon: 'search', text: 'Test 4', toolbarRow: 2},
+		{id: 'test5', icon: 'data_bar_vertical', text: 'Test 5', toolbarRow: 2},
+		{divider: true},
+		{id: 'test6', icon: 'star', text: 'Test 6', toolbarRow: 2},
+		{id: 'test7', icon: 'target', text: 'Test 7', toolbarRow: 2},
+		{id: 'test8', icon: 'lightbulb', text: 'Test 8', toolbarRow: 2},
+		{id: 'test9', icon: 'alert', text: 'Test 9', toolbarRow: 2},
+		{id: 'test10', icon: 'pin', text: 'Test 10', toolbarRow: 2}
 	]
 
-	function handleToolbarClick(detail: {item: ToolbarItem; rowIndex: number; row: SimpleItem}) {
-		const {item, rowIndex, row} = detail
+	function handleToolbarClick(detail: {action: string; rowIndex: number; row: SimpleItem}) {
+		const {action, rowIndex, row} = detail
 
-		// Handle predefined types
-		if (item.type) {
-			switch (item.type) {
+		// Built-in actions: the grid only supplies icon/text — the work happens here
+		{
+			switch (action) {
 				case 'add': {
 					const newRow: SimpleItem = {id: nextToolbarId++, name: "New Project", value: 0}
 					toolbarData = [
@@ -1028,8 +1026,8 @@
 			columns={rowActionsColumns}
 			editable
 			editTrigger="dblclick"
-			showRowActions
-			onrowaction={handleRowAction}
+			showRowToolbar
+			onAction={handleRowAction}
 			onRowChange={handleRowActionsRowChange}
 		/>
 		{#if lastRowAction}
@@ -1047,9 +1045,9 @@
 			columns={rowActionsColumns}
 			editable
 			editTrigger="dblclick"
-			showRowActions
-			rowActions={['move-up', 'move-down', 'duplicate', 'delete']}
-			onrowaction={handleRowAction2}
+			showRowToolbar
+			rowToolbar={['move-up', 'move-down', 'duplicate', 'delete']}
+			onAction={handleRowAction2}
 			onRowChange={handleRowActionsRowChange2}
 		/>
 		{#if lastRowAction2}
@@ -1097,7 +1095,7 @@
 			rowToolbar={advancedToolbar}
 			toolbarAlign={toolbarAlignment}
 			toolbarTrigger={toolbarTriggerMode}
-			ontoolbarclick={handleToolbarClick}
+			onAction={handleToolbarClick}
 			onRowChange={handleToolbarRowChange}
 		/>
 		{#if lastToolbarAction}
@@ -1107,25 +1105,22 @@
 		{/if}
 
 		<h3>Advanced Row Toolbar Code Example</h3>
-		<pre>{`// Define toolbar with multi-row layout, groups, and custom actions
+		<pre>{`// Toolbar entries: built-in names, action items, {divider: true}; toolbarRow stacks lines
 const advancedToolbar = [
-  // Row 1: Move actions (group 1) | CRUD actions (group 2)
-  { id: 'move-up', type: 'move-up', icon: '↑', title: 'Move up', row: 1, group: 1,
-    disabled: (row, idx) => idx === 0 },
-  { id: 'move-down', type: 'move-down', icon: '↓', title: 'Move down', row: 1, group: 1,
-    disabled: (row, idx) => idx === items.length - 1 },
-  { id: 'add', type: 'add', icon: '+', title: 'Add', row: 1, group: 2 },
-  { id: 'duplicate', type: 'duplicate', icon: '⧉', title: 'Duplicate', row: 1, group: 2 },
-  { id: 'delete', type: 'delete', icon: '−', title: 'Delete', danger: true, row: 1, group: 2 },
+  // Line 1: move | add, duplicate, delete
+  { action: 'move-up', getIsDisabledCallback: ({ rowIndex }) => rowIndex === 0 },
+  { action: 'move-down', getIsDisabledCallback: ({ rowIndex }) => rowIndex === items.length - 1 },
+  { divider: true },
+  'add', 'duplicate', 'delete',
 
-  // Row 2: Custom actions with async onclick
-  { id: 'export', icon: '📤', title: 'Export', row: 2, group: 1,
-    onclick: async ({ row }) => {
+  // Line 2: custom actions with async onClick
+  { id: 'export', icon: 'share', text: 'Export', toolbarRow: 2,
+    onClick: async ({ row }) => {
       await exportToCSV(row)
     }
   },
-  { id: 'preview', icon: '👁', title: 'Preview', label: 'View', row: 2, group: 1,
-    onclick: ({ row }) => showPreviewDialog(row)
+  { id: 'preview', icon: 'eye', text: 'View', isTextVisible: true, toolbarRow: 2,
+    onClick: ({ row }) => showPreviewDialog(row)
   }
 ]
 
@@ -1134,7 +1129,7 @@ const advancedToolbar = [
   {columns}
   showRowToolbar
   rowToolbar={advancedToolbar}
-  ontoolbarclick={handleToolbarClick}
+  onAction={handleToolbarClick}   // ({ action, id, row, rowIndex, source }) — built-ins land here
 />`}</pre>
 
 		<h3>Row Actions Code Example</h3>
@@ -1175,17 +1170,17 @@ ${'<'}QuickGrid
   {items}
   {columns}
   editable
-  showRowActions
-  onrowaction={handleRowAction}
+  showRowToolbar
+  onAction={handleRowAction}
 />
 
 <!-- Or customize which actions to show -->
 ${'<'}QuickGrid
   {items}
   {columns}
-  showRowActions
-  rowActions={['add', 'duplicate']}
-  onrowaction={handleRowAction}
+  showRowToolbar
+  rowToolbar={['add', 'duplicate']}
+  onAction={handleRowAction}
 />`}</pre>
 
 		<h3>Basic Editable Code Example</h3>
@@ -1534,26 +1529,32 @@ function clearError(rowIndex, field) {
 			</thead>
 			<tbody>
 				<tr>
-					<td>showRowActions</td>
+					<td>showRowToolbar</td>
 					<td>boolean</td>
 					<td>false</td>
-					<td>Show row action popup on hover</td>
+					<td>Show the floating row toolbar</td>
 				</tr>
 				<tr>
-					<td>rowActions</td>
-					<td>RowActionType[]</td>
+					<td>rowToolbar</td>
+					<td>(built-in name | action item | divider)[]</td>
 					<td>['add', 'delete', 'duplicate']</td>
-					<td>Which actions to show in the popup</td>
+					<td>Toolbar entries; items take text, icon, isDisabled / getIsDisabledCallback, onClick, toolbarRow, isTextVisible</td>
 				</tr>
 				<tr>
-					<td>onrowaction</td>
+					<td>onAction</td>
 					<td>(detail) =&gt; void</td>
 					<td>undefined</td>
-					<td>Callback when an action button is clicked</td>
+					<td>Fires after a toolbar (or context-menu) item ran</td>
+				</tr>
+				<tr>
+					<td>beforeActionCallback</td>
+					<td>(detail) =&gt; unknown</td>
+					<td>undefined</td>
+					<td>Return false (or resolve to false) to cancel an item</td>
 				</tr>
 			</tbody>
 		</table>
-		<h3>RowActionType</h3>
+		<h3>Built-in toolbar actions</h3>
 		<table class="member-table">
 			<thead>
 				<tr>
@@ -1563,14 +1564,14 @@ function clearError(rowIndex, field) {
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>'add'</td><td>+</td><td>Add a new row below</td></tr>
-				<tr><td>'delete'</td><td>−</td><td>Delete the row (shown in red on hover)</td></tr>
-				<tr><td>'duplicate'</td><td>⧉</td><td>Duplicate the row</td></tr>
-				<tr><td>'move-up'</td><td>↑</td><td>Move the row up</td></tr>
-				<tr><td>'move-down'</td><td>↓</td><td>Move the row down</td></tr>
+				<tr><td>'add'</td><td>add</td><td>Add a new row below</td></tr>
+				<tr><td>'delete'</td><td>delete</td><td>Delete the row (shown in red on hover)</td></tr>
+				<tr><td>'duplicate'</td><td>copy</td><td>Duplicate the row</td></tr>
+				<tr><td>'move-up'</td><td>arrow_up</td><td>Move the row up</td></tr>
+				<tr><td>'move-down'</td><td>arrow_down</td><td>Move the row down</td></tr>
 			</tbody>
 		</table>
-		<h3>RowActionClickDetail</h3>
+		<h3>onAction detail</h3>
 		<table class="member-table">
 			<thead>
 				<tr>
@@ -1580,9 +1581,13 @@ function clearError(rowIndex, field) {
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>action</td><td>RowActionType</td><td>The action that was clicked</td></tr>
-				<tr><td>rowIndex</td><td>number</td><td>Index of the hovered row</td></tr>
+				<tr><td>action</td><td>string</td><td>Built-in name, or "custom"</td></tr>
+				<tr><td>id</td><td>string</td><td>The item's id (custom items)</td></tr>
+				<tr><td>item</td><td>ActionItem</td><td>The clicked item</td></tr>
+				<tr><td>source</td><td>"row-toolbar" | "context-menu"</td><td>Where it was clicked</td></tr>
+				<tr><td>rowIndex</td><td>number</td><td>Index of the row</td></tr>
 				<tr><td>row</td><td>T</td><td>The row data</td></tr>
+				<tr><td>column / columnIndex / cellValue</td><td></td><td>The right-clicked cell (context menu only)</td></tr>
 			</tbody>
 		</table>
 	</Card>

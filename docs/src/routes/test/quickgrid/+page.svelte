@@ -21,6 +21,22 @@
 	]
 </script>
 
+<div id="toolbar-wrap">
+	<QuickGrid {items} columns={[{field: "id", title: "Id"}, {field: "name", title: "Name"}]} idMember="id"
+		showRowToolbar
+		rowToolbar={[
+			{id: "star", text: "Star", icon: "star", onClick: ({row}) => log.push(`star:${(row as Row).name}`)},
+			{divider: true},
+			"delete"
+		]}
+		contextMenu={[
+			{id: "copy", getTextCallback: ({column}) => `Copy ${column.title}`, onClick: ({cellValue}) => log.push(`copy:${cellValue}`)},
+			{divider: true},
+			{id: "never", text: "Never", isVisible: false}
+		]}
+		onAction={({source, action, id, rowIndex}) => log.push(`${source}:${action}:${id ?? "-"}@${rowIndex}`)} />
+</div>
+
 <div id="grid-wrap">
 	<QuickGrid {items} {columns} idMember="id" editable editTrigger="dblclick" filterable
 		onEditStart={({field, rowIndex}) => log.push(`start:${field}@${rowIndex}`)}

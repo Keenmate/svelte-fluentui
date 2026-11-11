@@ -11,6 +11,12 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **QuickGrid:** `ontoolbarclick(detail)` + deprecated `onrowaction(detail)` → one `onAction(detail)` (`source` is `row-toolbar` or `context-menu`; `action`, `id`, `row`, `rowIndex`, plus the cell for the menu) + `beforeActionCallback`
+- **QuickGrid:** `oncontextmenuopen(ctx)` → `onContextMenuOpen(ctx)`
+- **QuickGrid rowToolbar items:** `{id, icon, iconSnippet, title, label, row, group, type, danger, disabled(row, index), onclick({row, rowIndex})}` → action items `{id, action, icon (name or snippet), text, tooltip, isTextVisible, toolbarRow, isDanger, isDisabled / getIsDisabledCallback({row, rowIndex}), onClick(detail)}`; groups are `{divider: true}` entries
+- **QuickGrid contextMenu items:** `{id, label (string or fn), icon (text glyph), disabled, visible, danger, dividerBefore, type, onclick(ctx)}` → menu entries `{id, action, text / getTextCallback, icon (Fluent name or snippet), isDisabled / getIsDisabledCallback, isVisible / getIsVisibleCallback, isDanger, onClick(detail)}` + `{divider: true}`; built-ins by name
+- **QuickGrid:** `showRowActions`, `rowActions` (deprecated aliases) → removed — use `showRowToolbar`, `rowToolbar`
+- **QuickGrid context ctx:** `colIndex` → `columnIndex`
 - **TopNav:** per-item `onClick()` only → item `onClick(detail)` + `onAction` + `beforeActionCallback` (can veto links)
 - **TopNav items:** `{label, href, icon (text glyph), onClick()}` → action item `{text, href?, icon (Fluent name or snippet), isDisabled, onClick(detail)}` (type `TopNavItem`)
 - **Toast:** `ontopactionclick()`, `onprimaryactionclick()`, `onsecondaryactionclick()` → one `onAction(detail)` (`detail.id` says which) + `beforeActionCallback`
@@ -175,6 +181,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   (`bind:open`) did neither.
 - **Toast — action links no longer navigate to `#`.** They are `href="#"` for styling; clicking one
   appended `#` to the URL (and scrolled to the top).
+- **QuickGrid — touch devices close the row toolbar on an outside tap with `showRowToolbar`.** The
+  check still read the deprecated `showRowActions` flag.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

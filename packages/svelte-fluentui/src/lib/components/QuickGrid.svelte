@@ -11,6 +11,7 @@
 	import GridCellEditor from "./GridCellEditor.svelte"
 	import Icon from "./Icon.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import {resolveMenuEntries, runAction, type ActionEventDetail, type ActionItem, type MenuDivider, type MenuEntry, type ResolvedActionItem} from "../action-items/index.js"
 
 	type EditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
 	type EditTrigger = "click" | "dblclick" | "button" | "always" | "navigate"
@@ -172,93 +173,44 @@
 		validationError?: string | null
 	}
 
-	// Row toolbar types
-	type PredefinedToolbarItemType = 'add' | 'delete' | 'duplicate' | 'move-up' | 'move-down'
+	// Row toolbar — action items (see lib/action-items). Built-ins are presets (icon,
+	// text, danger styling); what they *do* is up to you, in `onAction` / `onClick`.
+	type RowToolbarAction = 'add' | 'delete' | 'duplicate' | 'move-up' | 'move-down'
 
-	type RowToolbarItem<T> = {
-		// Identity
-		id: string
-
-		// Display
-		icon?: string  // FluentUI icon name (e.g. 'delete', 'arrow_up'), rendered via <Icon />. Optional when iconSnippet is given.
-		iconSnippet?: Snippet  // Custom icon renderer (Font Awesome, inline SVG, etc.); takes precedence over `icon`
-		title: string
-		label?: string  // Optional text label next to icon
-
-		// Layout
-		row?: number    // Row number (1 = closest to grid row, default: 1)
-		group?: number  // Group number for divider placement
-
-		// Behavior
-		type?: PredefinedToolbarItemType  // If predefined, use built-in handler
-		danger?: boolean                   // Red styling (like delete)
-		disabled?: boolean | ((row: T, rowIndex: number) => boolean)
-
-		// Custom handler (required if no type)
-		onclick?: (detail: { row: T, rowIndex: number }) => void | Promise<void>
-	}
-
-	// Shorthand: string = predefined type, or full RowToolbarItem
-	type RowToolbarConfig<T> = PredefinedToolbarItemType | RowToolbarItem<T>
-
-	// Normalized toolbar item (after processing shorthand)
-	type NormalizedToolbarItem<T> = Required<Pick<RowToolbarItem<T>, 'id' | 'icon' | 'title' | 'row' | 'group'>> & Omit<RowToolbarItem<T>, 'id' | 'icon' | 'title' | 'row' | 'group'>
-
-	type ToolbarClickDetail<T> = {
-		item: NormalizedToolbarItem<T>
-		rowIndex: number
+	type RowContext<T> = {
 		row: T
+		rowIndex: number
 	}
 
-	// Legacy type aliases for backwards compatibility
-	type RowActionType = PredefinedToolbarItemType
-	type RowActionClickDetail<T> = {
-		action: RowActionType
-		rowIndex: number
-		row: T
+	type RowToolbarItem<T> = ActionItem<RowContext<T>, RowToolbarAction> & {
+		/** Toolbar line, 1 = closest to the grid row (default). Higher lines stack above. */
+		toolbarRow?: number
+		/** Show `text` next to the icon; otherwise it is the tooltip / accessible name only. */
+		isTextVisible?: boolean
 	}
+
+	// Shorthand: a built-in name, a full item, or a `{divider: true}` separator.
+	type RowToolbarConfig<T> = RowToolbarAction | RowToolbarItem<T> | MenuDivider
 
 	// Context menu types
 	type ContextMenuContext<T> = {
 		row: T
 		rowIndex: number
-		colIndex: number
+		columnIndex: number
 		column: Column<T>
 		cellValue: unknown
 	}
 
-	// Predefined context-menu item types for common actions. The grid wires up the
-	// onclick handler, default label / icon, and a tree-mode visibility gate so the
-	// item only shows up when relevant. Pass either the bare string for built-in
-	// behavior, or a full ContextMenuItem with `type: '<predefined>'` to override
-	// label / icon / etc. while keeping the built-in onclick.
-	//
-	// Naming follows user-facing convention from file explorers / IDEs:
-	// `expand-all` / `collapse-all` operate on the right-clicked row's branch (the
-	// common per-row case); `expand-tree` / `collapse-tree` operate on the entire
-	// dataset (rarer, e.g. a "reset everything" power-user action).
-	type PredefinedContextMenuItemType = 'expand-all' | 'collapse-all' | 'expand-tree' | 'collapse-tree'
+	// Built-in context-menu actions (they do the work themselves, and only show in tree mode
+	// where relevant). `expand-all` / `collapse-all` act on the right-clicked row's branch;
+	// `expand-tree` / `collapse-tree` on the entire dataset.
+	type ContextMenuAction = 'expand-all' | 'collapse-all' | 'expand-tree' | 'collapse-tree'
 
-	type ContextMenuItem<T> = {
-		id: string
-		// Optional because `type` (a predefined item) supplies a default label. For fully
-		// custom items (no `type`), `label` is effectively required at runtime — the menu
-		// renders an empty entry otherwise.
-		label?: string | ((context: ContextMenuContext<T>) => string)
-		icon?: string
-		disabled?: boolean | ((context: ContextMenuContext<T>) => boolean)
-		visible?: boolean | ((context: ContextMenuContext<T>) => boolean)
-		danger?: boolean
-		dividerBefore?: boolean
-		// When set, the grid uses the predefined onclick / visible gate, but any
-		// other field on this object overrides the predefined defaults.
-		type?: PredefinedContextMenuItemType
-		onclick?: (context: ContextMenuContext<T>) => void | Promise<void>
-	}
+	// Shorthand: a built-in name, or a full MenuEntry (item or divider).
+	type ContextMenuConfig<T> = ContextMenuAction | MenuEntry<ContextMenuContext<T>, ContextMenuAction>
 
-	// Shorthand: bare string = predefined item with all defaults; full object = custom or
-	// predefined-with-overrides (set `type` to one of PredefinedContextMenuItemType values).
-	type ContextMenuConfig<T> = PredefinedContextMenuItemType | ContextMenuItem<T>
+	/** What `onAction` / `beforeActionCallback` receive — the row (and, from the context menu, the cell). */
+	type QuickGridActionDetail<T> = ActionEventDetail<RowContext<T> & Partial<Omit<ContextMenuContext<T>, "row" | "rowIndex">>>
 
 	type Props<T> = {
 		items: T[]
@@ -293,15 +245,15 @@
 		invalidCells?: CellValidationState[]
 		// Row toolbar (floating toolbar for row actions)
 		showRowToolbar?: boolean
-		rowToolbar?: RowToolbarConfig<T>[]  // Toolbar items (predefined strings or custom objects)
+		/** Toolbar entries: built-in names (`"add"`, `"delete"`, …), action items, `{divider: true}`. */
+		rowToolbar?: RowToolbarConfig<T>[]
 		toolbarAlign?: 'center' | 'top'  // Vertical alignment: center (default) or top (first row aligned with grid row)
 		toolbarTrigger?: 'hover' | 'click' | 'button'  // How to show toolbar: hover (default), click on row, or button in first column
-		// Legacy aliases for backwards compatibility
-		showRowActions?: boolean      // Deprecated: use showRowToolbar
-		rowActions?: RowToolbarConfig<T>[]  // Deprecated: use rowToolbar
 		// Context menu
+		/** Right-click menu entries: built-in names (`"expand-all"`, …), menu items, `{divider: true}`. */
 		contextMenu?: ContextMenuConfig<T>[]
-		oncontextmenuopen?: (context: ContextMenuContext<T>) => void
+		/** Fires when the cell context menu opens. */
+		onContextMenuOpen?: (ctx: ContextMenuContext<T>) => void
 		// Stable row identity — keys internal state (drafts, edits) so they survive
 		// re-orderings (pagination, filter, tree expand/collapse). When omitted, the grid
 		// falls back to treePathMember in tree mode, then to the displayed-row index, and
@@ -330,8 +282,10 @@
 		onEditCancel?: (ctx: {row: T; rowIndex: number; field: string; column: Column<T> | undefined}) => void
 		/** Fires when a committed value fails validation. */
 		onValidationError?: (ctx: {row: T; rowIndex: number; field: string; column: Column<T>; error: string}) => void
-		ontoolbarclick?: (detail: ToolbarClickDetail<T>) => void
-		onrowaction?: (detail: RowActionClickDetail<T>) => void  // Deprecated: use ontoolbarclick
+		/** Fires after a row-toolbar or context-menu item ran (`source` says which). */
+		onAction?: (detail: QuickGridActionDetail<T>) => void
+		/** Called before a row-toolbar or context-menu item runs; return `false` (or a Promise resolving to `false`) to cancel. */
+		beforeActionCallback?: (detail: QuickGridActionDetail<T>) => unknown
 	}
 
 	let {
@@ -355,17 +309,14 @@
 		isRowEditable = true,
 		checkboxAlwaysEditable = false,
 		invalidCells = $bindable([]),
-		// Row toolbar (new names)
-		showRowToolbar = undefined,
+		// Row toolbar
+		showRowToolbar = false,
 		rowToolbar = undefined,
 		toolbarAlign = 'center',
 		toolbarTrigger = 'hover',
-		// Legacy aliases (backwards compatibility)
-		showRowActions = undefined,
-		rowActions = undefined,
 		// Context menu
 		contextMenu = undefined,
-		oncontextmenuopen = undefined,
+		onContextMenuOpen = undefined,
 		// Stable row identity
 		idMember = undefined,
 		// Tree mode
@@ -384,13 +335,13 @@
 		onEditStart = undefined,
 		onEditCancel = undefined,
 		onValidationError = undefined,
-		ontoolbarclick = undefined,
-		onrowaction = undefined  // Legacy callback
+		onAction = undefined,
+		beforeActionCallback = undefined
 	}: Props<T> = $props()
 
-	// Resolve toolbar props with backwards compatibility
-	const resolvedShowToolbar = $derived(showRowToolbar ?? showRowActions ?? false)
-	const resolvedToolbarConfig = $derived(rowToolbar ?? rowActions ?? ['add', 'delete', 'duplicate'] as RowToolbarConfig<T>[])
+	const resolvedShowToolbar = $derived(showRowToolbar)
+	const resolvedToolbarConfig = $derived(rowToolbar ?? (['add', 'delete', 'duplicate'] as RowToolbarConfig<T>[]))
+	const actionHost = {}
 
 	// Build inline style for a column header cell. Covers `autoWidth` (shrink-to-content trick),
 	// explicit `width`, `minWidth` / `maxWidth`, and optional text-align. Returns empty string when
@@ -1674,7 +1625,7 @@
 		}, 150)
 	}
 
-	async function handleToolbarItemClick(item: NormalizedToolbarItem<T>) {
+	async function handleToolbarItemClick(item: RowToolbarItem<T>, action: string, event: MouseEvent) {
 		if (hoveredRowItem === null) return
 
 		// Find current index of the row item (it may have moved)
@@ -1687,21 +1638,24 @@
 			return
 		}
 
-		// Call custom onclick handler if defined
-		if (item.onclick) {
-			await item.onclick({ row: hoveredRowItem, rowIndex: currentIndex })
-		}
-
-		// Call new ontoolbarclick callback
-		ontoolbarclick?.({ item, rowIndex: currentIndex, row: hoveredRowItem })
-
-		// Call legacy onrowaction callback for predefined types
-		if (item.type) {
-			onrowaction?.({ action: item.type, rowIndex: currentIndex, row: hoveredRowItem })
-		}
+		const ran = await runAction({
+			host: actionHost,
+			detail: {
+				row: hoveredRowItem,
+				rowIndex: currentIndex,
+				action,
+				id: item.id,
+				item,
+				source: "row-toolbar",
+				sourceEvent: event,
+				triggerElement: event.currentTarget as HTMLElement
+			} as QuickGridActionDetail<T>,
+			beforeActionCallback,
+			emitAction: (detail) => onAction?.(detail)
+		})
 
 		// For delete action, hide popup (row is gone)
-		if (item.type === 'delete') {
+		if (ran && action === 'delete') {
 			hoveredRowIndex = null
 			hoveredRowElement = null
 			hoveredRowItem = null
@@ -1709,97 +1663,35 @@
 		// For other actions (add, duplicate, move), keep popup visible
 	}
 
-	// Legacy handler for backwards compatibility
-	function handleRowActionClick(action: RowActionType) {
-		const item = normalizeToolbarItem(action, 0)
-		handleToolbarItemClick(item)
+	// Built-in toolbar presets: icon, text (tooltip), danger styling. Your item fields win.
+	const toolbarPresets: Record<RowToolbarAction, Partial<ResolvedActionItem<RowToolbarAction>>> = {
+		add: { icon: 'add', text: 'Add row below' },
+		delete: { icon: 'delete', text: 'Delete row', isDanger: true },
+		duplicate: { icon: 'copy', text: 'Duplicate row' },
+		'move-up': { icon: 'arrow_up', text: 'Move row up' },
+		'move-down': { icon: 'arrow_down', text: 'Move row down' }
 	}
 
-	// Predefined toolbar item configs
-	const predefinedToolbarItems: Record<PredefinedToolbarItemType, { icon: string; title: string; danger?: boolean }> = {
-		add: { icon: 'add', title: 'Add row below' },
-		delete: { icon: 'delete', title: 'Delete row', danger: true },
-		duplicate: { icon: 'copy', title: 'Duplicate row' },
-		'move-up': { icon: 'arrow_up', title: 'Move row up' },
-		'move-down': { icon: 'arrow_down', title: 'Move row down' }
+	function toolbarDefaults(item: ActionItem<RowContext<T>, RowToolbarAction>) {
+		return item.action && item.action !== 'custom' ? toolbarPresets[item.action] : undefined
 	}
 
-	// Normalize toolbar config: convert string shorthand to full objects
-	function normalizeToolbarItem(config: RowToolbarConfig<T>, index: number): NormalizedToolbarItem<T> {
-		if (typeof config === 'string') {
-			// Predefined type shorthand
-			const predefined = predefinedToolbarItems[config]
-			return {
-				id: config,
-				icon: predefined.icon,
-				title: predefined.title,
-				row: 1,
-				group: 1,
-				type: config,
-				danger: predefined.danger
+	// Split toolbar entries into lines (`toolbarRow`, default 1), furthest line first.
+	// A divider belongs to the line of the item before it.
+	const toolbarLines = $derived.by(() => {
+		const lines = new Map<number, RowToolbarConfig<T>[]>()
+		let currentLine = 1
+		for (const entry of resolvedToolbarConfig) {
+			if (typeof entry !== 'string' && !('divider' in entry && entry.divider)) {
+				currentLine = (entry as RowToolbarItem<T>).toolbarRow ?? 1
+			} else if (typeof entry === 'string') {
+				currentLine = 1
 			}
+			if (!lines.has(currentLine)) lines.set(currentLine, [])
+			lines.get(currentLine)!.push(entry)
 		}
-		// Full object - fill in defaults
-		return {
-			id: config.id,
-			icon: config.icon ?? '',
-			iconSnippet: config.iconSnippet,
-			title: config.title,
-			label: config.label,
-			row: config.row ?? 1,
-			group: config.group ?? 1,
-			type: config.type,
-			danger: config.danger ?? (config.type === 'delete'),
-			disabled: config.disabled,
-			onclick: config.onclick
-		}
-	}
-
-	// Group toolbar items by row
-	type ToolbarRowGroup<T> = {
-		rowNum: number
-		groups: { groupNum: number; items: NormalizedToolbarItem<T>[] }[]
-	}
-
-	function groupToolbarItems(configs: RowToolbarConfig<T>[]): ToolbarRowGroup<T>[] {
-		// Normalize all items
-		const normalized = configs.map((c, i) => normalizeToolbarItem(c, i))
-
-		// Group by row number
-		const rowMap = new Map<number, NormalizedToolbarItem<T>[]>()
-		for (const item of normalized) {
-			const row = item.row
-			if (!rowMap.has(row)) rowMap.set(row, [])
-			rowMap.get(row)!.push(item)
-		}
-
-		// Convert to array and sort rows (higher row numbers first - furthest from grid row)
-		const rows: ToolbarRowGroup<T>[] = []
-		for (const [rowNum, items] of rowMap) {
-			// Group items within row by group number
-			const groupMap = new Map<number, NormalizedToolbarItem<T>[]>()
-			for (const item of items) {
-				const group = item.group
-				if (!groupMap.has(group)) groupMap.set(group, [])
-				groupMap.get(group)!.push(item)
-			}
-
-			// Convert groups to array and sort by group number
-			const groups = Array.from(groupMap.entries())
-				.sort((a, b) => a[0] - b[0])
-				.map(([groupNum, groupItems]) => ({ groupNum, items: groupItems }))
-
-			rows.push({ rowNum, groups })
-		}
-
-		// Sort rows: higher row numbers first (furthest from grid row at top)
-		rows.sort((a, b) => b.rowNum - a.rowNum)
-
-		return rows
-	}
-
-	// Computed grouped toolbar items
-	const groupedToolbarItems = $derived(groupToolbarItems(resolvedToolbarConfig))
+		return [...lines.entries()].sort((a, b) => b[0] - a[0]).map(([, entries]) => entries)
+	})
 
 	// Determine popup position based on available space
 	// Priority: 1. left, 2. right, 3. top
@@ -1912,7 +1804,7 @@
 
 	// Touch device detection and click-outside handler
 	function handleDocumentClick(event: MouseEvent) {
-		if (!isTouchDevice || !showRowActions || hoveredRowIndex === null) return
+		if (!isTouchDevice || !resolvedShowToolbar || hoveredRowIndex === null) return
 
 		const target = event.target as HTMLElement
 		// Check if click is outside popup and table
@@ -1940,103 +1832,92 @@
 	function handleCellContextMenu(e: MouseEvent, rowIndex: number, colIndex: number, column: Column<T>, item: T) {
 		if (!contextMenu || contextMenu.length === 0) return
 
-		e.preventDefault()
-
 		const context: ContextMenuContext<T> = {
 			row: item,
 			rowIndex,
-			colIndex,
+			columnIndex: colIndex,
 			column,
 			cellValue: item[column.field as keyof T]
 		}
+		// Nothing visible for this cell (e.g. tree-only built-ins on a flat grid) → native menu.
+		if (resolveMenuEntries(contextMenu, context, (item) => contextMenuDefaults(item, context)).length === 0) return
+
+		e.preventDefault()
 
 		contextMenuContext = context
 		contextMenuPosition = { x: e.clientX, y: e.clientY }
 		contextMenuVisible = true
 
-		oncontextmenuopen?.(context)
+		onContextMenuOpen?.(context)
 	}
 
-	function handleContextMenuItemClick(menuItem: ContextMenuItem<T>) {
-		if (!contextMenuContext) return
-		menuItem.onclick?.(contextMenuContext)
-		closeContextMenu()
+	async function handleContextMenuItemClick(item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>, action: string, event: MouseEvent) {
+		const ctx = contextMenuContext
+		if (!ctx || 'divider' in item) return
+		if (item.shouldCloseOnClick !== false) closeContextMenu()
+		await runAction({
+			host: actionHost,
+			detail: {
+				...ctx,
+				action,
+				id: item.id,
+				item,
+				source: "context-menu",
+				sourceEvent: event,
+				triggerElement: event.currentTarget as HTMLElement
+			} as QuickGridActionDetail<T>,
+			beforeActionCallback,
+			runBuiltIn: () => runContextMenuBuiltIn(action, ctx),
+			emitAction: (detail) => onAction?.(detail)
+		})
 	}
 
-	// Resolve a predefined context-menu type to a fully-formed ContextMenuItem. The
-	// onclick / visible closures capture reactive state (`isTreeMode`, `treeParentPathSet`,
-	// `resolvedExpandedPaths`, `resolvedTreeSeparator`, `items`) — they re-read on each
-	// invocation, so the menu reacts to state changes correctly.
-	function predefinedContextMenuItem(predefinedType: PredefinedContextMenuItemType): ContextMenuItem<T> {
-		switch (predefinedType) {
+	// Built-in context-menu items: default text / icon, and a tree-mode visibility gate
+	// so they only show when relevant. Your item fields (text, icon, isVisible, …) win.
+	function contextMenuDefaults(item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>, ctx: ContextMenuContext<T> | null): Partial<ResolvedActionItem<ContextMenuAction>> | undefined {
+		if ('divider' in item) return undefined
+		switch (item.action) {
 			case 'expand-all':
-				// Per-row branch action — expand the right-clicked row and every descendant.
-				// Visibility gates on `rowHasChildren` so leaf rows don't get a useless menu item.
-				return {
-					id: 'expand-all',
-					label: 'Expand all',
-					icon: '⊞',
-					visible: (ctx) => isTreeMode && rowHasChildren(ctx.row),
-					onclick: (ctx) => {
-						const root = getRowPath(ctx.row)
-						const sep = resolvedTreeSeparator
-						const prefix = root + sep
-						const next = new Set(resolvedExpandedPaths)
-						for (const it of items) {
-							const p = getRowPath(it)
-							// Only paths that have children are meaningfully "expandable" — leaf
-							// rows in expandedPaths would just be noise.
-							if ((p === root || p.startsWith(prefix)) && treeParentPathSet.has(p)) {
-								next.add(p)
-							}
-						}
-						setExpandedPaths(next)
-					}
-				}
+				return { text: 'Expand all', icon: 'arrow_expand_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
 			case 'collapse-all':
-				// Per-row branch action — collapse the right-clicked row and every descendant.
-				return {
-					id: 'collapse-all',
-					label: 'Collapse all',
-					icon: '⊟',
-					visible: (ctx) => isTreeMode && rowHasChildren(ctx.row),
-					onclick: (ctx) => {
-						const root = getRowPath(ctx.row)
-						const sep = resolvedTreeSeparator
-						const prefix = root + sep
-						const next = new Set([...resolvedExpandedPaths].filter(p => p !== root && !p.startsWith(prefix)))
-						setExpandedPaths(next)
-					}
-				}
+				return { text: 'Collapse all', icon: 'arrow_collapse_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
 			case 'expand-tree':
-				// Whole-dataset action — rarer; "reset to everything visible" power-user move.
-				return {
-					id: 'expand-tree',
-					label: 'Expand entire tree',
-					icon: '⊞',
-					visible: () => isTreeMode && treeParentPathSet.size > 0,
-					onclick: () => setExpandedPaths(new Set(treeParentPathSet))
-				}
+				return { text: 'Expand entire tree', icon: 'arrow_expand_all', isVisible: isTreeMode && treeParentPathSet.size > 0 }
 			case 'collapse-tree':
-				// Whole-dataset action — collapse everything down to top-level rows only.
-				return {
-					id: 'collapse-tree',
-					label: 'Collapse entire tree',
-					icon: '⊟',
-					visible: () => isTreeMode && resolvedExpandedPaths.size > 0,
-					onclick: () => setExpandedPaths(new Set())
-				}
+				return { text: 'Collapse entire tree', icon: 'arrow_collapse_all', isVisible: isTreeMode && resolvedExpandedPaths.size > 0 }
 		}
+		return undefined
 	}
 
-	// Convert any context-menu config entry (string shorthand OR full object) into a
-	// fully-formed ContextMenuItem the renderer can use uniformly. When a full object
-	// has `type: '<predefined>'`, the predefined defaults are merged in but the
-	// caller's overrides win (e.g. custom icon or label, but built-in onclick).
-	function normalizeContextMenuItem(config: ContextMenuConfig<T>): ContextMenuItem<T> {
-		if (typeof config === 'string') return predefinedContextMenuItem(config)
-		if (config.type) return { ...predefinedContextMenuItem(config.type), ...config }
-		return config
+	// What the built-ins do. They re-read reactive state (`resolvedExpandedPaths`,
+	// `treeParentPathSet`, `items`) on each run.
+	function runContextMenuBuiltIn(action: string, ctx: ContextMenuContext<T>) {
+		switch (action) {
+			case 'expand-all': {
+				// Expand the right-clicked row and every descendant that has children.
+				const root = getRowPath(ctx.row)
+				const prefix = root + resolvedTreeSeparator
+				const next = new Set(resolvedExpandedPaths)
+				for (const it of items) {
+					const p = getRowPath(it)
+					if ((p === root || p.startsWith(prefix)) && treeParentPathSet.has(p)) next.add(p)
+				}
+				setExpandedPaths(next)
+				break
+			}
+			case 'collapse-all': {
+				const root = getRowPath(ctx.row)
+				const prefix = root + resolvedTreeSeparator
+				setExpandedPaths(new Set([...resolvedExpandedPaths].filter(p => p !== root && !p.startsWith(prefix))))
+				break
+			}
+			case 'expand-tree':
+				setExpandedPaths(new Set(treeParentPathSet))
+				break
+			case 'collapse-tree':
+				setExpandedPaths(new Set())
+				break
+		}
 	}
 
 	function closeContextMenu() {
@@ -2138,37 +2019,38 @@
 				onmouseenter={handleRowActionPopupMouseEnter}
 				onmouseleave={handleRowActionPopupMouseLeave}
 			>
-				{#each groupedToolbarItems as toolbarRow, rowIdx}
-					<div class="row-toolbar-row">
-						{#each toolbarRow.groups as group, groupIdx}
-							{#if groupIdx > 0}
-								<div class="row-toolbar-divider"></div>
-							{/if}
-							{#each group.items as item}
-								{@const currentRowIndex = displayItems.findIndex(i => i === hoveredRowItem)}
-								{@const isDisabled = typeof item.disabled === 'function'
-									? item.disabled(hoveredRowItem!, currentRowIndex)
-									: item.disabled}
-								<button
-									class="row-toolbar-btn"
-									class:danger={item.danger}
-									title={item.title}
-									disabled={isDisabled}
-									onclick={() => handleToolbarItemClick(item)}
-								>
-									{#if item.iconSnippet}
-										{@render item.iconSnippet()}
-									{:else}
-										<Icon name={item.icon} size={16} />
-									{/if}
-									{#if item.label}
-										<span class="row-toolbar-label">{item.label}</span>
-									{/if}
-								</button>
+				{#if hoveredRowItem !== null}
+					{@const rowCtx = {row: hoveredRowItem, rowIndex: displayItems.findIndex(i => i === hoveredRowItem)}}
+					{#each toolbarLines as line}
+						<div class="row-toolbar-row">
+							{#each resolveMenuEntries(line, rowCtx, toolbarDefaults) as entry}
+								{#if entry.kind === 'divider'}
+									<div class="row-toolbar-divider"></div>
+								{:else}
+									{@const r = entry.resolved}
+									<button
+										class="row-toolbar-btn {r.cssClass}"
+										class:danger={r.isDanger}
+										title={r.tooltip ?? r.text}
+										aria-label={r.text}
+										aria-pressed={r.isToggle ? r.isToggled : undefined}
+										disabled={r.isDisabled}
+										onclick={(event) => handleToolbarItemClick(entry.item as RowToolbarItem<T>, r.action, event)}
+									>
+										{#if typeof r.icon === 'string'}
+											<Icon name={r.icon} size={16} />
+										{:else if r.icon}
+											{@render r.icon()}
+										{/if}
+										{#if (entry.item as RowToolbarItem<T>).isTextVisible}
+											<span class="row-toolbar-label">{r.text}</span>
+										{/if}
+									</button>
+								{/if}
 							{/each}
-						{/each}
-					</div>
-				{/each}
+						</div>
+					{/each}
+				{/if}
 			</div>
 		</PositioningRegion>
 		<!-- L-shaped connector line when row has moved -->
@@ -2202,32 +2084,25 @@
 			style="position: fixed; left: {contextMenuPosition.x}px; top: {contextMenuPosition.y}px;"
 		>
 			<fluent-menu>
-				{#each contextMenu as configItem}
-					{@const menuItem = normalizeContextMenuItem(configItem)}
-					{@const isVisible = typeof menuItem.visible === 'function'
-						? menuItem.visible(contextMenuContext)
-						: menuItem.visible ?? true}
-					{@const isDisabled = typeof menuItem.disabled === 'function'
-						? menuItem.disabled(contextMenuContext)
-						: menuItem.disabled ?? false}
-					{@const label = typeof menuItem.label === 'function'
-						? menuItem.label(contextMenuContext)
-						: menuItem.label}
-					{#if isVisible}
-						{#if menuItem.dividerBefore}
-							<fluent-divider></fluent-divider>
-						{/if}
+				{#each resolveMenuEntries(contextMenu, contextMenuContext, (item) => contextMenuDefaults(item, contextMenuContext)) as entry}
+					{#if entry.kind === 'divider'}
+						<fluent-divider></fluent-divider>
+					{:else}
+						{@const r = entry.resolved}
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<fluent-menu-item
-							{...(isDisabled ? { disabled: true } : {})}
-							class:danger={menuItem.danger}
-							onclick={() => handleContextMenuItemClick(menuItem)}
+							{...(r.isDisabled ? { disabled: true } : {})}
+							class={[r.isDanger && "danger", r.cssClass].filter(Boolean).join(" ") || null}
+							title={r.tooltip ?? null}
+							onclick={(event: MouseEvent) => handleContextMenuItemClick(entry.item, r.action, event)}
 						>
-							{#if menuItem.icon}
-								<span slot="start">{menuItem.icon}</span>
+							{#if typeof r.icon === 'string'}
+								<span slot="start"><Icon name={r.icon} size={16} /></span>
+							{:else if r.icon}
+								<span slot="start">{@render r.icon()}</span>
 							{/if}
-							{label}
+							{r.text}
 						</fluent-menu-item>
 					{/if}
 				{/each}

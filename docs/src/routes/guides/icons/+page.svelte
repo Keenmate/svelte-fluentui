@@ -238,9 +238,9 @@ export const icons = [{ name: 'history', sizes: [16] }]`}</code></pre>
 		<h2>Custom (non-FluentUI) icons in library toolbars</h2>
 		<p>
 			The whole detection story is about FluentUI icons. When you want a <strong>Font Awesome glyph, an inline SVG, or
-			any other markup</strong> in a QuickGrid row toolbar, the FluentUI pipeline doesn't apply at all — pass an
-			<code>iconSnippet</code> on the toolbar item and render whatever you like. It takes precedence over the
-			<code>icon</code> name.
+			any other markup</strong> in a QuickGrid row toolbar (or any menu / action item), the FluentUI pipeline doesn't
+			apply at all — pass a <strong>snippet</strong> as the item's <code>icon</code> and render whatever you like. A
+			string <code>icon</code> is a FluentUI name.
 		</p>
 
 		<div class="demo">
@@ -263,8 +263,8 @@ export const icons = [{ name: 'history', sizes: [16] }]`}</code></pre>
 				columns={demoColumns}
 				showRowToolbar
 				rowToolbar={[
-					{id: "flag", title: "Flag row", iconSnippet: flagIcon, onclick: ({row}: {row: DemoRow}) => { lastAction = `Flagged: ${row.name}` }},
-					{id: "delete", title: "Delete row", danger: true, iconSnippet: trashIcon, onclick: ({row}: {row: DemoRow}) => { lastAction = `Deleted: ${row.name}` }}
+					{id: "flag", text: "Flag row", icon: flagIcon, onClick: ({row}: {row: DemoRow}) => { lastAction = `Flagged: ${row.name}` }},
+					{id: "delete", text: "Delete row", isDanger: true, icon: trashIcon, onClick: ({row}: {row: DemoRow}) => { lastAction = `Deleted: ${row.name}` }}
 				]}
 			/>
 			<p style="margin-top: 1rem; padding: 0.5rem 0.75rem; background: var(--neutral-layer-2); border-radius: 4px;">
@@ -288,14 +288,14 @@ export const icons = [{ name: 'history', sizes: [16] }]`}</code></pre>
   {columns}
   showRowToolbar
   rowToolbar={[
-    { id: 'delete', title: 'Delete', danger: true,
-      iconSnippet: trashIcon,
-      onclick: ({ row }) => remove(row) }
+    { id: 'delete', text: 'Delete', isDanger: true,
+      icon: trashIcon,
+      onClick: ({ row }) => remove(row) }
   ]}
 />`}</code></pre>
 		<p class="note">
-			<code>icon</code> (a FluentUI name) becomes optional when you supply <code>iconSnippet</code>. Predefined string
-			items (<code>'add'</code>, <code>'delete'</code>, …) and <code>icon:</code>-based items keep working unchanged.
+			Built-in string items (<code>'add'</code>, <code>'delete'</code>, …) bring their own FluentUI icon; any
+			item's <code>icon</code> can be a FluentUI name or a snippet.
 		</p>
 	</Card>
 
