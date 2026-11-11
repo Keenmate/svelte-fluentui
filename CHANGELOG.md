@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Accordion, Listbox:** `multi` → `multiple`
+- **Alert, Dialog:** `dismissable` → `dismissible`
 - **QuickGrid column:** `format(value, row)`, `template(row)` → `getDisplayValueCallback({value, row, column})`, `renderCellCallback({row, column})`
 - **QuickGrid column:** `filter(filterValue, row)`, `validate(value, row)` → `filterCallback({term, row, column})`, `validateCallback({value, row, column})`
 - **QuickGrid column:** `onbeforecommit(ctx)`, `oncelledit(ctx)` → `beforeCommitCallback(ctx)` (same result semantics, ctx gains `column`), `editCallback(ctx)`
