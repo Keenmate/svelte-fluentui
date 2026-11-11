@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type {TabInfo} from "./Tabs.svelte"
 	import {tabsContext} from "../contexts.js"
 	import type {Snippet} from "svelte"
 	import { onDestroy, untrack } from "svelte"
@@ -17,23 +18,21 @@
 		labelEditable?: boolean
 		showClose?: boolean
 		visible?: boolean
-		/** Arbitrary context data passed to `ontabchange` when this tab becomes active. */
+		/** Arbitrary data, passed back as `tab.data` in Tabs events and callbacks. */
 		data?: Record<string, unknown>
 		/**
-		 * Guard called before Tabs navigates away from this tab while it is
-		 * active. Return `false` (or a Promise resolving to `false`) to veto
-		 * the switch — e.g. when the tab has unsaved changes. May be async so
-		 * it can await a confirm dialog.
+		 * Called before Tabs navigates away from this tab while it is active.
+		 * Return `false` (or a Promise resolving to `false`) to veto the switch —
+		 * e.g. when the tab has unsaved changes. May be async.
 		 */
-		canLeave?: () => boolean | Promise<boolean>
+		beforeLeaveCallback?: (ctx: {tab: TabInfo; newTab: TabInfo}) => unknown
 		/**
-		 * Guard called before this tab's close (×) button fires `oncloseclick`.
-		 * Return `false` (or a Promise resolving to `false`) to veto the close —
-		 * e.g. to confirm discarding unsaved data. Independent of `canLeave`.
-		 * May be async so it can await a confirm dialog.
+		 * Called before this tab's close (×) button fires `onTabClose`. Return
+		 * `false` (or a Promise resolving to `false`) to veto the close. May be async.
 		 */
-		canClose?: () => boolean | Promise<boolean>
-		oncloseclick?: () => void
+		beforeCloseCallback?: (ctx: {tab: TabInfo}) => unknown
+		/** Fires when the user closes this tab with its × button. */
+		onTabClose?: (ctx: {tab: TabInfo}) => void
 	}
 
 	let {
@@ -51,9 +50,9 @@
 		showClose = false,
 		visible = true,
 		data = undefined,
-		canLeave = undefined,
-		canClose = undefined,
-		oncloseclick = undefined
+		beforeLeaveCallback = undefined,
+		beforeCloseCallback = undefined,
+		onTabClose = undefined
 	}: Props = $props()
 
 	const ctx = tabsContext.get()
@@ -94,9 +93,9 @@
 			showClose,
 			visible,
 			data,
-			canLeave,
-			canClose,
-			oncloseclick,
+			beforeLeaveCallback,
+			beforeCloseCallback,
+			onTabClose,
 			class: className,
 			style
 		}

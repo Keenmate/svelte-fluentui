@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {Tab, Tabs, QuickGrid, Stack, Grid, GridItem, Card, Icon, Badge, Slider, TextField} from "svelte-fluentui"
+	import type {TabInfo} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
 	let verticalStripWidth = $state(200)
@@ -26,7 +27,7 @@
 	]
 
 	const tabsCallbacks: Property[] = [
-		{name: "ontabchange", type: "(detail: { tabId: string; data?: Record<string, unknown> }) => void", default: "undefined", description: "Fired when the active tab changes. `data` is whatever the tab registered via its `data` prop"}
+		{name: "onActiveIdChange", type: "(ctx: { activeId, oldActiveId, tab: TabInfo }) => void", default: "undefined", description: "Fires when the user activates another tab. `tab.data` is whatever the tab registered via its `data` prop"}
 	]
 
 	const tabsSlots: Property[] = [
@@ -41,15 +42,15 @@
 		{name: "labelEditable", type: "boolean", default: "false", description: "Allows inline editing of the tab label"},
 		{name: "showClose", type: "boolean", default: "false", description: "Shows a close (×) button on the tab"},
 		{name: "visible", type: "boolean", default: "true", description: "Controls whether the tab is rendered"},
-		{name: "data", type: "Record<string, unknown>", default: "undefined", description: "Arbitrary context data surfaced to ontabchange when this tab is selected"},
+		{name: "data", type: "Record<string, unknown>", default: "undefined", description: "Arbitrary data, passed back as tab.data in Tabs events and callbacks"},
 		{name: "class", type: "string", default: '""', description: "Custom class"},
 		{name: "style", type: "string", default: '""', description: "Inline CSS"}
 	]
 
 	const tabCallbacks: Property[] = [
-		{name: "canLeave", type: "() => boolean | Promise<boolean>", default: "undefined", description: "Guard called on the active tab before Tabs switches to another tab. Return false (or resolve to false) to veto the switch — e.g. when the tab has unsaved changes. May be async to await a confirm dialog. Covers click, keyboard, swipe and overflow-menu navigation (not external activeId assignment)"},
-		{name: "canClose", type: "() => boolean | Promise<boolean>", default: "undefined", description: "Guard called before the tab's close (×) button fires oncloseclick. Return false (or resolve to false) to veto the close — e.g. to confirm discarding unsaved data. Independent of canLeave (leaving keeps the tab, closing destroys it). May be async"},
-		{name: "oncloseclick", type: "() => void", default: "undefined", description: "Fired when the tab's close (×) button is clicked (after canClose passes, if set)"}
+		{name: "beforeLeaveCallback", type: "(ctx: {tab, newTab}) => unknown", default: "undefined", description: "Called on the active tab before Tabs switches to another tab. Return false (or resolve to false) to veto the switch — e.g. when the tab has unsaved changes. May be async to await a confirm dialog. Covers click, keyboard, swipe and overflow-menu navigation (not external activeId assignment)"},
+		{name: "beforeCloseCallback", type: "(ctx: {tab}) => unknown", default: "undefined", description: "Called before the tab's close (×) button fires onTabClose. Return false (or resolve to false) to veto the close — e.g. to confirm discarding unsaved data. Independent of beforeLeaveCallback (leaving keeps the tab, closing destroys it). May be async"},
+		{name: "onTabClose", type: "(ctx: {tab}) => void", default: "undefined", description: "Fires when the user closes the tab with its × button (after beforeCloseCallback passes, if set)"}
 	]
 
 	const tabSlots: Property[] = [
@@ -66,13 +67,13 @@
 		{field: "description", title: "Description", filterable: true}
 	]
 
-	// Tracks active tab for the ontabchange demo
+	// Tracks active tab for the onActiveIdChange demo
 	let activeId = $state("overview")
-	let lastSelected = $state<{tabId: string; data?: Record<string, unknown>} | undefined>(undefined)
+	let lastSelected = $state<TabInfo | undefined>(undefined)
 
-	function handleTabChange(detail: {tabId: string; data?: Record<string, unknown>}) {
-		lastSelected = detail
-		activeId = detail.tabId
+	function handleTabChange({tab}: {tab: TabInfo}) {
+		lastSelected = tab
+		activeId = tab.id
 	}
 
 	// Closable tabs demo
@@ -87,7 +88,7 @@
 	}
 
 	// Guarded switch (dirty data) demo — the active tab vetoes leaving while
-	// its field is non-empty. `canLeave` may be async; here we use a sync confirm.
+	// its field is non-empty. `beforeLeaveCallback` may be async; here we use a sync confirm.
 	let guardActiveId = $state("edit")
 	let draft = $state("")
 	function confirmLeaveIfDirty() {
@@ -346,9 +347,9 @@
 
 		<h3>Closable tabs</h3>
 		<p>
-			Set <code>showClose</code> on a tab and listen to <code>oncloseclick</code>
-			to get the "browser-style" closable tab UX. Add a <code>canClose</code> guard
-			to confirm before destroying a tab (independent of <code>canLeave</code>). Closing
+			Set <code>showClose</code> on a tab and listen to <code>onTabClose</code>
+			to get the "browser-style" closable tab UX. Add a <code>beforeCloseCallback</code>
+			to confirm before destroying a tab (independent of <code>beforeLeaveCallback</code>). Closing
 			a tab below asks you to confirm — except <code>Notes.txt</code>, which has no guard
 			and closes immediately.
 		</p>
@@ -360,8 +361,8 @@
 							id={t.id}
 							label={t.label}
 							showClose
-							canClose={t.label === "Notes.txt" ? undefined : () => confirm(`Close ${t.label}?`)}
-							oncloseclick={() => closeTab(t.id)}
+							beforeCloseCallback={t.label === "Notes.txt" ? undefined : () => confirm(`Close ${t.label}?`)}
+							onTabClose={() => closeTab(t.id)}
 						>
 							{#snippet icon()}<Icon name={t.icon} size={16} />{/snippet}
 							{#snippet content()}<p>Content of {t.label}</p>{/snippet}
@@ -414,12 +415,12 @@
 			{/snippet}
 		</Tabs>
 
-		<h3>Controlled activeId with <code>ontabchange</code> + tab data</h3>
+		<h3>Controlled activeId with <code>onActiveIdChange</code> + tab data</h3>
 		<p>
 			Each tab passes a <code>data</code> object that's surfaced to
-			<code>ontabchange</code>. Current active: <strong>{activeId}</strong>.
+			<code>onActiveIdChange</code>. Current active: <strong>{activeId}</strong>.
 		</p>
-		<Tabs {activeId} ontabchange={handleTabChange}>
+		<Tabs {activeId} onActiveIdChange={handleTabChange}>
 			{#snippet childContent()}
 				<Tab id="overview" label="Overview" data={{section: "overview", index: 0}}>
 					{#snippet icon()}<Icon name="home" size={16} />{/snippet}
@@ -444,14 +445,14 @@
 
 		<h3>Blocking a switch (unsaved changes)</h3>
 		<p>
-			Give the active <code>&lt;Tab&gt;</code> a <code>canLeave</code> guard. Tabs calls it
+			Give the active <code>&lt;Tab&gt;</code> a <code>beforeLeaveCallback</code>. Tabs calls it
 			before navigating away and cancels the switch if it returns <code>false</code> (it may
 			also be async and await a confirm dialog). Type into the field below, then try clicking
 			another tab — you'll be asked to confirm.
 		</p>
 		<Tabs bind:activeId={guardActiveId}>
 			{#snippet childContent()}
-				<Tab id="edit" label="Edit" canLeave={confirmLeaveIfDirty}>
+				<Tab id="edit" label="Edit" beforeLeaveCallback={confirmLeaveIfDirty}>
 					{#snippet content()}
 						<Stack orientation="vertical" gap="0.5rem">
 							<p>This tab blocks leaving while the field below is non-empty.</p>

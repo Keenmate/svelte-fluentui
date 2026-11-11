@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Tab:** `canLeave()` (falsy vetoed) → `beforeLeaveCallback({tab, newTab})` — only `false` vetoes (`undefined` continues); may be async; a throw vetoes
+- **Tab:** `canClose()`, `oncloseclick()` → `beforeCloseCallback({tab})`, `onTabClose({tab})`
+- **Tabs:** `ontabchange({tabId, data})` → `onActiveIdChange({activeId, oldActiveId, tab})` — `tab` is `{id, label, data}` (type `TabInfo`)
 - **Paginator:** `onFirst()`, `onPrevious()`, `onNext()`, `onLast()` (you moved the page yourself) → `onPageChange({pageIndex})`; `currentPageIndex` is bindable and moved by the paginator; `canGoBack`/`canGoForwards` default from the index
 - **Grid:** `onBreakpointEnter(size)` → `onBreakpointChange({breakpoint})`
 - **MultiSplitter:** `onresize`, `oncollapse`, `onexpand` with `{index, …}` → `onPaneResize`, `onPaneCollapse`, `onPaneExpand` with `{paneIndex, …}`

@@ -25,21 +25,20 @@
 		visible?: boolean
 		data?: Record<string, unknown>
 		/**
-		 * Guard invoked on the *currently active* tab before Tabs navigates
-		 * away from it. Return `false` (or a Promise resolving to `false`) to
-		 * veto the switch — e.g. when the tab holds unsaved/dirty data. May be
-		 * async so it can await a confirm dialog.
+		 * Called on the *currently active* tab before Tabs navigates away from
+		 * it. Return `false` (or a Promise resolving to `false`) to veto the
+		 * switch — e.g. when the tab holds unsaved data. May be async.
 		 */
-		canLeave?: () => boolean | Promise<boolean>
+		beforeLeaveCallback?: (ctx: {tab: TabInfo; newTab: TabInfo}) => unknown
 		/**
-		 * Guard invoked before this tab's close (×) button fires `oncloseclick`.
-		 * Return `false` (or a Promise resolving to `false`) to veto the close —
-		 * e.g. to confirm discarding unsaved data. Independent of `canLeave`:
-		 * leaving keeps the tab alive, closing destroys it. Guards the tab being
-		 * closed (not necessarily the active one). May be async.
+		 * Called before this tab's close (×) button fires `onTabClose`. Return
+		 * `false` (or a Promise resolving to `false`) to veto the close.
+		 * Independent of leaving: leaving keeps the tab alive, closing destroys
+		 * it. Guards the tab being closed (not necessarily the active one).
 		 */
-		canClose?: () => boolean | Promise<boolean>
-		oncloseclick?: () => void
+		beforeCloseCallback?: (ctx: {tab: TabInfo}) => unknown
+		/** Fires when the user closes this tab with its × button. */
+		onTabClose?: (ctx: {tab: TabInfo}) => void
 		class?: string
 		style?: string
 	}
@@ -49,6 +48,13 @@
 		unregister: (id: string) => void
 	}
 
+	/** The tab a callback or event is about. */
+	export type TabInfo = {
+		id: string
+		label?: string
+		data?: Record<string, unknown>
+	}
+
 </script>
 
 <script lang="ts">
@@ -56,9 +62,8 @@
 	import { untrack } from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 
-	type TabChangeDetail = {
-		tabId: string
-		data?: Record<string, unknown>
+	function toTabInfo(tab: TabEntry): TabInfo {
+		return {id: tab.id, label: tab.label, data: tab.data}
 	}
 
 	type Props = {
@@ -100,7 +105,8 @@
 		stripHeight?: string
 		/** Enable horizontal-swipe (or vertical-swipe in vertical orientation) to navigate between tabs. Default `true`. Swipes starting on interactive elements (input, button, slider, contenteditable) are ignored so form controls keep working. */
 		swipe?: boolean
-		ontabchange?: (detail: TabChangeDetail) => void
+		/** Fires when the user activates another tab. `tab` is the newly active one. */
+		onActiveIdChange?: (ctx: {activeId: string; oldActiveId: string | undefined; tab: TabInfo}) => void
 	}
 
 	let {
@@ -119,7 +125,7 @@
 		stripWidth = undefined,
 		stripHeight = undefined,
 		swipe = true,
-		ontabchange = undefined
+		onActiveIdChange = undefined
 	}: Props = $props()
 
 	const stripStyle = $derived.by(() => {
@@ -332,8 +338,8 @@
 
 	/*
 	 * A tab can veto being navigated away from: before switching off the
-	 * current tab we call its registered `canLeave()` guard (if any). A
-	 * falsy resolve cancels the switch, so a tab with dirty data can prompt
+	 * current tab we call its registered `beforeLeaveCallback` (if any). A
+	 * `false` resolve cancels the switch, so a tab with dirty data can prompt
 	 * the user and stay put. The guard may be sync or async (return a
 	 * Promise) so it can await a confirm dialog. Only interaction-driven
 	 * switches (click, keyboard, swipe, overflow menu) route through here —
@@ -342,8 +348,20 @@
 	async function canLeaveCurrent(targetId: string): Promise<boolean> {
 		if (!activeId || activeId === targetId) return true
 		const current = orderedTabs.find(t => t.id === activeId)
-		if (!current?.canLeave) return true
-		return (await current.canLeave()) !== false
+		const target = orderedTabs.find(t => t.id === targetId)
+		if (!current?.beforeLeaveCallback || !target) return true
+		try {
+			return (await current.beforeLeaveCallback({tab: toTabInfo(current), newTab: toTabInfo(target)})) !== false
+		} catch (error) {
+			console.error("[Tabs] beforeLeaveCallback failed:", error)
+			return false
+		}
+	}
+
+	function activate(tab: TabEntry) {
+		const oldActiveId = activeId
+		activeId = tab.id
+		onActiveIdChange?.({activeId: tab.id, oldActiveId, tab: toTabInfo(tab)})
 	}
 
 	async function selectTab(tabId: string, focus = false) {
@@ -351,8 +369,7 @@
 		if (!tab || tab.disabled) return
 		if (activeId !== tabId) {
 			if (!(await canLeaveCurrent(tabId))) return
-			activeId = tabId
-			ontabchange?.({ tabId, data: tab.data })
+			activate(tab)
 		}
 		// Scroll the selected tab into view in scroll mode.
 		requestAnimationFrame(() => {
@@ -397,14 +414,21 @@
 	/*
 	 * Close is guarded independently of navigation: a tab can allow being left
 	 * (kept in memory) yet still confirm before being destroyed. We await the
-	 * closed tab's `canClose()` (if any) before firing `oncloseclick`; a falsy
-	 * resolve cancels the close.
+	 * closed tab's `beforeCloseCallback` (if any) before firing `onTabClose`; a
+	 * `false` resolve cancels the close (a throw too, and is logged).
 	 */
 	async function handleCloseClick(tab: TabEntry, e: MouseEvent) {
 		e.stopPropagation()
 		e.preventDefault()
-		if (tab.canClose && (await tab.canClose()) === false) return
-		tab.oncloseclick?.()
+		if (tab.beforeCloseCallback) {
+			try {
+				if ((await tab.beforeCloseCallback({tab: toTabInfo(tab)})) === false) return
+			} catch (error) {
+				console.error("[Tabs] beforeCloseCallback failed:", error)
+				return
+			}
+		}
+		tab.onTabClose?.({tab: toTabInfo(tab)})
 	}
 
 	/*
@@ -617,9 +641,8 @@
 		const selectedIdx = currentOrder.indexOf(tabId)
 		const lastVisibleIdx = Math.max(0, Math.min(visibleCount - 1, currentOrder.length - 1))
 		if (selectedIdx < 0 || selectedIdx === lastVisibleIdx) {
-			activeId = tabId
 			overflowOpen = false
-			ontabchange?.({ tabId, data: tab.data })
+			if (activeId !== tabId) activate(tab)
 			return
 		}
 
@@ -627,9 +650,8 @@
 		;[next[selectedIdx], next[lastVisibleIdx]] = [next[lastVisibleIdx], next[selectedIdx]]
 		displayOrder = next
 
-		activeId = tabId
 		overflowOpen = false
-		ontabchange?.({ tabId, data: tab.data })
+		if (activeId !== tabId) activate(tab)
 	}
 
 	/*
