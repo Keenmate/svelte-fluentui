@@ -59,7 +59,7 @@
 	{disabled}
 	class={navItemClass}
 >
-	<NavLink class="notactive" onClick={onNavLinkClicked}>
+	<NavLink class="notactive" onclick={onNavLinkClicked}>
 		{#snippet icon()}
 			{@render linkIcon?.()}
 		{/snippet}

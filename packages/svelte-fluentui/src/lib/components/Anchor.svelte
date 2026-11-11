@@ -28,7 +28,8 @@
 		children?: Snippet
 		preventDefault?: boolean
 		use?: ((node: HTMLElement) => any) | undefined
-		onClick?: (event: MouseEvent) => void
+		/** Native `click` event, forwarded untouched. */
+		onclick?: (event: MouseEvent) => void
 	}
 
 	let element: HTMLElement
@@ -51,7 +52,7 @@
 		children = undefined,
 		preventDefault = false,
 		use = undefined,
-		onClick = undefined
+		onclick = undefined
 	}: Props = $props()
 
 	$effect(() => {
@@ -63,8 +64,8 @@
 		if (preventDefault) {
 			event.preventDefault()
 		}
-		if (onClick) {
-			onClick(event)
+		if (onclick) {
+			onclick(event)
 		}
 	}
 </script>

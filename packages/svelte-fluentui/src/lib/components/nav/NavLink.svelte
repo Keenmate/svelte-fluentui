@@ -11,7 +11,8 @@
 		target?: string
 		title?: string
 		disabled?: boolean
-		onClick?: (ev: MouseEvent) => void
+		/** Native `click` event, forwarded untouched. */
+		onclick?: (ev: MouseEvent) => void
 		icon?: Snippet
 		afterText?: Snippet
 		children?: Snippet
@@ -26,7 +27,7 @@
 		    title     = undefined,
 		    disabled  = undefined,
 		    icon      = undefined,
-		    onClick   = undefined,
+		    onclick   = undefined,
 		    afterText = undefined,
 		    children  = undefined,
 		    linkAction = undefined,
@@ -53,7 +54,7 @@
 	aria-disabled={disabled}
 	class="fluent-nav-link {className || ''}"
 	class:disabled
-	onclick={onClick}
+	onclick={onclick}
 	use:applyLinkAction
 >
 	<PositioningRegion>

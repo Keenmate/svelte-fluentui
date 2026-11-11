@@ -31,7 +31,7 @@
 	style={computedStyle}
 >
 	{#if collapsible}
-		<NavExpander onClick={() => collapsed = !collapsed} />
+		<NavExpander onclick={() => collapsed = !collapsed} />
 	{/if}
 
 	{@render children?.()}

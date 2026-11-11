@@ -31,7 +31,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onClick", type: "(event: MouseEvent) => void", default: "undefined", description: "Fires when the anchor is clicked"}
+		{name: "onclick", type: "(event: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"}
 	]
 
 	const slots: Property[] = [

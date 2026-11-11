@@ -51,7 +51,7 @@
 	]
 
 	const navLinkItemCallbacks: Property[] = [
-		{name: "onClick", type: "(ev: MouseEvent) => void", default: "undefined", description: "Fires when the item is clicked"},
+		{name: "onclick", type: "(ev: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"},
 		{name: "linkAction", type: "(node: HTMLElement) => void", default: "undefined", description: "Svelte action invoked on the underlying link element"}
 	]
 
@@ -68,7 +68,7 @@
 	]
 
 	const navItemCallbacks: Property[] = [
-		{name: "onClick", type: "(ev: MouseEvent) => void", default: "undefined", description: "Fires when the item is clicked"}
+		{name: "onclick", type: "(ev: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"}
 	]
 
 	const navItemSlots: Property[] = [
@@ -125,10 +125,10 @@
 							<h3>Item 3</h3>
 						{/snippet}
 
-						<NavLinkItem onClick={onNavClick}>
+						<NavLinkItem onclick={onNavClick}>
 							Item 3.1
 						</NavLinkItem>
-						<NavLinkItem onClick={onNavClick}>
+						<NavLinkItem onclick={onNavClick}>
 							Item 3.2
 						</NavLinkItem>
 					</NavGroup>

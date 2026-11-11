@@ -12,7 +12,8 @@
 		/** Size variant, matching the library's input/button sizing. */
 		size?: "small" | "medium" | "large"
 		class?: string
-		onclick?: () => void
+		/** Native `click` event, forwarded untouched. */
+		onclick?: (event: MouseEvent) => void
 	}
 
 	const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/i.test(navigator.platform)

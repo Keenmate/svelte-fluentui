@@ -507,7 +507,7 @@
 				<NavLinkItem
 					href={navItem.href}
 					class={isActive(navItem.href) ? "active" : ""}
-					onClick={closeDrawer}
+					onclick={closeDrawer}
 				>
 					{#snippet icon()}
 						<Icon name={navItem.icon} size={16} />
@@ -530,7 +530,7 @@
 							target={item.target}
 							rel={item.rel}
 							class={isActive(item.href) ? "active" : ""}
-							onClick={closeDrawer}
+							onclick={closeDrawer}
 						>
 							{item.label}
 						</NavLinkItem>

@@ -39,7 +39,7 @@
   &lt;div class="topnav"&gt;
     &lt;a href="/" class="topnav-brand"&gt;Svelte FluentUI&lt;/a&gt;
     &lt;div class="topnav-actions"&gt;
-      &lt;Button appearance="stealth" onClick=&#123;toggleTheme&#125;&gt;
+      &lt;Button appearance="stealth" onclick=&#123;toggleTheme&#125;&gt;
         &#123;$theme === "light" ? "🌙" : "☀️"&#125;
       &lt;/Button&gt;
     &lt;/div&gt;

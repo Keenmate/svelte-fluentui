@@ -5,19 +5,20 @@
 	import ContentRegion from "../ContentRegion.svelte"
 
 	type Props = {
-		onClick?: (ev: MouseEvent) => void
+		/** Native `click` event, forwarded untouched. */
+		onclick?: (ev: MouseEvent) => void
 		class?: string
 	}
 
 	let {
-		onClick = undefined,
+		onclick = undefined,
 		class: className = undefined
 	    }: Props = $props()
 </script>
 
 <NavItem
 	class="expander {className || ''}"
-	{onClick}
+	{onclick}
 >
 	<PositioningRegion>
 		<ContentRegion>

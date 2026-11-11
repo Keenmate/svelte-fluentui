@@ -10,7 +10,8 @@
 		title?: string
 		disabled?: boolean
 		group?: boolean
-		onClick?: (ev: MouseEvent) => void
+		/** Native `click` event, forwarded untouched. */
+		onclick?: (ev: MouseEvent) => void
 		icon?: Snippet
 		afterText?: Snippet
 		children?: Snippet
@@ -25,7 +26,7 @@
 		    disabled  = undefined,
 		    group     = undefined,
 		    icon      = undefined,
-		    onClick   = undefined,
+		    onclick   = undefined,
 		    afterText = undefined,
 		    children  = undefined,
 		    linkAction = undefined
@@ -35,7 +36,7 @@
 <NavItem
 	{group}
 	{disabled}
-	{onClick}
+	{onclick}
 >
 	<NavLink
 		{href}

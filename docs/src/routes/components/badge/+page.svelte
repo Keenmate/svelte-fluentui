@@ -52,7 +52,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onClick", type: "(ev: PointerEvent) => void", default: "undefined", description: "Click event handler"}
+		{name: "onclick", type: "(ev: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"}
 	]
 
 	const actions: Property[] = []

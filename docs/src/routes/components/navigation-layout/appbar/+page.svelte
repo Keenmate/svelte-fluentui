@@ -33,7 +33,7 @@
 	]
 
 	const appBarItemCallbacks: Property[] = [
-		{name: "onClick", type: "(ev: MouseEvent) => void", default: "undefined", description: "Fires when the item is clicked"}
+		{name: "onclick", type: "(ev: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"}
 	]
 
 	const appBarItemSlots: Property[] = [
@@ -88,7 +88,7 @@
 						<AppBarItem href="/" icon={commonItemIcon}>
 							Home
 						</AppBarItem>
-						<AppBarItem onClick={onAppBarItemClicked} icon={commonItemIcon}>
+						<AppBarItem onclick={onAppBarItemClicked} icon={commonItemIcon}>
 							Item 2
 						</AppBarItem>
 						<AppBarItem href="https://microsoft.com" icon={commonItemIcon}>

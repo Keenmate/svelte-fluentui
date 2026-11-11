@@ -8,7 +8,8 @@
 		rel?: string
 		count?: number
 		active?: boolean
-		onClick?: (ev: MouseEvent) => void
+		/** Native `click` event, forwarded untouched. */
+		onclick?: (ev: MouseEvent) => void
 		icon?: Snippet
 		children?: Snippet
 		class?: string
@@ -18,7 +19,7 @@
 		    href     = undefined,
 		    rel      = undefined,
 		    active   = $bindable(),
-		    onClick = undefined,
+		    onclick = undefined,
 		    icon = undefined,
 		    children = undefined,
 		    class: className = undefined
@@ -33,6 +34,7 @@
 			{href}
 			{rel}
 			class:active
+			{onclick}
 		>
 			<Stack
 				orientation={StackOrientation.Vertical}

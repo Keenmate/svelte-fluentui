@@ -4,7 +4,8 @@
 	type Props = {
 		disabled?: boolean
 		group?: boolean
-		onClick?: (ev: MouseEvent) => void
+		/** Native `click` event, forwarded untouched. */
+		onclick?: (ev: MouseEvent) => void
 		children?: Snippet
 		class?: string
 	}
@@ -12,7 +13,7 @@
 	let {
 		    disabled    = undefined,
 		    group    = undefined,
-		    onClick = undefined,
+		    onclick = undefined,
 		    children = undefined,
 		    class: className = undefined
 	    }: Props = $props()
@@ -29,7 +30,7 @@
 	class="fluent-nav-item {className || ''}"
 	class:fluent-nav-group={group}
 	class:disabled
-	onclick={onClick}
+	onclick={onclick}
 >
 	{@render children?.()}
 
