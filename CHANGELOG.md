@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **AccordionItem:** `header` (string) + `heading` (snippet) → one `heading` that takes a string or a snippet
+- **Anchor:** `iconStart` / `iconEnd` snippets → `start` / `end`
+- **Autocomplete:** `startIcon` / `endIcon` snippets → `start` / `end`
 - **Calendar, DatePicker:** `dayFormat="two_digit"` → `dayFormat="2-digit"`
 - **QuickGrid editorOptions:** `optionsLoadTrigger` `"oneditstart"` / `"ondropdownopen"` → `"edit-start"` / `"dropdown-open"`
 - **QuickGrid rowToolbar:** `"moveUp"` / `"moveDown"` → `"move-up"` / `"move-down"`

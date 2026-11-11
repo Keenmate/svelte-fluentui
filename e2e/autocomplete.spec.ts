@@ -442,7 +442,7 @@ test.describe("slot rendering", () => {
 		await expect(custom).toHaveCount(optionCount)
 	})
 
-	test("startIcon + endIcon: rendered inside the input container", async ({page}) => {
+	test("start + end snippets: rendered inside the input container", async ({page}) => {
 		const wrap = wrapById(page, "icons")
 		await expect(wrap.locator('[data-testid="start-icon"]')).toBeVisible()
 		await expect(wrap.locator('[data-testid="end-icon"]')).toBeVisible()

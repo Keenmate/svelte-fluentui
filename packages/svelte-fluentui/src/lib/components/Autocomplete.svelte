@@ -65,13 +65,13 @@
 		optionTemplate?: Snippet<[OptionItem<T>]>
 		// Decorative slots inside the input. Render arbitrary content (typically icons or
 		// small buttons) at the start (left) or end (right) of the input. The auto-rendered
-		// clear button and loading spinner take precedence in the end slot — `endIcon`
+		// clear button and loading spinner take precedence in the end slot — `end`
 		// renders only when neither is active, so a search icon doesn't fight a clear button.
-		startIcon?: Snippet
-		endIcon?: Snippet
+		start?: Snippet
+		end?: Snippet
 		/** Show a built-in accent-coloured magnifier in the end slot (FluentUI Blazor look).
 		 * Renders by default when nothing higher-priority occupies the slot (clear button,
-		 * loading spinner, or a custom `endIcon` all take precedence). Set false to hide it. */
+		 * loading spinner, or a custom `end` all take precedence). Set false to hide it. */
 		showSearchIcon?: boolean
 		class?: string
 		style?: string
@@ -118,8 +118,8 @@
 		headerContent = undefined,
 		footerContent = undefined,
 		optionTemplate = undefined,
-		startIcon = undefined,
-		endIcon = undefined,
+		start = undefined,
+		end = undefined,
 		showSearchIcon = true,
 		class: className = "",
 		style = "",
@@ -710,9 +710,9 @@
 				 leaving the single-line input + absolutely-placed icons untouched. -->
 			<div class="autocomplete-input-main">
 				<!-- Start icon slot (e.g. search magnifying glass) -->
-				{#if startIcon}
+				{#if start}
 					<div class="input-start">
-						{@render startIcon()}
+						{@render start()}
 					</div>
 				{/if}
 
@@ -749,11 +749,11 @@
 				/>
 			</div>
 
-			<!-- End slot: clear button OR loading indicator OR custom endIcon OR the built-in
+			<!-- End slot: clear button OR loading indicator OR custom end OR the built-in
 				 search magnifier (in that priority). Only renders when something will show
 				 inside, so the `:has(.input-end)` padding rule on the input doesn't reserve
 				 space for an empty slot. -->
-			{#if (hasSingleSelection && !disabled && !readonly) || showLoading || endIcon || showSearchIcon}
+			{#if (hasSingleSelection && !disabled && !readonly) || showLoading || end || showSearchIcon}
 				<div class="input-end">
 					{#if hasSingleSelection && !disabled && !readonly}
 						<button
@@ -774,8 +774,8 @@
 								<path d="M8 1a7 7 0 0 1 7 7" stroke="currentColor" stroke-width="2" fill="none"/>
 							</svg>
 						</div>
-					{:else if endIcon}
-						{@render endIcon()}
+					{:else if end}
+						{@render end()}
 					{:else if showSearchIcon}
 						<button
 							type="button"
@@ -1040,7 +1040,7 @@
 
 	/* ===== Input End Slot ===== */
 	/* A fixed control-height square that centers whatever it holds. The clear
-	   button, loading spinner, custom endIcon and the search magnifier are all
+	   button, loading spinner, custom end and the search magnifier are all
 	   different sizes, so without a fixed centering box the glyph would land at a
 	   slightly different spot for each — swapping between them (e.g. loading →
 	   magnifier) then looks like the icon jumps. Centering inside a constant square

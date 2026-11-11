@@ -36,8 +36,8 @@
 
 	const slots: Property[] = [
 		{name: "children", type: "Snippet", default: "undefined", description: "Content inside the anchor"},
-		{name: "iconStart", type: "Snippet", default: "undefined", description: "Element displayed before children"},
-		{name: "iconEnd", type: "Snippet", default: "undefined", description: "Element displayed after children"}
+		{name: "start", type: "Snippet", default: "undefined", description: "Element displayed before children"},
+		{name: "end", type: "Snippet", default: "undefined", description: "Element displayed after children"}
 	]
 
 	const propertyColumns = [

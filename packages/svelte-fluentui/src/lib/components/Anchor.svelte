@@ -23,8 +23,8 @@
 		target?: string
 		type?: string
 		appearance?: "neutral" | "accent" | "hypertext" | "stealth" | "transparent"
-		iconStart?: Snippet
-		iconEnd?: Snippet
+		start?: Snippet
+		end?: Snippet
 		children?: Snippet
 		preventDefault?: boolean
 		use?: ((node: HTMLElement) => any) | undefined
@@ -47,8 +47,8 @@
 		target = undefined,
 		type = undefined,
 		appearance = undefined,
-		iconStart = undefined,
-		iconEnd = undefined,
+		start = undefined,
+		end = undefined,
 		children = undefined,
 		preventDefault = false,
 		use = undefined,
@@ -80,9 +80,9 @@
 	})}
 	onclick={handleClick}
 >
-	{#if iconStart}
+	{#if start}
 		<span slot="start">
-			{@render iconStart()}
+			{@render start()}
 		</span>
 	{/if}
 
@@ -90,9 +90,9 @@
 		{@render children()}
 	{/if}
 
-	{#if iconEnd}
+	{#if end}
 		<span slot="end">
-			{@render iconEnd()}
+			{@render end()}
 		</span>
 	{/if}
 </fluent-anchor>

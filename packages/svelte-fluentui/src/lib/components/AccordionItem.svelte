@@ -21,13 +21,12 @@
 		id: string
 		/** Heading level for the role="heading" wrapper (accessibility). */
 		headingLevel?: string | number
-		/** Header text (plain string). Use the `heading` snippet for rich content. */
-		header?: string
 		/** Explicitly control expanded state; falls back to the parent value. */
 		expanded?: boolean
 		/** Disable the item: not togglable and skipped in keyboard navigation. */
 		disabled?: boolean
-		heading?: Snippet
+		/** Heading: plain text or a snippet for rich content. */
+		heading?: string | Snippet
 		start?: Snippet
 		end?: Snippet
 		/** Custom expand/collapse icon. Receives the current isExpanded boolean. */
@@ -42,7 +41,6 @@
 		id,
 		headingLevel = 2,
 		expanded = undefined,
-		header = undefined,
 		heading = undefined,
 		start = undefined,
 		end = undefined,
@@ -88,10 +86,10 @@
 			onkeydown={handleKeydown}
 		>
 			<span class="fluent-accordion-item__heading-content">
-				{#if heading}
+				{#if typeof heading === "function"}
 					{@render heading()}
 				{:else}
-					{header}
+					{heading}
 				{/if}
 			</span>
 		</button>

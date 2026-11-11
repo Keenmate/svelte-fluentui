@@ -190,8 +190,8 @@
 		{name: "optionTemplate", type: "Snippet<[OptionItem]>", default: "undefined", description: "Custom rendering for each option in the dropdown list. Receives the OptionItem as a parameter."},
 		{name: "headerContent", type: "Snippet", default: "undefined", description: "Custom content rendered at the top of the dropdown overlay, above the option list."},
 		{name: "footerContent", type: "Snippet", default: "undefined", description: "Custom content rendered at the bottom of the dropdown overlay, below the option list."},
-		{name: "startIcon", type: "Snippet", default: "undefined", description: "Decorative content (typically an icon) rendered at the start (left) of the input."},
-		{name: "endIcon", type: "Snippet", default: "undefined", description: "Decorative content rendered at the end (right) of the input. The auto-rendered clear button and loading spinner take precedence — endIcon shows only when neither is active."}
+		{name: "start", type: "Snippet", default: "undefined", description: "Decorative content (typically an icon) rendered at the start (left) of the input."},
+		{name: "end", type: "Snippet", default: "undefined", description: "Decorative content rendered at the end (right) of the input. The auto-rendered clear button and loading spinner take precedence — end shows only when neither is active."}
 	]
 
 	const propertyColumns = [
@@ -684,13 +684,13 @@
 
 		<h3>Start &amp; End Icons</h3>
 		<p>
-			Use the <code>startIcon</code> and <code>endIcon</code> snippets to render decorative content (typically icons) inside the input.
-			The auto-rendered clear button and loading spinner take precedence over <code>endIcon</code>, so a search icon yields to a clear button when something is selected.
+			Use the <code>start</code> and <code>end</code> snippets to render decorative content (typically icons) inside the input.
+			The auto-rendered clear button and loading spinner take precedence over <code>end</code>, so a search icon yields to a clear button when something is selected.
 		</p>
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>Search icon (startIcon)</strong>
+					<strong>Search icon (start)</strong>
 					<Autocomplete
 						bind:value={iconValue}
 						options={colors}
@@ -698,7 +698,7 @@
 						label="Search colors"
 						placeholder="Type to search..."
 					>
-						{#snippet startIcon()}
+						{#snippet start()}
 							<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
 								<path d="M11.5 7a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm-.82 4.74a6 6 0 1 1 1.06-1.06l3.04 3.03a.75.75 0 1 1-1.06 1.06l-3.04-3.03Z" />
 							</svg>
@@ -709,7 +709,7 @@
 			</GridItem>
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>Filter icon (endIcon)</strong>
+					<strong>Filter icon (end)</strong>
 					<Autocomplete
 						bind:value={endIconValue}
 						options={colors}
@@ -717,7 +717,7 @@
 						label="Filter colors"
 						placeholder="Filter..."
 					>
-						{#snippet endIcon()}
+						{#snippet end()}
 							<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
 								<path d="M2.5 3a.5.5 0 0 0-.4.8l4.4 5.87V13a.5.5 0 0 0 .29.45l2 .92A.5.5 0 0 0 9.5 14V9.67l4.4-5.87A.5.5 0 0 0 13.5 3h-11Z" />
 							</svg>

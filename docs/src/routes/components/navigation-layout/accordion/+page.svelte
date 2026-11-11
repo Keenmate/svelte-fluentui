@@ -48,7 +48,6 @@
 
 	const accordionItemProperties: Property[] = [
 		{name: "id", type: "string", default: "Required", description: "Unique item identifier"},
-		{name: "header", type: "string", default: "undefined", description: "Header text (plain string)"},
 		{name: "headingLevel", type: "string | number", default: "2", description: "Heading level for accessibility (aria-level)"},
 		{name: "expanded", type: "boolean", default: "undefined", description: "Controls expanded state (falls back to parent Accordion's value)"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disable the item: not togglable and skipped in keyboard navigation"}
@@ -60,7 +59,7 @@
 
 	const accordionItemSlots: Property[] = [
 		{name: "children", type: "Snippet", default: "undefined", description: "Body content rendered when the item is expanded"},
-		{name: "heading", type: "Snippet", default: "undefined", description: "Custom heading content (overrides the `header` string prop)"},
+		{name: "heading", type: "string | Snippet", default: "undefined", description: "Heading: plain text, or a snippet for rich content"},
 		{name: "start", type: "Snippet", default: "undefined", description: "Content rendered at the start of the header"},
 		{name: "end", type: "Snippet", default: "undefined", description: "Content rendered at the end of the header"},
 		{name: "icon", type: "Snippet", default: "undefined", description: "Custom expand/collapse icon. Receives isExpanded boolean"}
@@ -103,10 +102,10 @@
 				<h3>Basic accordion</h3>
 				<Accordion>
 					{#snippet children()}
-						<AccordionItem id="item-1" header="Section 1">
+						<AccordionItem id="item-1" heading="Section 1">
 							<p>This is the content of section 1.</p>
 						</AccordionItem>
-						<AccordionItem id="item-2" header="Section 2">
+						<AccordionItem id="item-2" heading="Section 2">
 							<p>This is the content of section 2.</p>
 						</AccordionItem>
 					{/snippet}
@@ -117,10 +116,10 @@
 				<h3>Accordion with multiple expand allowed</h3>
 				<Accordion multiple>
 					{#snippet children()}
-						<AccordionItem id="multi-1" header="First">
+						<AccordionItem id="multi-1" heading="First">
 							<p>Multi mode - first item content.</p>
 						</AccordionItem>
-						<AccordionItem id="multi-2" header="Second">
+						<AccordionItem id="multi-2" heading="Second">
 							<p>Multi mode - second item content.</p>
 						</AccordionItem>
 					{/snippet}
@@ -131,10 +130,10 @@
 				<h3>Controlled accordion</h3>
 				<Accordion bind:value={accordionValue}>
 					{#snippet children()}
-						<AccordionItem id="controlled-1" header="Controlled One">
+						<AccordionItem id="controlled-1" heading="Controlled One">
 							<p>First controlled content.</p>
 						</AccordionItem>
-						<AccordionItem id="controlled-2" header="Controlled Two">
+						<AccordionItem id="controlled-2" heading="Controlled Two">
 							<p>Second controlled content.</p>
 						</AccordionItem>
 					{/snippet}
@@ -146,10 +145,10 @@
 				<h3>Toggle on the left</h3>
 				<Accordion togglePosition="start">
 					{#snippet children()}
-						<AccordionItem id="left-1" header="Section 1">
+						<AccordionItem id="left-1" heading="Section 1">
 							<p>The expand/collapse chevron sits on the left.</p>
 						</AccordionItem>
-						<AccordionItem id="left-2" header="Section 2">
+						<AccordionItem id="left-2" heading="Section 2">
 							<p>Set <code>togglePosition="start"</code> on the Accordion.</p>
 						</AccordionItem>
 					{/snippet}
@@ -160,13 +159,13 @@
 				<h3>Disabled item</h3>
 				<Accordion>
 					{#snippet children()}
-						<AccordionItem id="dis-1" header="Available">
+						<AccordionItem id="dis-1" heading="Available">
 							<p>This section can be opened and closed.</p>
 						</AccordionItem>
-						<AccordionItem id="dis-2" header="Disabled" disabled>
+						<AccordionItem id="dis-2" heading="Disabled" disabled>
 							<p>This content can't be reached.</p>
 						</AccordionItem>
-						<AccordionItem id="dis-3" header="Also available">
+						<AccordionItem id="dis-3" heading="Also available">
 							<p>Disabled items are skipped by arrow-key navigation.</p>
 						</AccordionItem>
 					{/snippet}
@@ -177,10 +176,10 @@
 				<h3>Custom gap between items</h3>
 				<Accordion gap="0.75rem">
 					{#snippet children()}
-						<AccordionItem id="gap-1" header="Spaced One">
+						<AccordionItem id="gap-1" heading="Spaced One">
 							<p>Items are separated by a 0.75rem gap.</p>
 						</AccordionItem>
-						<AccordionItem id="gap-2" header="Spaced Two">
+						<AccordionItem id="gap-2" heading="Spaced Two">
 							<p>Set <code>gap</code> to any CSS length.</p>
 						</AccordionItem>
 					{/snippet}
@@ -195,13 +194,13 @@
 				</Stack>
 				<Accordion multiple bind:value={expandAllValue}>
 					{#snippet children()}
-						<AccordionItem id="exp-1" header="First">
+						<AccordionItem id="exp-1" heading="First">
 							<p>In multiple mode, set value to an array of every item id.</p>
 						</AccordionItem>
-						<AccordionItem id="exp-2" header="Second">
+						<AccordionItem id="exp-2" heading="Second">
 							<p>Setting value to null collapses everything.</p>
 						</AccordionItem>
-						<AccordionItem id="exp-3" header="Third">
+						<AccordionItem id="exp-3" heading="Third">
 							<p>The buttons drive the bound value directly.</p>
 						</AccordionItem>
 					{/snippet}
@@ -226,15 +225,15 @@
 				<h3>Leading icons (start slot)</h3>
 				<Accordion>
 					{#snippet children()}
-						<AccordionItem id="ico-1" header="Profile">
+						<AccordionItem id="ico-1" heading="Profile">
 							{#snippet start()}<Icon name="person" size={20} />{/snippet}
 							<p>Account and personal details.</p>
 						</AccordionItem>
-						<AccordionItem id="ico-2" header="Settings">
+						<AccordionItem id="ico-2" heading="Settings">
 							{#snippet start()}<Icon name="settings" size={20} />{/snippet}
 							<p>Application preferences.</p>
 						</AccordionItem>
-						<AccordionItem id="ico-3" header="Security">
+						<AccordionItem id="ico-3" heading="Security">
 							{#snippet start()}<Icon name="lock_closed" size={20} />{/snippet}
 							<p>Passwords and sign-in options.</p>
 						</AccordionItem>
@@ -246,11 +245,11 @@
 				<h3>Trailing icons (end slot)</h3>
 				<Accordion>
 					{#snippet children()}
-						<AccordionItem id="end-1" header="Notifications">
+						<AccordionItem id="end-1" heading="Notifications">
 							{#snippet end()}<Icon name="alert" size={20} />{/snippet}
 							<p>Recent alerts and messages.</p>
 						</AccordionItem>
-						<AccordionItem id="end-2" header="Favorites">
+						<AccordionItem id="end-2" heading="Favorites">
 							{#snippet end()}<Icon name="star" size={20} />{/snippet}
 							<p>Items you've starred.</p>
 						</AccordionItem>
@@ -263,13 +262,13 @@
 				<p class="hint">The <code>icon</code> snippet receives the current <code>isExpanded</code> state.</p>
 				<Accordion>
 					{#snippet children()}
-						<AccordionItem id="ci-1" header="Frequently asked">
+						<AccordionItem id="ci-1" heading="Frequently asked">
 							{#snippet icon(isExpanded: boolean)}
 								<Icon name={isExpanded ? "subtract" : "add"} size={16} />
 							{/snippet}
 							<p>A plus turns into a minus when the panel opens.</p>
 						</AccordionItem>
-						<AccordionItem id="ci-2" header="Also worth reading">
+						<AccordionItem id="ci-2" heading="Also worth reading">
 							{#snippet icon(isExpanded: boolean)}
 								<Icon name={isExpanded ? "subtract" : "add"} size={16} />
 							{/snippet}
@@ -283,11 +282,11 @@
 				<h3>Icons + toggle on the left</h3>
 				<Accordion togglePosition="start">
 					{#snippet children()}
-						<AccordionItem id="il-1" header="Documents">
+						<AccordionItem id="il-1" heading="Documents">
 							{#snippet start()}<Icon name="folder" size={20} />{/snippet}
 							<p>Chevron on the left, leading icon after it.</p>
 						</AccordionItem>
-						<AccordionItem id="il-2" header="Messages">
+						<AccordionItem id="il-2" heading="Messages">
 							{#snippet start()}<Icon name="mail" size={20} />{/snippet}
 							<p>The start slot sits between the chevron and the heading.</p>
 						</AccordionItem>

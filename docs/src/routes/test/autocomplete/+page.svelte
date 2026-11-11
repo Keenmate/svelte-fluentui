@@ -381,17 +381,17 @@
 </div>
 
 <div class="fixture">
-	<div class="fixture-label">startIcon + endIcon — render inside input</div>
+	<div class="fixture-label">start + end — render inside input</div>
 	<div id="icons-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="icons"
 			options={fruits}
 			bind:value={iconsSel}
 		>
-			{#snippet startIcon()}
+			{#snippet start()}
 				<span data-testid="start-icon">🔍</span>
 			{/snippet}
-			{#snippet endIcon()}
+			{#snippet end()}
 				<span data-testid="end-icon">▼</span>
 			{/snippet}
 		</Autocomplete>
