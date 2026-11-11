@@ -46,12 +46,12 @@
 		{name: "maxFileSize", type: "number", default: "10485760", description: "Max bytes per file (default 10MB)."},
 		{name: "minFileSize", type: "number", default: "0", description: "Min bytes per file."},
 		{name: "totalMaxSize", type: "number", default: "0", description: "Max combined bytes across all accepted files. 0 disables. Files that would push the running total over the cap are rejected per rejectionMode."},
-		{name: "maxFileCount / maxFiles", type: "number", default: "10", description: "Max number of files. Extras are rejected per rejectionMode."},
+		{name: "maxFileCount", type: "number", default: "10", description: "Max number of files. Extras are rejected per rejectionMode."},
 		{name: "minFiles", type: "number", default: "0", description: "Field-level minimum. Surfaces via onValidityChange."},
 		{name: "customValidator", type: "(file) => string | null | Promise<...>", default: "undefined", description: "Custom per-file validator. Return error message or null."},
 		{name: "rejectionMode", type: "\"list\" | \"callback\" | \"silent\"", default: "\"list\"", description: "How invalid files are surfaced."},
 		{name: "dedupe", type: "\"name\" | \"name-size\" | \"hash\" | false", default: "false", description: "Reject duplicates by chosen key. Hash uses SHA-1."},
-		{name: "uploadFileCallback", type: "FileUploadHandler", default: "undefined", description: "Async upload handler. Receives file, progress, AbortSignal, optional chunk."},
+		{name: "uploadCallback", type: "FileUploadHandler", default: "undefined", description: "Async upload handler. Receives {file, signal, reportProgress, chunk?}; may return {metadata, downloadUrl, …} to merge into the file."},
 		{name: "autoUpload", type: "boolean", default: "true", description: "Start upload immediately on selection. Set false for submit-time uploads."},
 		{name: "concurrency", type: "number", default: "1", description: "Parallel upload workers."},
 		{name: "retryPolicy", type: "{attempts, delayMs, backoff}", default: "undefined", description: "Auto-retry failed uploads with exponential backoff."},
@@ -61,20 +61,20 @@
 		{name: "allowFolderDrop", type: "boolean", default: "false", description: "Recursively traverse dropped folders."},
 		{name: "allowReorder", type: "boolean", default: "false", description: "Drag-to-reorder file rows."},
 		{name: "labels", type: "Partial<InputFileLabels>", default: "undefined", description: "Override any built-in string for i18n."},
-		{name: "formatLimits", type: "(info) => string | null", default: "undefined", description: "Compose the limits hint shown under Browse. Receives {minFileSize, maxFileSize, totalMaxSize, maxFiles, minFiles, multiple} (maxFileSize is per file). Replaces ALL size/count lines; the Accepted-types line is unaffected. Return null/empty to keep the default per-limit lines."},
+		{name: "formatLimits", type: "(info) => string | null", default: "undefined", description: "Compose the limits hint shown under Browse. Receives {minFileSize, maxFileSize, totalMaxSize, maxFileCount, minFiles, multiple} (maxFileSize is per file). Replaces ALL size/count lines; the Accepted-types line is unaffected. Return null/empty to keep the default per-limit lines."},
 		{name: "id / aria-label / aria-describedby / aria-labelledby", type: "string", default: "undefined", description: "Standard a11y plumbing. Pair id with <Field id=\"\"> for label-for."},
 		{name: "class", type: "string", default: "\"\"", description: "Additional CSS classes."},
 		{name: "style", type: "string", default: "\"\"", description: "Inline styles."}
 	]
 
 	const callbacks: Property[] = [
-		{name: "onFileSelected", type: "(files: File[]) => void", default: "undefined", description: "Fires when files are accepted."},
-		{name: "onFileUploaded", type: "(file, item) => void", default: "undefined", description: "Per-file upload success."},
-		{name: "onFileError", type: "(file, error, item?) => void", default: "undefined", description: "Validation or upload failure."},
-		{name: "onCompleted", type: "() => void", default: "undefined", description: "All uploads finished (success or error)."},
-		{name: "onValidityChange", type: "(valid, reasons) => void", default: "undefined", description: "Field-level validity changed (minFiles, maxFiles, item errors)."},
-		{name: "onItemsChange", type: "(items) => void", default: "undefined", description: "Items array mutated."},
-		{name: "onItemRemove", type: "(item) => void", default: "undefined", description: "Fires per item on removal (removeAt / removeById / clear / × button). Receives the removed item with final status and metadata — use it to send server-side cleanup like DELETE /api/files/:guid."}
+		{name: "onFileAdd", type: "(ctx: {files}) => void", default: "undefined", description: "Files passed validation and were added."},
+		{name: "onFileUpload", type: "(ctx: {file, fileIndex}) => void", default: "undefined", description: "A file finished uploading."},
+		{name: "onFileError", type: "(ctx: {file, error}) => void", default: "undefined", description: "A file was rejected (validation, duplicate, limits) or its upload failed."},
+		{name: "onUploadComplete", type: "(ctx: {files}) => void", default: "undefined", description: "An upload run ended with nothing pending or uploading."},
+		{name: "onValidityChange", type: "(ctx: {isValid, reasons}) => void", default: "undefined", description: "Field-level validity changed (minFiles, maxFileCount, file errors)."},
+		{name: "onChange", type: "(ctx: {items}) => void", default: "undefined", description: "The file list changed (add, remove, status/progress)."},
+		{name: "onFileRemove", type: "(ctx: {file}) => void", default: "undefined", description: "Fires per file on removal (removeAt / removeById / clear / × button). Receives the removed file with final status and metadata — use it to send server-side cleanup like DELETE /api/files/:guid."}
 	]
 
 	const slots: Property[] = [
@@ -105,7 +105,7 @@
 		{field: "description", title: "Description", filterable: true}
 	]
 
-	const simulateUpload: FileUploadHandler = async (file, onProgress, signal) => {
+	const simulateUpload: FileUploadHandler = async ({signal, reportProgress: onProgress}) => {
 		return new Promise<void>((resolve, reject) => {
 			let progress = 0
 			const interval = setInterval(() => {
@@ -129,7 +129,7 @@
 		})
 	}
 
-	const slowUpload: FileUploadHandler = async (file, onProgress, signal) => {
+	const slowUpload: FileUploadHandler = async ({signal, reportProgress: onProgress}) => {
 		return new Promise<void>((resolve, reject) => {
 			let progress = 0
 			const interval = setInterval(() => {
@@ -225,7 +225,7 @@
 		return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`
 	}
 
-	const serverSyncUpload: FileUploadHandler = async (file, onProgress, signal) => {
+	const serverSyncUpload: FileUploadHandler = async ({file, signal, reportProgress: onProgress}) => {
 		return new Promise<FileUploadResult>((resolve, reject) => {
 			let progress = 0
 			const interval = setInterval(() => {
@@ -244,7 +244,7 @@
 					serverLog = [entry, ...serverLog].slice(0, 20)
 					// The handler return is merged into the InputFileItem after success
 					// (see FileUploadResult). The server guid lands in metadata so
-					// onItemRemove can read it back later when the user removes
+					// onFileRemove can read it back later when the user removes
 					// the item from the list.
 					resolve({metadata: {serverGuid: guid, uploadedAt: Date.now()}})
 				}
@@ -256,7 +256,7 @@
 		})
 	}
 
-	function handleServerSyncRemove(item: InputFileItem) {
+	function handleServerSyncRemove({file: item}: {file: InputFileItem}) {
 		// Only completed items have a server-side counterpart to delete. Pending
 		// or errored items were never persisted, so there's nothing to clean up.
 		if (item.status !== "completed") return
@@ -451,7 +451,7 @@
 						cardSize={playgroundCardSize}
 						chipsPosition={playgroundChipsPosition}
 						expandOnDrag={playgroundExpandOnDrag}
-						uploadFileCallback={simulateUpload}
+						uploadCallback={simulateUpload}
 					/>
 					<Stack orientation="horizontal" gap="0.75rem" verticalAlign="center" horizontalAlign="space-between">
 						<small>
@@ -483,7 +483,7 @@
 					<InputFile
 						bind:items={basicItems}
 						multiple
-						uploadFileCallback={simulateUpload}
+						uploadCallback={simulateUpload}
 						retryPolicy={{attempts: 3, delayMs: 500, backoff: 2}}
 					/>
 					<small>Items: {basicItems.length} ({basicItems.filter(i => i.status === "completed").length} done)</small>
@@ -506,13 +506,13 @@
 						bind:items={validationItems}
 						multiple
 						minFiles={1}
-						maxFiles={3}
+						maxFileCount={3}
 						dedupe="name-size"
 						customValidator={customValidator}
 						rejectionMode="list"
-						uploadFileCallback={simulateUpload}
-						onValidityChange={(valid, reasons) => {
-							validationValid = valid
+						uploadCallback={simulateUpload}
+						onValidityChange={({isValid, reasons}) => {
+							validationValid = isValid
 							validationReasons = reasons
 						}}
 					/>
@@ -531,7 +531,7 @@
 						multiple
 						autoUpload={false}
 						concurrency={2}
-						uploadFileCallback={slowUpload}
+						uploadCallback={slowUpload}
 					/>
 					<Stack orientation="horizontal" gap="0.5rem">
 						<Button onclick={() => imperativeRef?.uploadAll()}>uploadAll</Button>
@@ -555,7 +555,7 @@
 					bind:items={preloadedItems}
 					initialItems={seededInitial}
 					multiple
-					uploadFileCallback={simulateUpload}
+					uploadCallback={simulateUpload}
 				/>
 			</Card>
 		</GridItem>
@@ -571,7 +571,7 @@
 					allowReorder
 					pasteFromClipboard
 					showThumbnails
-					uploadFileCallback={simulateUpload}
+					uploadCallback={simulateUpload}
 				/>
 				<small>Drop a folder, paste a screenshot (Ctrl+V), drag rows to reorder.</small>
 			</Card>
@@ -585,7 +585,7 @@
 					bind:items={i18nItems}
 					multiple
 					labels={czechLabels}
-					uploadFileCallback={simulateUpload}
+					uploadCallback={simulateUpload}
 				/>
 			</Card>
 		</GridItem>
@@ -601,7 +601,7 @@
 						listAppearance="chips"
 						multiple
 						accept="image/*,.pdf"
-						uploadFileCallback={simulateUpload}
+						uploadCallback={simulateUpload}
 					/>
 				</Field>
 			</Card>
@@ -618,7 +618,7 @@
 						selectorAppearance="minimal"
 						listAppearance="popover"
 						initialItems={initialMinimalSeed}
-						uploadFileCallback={simulateUpload}
+						uploadCallback={simulateUpload}
 					/>
 				</Stack>
 				<small>
@@ -641,7 +641,7 @@
 			<Card>
 				<h3>10. Button-only</h3>
 				<small>xl=3 (25%) — selectorAppearance="button"</small>
-				<InputFile multiple selectorAppearance="button" uploadFileCallback={simulateUpload} />
+				<InputFile multiple selectorAppearance="button" uploadCallback={simulateUpload} />
 			</Card>
 		</GridItem>
 
@@ -649,7 +649,7 @@
 			<Card>
 				<h3>11. Custom snippets</h3>
 				<small>xl=6 (50%) — fully bespoke row renderer via fileItem snippet</small>
-				<InputFile multiple uploadFileCallback={simulateUpload}>
+				<InputFile multiple uploadCallback={simulateUpload}>
 					{#snippet fileItem({item, remove, retry, cancel})}
 						<div style="display: flex; gap: 0.75rem; align-items: center; padding: 0.5rem; border: 1px solid var(--neutral-stroke-rest); border-radius: 4px;">
 							<span style="font-family: monospace; color: var(--accent-fill-rest);">[{item.status}]</span>
@@ -699,15 +699,15 @@
 					minFiles={1}
 					totalMaxSize={10 * 1024 * 1024}
 					formatLimits={({
-						maxFiles,
+						maxFileCount,
 						minFiles,
 						maxFileSize,
 						totalMaxSize,
 						currentCount,
 						currentTotalSize
 					}) =>
-						`${currentCount}/${maxFiles} files (min ${minFiles}), ${formatInputFileSize(maxFileSize)} each, ${formatInputFileSize(currentTotalSize)} / ${formatInputFileSize(totalMaxSize)} total`}
-					uploadFileCallback={simulateUpload}
+						`${currentCount}/${maxFileCount} files (min ${minFiles}), ${formatInputFileSize(maxFileSize)} each, ${formatInputFileSize(currentTotalSize)} / ${formatInputFileSize(totalMaxSize)} total`}
+					uploadCallback={simulateUpload}
 				/>
 				<small>
 					Composer receives <code>currentCount</code> and <code>currentTotalSize</code> in
@@ -727,7 +727,7 @@
 					multiple
 					maxVisible={6}
 					listMaxHeight="18rem"
-					uploadFileCallback={simulateUpload}
+					uploadCallback={simulateUpload}
 				/>
 				<small>
 					Without these props you'd render 34 rows ≈ 2400px tall. With <code>maxVisible=6</code>
@@ -746,7 +746,7 @@
 					maxFileSize={5 * 1024 * 1024}
 					maxFileCount={10}
 					totalMaxSize={8 * 1024 * 1024}
-					uploadFileCallback={simulateUpload}
+					uploadCallback={simulateUpload}
 				/>
 				<small>
 					<code>maxFileSize</code> caps each file at 5 MB; <code>totalMaxSize</code> caps the
@@ -760,20 +760,20 @@
 		<GridItem xs={12}>
 			<Card>
 				<h3>16. Server sync — return guid from handler, fire DELETE on remove</h3>
-				<small>xl=12 (full) — handler returns <code>FileUploadResult</code> with metadata; <code>onItemRemove</code> cleans up server-side</small>
+				<small>xl=12 (full) — handler returns <code>FileUploadResult</code> with metadata; <code>onFileRemove</code> cleans up server-side</small>
 				<Stack orientation="horizontal" gap="1rem" wrap>
 					<div style="flex: 1 1 22rem; min-width: 18rem;">
 						<InputFile
 							bind:items={serverSyncItems}
 							multiple
 							maxFileCount={5}
-							uploadFileCallback={serverSyncUpload}
-							onItemRemove={handleServerSyncRemove}
+							uploadCallback={serverSyncUpload}
+							onFileRemove={handleServerSyncRemove}
 						/>
 						<small style="display: block; margin-top: 0.5rem;">
 							Upload a few files, then remove them. Each handler return spreads
 							into the matching <code>InputFileItem</code> on success — here
-							<code>{`{metadata: {serverGuid}}`}</code> — and <code>onItemRemove</code>
+							<code>{`{metadata: {serverGuid}}`}</code> — and <code>onFileRemove</code>
 							reads that guid back to "delete" from the fake server. Errored or
 							pending items are skipped (nothing was persisted).
 						</small>
@@ -812,9 +812,9 @@
 
 	<Card>
 		<h3>Custom upload handler with chunking</h3>
-		<pre><code>{`const chunkedUpload: FileUploadHandler = async (file, onProgress, signal, chunk) => {
+		<pre><code>{`const chunkedUpload: FileUploadHandler = async ({file, signal, reportProgress, chunk}) => {
   const formData = new FormData()
-  formData.append("file", chunk?.data ?? file)
+  formData.append("file", chunk?.data ?? file.file!)
   if (chunk) {
     formData.append("offset", String(chunk.offset))
     formData.append("total", String(chunk.total))
@@ -825,7 +825,7 @@
 
   return new Promise((resolve, reject) => {
     xhr.upload.addEventListener("progress", e => {
-      if (e.lengthComputable) onProgress((e.loaded / e.total) * 100)
+      if (e.lengthComputable) reportProgress((e.loaded / e.total) * 100)
     })
     xhr.addEventListener("load", () => xhr.status === 200 ? resolve() : reject(new Error("Failed")))
     xhr.addEventListener("error", () => reject(new Error("Network error")))
@@ -840,7 +840,7 @@
   chunkSize={1024 * 1024}      // 1 MB chunks
   concurrency={3}              // 3 files in parallel
   retryPolicy={{attempts: 3, delayMs: 1000, backoff: 2}}
-  uploadFileCallback={chunkedUpload}
+  uploadCallback={chunkedUpload}
 />`}</code></pre>
 	</Card>
 
@@ -873,12 +873,12 @@
 
 	<Card>
 		<h2>FileUploadHandler Type</h2>
-		<pre><code>{`type FileUploadHandler = (
-  file: File,
-  onProgress: (percent: number) => void,
-  signal?: AbortSignal,
+		<pre><code>{`type FileUploadHandler = (ctx: {
+  file: InputFileItem          // file.file is the native File
+  signal: AbortSignal
+  reportProgress: (percent: number) => void
   chunk?: { offset: number; size: number; total: number; data: Blob }
-) => Promise<void>`}</code></pre>
+}) => Promise<void | FileUploadResult>`}</code></pre>
 		<p>
 			<code>signal</code> is fired when the user pauses or cancels — your handler should abort
 			its in-flight request. <code>chunk</code> is supplied only when <code>chunkSize</code> is

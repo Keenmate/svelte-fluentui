@@ -11,6 +11,11 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **InputFile:** `uploadFileCallback(file, onProgress, signal, chunk)` → `uploadCallback({file, signal, reportProgress, chunk})` — `file` is the `InputFileItem` (`file.file` is the native `File`)
+- **InputFile:** `onFileSelected(files)`, `onFileUploaded(file, item)`, `onFileError(file, error, item?)` → `onFileAdd({files})`, `onFileUpload({file, fileIndex})`, `onFileError({file, error})` — `file`/`files` are `InputFileItem`s (rejected files get a transient one)
+- **InputFile:** `onCompleted()`, `onValidityChange(valid, reasons)` → `onUploadComplete({files})`, `onValidityChange({isValid, reasons})`
+- **InputFile:** `onItemsChange(items)` (also fired on mount), `onItemRemove(item)` → `onChange({items})` (changes only), `onFileRemove({file})`
+- **InputFile:** `maxFiles` (alias of `maxFileCount`); `formatLimits` info `maxFiles` → `maxFileCount` only; info field `maxFileCount`
 - **Autocomplete:** `selectedOptions` (bindable) → `value` (bindable)
 - **Autocomplete:** `onselectedoptionschange(selected)` → `onChange({value})`
 - **Autocomplete:** `onoptionssearch(searchText)` → options → `searchCallback({term, signal})` → options (`signal` aborts when a newer search starts)

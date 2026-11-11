@@ -72,6 +72,7 @@ export type {
 	InputFileDedupeMode,
 	InputFileRetryPolicy,
 	FileUploadHandler,
+	InputFileUploadContext,
 	FileUploadChunk,
 	FileUploadResult
 } from "./components/InputFile.types.js"

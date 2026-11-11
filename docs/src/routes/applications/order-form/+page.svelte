@@ -561,7 +561,7 @@
 						<InputFile
 							multiple
 							accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx"
-							onFileSelected={(files) => { attachments = files }}
+							onFileAdd={({files}) => { attachments = files.map((f) => f.file).filter((f): f is File => !!f) }}
 						/>
 						<small>Attached: {attachments.length} file(s)</small>
 					</AccordionItem>

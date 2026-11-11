@@ -95,14 +95,14 @@
 		minFileSize?: number
 		totalMaxSize?: number
 		maxFileCount?: number
-		maxFiles?: number
 		minFiles?: number
 		customValidator?: InputFileValidator
 		rejectionMode?: InputFileRejectionMode
 		dedupe?: InputFileDedupeMode
 
 		// Upload mechanics
-		uploadFileCallback?: FileUploadHandler
+		/** Uploads one file (or chunk). Return `{metadata, downloadUrl, …}` to merge into the item. */
+		uploadCallback?: FileUploadHandler
 		autoUpload?: boolean
 		concurrency?: number
 		retryPolicy?: InputFileRetryPolicy
@@ -127,7 +127,7 @@
 			minFileSize: number
 			maxFileSize: number
 			totalMaxSize: number
-			maxFiles: number
+			maxFileCount: number
 			minFiles: number
 			multiple: boolean
 			// Current state of the picker — non-zero whenever items exist (errored
@@ -144,21 +144,27 @@
 		"aria-labelledby"?: string
 
 		// Callbacks
-		onFileSelected?: (files: File[]) => void
-		onFileUploaded?: (file: File, item: InputFileItem) => void
-		onFileError?: (file: File | null, error: string, item?: InputFileItem) => void
-		onCompleted?: () => void
-		onValidityChange?: (valid: boolean, reasons: string[]) => void
-		onItemsChange?: (items: InputFileItem[]) => void
+		/** Fires when files pass validation and are added to the list. */
+		onFileAdd?: (ctx: {files: InputFileItem[]}) => void
+		/** Fires when a file finishes uploading (after `uploadCallback`'s result is merged). */
+		onFileUpload?: (ctx: {file: InputFileItem; fileIndex: number}) => void
+		/** Fires when a file is rejected (validation, duplicate, limits) or its upload fails. */
+		onFileError?: (ctx: {file: InputFileItem; error: string}) => void
+		/** Fires when an upload run ends with no file pending or uploading. */
+		onUploadComplete?: (ctx: {files: InputFileItem[]}) => void
+		/** Fires when the list's validity (limits, min/max files) changes. */
+		onValidityChange?: (ctx: {isValid: boolean; reasons: string[]}) => void
+		/** Fires when the list of files changes (add, remove, status/progress updates). */
+		onChange?: (ctx: {items: InputFileItem[]}) => void
 		/**
-		 * Fires once per item when it's removed from the list (via removeAt,
+		 * Fires once per file when it's removed from the list (via removeAt,
 		 * removeById, clear, or the row's × button). Receives the removed
-		 * item — including its final status and any metadata attached during
+		 * file — including its final status and any metadata attached during
 		 * upload (e.g. a server guid) — so callers can run cleanup like
 		 * `fetch DELETE /api/files/:guid` for files that were already
 		 * uploaded but the user changed their mind about before submit.
 		 */
-		onItemRemove?: (item: InputFileItem) => void
+		onFileRemove?: (ctx: {file: InputFileItem}) => void
 
 		// Snippets
 		dropZone?: Snippet<[{openFileDialog: () => void; isDragging: boolean}]>
@@ -203,12 +209,11 @@
 		minFileSize = 0,
 		totalMaxSize = 0,
 		maxFileCount = 10,
-		maxFiles: maxFilesProp = undefined,
 		minFiles = 0,
 		customValidator = undefined,
 		rejectionMode = "list",
 		dedupe = false,
-		uploadFileCallback = undefined,
+		uploadCallback = undefined,
 		autoUpload = true,
 		concurrency = 1,
 		retryPolicy = undefined,
@@ -225,13 +230,13 @@
 		"aria-label": ariaLabel = undefined,
 		"aria-describedby": ariaDescribedBy = undefined,
 		"aria-labelledby": ariaLabelledBy = undefined,
-		onFileSelected = undefined,
-		onFileUploaded = undefined,
+		onFileAdd = undefined,
+		onFileUpload = undefined,
 		onFileError = undefined,
-		onCompleted = undefined,
+		onUploadComplete = undefined,
 		onValidityChange = undefined,
-		onItemsChange = undefined,
-		onItemRemove = undefined,
+		onChange = undefined,
+		onFileRemove = undefined,
 		dropZone = undefined,
 		fileItem = undefined,
 		emptyState = undefined,
@@ -241,7 +246,6 @@
 	}: Props = $props()
 
 	const labels = $derived<InputFileLabels>({...DEFAULT_LABELS, ...(labelsProp ?? {})})
-	const effectiveMaxFiles = $derived(maxFilesProp ?? maxFileCount)
 	// Bytes already accepted toward the totalMaxSize cap. Mirrors the
 	// `runningTotal` seed inside addFiles() — errored items don't count since
 	// they won't upload, so the "remaining" hint matches what the next add
@@ -281,7 +285,7 @@
 			minFileSize,
 			maxFileSize,
 			totalMaxSize,
-			maxFiles: effectiveMaxFiles,
+			maxFileCount,
 			minFiles,
 			multiple,
 			currentCount: items.length,
@@ -307,10 +311,10 @@
 						: undefined
 				))
 			}
-			if (multiple && effectiveMaxFiles) {
+			if (multiple && maxFileCount) {
 				parts.push(labels.maxFilesHint(
-					effectiveMaxFiles,
-					items.length > 0 ? Math.max(0, effectiveMaxFiles - items.length) : undefined
+					maxFileCount,
+					items.length > 0 ? Math.max(0, maxFileCount - items.length) : undefined
 				))
 			}
 			if (minFiles > 0) parts.push(labels.minFilesHint(minFiles))
@@ -414,9 +418,15 @@
 		}
 	})
 
+	// Skip the initial run: onChange reports changes, not the starting list.
+	let itemsInitialized = false
 	$effect(() => {
 		const snapshot = items
-		untrack(() => onItemsChange?.(snapshot))
+		if (!itemsInitialized) {
+			itemsInitialized = true
+			return
+		}
+		untrack(() => onChange?.({items: snapshot}))
 	})
 
 	const visibleItems = $derived(
@@ -437,7 +447,7 @@
 		return "pending"
 	})
 	const hasPendingPending = $derived(
-		!!uploadFileCallback && !autoUpload && items.some((i) => i.status === "pending")
+		!!uploadCallback && !autoUpload && items.some((i) => i.status === "pending")
 	)
 
 	$effect(() => {
@@ -514,8 +524,8 @@
 	const validityReasons = $derived.by(() => {
 		const reasons: string[] = []
 		if (minFiles && items.length < minFiles) reasons.push(labels.tooFewFiles(minFiles))
-		if (effectiveMaxFiles && items.length > effectiveMaxFiles)
-			reasons.push(labels.tooManyFiles(effectiveMaxFiles))
+		if (maxFileCount && items.length > maxFileCount)
+			reasons.push(labels.tooManyFiles(maxFileCount))
 		if (items.some((i) => i.status === "error")) reasons.push(labels.error)
 		return reasons
 	})
@@ -524,7 +534,7 @@
 	$effect(() => {
 		const v = isValid
 		const r = validityReasons
-		untrack(() => onValidityChange?.(v, r))
+		untrack(() => onValidityChange?.({isValid: v, reasons: r}))
 	})
 
 	function isImage(file: File | null): boolean {
@@ -586,33 +596,32 @@
 	}
 
 	function emitRejection(file: File, reason: string) {
-		if (rejectionMode === "callback") {
-			onFileError?.(file, reason)
-		} else if (rejectionMode === "list") {
-			const item: InputFileItem = {
-				id: genId(),
-				file,
-				name: file.name,
-				size: file.size,
-				type: file.type,
-				progress: 0,
-				status: "error",
-				error: reason,
-				thumbnailUrl: thumbnailFor(file)
-			}
-			items = [...items, item]
-			onFileError?.(file, reason, item)
+		if (rejectionMode === "silent") return
+		const item: InputFileItem = {
+			id: genId(),
+			file,
+			name: file.name,
+			size: file.size,
+			type: file.type,
+			progress: 0,
+			status: "error",
+			error: reason,
+			// Only a listed rejection gets a thumbnail (object URLs need revoking).
+			thumbnailUrl: rejectionMode === "list" ? thumbnailFor(file) : null
 		}
+		// "list" shows the rejected file as an error row; "callback" only reports it.
+		if (rejectionMode === "list") items = [...items, item]
+		onFileError?.({file: item, error: reason})
 	}
 
 	export async function addFiles(files: File[]) {
 		if (disabled || !files.length) return
 		const incoming = multiple ? [...files] : files.slice(0, 1)
 
-		if (effectiveMaxFiles && items.length + incoming.length > effectiveMaxFiles) {
-			const room = Math.max(0, effectiveMaxFiles - items.length)
+		if (maxFileCount && items.length + incoming.length > maxFileCount) {
+			const room = Math.max(0, maxFileCount - items.length)
 			const overflow = incoming.slice(room)
-			for (const f of overflow) emitRejection(f, labels.tooManyFiles(effectiveMaxFiles))
+			for (const f of overflow) emitRejection(f, labels.tooManyFiles(maxFileCount))
 			incoming.length = room
 			if (incoming.length === 0) return
 		}
@@ -652,10 +661,10 @@
 
 		if (accepted.length > 0) {
 			items = [...items, ...accepted]
-			onFileSelected?.(accepted.map((a) => a.file).filter((f): f is File => !!f))
+			onFileAdd?.({files: accepted})
 		}
 
-		if (autoUpload && uploadFileCallback && accepted.length > 0) {
+		if (autoUpload && uploadCallback && accepted.length > 0) {
 			await uploadAll()
 		}
 	}
@@ -669,7 +678,7 @@
 
 	async function uploadOne(itemId: string, attempt = 0): Promise<void> {
 		const item = items.find((i) => i.id === itemId)
-		if (!item || !item.file || !uploadFileCallback) return
+		if (!item || !item.file || !uploadCallback) return
 		if (pausedSet.has(itemId)) return
 
 		const ctrl = new AbortController()
@@ -681,21 +690,22 @@
 			if (chunkSize && chunkSize > 0 && item.file.size > chunkSize) {
 				serverPatch = await uploadInChunks(item, ctrl.signal)
 			} else {
-				const res = await uploadFileCallback(
-					item.file,
-					(p) => patchItem(itemId, {progress: clampPercent(p)}),
-					ctrl.signal
-				)
+				const res = await uploadCallback({
+					file: item,
+					signal: ctrl.signal,
+					reportProgress: (p) => patchItem(itemId, {progress: clampPercent(p)})
+				})
 				if (res) serverPatch = res
 			}
 			// Merging the handler's return value here (rather than asking the
-			// consumer to wire onFileUploaded + a WeakMap) lets the handler do
+			// consumer to wire onFileUpload + a WeakMap) lets the handler do
 			// `return {metadata: {serverGuid}}` and have it land on the item
 			// atomically with the "completed" status flip.
 			patchItem(itemId, {status: "completed", progress: 100, ...(serverPatch ?? {})})
-			const updated = items.find((i) => i.id === itemId)
+			const fileIndex = items.findIndex((i) => i.id === itemId)
+			const updated = items[fileIndex]
 			if (updated && updated.file) {
-				onFileUploaded?.(updated.file, updated)
+				onFileUpload?.({file: updated, fileIndex})
 				liveAnnouncement = labels.uploadedAnnouncement(updated.name)
 			}
 		} catch (err) {
@@ -716,7 +726,7 @@
 			patchItem(itemId, {status: "error", error: msg})
 			const failed = items.find((i) => i.id === itemId)
 			if (failed) {
-				onFileError?.(failed.file, msg, failed)
+				onFileError?.({file: failed, error: msg})
 				liveAnnouncement = labels.failedAnnouncement(failed.name, msg)
 			}
 		} finally {
@@ -728,7 +738,7 @@
 		item: InputFileItem,
 		signal: AbortSignal
 	): Promise<FileUploadResult | undefined> {
-		if (!item.file || !uploadFileCallback || !chunkSize) return
+		if (!item.file || !uploadCallback || !chunkSize) return
 		const file = item.file
 		const total = file.size
 		let offset = 0
@@ -742,15 +752,15 @@
 			const end = Math.min(offset + chunkSize, total)
 			const data = file.slice(offset, end)
 			const chunkOffset = offset
-			const res = await uploadFileCallback(
-				file,
-				(p) => {
+			const res = await uploadCallback({
+				file: item,
+				signal,
+				reportProgress: (p) => {
 					const overallBytes = chunkOffset + ((end - chunkOffset) * p) / 100
 					patchItem(item.id, {progress: clampPercent((overallBytes / total) * 100)})
 				},
-				signal,
-				{offset: chunkOffset, size: end - chunkOffset, total, data}
-			)
+				chunk: {offset: chunkOffset, size: end - chunkOffset, total, data}
+			})
 			if (res) lastResult = res
 			offset = end
 		}
@@ -758,7 +768,7 @@
 	}
 
 	export async function uploadAll() {
-		if (!uploadFileCallback) return
+		if (!uploadCallback) return
 		const queue = items.filter((i) => i.status === "pending" && i.file).map((i) => i.id)
 		let cursor = 0
 		const worker = async () => {
@@ -772,7 +782,7 @@
 		const allDone = items.every(
 			(i) => i.status !== "pending" && i.status !== "uploading"
 		)
-		if (allDone) onCompleted?.()
+		if (allDone) onUploadComplete?.({files: items})
 	}
 
 	export async function retry(itemId: string) {
@@ -839,7 +849,7 @@
 		// Fire after the items array has been updated so consumers that read
 		// state inside the handler see the post-removal snapshot. The removed
 		// item is captured above so its metadata/status are still accessible.
-		onItemRemove?.(item)
+		onFileRemove?.({file: item})
 	}
 
 	export function removeById(itemId: string) {
@@ -848,7 +858,7 @@
 	}
 
 	export function clear() {
-		// Snapshot before mutation so we can fire onItemRemove for each one
+		// Snapshot before mutation so we can fire onFileRemove for each one
 		// after the state is cleared (consumers reading state inside the
 		// handler then see the empty list, matching removeAt's timing).
 		const removed = items.slice()
@@ -858,7 +868,7 @@
 		}
 		items = []
 		if (fileInput) fileInput.value = ""
-		for (const i of removed) onItemRemove?.(i)
+		for (const i of removed) onFileRemove?.({file: i})
 	}
 
 	export function reset() {
@@ -1196,7 +1206,7 @@
 	{/snippet}
 
 	{#snippet overallFooter()}
-		{#if uploadFileCallback && items.length > 0}
+		{#if uploadCallback && items.length > 0}
 			<div class="file-list-footer">
 				<div
 					class="footer-progress"
@@ -1313,7 +1323,7 @@
 								{labels.addMore}
 							</button>
 						{/if}
-						{#if uploadFileCallback && !autoUpload && items.some((i) => i.status === "pending")}
+						{#if uploadCallback && !autoUpload && items.some((i) => i.status === "pending")}
 							<button type="button" class="text-button" onclick={uploadAll} {disabled}>
 								{labels.uploadAll}
 							</button>
@@ -1438,7 +1448,7 @@
 									>
 										▶
 									</button>
-								{:else if (item.status === "error" || item.status === "cancelled") && item.file && uploadFileCallback}
+								{:else if (item.status === "error" || item.status === "cancelled") && item.file && uploadCallback}
 									<button
 										type="button"
 										class="action-button"

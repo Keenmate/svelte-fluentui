@@ -39,12 +39,18 @@ export type FileUploadResult = Partial<
 	Pick<InputFileItem, "metadata" | "downloadUrl" | "thumbnailUrl" | "name">
 >
 
-export type FileUploadHandler = (
-	file: File,
-	onProgress: (percent: number) => void,
-	signal?: AbortSignal,
+/** What `uploadCallback` receives. `file.file` is the native `File`. */
+export type InputFileUploadContext = {
+	file: InputFileItem
+	/** Aborts when the user cancels / pauses the upload or removes the file. */
+	signal: AbortSignal
+	/** Report progress of this upload (or of this chunk), 0–100. */
+	reportProgress: (percent: number) => void
+	/** Set when `chunkSize` splits the file; upload `chunk.data`. */
 	chunk?: FileUploadChunk
-) => Promise<void | FileUploadResult>
+}
+
+export type FileUploadHandler = (ctx: InputFileUploadContext) => Promise<void | FileUploadResult>
 
 export type InputFileValidationResult = string | null | undefined
 export type InputFileValidator = (
