@@ -26,8 +26,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onCloseColumnOptions", type: "function", default: "undefined", description: "Fires when column options close"},
-		{name: "onCloseColumnResize", type: "function", default: "undefined", description: "Fires when column resize ends"}
+		{name: "onclick, onkeydown, …", type: "(event: Event) => void", default: "undefined", description: "Native events and attributes, forwarded via ...rest (also on DataGridRow / DataGridCell)"}
 	]
 
 	const slots: Property[] = [

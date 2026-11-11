@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **DataGrid:** `onCloseColumnOptions`, `onCloseColumnResize` → removed — `<fluent-data-grid>` never fires them
+- **DataGrid, DataGridRow, DataGridCell:** hand-forwarded `onkeydown` / `onclick` / `ondblclick` / `onfocus` → any native event or attribute via `...rest`
 - **Anchor, AppBarItem, NavExpander, NavItem, NavLink, NavLinkItem:** `onClick(ev)` → `onclick(ev)` — the native click event (AppBarItem's was never wired; now it is)
 - **CommandPaletteTrigger:** `onclick()` (typed without the event) → `onclick(event)`
 - **Panel:** `onclose()` → `onOpenChange({open})`

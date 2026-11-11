@@ -8,8 +8,9 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		class?: string;
 		style?: string;
 		id?: string;
@@ -17,10 +18,11 @@
 		generateHeader?: "none" | "default" | "sticky";
 		gridTemplateColumns?: string;
 		role?: string;
-		onCloseColumnOptions?: (e: Event) => void;
-		onCloseColumnResize?: (e: Event) => void;
 		children?: Snippet;
 	};
+
+	/** Native attributes and events (`onkeydown`, `onclick`, …) go to `<fluent-data-grid>`. */
+	type Props = OwnProps & RestProps<OwnProps>;
 
 	let {
 		class: className = "",
@@ -30,18 +32,9 @@
 		generateHeader = undefined,
 		gridTemplateColumns = undefined,
 		role = "grid",
-		onCloseColumnOptions = undefined,
-		onCloseColumnResize = undefined,
-		children = undefined
+		children = undefined,
+		...rest
 	}: Props = $props();
-
-	function handleCloseColumnOptions(e: Event) {
-		onCloseColumnOptions?.(e);
-	}
-
-	function handleCloseColumnResize(e: Event) {
-		onCloseColumnResize?.(e);
-	}
 
 	// Also expose the template as an inheriting custom property. FluentUI applies
 	// it to each row imperatively (via inline style), which is enough on its own,
@@ -56,14 +49,13 @@
 </script>
 
 <fluent-data-grid
+	{...rest}
 	class={className}
 	{...attrs({
 		style: mergedStyle, id, "aria-rowcount": ariaRowCount, "generate-header": generateHeader,
 		"grid-template-columns": gridTemplateColumns
 	})}
 	role={role}
-	onclosecolumnoptions={handleCloseColumnOptions}
-	onclosecolumnresize={handleCloseColumnResize}
 >
 	{#if children}
 		{@render children?.()}

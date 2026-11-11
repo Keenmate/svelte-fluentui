@@ -8,8 +8,9 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		class?: string
 		style?: string
 		gridColumn?: number | string
@@ -19,11 +20,11 @@
 		tabIndex?: number
 		title?: string
 		ariaLabel?: string
-		onkeydown?: (e: KeyboardEvent) => void
-		onclick?: (e: MouseEvent) => void
-		onfocus?: (e: FocusEvent) => void
 		children?: Snippet
 	}
+
+	/** Native attributes and events (`onclick`, `onkeydown`, `onfocus`, …) go to `<fluent-data-grid-cell>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		class: className = "",
@@ -35,35 +36,19 @@
 		tabIndex = undefined,
 		title = undefined,
 		ariaLabel = undefined,
-		onkeydown = undefined,
-		onclick = undefined,
-		onfocus = undefined,
-		children = undefined
+		children = undefined,
+		...rest
 	}: Props = $props()
-
-	function handleKeyDown(e: KeyboardEvent) {
-		onkeydown?.(e)
-	}
-
-	function handleClick(e: MouseEvent) {
-		onclick?.(e)
-	}
-
-	function handleFocus(e: FocusEvent) {
-		onfocus?.(e)
-	}
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex a11y_click_events_have_key_events -->
 <fluent-data-grid-cell
+	{...rest}
 	class={className}
 	{...attrs({
 		style, "grid-column": gridColumn, "cell-type": cellType, "col-index": colIndex, role,
 		tabindex: tabIndex, title, "aria-label": ariaLabel
 	})}
-	onkeydown={handleKeyDown}
-	onclick={handleClick}
-	onfocus={handleFocus}
 >
 	{#if children}
 		{@render children?.()}

@@ -8,57 +8,35 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		class?: string;
 		style?: string;
 		rowIndex?: number;
 		rowType?: string;
-		onkeydown?: (e: KeyboardEvent) => void;
-		onclick?: (e: MouseEvent) => void;
-		ondblclick?: (e: MouseEvent) => void;
-		onfocus?: (e: FocusEvent) => void;
 		children?: Snippet;
 	};
+
+	/** Native attributes and events (`onclick`, `ondblclick`, `onkeydown`, `onfocus`, …) go to `<fluent-data-grid-row>`. */
+	type Props = OwnProps & RestProps<OwnProps>;
 
 	let {
 		class: className = "",
 		style = "",
 		rowIndex = undefined,
 		rowType = undefined,
-		onkeydown = undefined,
-		onclick = undefined,
-		ondblclick = undefined,
-		onfocus = undefined,
-		children = undefined
+		children = undefined,
+		...rest
 	}: Props = $props();
-
-	function handleKeyDown(e: KeyboardEvent) {
-		onkeydown?.(e);
-	}
-
-	function handleClick(e: MouseEvent) {
-		onclick?.(e);
-	}
-
-	function handleDblClick(e: MouseEvent) {
-		ondblclick?.(e);
-	}
-
-	function handleFocus(e: FocusEvent) {
-		onfocus?.(e);
-	}
 </script>
 
 <!-- svelte-ignore a11y_interactive_supports_focus -->
 <fluent-data-grid-row
+	{...rest}
 	class={className}
 	{...attrs({style, "data-row-index": rowIndex, "row-type": rowType})}
 	role="row"
-	onkeydown={handleKeyDown}
-	onclick={handleClick}
-	ondblclick={handleDblClick}
-	onfocus={handleFocus}
 >
 	{#if children}
 		{@render children?.()}
