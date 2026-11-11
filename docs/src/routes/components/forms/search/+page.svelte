@@ -28,7 +28,7 @@
 	let debounceResults = $state<string[]>([]);
 	let debounceLastSearched = $state("");
 
-	function handleDebounceSearch(value: string) {
+	function handleDebounceSearch({term: value}: {term: string}) {
 		debounceLastSearched = value;
 		debounceResults = value.length > 0
 			? states.filter(s => s.toLowerCase().includes(value.toLowerCase()))
@@ -41,7 +41,7 @@
 	let immediateResults = $state<string[]>([]);
 	let immediateLastSearched = $state("");
 
-	function handleImmediateSearch(value: string) {
+	function handleImmediateSearch({term: value}: {term: string}) {
 		immediateLastSearched = value;
 		immediateResults = value.length > 0
 			? states.filter(s => s.toLowerCase().includes(value.toLowerCase()))
@@ -49,7 +49,7 @@
 	}
 
 	// Focus example
-	let focusSearchRef: { focusAsync: (preventScroll?: boolean) => void };
+	let focusSearchRef: { focus: (preventScroll?: boolean) => void };
 
 	// Controlled example
 	let controlledValue = $state("");
@@ -88,12 +88,13 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onchange", type: "EventCallback<string>", default: "undefined", description: "Gets or sets a callback that updates the bound value"},
-		{name: "oninput", type: "EventCallback<string>", default: "undefined", description: "Gets or sets a callback that fires on every input"}
+		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user commits the value (Enter / blur / clear)"},
+		{name: "onSearch", type: "(ctx: {term: string}) => void", default: "undefined", description: "Fires as the user types; debounced by immediateDelay when immediate is set"},
+		{name: "oninput / onchange / …", type: "(event: Event) => void", default: "undefined", description: "Native events, forwarded untouched"}
 	]
 
 	const methods: Property[] = [
-		{name: "focusAsync", type: "() => void", default: "-", description: "Focuses the search input, with optional preventScroll parameter"}
+		{name: "focus", type: "(preventScroll?: boolean) => void", default: "-", description: "Focuses the search input"}
 	]
 
 	const slots: Property[] = [
@@ -175,7 +176,7 @@
 					<Search
 						label="Search for State"
 						bind:value={interactiveQuery}
-						oninput={(val) => { lastSearchedQuery = val; }}
+						onSearch={({term}) => { lastSearchedQuery = term; }}
 						placeholder="Type a state name..."
 					/>
 					{#if interactiveResults.length > 0}
@@ -201,7 +202,7 @@
 						bind:value={debounceQuery}
 						immediate={true}
 						immediateDelay={500}
-						oninput={handleDebounceSearch}
+						onSearch={handleDebounceSearch}
 						placeholder="Type to search (500ms debounce)..."
 					/>
 					{#if debounceResults.length > 0}
@@ -228,7 +229,7 @@
 						bind:value={immediateQuery}
 						immediate={true}
 						immediateDelay={immediateDelayEnabled ? 300 : 0}
-						oninput={handleImmediateSearch}
+						onSearch={handleImmediateSearch}
 						placeholder="Type to search..."
 					/>
 					{#if immediateResults.length > 0}
@@ -317,7 +318,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Focus Async</strong>
 					<Stack orientation="horizontal" gap="0.5rem">
-						<Button onclick={() => focusSearchRef?.focusAsync()}>FocusAsync</Button>
+						<Button onclick={() => focusSearchRef?.focus()}>Focus</Button>
 						<Search bind:this={focusSearchRef} placeholder="Click button to focus..." />
 					</Stack>
 				</Stack>

@@ -12,8 +12,8 @@
 		}, 3500)
 	})
 
-	function onTextInputChanged(ev: InputEvent) {
-		console.log("🚀 ~ onTextInputChanged ~ ev:", ev.target.value)
+	function onTextInputChanged(ev: Event) {
+		console.log("input:", (ev.target as HTMLInputElement).value)
 	}
 
 	type Property = {
@@ -41,8 +41,8 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onInput", type: "(ev: InputEvent) => void", default: "undefined", description: "Fires as value is typed"},
-		{name: "onChange", type: "(ev: Event) => void", default: "undefined", description: "Fires when value changes on blur"}
+		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user commits an edit (blur / Enter); the live value is bind:value"},
+		{name: "oninput, onchange, onkeydown, onfocus, onblur, …", type: "(event: Event) => void", default: "undefined", description: "Native events, forwarded untouched to fluent-text-field"}
 	]
 
 	const slots: Property[] = [

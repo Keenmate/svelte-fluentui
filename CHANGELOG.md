@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **TextField:** `oninput`, `onchange`, `onkeydown`, `onkeyup`, `onfocus`, `onblur` (hand-forwarded) → native events and attributes (incl. `class`) forwarded via `...rest`; new `onChange({value})` on commit
+- **NumberField:** same hand-forwarded native events → native via `...rest`; new `onChange({value})` on commit
+- **Search:** `oninput(value)`, `onchange(value)` → `onSearch({term})` (debounced by `immediateDelay`), `onChange({value})` on commit; `oninput`/`onchange` are native
+- **Search:** `focusAsync(preventScroll)` method → `focus(preventScroll)`
 - **Select:** `onchange({value, selectedOption, data})` (`value` was `""` when `multiple`) → `onChange({value, option})` — `value` is the new bound value (array when `multiple`), `option` is `{value, text, data}`; no longer fires when re-picking the selected option
 - **Combobox:** `onchange(value)` → `onChange({value})` (always an array)
 - **Combobox:** `onsearch(query)` → `onSearch({term})`

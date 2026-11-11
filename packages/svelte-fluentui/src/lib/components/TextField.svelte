@@ -8,9 +8,10 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {NativeEventHandler, RestProps} from "../types/index.js"
 	import {setAutocompleteOnShadowInput, setAttributeOnShadowInput} from "../utils/shadow-dom.js"
 
-	type Props = {
+	type OwnProps = {
 		id?: string | null | undefined
 		value?: string | null | undefined
 		placeholder?: string | null | undefined
@@ -44,13 +45,16 @@
 			direction?: "forward" | "backward" | "none"
 		) => void
 
-		oninput?: (ev: InputEvent) => void
-		onchange?: (ev: Event) => void
-		onkeydown?: (ev: KeyboardEvent) => void
-		onkeyup?: (ev: KeyboardEvent) => void
-		onfocus?: (ev: FocusEvent) => void
-		onblur?: (ev: FocusEvent) => void
+		/** Fires when the user commits an edit (blur / Enter). The live value is `bind:value`. */
+		onChange?: (ctx: {value: string}) => void
+		/** Native `input` event, forwarded untouched. */
+		oninput?: NativeEventHandler
+		/** Native `change` event, forwarded untouched. */
+		onchange?: NativeEventHandler
 	}
+
+	/** Other native attributes and events (`onkeydown`, `onfocus`, `onblur`, …) go to `<fluent-text-field>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		id = undefined,
@@ -75,12 +79,10 @@
 		style = "",
 		title = undefined,
 
+		onChange = undefined,
 		oninput = undefined,
 		onchange = undefined,
-		onkeydown = undefined,
-		onkeyup = undefined,
-		onfocus = undefined,
-		onblur = undefined
+		...rest
 	}: Props = $props()
 
 	let element: HTMLElement & {
@@ -123,30 +125,14 @@
 
 	// Internal
 
-	function handleOnInput(event: InputEvent) {
-		const target = event.target as HTMLInputElement
-		value = target.value
+	function handleOnInput(event: Event) {
+		value = (event.target as HTMLInputElement).value
 		oninput?.(event)
 	}
 
 	function handleOnChange(event: Event) {
 		onchange?.(event)
-	}
-
-	function handleOnKeyDown(event: KeyboardEvent) {
-		onkeydown?.(event)
-	}
-
-	function handleOnKeyUp(event: KeyboardEvent) {
-		onkeyup?.(event)
-	}
-
-	function handleOnFocus(event: FocusEvent) {
-		onfocus?.(event)
-	}
-
-	function handleOnBlur(event: FocusEvent) {
-		onblur?.(event)
+		onChange?.({value: (event.target as HTMLInputElement).value})
 	}
 
 	// Apply autocomplete attribute via shadow DOM
@@ -184,6 +170,7 @@
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-text-field
 	bind:this={element}
+	{...rest}
 	{...attrs({
 		id, placeholder, appearance, disabled, readonly, required, type, name, autofocus,
 		autocomplete, style, title
@@ -192,10 +179,6 @@
 	{...(label || labelTemplate ? { "aria-label": label } : {})}
 	oninput={handleOnInput}
 	onchange={handleOnChange}
-	onkeydown={handleOnKeyDown}
-	onkeyup={handleOnKeyUp}
-	onfocus={handleOnFocus}
-	onblur={handleOnBlur}
 >
 	{#if children}
 		{@render children()}

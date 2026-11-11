@@ -25,7 +25,7 @@
 		settings.setAccentColor(value as string)
 	}
 
-	function handleNeutralColorChange(event: InputEvent) {
+	function handleNeutralColorChange(event: Event) {
 		const target = event.target as HTMLInputElement
 		settings.setNeutralColor(target.value)
 	}

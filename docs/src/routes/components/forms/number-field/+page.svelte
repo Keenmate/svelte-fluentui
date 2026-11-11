@@ -52,9 +52,8 @@
 		focusAsyncRef?.focus();
 	}
 
-	function handleChange(e: Event) {
-		const target = e.target as HTMLInputElement;
-		callbackMessage = `Value changed to: ${target.value || "(empty)"}`;
+	function handleChange({value}: {value: string}) {
+		callbackMessage = `Value changed to: ${value || "(empty)"}`;
 	}
 
 	type Property = {
@@ -94,12 +93,8 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "oninput", type: "(ev: InputEvent) => void", default: "undefined", description: "Fires as value is typed"},
-		{name: "onchange", type: "(ev: Event) => void", default: "undefined", description: "Fires when value changes on blur"},
-		{name: "onfocus", type: "(ev: FocusEvent) => void", default: "undefined", description: "Fires when input gains focus"},
-		{name: "onblur", type: "(ev: FocusEvent) => void", default: "undefined", description: "Fires when input loses focus"},
-		{name: "onkeydown", type: "(ev: KeyboardEvent) => void", default: "undefined", description: "Fires on key down"},
-		{name: "onkeyup", type: "(ev: KeyboardEvent) => void", default: "undefined", description: "Fires on key up"}
+		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user commits a value (blur / Enter / step buttons)"},
+		{name: "oninput, onchange, onfocus, onblur, onkeydown, …", type: "(event: Event) => void", default: "undefined", description: "Native events, forwarded untouched to fluent-number-field"}
 	]
 
 	const methods: Property[] = [
@@ -355,7 +350,7 @@
 					<NumberField
 						bind:value={callbackValue}
 						label="Enter a number"
-						onchange={handleChange}
+						onChange={handleChange}
 					/>
 					<small>{callbackMessage || "Change the value to see the callback"}</small>
 				</Stack>

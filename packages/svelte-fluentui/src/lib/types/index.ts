@@ -1,3 +1,15 @@
+import type {HTMLAttributes} from "svelte/elements"
+
+/**
+ * Native attributes and DOM events a component forwards to its root element via
+ * `...rest`, minus the component's own props. Lowercase `on*` handlers in here
+ * are real browser events and receive the native `Event` untouched.
+ */
+export type RestProps<Own> = Omit<HTMLAttributes<HTMLElement>, keyof Own>
+
+/** A native event handler as forwarded by a component (`oninput`, `onchange`, ...). */
+export type NativeEventHandler = (event: Event) => void
+
 export type OptionItem = {
 	value: string
 	label: string

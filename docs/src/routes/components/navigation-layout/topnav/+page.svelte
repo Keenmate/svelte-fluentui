@@ -12,8 +12,8 @@
 
 	let searchValue = $state("")
 
-	function onSearchInput(value: string) {
-		console.log("Search:", value)
+	function onSearchInput({term}: {term: string}) {
+		console.log("Search:", term)
 	}
 
 	const simpleItems = [
@@ -137,7 +137,7 @@
 							placeholder="Search…"
 							immediate
 							immediateDelay={250}
-							oninput={onSearchInput}
+							onSearch={onSearchInput}
 							width="240px"
 						/>
 						<Button appearance="accent" onclick={onSignIn}>Sign in</Button>
