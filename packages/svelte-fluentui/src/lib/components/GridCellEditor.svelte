@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte'
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import {pushLayer} from "../helpers/layer-stack.js"
 
 	type EditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
 	type OptionsLoadTrigger = "immediate" | "edit-start" | "dropdown-open"
@@ -283,16 +284,6 @@
 					oncommit(filterText.trim())
 				}
 				break
-			case "Escape":
-				e.preventDefault()
-				e.stopPropagation() // Prevent grid from handling
-				if (dropdownOpen) {
-					closeDropdown()
-				} else {
-					cancelledViaEscape = true
-					oncancel()
-				}
-				break
 			case "Tab":
 				if (dropdownOpen && highlightedIndex >= 0 && highlightedIndex < opts.length) {
 					selectDropdownOption(opts[highlightedIndex])
@@ -548,12 +539,23 @@
 		if (e.key === "Enter") {
 			e.preventDefault()
 			commit()
-		} else if (e.key === "Escape") {
-			e.preventDefault()
-			cancelledViaEscape = true
-			oncancel()
 		}
 	}
+
+	// Escape goes to the topmost open layer (helpers/layer-stack.ts): the open
+	// dropdown first, then the edit itself — so an editor inside a Dialog
+	// cancels the edit instead of closing the dialog.
+	$effect(() => pushLayer({
+		onEscape: () => {
+			if (skipKeyboardCommit) return false
+			if (dropdownOpen) {
+				closeDropdown()
+			} else {
+				cancelledViaEscape = true
+				oncancel()
+			}
+		}
+	}))
 
 	function handleBlur(e: FocusEvent) {
 		if (skipBlurCommit || cancelledViaEscape) {

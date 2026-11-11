@@ -3,6 +3,7 @@
 	import {onMount, tick, untrack} from "svelte"
 	import Icon from "./Icon.svelte"
 	import {portal} from "../actions/portal.js"
+	import {pushLayer} from "../helpers/layer-stack.js"
 	import type {CommandPaletteItem, CommandPaletteFilter, CommandPaletteActionDetail} from "./CommandPalette.types.js"
 	import {createLinkActivation, resolveActionItem, runAction} from "../action-items/index.js"
 
@@ -279,10 +280,7 @@
 
 		if (!open) return
 
-		if (e.key === "Escape") {
-			e.preventDefault()
-			closePalette()
-		} else if (e.key === "ArrowDown") {
+		if (e.key === "ArrowDown") {
 			e.preventDefault()
 			selectedIndex = Math.min(selectedIndex + 1, Math.max(itemCount - 1, 0))
 		} else if (e.key === "ArrowUp") {
@@ -293,6 +291,11 @@
 			activateSelected()
 		}
 	}
+
+	// Escape goes to the topmost open layer (helpers/layer-stack.ts)
+	$effect(() => {
+		if (open) return pushLayer({onEscape: () => closePalette()})
+	})
 
 	onMount(() => {
 		document.addEventListener("keydown", handleGlobalKey)

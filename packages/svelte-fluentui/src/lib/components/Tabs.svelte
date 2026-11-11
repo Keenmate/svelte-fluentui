@@ -61,6 +61,7 @@
 	import {tabsContext} from "../contexts.js"
 	import { untrack } from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import {pushLayer} from "../helpers/layer-stack.js"
 
 	function toTabInfo(tab: TabEntry): TabInfo {
 		return {id: tab.id, label: tab.label, data: tab.data}
@@ -677,9 +678,6 @@
 			if (el.closest?.(".fluent-tabs-overflow-menu")) return
 			overflowOpen = false
 		}
-		function onKey(e: KeyboardEvent) {
-			if (e.key === "Escape") overflowOpen = false
-		}
 		/*
 		 * Any scroll outside the menu closes it — scroll events don't
 		 * bubble so the listener uses capture to catch scroll on any
@@ -692,11 +690,12 @@
 			overflowOpen = false
 		}
 		document.addEventListener("mousedown", onDocClick, true)
-		document.addEventListener("keydown", onKey, true)
+		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
+		const popLayer = pushLayer({onEscape: () => { overflowOpen = false }})
 		document.addEventListener("scroll", onScroll, true)
 		return () => {
 			document.removeEventListener("mousedown", onDocClick, true)
-			document.removeEventListener("keydown", onKey, true)
+			popLayer()
 			document.removeEventListener("scroll", onScroll, true)
 		}
 	})

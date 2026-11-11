@@ -11,6 +11,7 @@
 	import GridCellEditor from "./GridCellEditor.svelte"
 	import Icon from "./Icon.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import {pushLayer} from "../helpers/layer-stack.js"
 	import {resolveMenuEntries, runAction, type ActionEventDetail, type ActionItem, type MenuDivider, type MenuEntry, type ResolvedActionItem} from "../action-items/index.js"
 
 	type EditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
@@ -1947,11 +1948,10 @@
 		}
 	}
 
-	function handleKeyDownForContextMenu(event: KeyboardEvent) {
-		if (event.key === 'Escape' && contextMenuVisible) {
-			closeContextMenu()
-		}
-	}
+	// Escape goes to the topmost open layer (helpers/layer-stack.ts)
+	$effect(() => {
+		if (contextMenuVisible) return pushLayer({onEscape: () => closeContextMenu()})
+	})
 
 	// Adjust context menu position to keep it within viewport
 	$effect(() => {
@@ -2001,7 +2001,6 @@
 		document.addEventListener('click', handleDocumentClick)
 		document.addEventListener('click', handleDocumentClickForContextMenu)
 		document.addEventListener('contextmenu', handleDocumentContextMenuForContextMenu, true)
-		document.addEventListener('keydown', handleKeyDownForContextMenu)
 		window.addEventListener('scroll', handleScroll, true)  // Use capture to catch all scroll events
 	})
 
@@ -2009,7 +2008,6 @@
 		document.removeEventListener('click', handleDocumentClick)
 		document.removeEventListener('click', handleDocumentClickForContextMenu)
 		document.removeEventListener('contextmenu', handleDocumentContextMenuForContextMenu, true)
-		document.removeEventListener('keydown', handleKeyDownForContextMenu)
 		window.removeEventListener('scroll', handleScroll, true)
 		if (rowActionHideTimeout) clearTimeout(rowActionHideTimeout)
 	})
