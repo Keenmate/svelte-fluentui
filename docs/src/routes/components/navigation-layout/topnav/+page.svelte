@@ -67,7 +67,8 @@
 		{name: "collapse", type: '"auto" | "always" | "never"', default: '"auto"', description: 'Force the collapse state. "auto" uses the 960px container query; "always" keeps the hamburger visible at every width (useful when the consumer wants to hide a paired desktop sidebar at a custom breakpoint); "never" keeps items expanded at every width.'},
 		{name: "height", type: "number", default: "60", description: "TopNav height in pixels"},
 		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
-		{name: "style", type: "string", default: "undefined", description: "Inline style appended after the computed height"}
+		{name: "style", type: "string", default: "undefined", description: "Inline style appended after the computed height"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root nav"}
 	]
 
 	const topNavCallbacks: Property[] = []

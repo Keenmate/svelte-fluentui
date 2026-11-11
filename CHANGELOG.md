@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **AppBarItem (`active`):** `bind:active` allowed but never written → plain controlled prop: pass `active={…}`
+- **BadgeGroup (`showAll`):** hard override; the expand toggle kept its own state → bindable; the expand toggle writes `showAll`
+- **Tooltip (`visible`):** re-read every render (`undefined` = hover, `true`/`false` = forced) → mode fixed at mount; in hover mode the tooltip writes `bind:visible` back
 - **Field (exported type):** `ValidationState` → `FieldValidationState`
 - **Checkbox (`checked`):** required, no default → optional, defaults to `false`
 - **Combobox (`currentValue`):** accepted but ignored → `bind:currentValue` read-only mirror of the input text
@@ -128,7 +131,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
-- Native attributes and events (`...rest`) on the form and data components.
+- Native attributes and events (`...rest`) on every component that renders an element.
+- `bind:expanded` (AccordionItem), `bind:showAll` (BadgeGroup), `bind:visible` (Tooltip); AppBarItem `target`.
 - QuickGrid model types exported from the package root (`QuickGridColumn`, `QuickGridEditorOptions`, …).
 - Combobox `bind:currentValue`; Combobox `id` optional.
 - **Action items** (`ActionItem`, `MenuItem`, `MenuDivider`, `MenuEntry`, `resolveMenuEntries`,

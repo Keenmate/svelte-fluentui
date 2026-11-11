@@ -8,9 +8,10 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 	import useActions from "../actions/use-actions.js"
 
-	type Props = {
+	type OwnProps = {
 		id?: string
 		class?: string
 		style?: string
@@ -32,6 +33,9 @@
 		onclick?: (event: MouseEvent) => void
 	}
 
+	/** Other native attributes and events (`onkeydown`, `aria-*`, `title`, …) go to `<fluent-anchor>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let element: HTMLElement
 
 	let {
@@ -52,7 +56,8 @@
 		children = undefined,
 		preventDefault = false,
 		use = undefined,
-		onclick = undefined
+		onclick = undefined,
+		...rest
 	}: Props = $props()
 
 	$effect(() => {
@@ -74,6 +79,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <fluent-anchor
 	bind:this={element}
+	{...rest}
 	{...attrs({
 		id, class: className, style, download, href, hreflang, ping, referrerpolicy, rel, target,
 		type, appearance

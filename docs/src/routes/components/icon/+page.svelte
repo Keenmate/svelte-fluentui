@@ -19,7 +19,8 @@
 		{name: "width", type: "string", default: "undefined", description: "Custom width (overrides size-based width)"},
 		{name: "title", type: "string", default: "undefined", description: "Accessible title for the icon"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
-		{name: "style", type: "string", default: '""', description: "Inline styles"}
+		{name: "style", type: "string", default: '""', description: "Inline styles"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root span"}
 	]
 
 	const callbacks: Property[] = []

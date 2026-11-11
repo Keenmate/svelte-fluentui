@@ -33,7 +33,8 @@
 		{name: "height", type: "string", default: "undefined", description: "Explicit container height (e.g. '400px', '100vh')."},
 		{name: "debug", type: "boolean", default: "false", description: "Logs drag and minimize transitions to console (development aid)."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names on the root element."},
-		{name: "style", type: "string", default: '""', description: "Inline styles on the root element."}
+		{name: "style", type: "string", default: '""', description: "Inline styles on the root element."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div (id is the persistence key, not a DOM id)"}
 	]
 
 	const multiSplitterCallbacks: Property[] = [
@@ -48,7 +49,8 @@
 		{name: "max", type: "string", default: "undefined", description: "Maximum size constraint. Accepts \"400px\" or \"50%\". Default unbounded."},
 		{name: "minimize", type: "boolean", default: "false", description: "If true, pane can collapse to a rail. Snaps in via drag, click the rail to restore, or double-click an adjacent gutter."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names on the pane element."},
-		{name: "style", type: "string", default: '""', description: "Inline styles on the pane element."}
+		{name: "style", type: "string", default: '""', description: "Inline styles on the pane element."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the pane div"}
 	]
 
 	const dataAttributes: Property[] = [

@@ -14,7 +14,8 @@
 		{name: "gap", type: "string", default: "undefined", description: "Gap between items"},
 		{name: "horizontalAlign", type: "string", default: "undefined", description: "Horizontal alignment"},
 		{name: "verticalAlign", type: "string", default: "undefined", description: "Vertical alignment"},
-		{name: "wrap", type: "boolean", default: "false", description: "Allow wrapping"}
+		{name: "wrap", type: "boolean", default: "false", description: "Allow wrapping"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
 	]
 
 	const actions: Property[] = []

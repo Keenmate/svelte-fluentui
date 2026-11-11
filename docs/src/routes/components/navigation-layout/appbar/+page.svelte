@@ -15,7 +15,8 @@
 	}
 
 	const appBarProperties: Property[] = [
-		{name: "orientation", type: '"horizontal" | "vertical"', default: '"vertical"', description: "AppBar orientation"}
+		{name: "orientation", type: '"horizontal" | "vertical"', default: '"vertical"', description: "AppBar orientation"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root nav"}
 	]
 
 	const appBarCallbacks: Property[] = []
@@ -27,9 +28,11 @@
 	const appBarItemProperties: Property[] = [
 		{name: "href", type: "string", default: "undefined", description: "URL — renders the item as a link"},
 		{name: "rel", type: "string", default: "undefined", description: "Link rel attribute"},
+		{name: "target", type: "string", default: "undefined", description: "Link target attribute (e.g. _blank)"},
 		{name: "count", type: "number", default: "undefined", description: "Optional counter badge"},
-		{name: "active", type: "boolean", default: "undefined", description: "Marks the item as active (bindable)"},
-		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"}
+		{name: "active", type: "boolean", default: "undefined", description: "Marks the item as active (controlled by the app, e.g. from the current route)"},
+		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the inner a"}
 	]
 
 	const appBarItemCallbacks: Property[] = [
@@ -79,7 +82,7 @@
 			<div class="example-item">
 				<h3>Regular AppBar</h3>
 
-				<Stack verticalAlign="start" horizontalAlign="start" vertical>
+				<Stack verticalAlign="start" horizontalAlign="start">
 					<AppBar>
 						<AppBarItem href="https://microsoft.com" rel="noreferer noorigin" target="_blank" icon={commonItemIcon}>
 							Microsoft
@@ -103,7 +106,7 @@
 			<div class="example-item">
 				<h3>Horizontal AppBar menu</h3>
 
-				<Stack verticalAlign="start" horizontalAlign="start" vertical>
+				<Stack verticalAlign="start" horizontalAlign="start">
 					<AppBar orientation={AppBarOrientation.Horizontal}>
 						<AppBarItem title="Item 1 tooltip" icon={commonItemIcon}>
 							Item 1

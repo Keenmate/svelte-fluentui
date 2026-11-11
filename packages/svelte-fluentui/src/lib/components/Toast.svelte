@@ -15,8 +15,9 @@
 	import type {Snippet} from "svelte"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 	import {resolveActionItem, runAction} from "../action-items/index.js"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		id?: string
 		title?: string
 		timestamp?: Date
@@ -36,6 +37,9 @@
 		children?: Snippet
 	}
 
+	/** Other native attributes and events (`class`, `style`, `role`, `aria-*`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		id,
 		title,
@@ -47,7 +51,9 @@
 		onDismiss,
 		onAction,
 		beforeActionCallback,
-		children
+		children,
+		class: className = undefined,
+		...rest
 	}: Props = $props()
 
 	function handleDismiss(event: MouseEvent) {
@@ -135,7 +141,7 @@
 {/snippet}
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div class="fluent-toast fluent-toast--show" id={id} tabindex="0">
+<div tabindex="0" {...rest} class={["fluent-toast fluent-toast--show", className]} id={id}>
 	<div class="toast-header">
 		<div class="fluent-toast-title">{title}</div>
 

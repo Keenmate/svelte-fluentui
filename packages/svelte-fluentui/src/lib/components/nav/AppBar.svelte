@@ -1,18 +1,23 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../../types/index.js"
 	import {AppBarOrientation} from "../../fluent-ui/constants/app-bar.js"
 	import {classList} from "../../helpers/html.js"
 
-	type Props = {
+	type OwnProps = {
 		orientation?: AppBarOrientation
 		children?: Snippet
 		class?: string
 	}
 
+	/** Other native attributes and events (`id`, `aria-label`, …) go to the root `<nav>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		    orientation = undefined,
 		    children    = undefined,
-		    class: className = undefined
+		    class: className = undefined,
+		    ...rest
 	    }: Props = $props()
 
 	const computedClasses = $derived(classList(
@@ -25,6 +30,7 @@
 </script>
 
 <nav
+	{...rest}
 	data-orientation={orientation || AppBarOrientation.Vertical}
 	class={computedClasses}
 >

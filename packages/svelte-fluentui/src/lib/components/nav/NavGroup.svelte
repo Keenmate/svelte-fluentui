@@ -6,8 +6,9 @@
 	import {classList} from "../../helpers/html.js"
 	import {navigationStore} from "../../stores/navigation.js"
 	import {onMount} from "svelte"
+	import type {RestProps} from "../../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		title?: string // Unique identifier for persistence
 		expanded?: boolean
 		disabled?: boolean
@@ -17,6 +18,9 @@
 		class?: string
 	}
 
+	/** Other native attributes and events (`id`, `aria-label`, …) go to the outer NavItem `<div role="menuitem">`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		    title = undefined,
 		    expanded = $bindable(false),
@@ -24,8 +28,13 @@
 		    linkIcon = undefined,
 		    linkText = undefined,
 		    children = undefined,
-		    class: className = undefined
+		    class: className = undefined,
+		    ...rest
 	    }: Props = $props()
+
+	// Forwarded to a child component whose own prop types are narrower than
+	// HTMLAttributes (no `null`), so hand the spread over untyped.
+	const forwarded = $derived(rest as Record<string, unknown>)
 
 	const navItemClass = $derived(classList(
 		expanded && "expanded",
@@ -55,6 +64,7 @@
 </script>
 
 <NavItem
+	{...forwarded}
 	group
 	{disabled}
 	class={navItemClass}

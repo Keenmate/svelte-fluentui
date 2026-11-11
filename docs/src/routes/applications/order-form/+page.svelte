@@ -554,7 +554,7 @@
 				/>
 
 				<Accordion>
-					<AccordionItem>
+					<AccordionItem id="attachments">
 						{#snippet heading()}
 							<span><Icon name="attach" size={16} /> Attachments (quotes, approvals, specs)</span>
 						{/snippet}

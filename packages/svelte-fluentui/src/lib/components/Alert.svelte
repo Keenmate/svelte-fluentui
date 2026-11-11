@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 
 	type Intent = 'info' | 'success' | 'warning' | 'danger'
 
-	type Props = {
+	type OwnProps = {
 		intent?: Intent
 		title?: string
 		dismissible?: boolean
@@ -16,6 +17,9 @@
 		children?: Snippet
 	}
 
+	/** Other native attributes and events (`id`, `role`, `aria-*`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		intent = 'info',
 		title = undefined,
@@ -24,7 +28,8 @@
 		style: styleParam = undefined,
 		onDismiss = undefined,
 		icon = undefined,
-		children = undefined
+		children = undefined,
+		...rest
 	}: Props = $props()
 
 	let dismissed = $state(false)
@@ -50,7 +55,7 @@
 </script>
 
 {#if !dismissed}
-	<div class={computedClass} style={styleParam} role="alert">
+	<div role="alert" {...rest} class={computedClass} style={styleParam}>
 		<div class="fluent-alert__icon">
 			{#if icon}
 				{@render icon()}

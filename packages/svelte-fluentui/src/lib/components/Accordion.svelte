@@ -16,16 +16,15 @@
 <script lang="ts">
 	import {accordionContext} from "../contexts.js"
 	import type {Snippet} from "svelte"
-	import type {AccordionSvelteContext} from "../types/index.js"
+	import type {AccordionSvelteContext, RestProps} from "../types/index.js"
 
 	type ValueType = string | string[] | null | undefined
 
-	type Props = {
+	type OwnProps = {
 		/** Expanded item id(s). String (single) or string[] (multiple). In multiple
 		 * mode set to an array of every item id to expand all at once; null
 		 * collapses all. */
 		value?: ValueType
-		/** Allow multiple items open at once. */
 		/** Allow more than one item to be expanded at a time. */
 		multiple?: boolean
 		/** Side the expand/collapse chevron sits on. "end" (default) = right in
@@ -35,10 +34,12 @@
 		 * to the FluentUI spacing. */
 		gap?: string
 		children?: Snippet
-		/** Fires when the set of expanded items changes. */
 		/** Fires when the user expands or collapses an item; carries the new `value`. */
 		onChange?: (ctx: {value: ValueType}) => void
 	}
+
+	/** Other native attributes and events (`id`, `class`, `style`, `aria-*`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		value = $bindable(),
@@ -46,7 +47,10 @@
 		togglePosition = "end",
 		gap = undefined,
 		children = undefined,
-		onChange = undefined
+		onChange = undefined,
+		class: className = undefined,
+		style = undefined,
+		...rest
 	}: Props = $props()
 
 	let rootEl: HTMLDivElement | undefined = $state()
@@ -123,7 +127,12 @@
 	})
 </script>
 
-<div class="fluent-accordion" bind:this={rootEl} style={gap ? `gap: ${gap};` : null}>
+<div
+	{...rest}
+	class={["fluent-accordion", className]}
+	bind:this={rootEl}
+	style={[gap ? `gap: ${gap};` : "", style ?? ""].join(" ").trim() || null}
+>
 	{@render children?.()}
 </div>
 

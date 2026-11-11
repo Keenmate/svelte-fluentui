@@ -8,13 +8,14 @@
 <script lang="ts">
 	import {gridContext} from "../../contexts.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../../types/index.js"
 	import {onMount, onDestroy} from "svelte"
 	import {getEffectiveBreakpoints, type GridBreakpoints} from "./containerQueries.js"
 
 	type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly"
 	type GridItemSize = "xs" | "sm" | "md" | "lg" | "xl" | "xxl"
 
-	type Props = {
+	type OwnProps = {
 		children?: Snippet
 		spacing?: number
 		justify?: JustifyContent
@@ -41,6 +42,9 @@
 		style?: string
 	}
 
+	/** Other native attributes and events (`id`, `role`, `aria-*`, …) go to the outer `<div class="grid-container">`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		children = undefined,
 		spacing = 3,
@@ -53,7 +57,8 @@
 		gap = undefined,
 		onBreakpointChange = undefined,
 		class: className = "",
-		style = ""
+		style = "",
+		...rest
 	}: Props = $props()
 
 	let gridElement: HTMLDivElement | undefined = $state()
@@ -133,7 +138,7 @@
 	})
 </script>
 
-<div class="grid-container {className}" style="{style}" >
+<div {...rest} class="grid-container {className}" style="{style}">
 	<div
 		bind:this={gridElement}
 		class="fluent-grid"

@@ -62,12 +62,13 @@
 	import { untrack } from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import type {RestProps} from "../types/index.js"
 
 	function toTabInfo(tab: TabEntry): TabInfo {
 		return {id: tab.id, label: tab.label, data: tab.data}
 	}
 
-	type Props = {
+	type OwnProps = {
 		id?: string
 		class?: string
 		style?: string
@@ -106,6 +107,9 @@
 		onActiveIdChange?: (ctx: {activeId: string; oldActiveId: string | undefined; tab: TabInfo}) => void
 	}
 
+	/** Other native attributes and events (`aria-label`, `data-*`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		id = undefined,
 		class: className = "",
@@ -119,7 +123,8 @@
 		stripWidth = undefined,
 		stripHeight = undefined,
 		swipe = true,
-		onActiveIdChange = undefined
+		onActiveIdChange = undefined,
+		...rest
 	}: Props = $props()
 
 	const stripStyle = $derived.by(() => {
@@ -713,6 +718,7 @@
 </div>
 
 <div
+	{...rest}
 	{id}
 	class="fluent-tabs {className}"
 	class:fluent-tabs-horizontal={isHorizontal}

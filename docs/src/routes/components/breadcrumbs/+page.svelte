@@ -5,7 +5,7 @@
 	let count = $state(0)
 
 	function onBreadcrumbClicked(ev: MouseEvent) {
-		console.log("🚀 ~ onClicked ~ ev:", ev.target)
+		ev.preventDefault()
 		count += 1
 	}
 
@@ -17,15 +17,17 @@
 	}
 
 	const properties: Property[] = [
-		{name: "appearance", type: "string", default: "undefined", description: "Visual appearance"}
+		{name: "href", type: "string", default: "undefined", description: "BreadcrumbItem: link target; without it the item renders as plain text (the current page)"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes (class, style, id, aria-*, data-*) go to fluent-breadcrumb / fluent-breadcrumb-item"}
 	]
 
 	const callbacks: Property[] = [
-		{name: "onClick", type: "(ev: MouseEvent) => void", default: "undefined", description: "Click event handler"}
+		{name: "onclick, onkeydown, …", type: "(event: Event) => void", default: "undefined", description: "Native events, forwarded untouched to fluent-breadcrumb-item (via ...rest)"}
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "any", default: "undefined", description: "Default slot content"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Breadcrumb: the items; BreadcrumbItem: the label"},
+		{name: "separator", type: "Snippet", default: "undefined", description: "BreadcrumbItem: custom separator rendered after the item"}
 	]
 
 	const propertyColumns = [
@@ -90,6 +92,14 @@
 					Item 3
 				</BreadcrumbItem>
 			</Breadcrumb>
+		</div>
+		<div class="example-item">
+			<Breadcrumb aria-label="Clickable breadcrumb">
+				<BreadcrumbItem href="#home" onclick={onBreadcrumbClicked}>Home</BreadcrumbItem>
+				<BreadcrumbItem href="#docs" onclick={onBreadcrumbClicked}>Docs</BreadcrumbItem>
+				<BreadcrumbItem>Current</BreadcrumbItem>
+			</Breadcrumb>
+			<p>Native <code>onclick</code> clicks: {count}</p>
 		</div>
 		</div>
 	</Card>

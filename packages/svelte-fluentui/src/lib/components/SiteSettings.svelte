@@ -2,8 +2,9 @@
 	import type {Snippet} from "svelte"
 	import {Dialog, Select, Option, Switch, Button, Divider, TextField, Stack} from "../index.js"
 	import {settings, accentColors, type ThemeMode} from "../stores/settings.js"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		/** Whether the settings dialog is open (bindable). */
 		open?: boolean
 		/** Fires when the dialog opens or closes. */
@@ -11,11 +12,19 @@
 		children?: Snippet
 	}
 
+	/** Other native attributes and events go to the underlying `<Dialog>` (`<fluent-dialog>`). */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		    open = $bindable(false),
 		    onOpenChange,
-		    children
+		    children,
+		    ...rest
 	    }: Props = $props()
+
+	// Forwarded to a child component whose own prop types are narrower than
+	// HTMLAttributes (no `null`), so hand the spread over untyped.
+	const forwarded = $derived(rest as Record<string, unknown>)
 
 	let localSettings = $derived($settings)
 
@@ -41,7 +50,7 @@
 	}
 </script>
 
-<Dialog bind:open modal={true} {onOpenChange} size="small">
+<Dialog {...forwarded} bind:open modal={true} {onOpenChange} size="small">
 	<h4 style="margin: 0 0 1.5rem 0;">Site settings</h4>
 
 	<Stack orientation="vertical" gap="1rem">

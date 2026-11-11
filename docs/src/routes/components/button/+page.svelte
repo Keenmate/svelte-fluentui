@@ -26,6 +26,7 @@
 		{name: "type", type: "string", default: "undefined", description: "Button type: 'button', 'submit', or 'reset'."},
 		{name: "value", type: "string", default: "undefined", description: "Value submitted with the form when the button is clicked."},
 		{name: "style", type: "string", default: "\"\"", description: "Inline CSS styles to apply to the button element."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-button"}
 	]
 
 	const callbacks: Property[] = [

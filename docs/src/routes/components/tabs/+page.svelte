@@ -23,7 +23,8 @@
 		{name: "justify", type: "boolean", default: "false", description: "When true, the tab list stretches to fill the container and tabs divide the row equally. Default keeps the compact start-aligned layout"},
 		{name: "stripWidth", type: "string (CSS length)", default: "undefined", description: "Fixed width for the tab strip. Most useful in orientation='vertical' — caps the sidebar width and auto-ellipsises long labels"},
 		{name: "stripHeight", type: "string (CSS length)", default: "undefined", description: "Fixed height for the tab strip (symmetric counterpart to stripWidth). Rarely needed"},
-		{name: "swipe", type: "boolean", default: "true", description: "Enable swipe-left/right (or swipe-up/down in vertical orientation) on the tabpanels to navigate prev/next tab. Touches starting on interactive elements (input, button, slider, contenteditable) are ignored so form controls keep their gestures"}
+		{name: "swipe", type: "boolean", default: "true", description: "Enable swipe-left/right (or swipe-up/down in vertical orientation) on the tabpanels to navigate prev/next tab. Touches starting on interactive elements (input, button, slider, contenteditable) are ignored so form controls keep their gestures"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
 	]
 
 	const tabsCallbacks: Property[] = [

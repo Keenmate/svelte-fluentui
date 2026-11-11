@@ -17,7 +17,8 @@
 		{name: "class", type: "string", default: '""', description: "Extra class on the button element."},
 		{name: "style", type: "string", default: '""', description: "Inline style on the button element."},
 		{name: "position", type: '"bottom" | "top"', default: '"bottom"', description: "Preferred side to open the menu on. Auto-flips to the other side if there's no room."},
-		{name: "open", type: "boolean (bindable)", default: "false", description: "Controls the menu's open state. Bind it if you want to open/close from outside."}
+		{name: "open", type: "boolean (bindable)", default: "false", description: "Controls the menu's open state. Bind it if you want to open/close from outside."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the trigger fluent-button"}
 	]
 
 	const itemProps: Property[] = [

@@ -527,8 +527,8 @@
 					{#each navItem.items as item}
 						<NavLinkItem
 							href={item.href}
-							target={item.target}
-							rel={item.rel}
+							target={"target" in item ? item.target : undefined}
+							rel={"rel" in item ? item.rel : undefined}
 							class={isActive(item.href) ? "active" : ""}
 							onclick={closeDrawer}
 						>

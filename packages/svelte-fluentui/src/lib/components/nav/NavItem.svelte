@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		disabled?: boolean
 		group?: boolean
 		/** Native `click` event, forwarded untouched. */
@@ -10,12 +11,16 @@
 		class?: string
 	}
 
+	/** Other native attributes and events (`id`, `aria-label`, `onkeydown`, …) go to the root `<div role="menuitem">`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		    disabled    = undefined,
 		    group    = undefined,
 		    onclick = undefined,
 		    children = undefined,
-		    class: className = undefined
+		    class: className = undefined,
+		    ...rest
 	    }: Props = $props()
 
 	// const isInNavGroup = getContext<NavGroupSvelteContext>("nav-group")
@@ -26,6 +31,7 @@
 <div
 	role="menuitem"
 	tabindex="0"
+	{...rest}
 	aria-disabled={disabled}
 	class="fluent-nav-item {className || ''}"
 	class:fluent-nav-group={group}

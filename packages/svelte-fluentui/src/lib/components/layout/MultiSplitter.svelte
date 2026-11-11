@@ -27,10 +27,11 @@
 	import {multiSplitterContext} from "../../contexts.js"
 	import {onMount} from "svelte"
 	import type {MultiSplitterContext, PaneHandle, PaneRegistration} from "../../types/multi-splitter.js"
+	import type {RestProps} from "../../types/index.js"
 
 	type Orientation = "horizontal" | "vertical"
 
-	type Props = {
+	type OwnProps = {
 		children?: Snippet
 		orientation?: Orientation
 		/** localStorage persistence key — saves under "fluent-multi-splitter:<id>". */
@@ -55,6 +56,10 @@
 		onPaneExpand?: (ctx: MultiSplitterToggleDetail) => void
 	}
 
+	/** Other native attributes and events (`role`, `aria-*`, `data-*`, …) go to the root `<div>`.
+	 * Note: `id` is the persistence key, not a DOM id. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		children = undefined,
 		orientation = "horizontal",
@@ -69,7 +74,8 @@
 		debug = false,
 		onPaneResize = undefined,
 		onPaneCollapse = undefined,
-		onPaneExpand = undefined
+		onPaneExpand = undefined,
+		...rest
 	}: Props = $props()
 
 	const STORAGE_PREFIX = "fluent-multi-splitter:"
@@ -1035,6 +1041,7 @@
 </script>
 
 <div
+	{...rest}
 	bind:this={rootEl}
 	class="fluent-multi-splitter fluent-multi-splitter--{orientation} {className}"
 	style={computedStyle}

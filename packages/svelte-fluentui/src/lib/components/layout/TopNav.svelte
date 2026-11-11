@@ -19,6 +19,7 @@
 	import NavGroup from "../nav/NavGroup.svelte"
 	import NavLinkItem from "../nav/NavLinkItem.svelte"
 	import DismissIcon from "../icons/DismissIcon.svelte"
+	import type {RestProps} from "../../types/index.js"
 
 	type NavGroupItem = {
 		title: string
@@ -28,7 +29,7 @@
 
 	type CollapseMode = "auto" | "always" | "never"
 
-	type Props = {
+	type OwnProps = {
 		brand?: string
 		brandHref?: string
 		brandTemplate?: Snippet
@@ -51,6 +52,9 @@
 		beforeActionCallback?: (detail: TopNavActionDetail) => unknown
 	}
 
+	/** Other native attributes and events (`id`, `aria-label`, …) go to the root `<nav>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		brand = "Brand",
 		brandHref = "/",
@@ -68,7 +72,8 @@
 		class: className = "",
 		style = "",
 		onAction = undefined,
-		beforeActionCallback = undefined
+		beforeActionCallback = undefined,
+		...rest
 	}: Props = $props()
 
 	let mobileMenuOpen = $state(false)
@@ -158,6 +163,7 @@
 {/snippet}
 
 <nav
+	{...rest}
 	class="topnav {className}"
 	class:topnav--force-collapse={collapse === "always"}
 	class:topnav--force-expand={collapse === "never"}

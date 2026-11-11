@@ -4,8 +4,9 @@
 	import PositioningRegion from "../PositioningRegion.svelte"
 	import ContentRegion from "../ContentRegion.svelte"
 	import NavIcon from "./NavIcon.svelte"
+	import type {RestProps} from "../../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		href?: string
 		rel?: string
 		target?: string
@@ -20,6 +21,9 @@
 		class?: string
 	}
 
+	/** Other native attributes and events (`id`, `aria-current`, `download`, …) go to the root `<a>` (or `<div>` without `href`). */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		    href      = undefined,
 		    rel       = undefined,
@@ -31,7 +35,8 @@
 		    afterText = undefined,
 		    children  = undefined,
 		    linkAction = undefined,
-		    class: className = undefined
+		    class: className = undefined,
+		    ...rest
 	    }: Props = $props()
 
 	let renderElement = $derived(href
@@ -48,6 +53,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:element
 	this={renderElement}
+	{...rest}
 	{...(href ? {href, rel} : {})}
 	{...attrs({target})}
 	{title}

@@ -8,8 +8,9 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		id?: string;
 		class?: string;
 		style?: string;
@@ -17,16 +18,21 @@
 		children?: Snippet;
 	};
 
+	/** Other native attributes and events (`onkeydown`, `aria-label`, …) go to `<fluent-toolbar>`. */
+	type Props = OwnProps & RestProps<OwnProps>;
+
 	let {
 		id = undefined,
 		class: className = "",
 		style = "",
 		orientation = "horizontal",
-		children = undefined
+		children = undefined,
+		...rest
 	}: Props = $props();
 </script>
 
 <fluent-toolbar
+	{...rest}
 	{...attrs({id, style, orientation})}
 	class={className}
 >

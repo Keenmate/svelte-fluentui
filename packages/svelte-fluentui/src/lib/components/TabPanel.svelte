@@ -7,8 +7,9 @@
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		class?: string
 		style?: string
 		id?: string
@@ -17,17 +18,21 @@
 		children?: Snippet
 	}
 
+	/** Other native attributes and events go to `<fluent-tab-panel>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		class: className = "",
 		style = "",
 		id = undefined,
 		active = true,
 		defer = false,
-		children = undefined
+		children = undefined,
+		...rest
 	}: Props = $props()
 </script>
 
-<fluent-tab-panel class={className} {...(style ? { style } : {})} {...(id ? { id } : {})} hidden={!active} >
+<fluent-tab-panel {...rest} class={className} {...(style ? { style } : {})} {...(id ? { id } : {})} hidden={!active} >
 	{#if children}
 		{@render children?.()}
 	{/if}

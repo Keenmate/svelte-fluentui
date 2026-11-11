@@ -12,7 +12,8 @@
 	const properties: Property[] = [
 		{name: "stack", type: "boolean", default: "true", description: "Stack to a single column below 600px container width. Only applies in 3-part mode (when start/center/end are provided)."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names appended after the built-in fluent-footer class"},
-		{name: "style", type: "string", default: '""', description: "Inline style string"}
+		{name: "style", type: "string", default: '""', description: "Inline style string"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root footer"}
 	]
 
 	const callbacks: Property[] = []

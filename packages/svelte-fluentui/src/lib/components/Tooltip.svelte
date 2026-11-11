@@ -12,15 +12,21 @@
 		autoUpdate,
 		type Placement
 	} from "@floating-ui/dom"
+	import type {RestProps} from "../types/index.js"
 
 	/** Logical position: `start` / `end` follow the anchor's text direction. */
 	type Position = "top" | "bottom" | "start" | "end"
 	type PhysicalSide = "top" | "bottom" | "left" | "right"
 
-	type Props = {
+	type OwnProps = {
 		class?: string
 		style?: string
-		/** Forces visibility (default: shows on hover). */
+		/**
+		 * Visibility. Leave `undefined` (the default) for hover/focus-driven
+		 * showing; in that mode the tooltip writes the current state back, so
+		 * `bind:visible` tracks it and assigning `true`/`false` shows/hides it
+		 * programmatically. Start with `true`/`false` to force it (hover ignored).
+		 */
 		visible?: boolean
 		/** HTML id of the element the tooltip is positioned relative to. */
 		anchor?: string
@@ -33,16 +39,24 @@
 		maxWidth?: string
 	}
 
+	/** Other native attributes and events (`id`, `aria-*`, …) go to the tooltip `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		class: className = "",
 		style = "",
-		visible = undefined,
+		visible = $bindable(),
 		anchor = undefined,
 		delay = 250,
 		position = "top",
 		children = undefined,
-		maxWidth = undefined
+		maxWidth = undefined,
+		...rest
 	}: Props = $props()
+
+	// Hover/focus-driven unless the consumer forced a value at mount. In
+	// hover mode the tooltip writes `visible` itself (bindable).
+	const hoverDriven = untrack(() => visible === undefined)
 
 	const GAP = 8
 
@@ -131,11 +145,13 @@
 		requestAnimationFrame(() => {
 			startAutoUpdate()
 			isVisible = true
+			if (hoverDriven) visible = true
 		})
 	}
 
 	function hideFn() {
 		isVisible = false
+		if (hoverDriven) visible = false
 	}
 
 	function startShowDelay() {
@@ -168,16 +184,16 @@
 	}
 
 	function handleAnchorMouseEnter() {
-		if (visible === undefined) startShowDelay()
+		if (hoverDriven) startShowDelay()
 	}
 	function handleAnchorMouseLeave() {
-		if (visible === undefined) startHideDelay()
+		if (hoverDriven) startHideDelay()
 	}
 	function handleTooltipMouseEnter() {
 		clearHideDelay()
 	}
 	function handleTooltipMouseLeave() {
-		if (visible === undefined) startHideDelay()
+		if (hoverDriven) startHideDelay()
 	}
 	function handleTransitionEnd() {
 		if (!isVisible && !shouldShow) {
@@ -216,6 +232,12 @@
 		}
 	})
 
+	// Hover mode, hidden from outside (`visible = false`): drop the hover state
+	// too, so the next hover shows it again.
+	$effect(() => {
+		if (hoverDriven && visible === false) untrack(() => (isVisible = false))
+	})
+
 	$effect(() => {
 		if (visible === true && tooltipElement && !cleanupAutoUpdate) {
 			startAutoUpdate()
@@ -227,6 +249,7 @@
 
 {#if isRendered || shouldShow}
 	<div
+		{...rest}
 		use:portal
 		bind:this={tooltipElement}
 		class="fluent-tooltip {placementSide} {className}"

@@ -126,9 +126,10 @@
 	import {portal} from "../actions/portal.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {resolveActionItem, runAction} from "../action-items/index.js"
+	import type {RestProps} from "../types/index.js"
 
 
-	type Props = {
+	type OwnProps = {
 		modal?: boolean
 		/** Whether the dialog is open (bindable). */
 		open?: boolean
@@ -168,8 +169,12 @@
 		size?: "small" | "medium" | "large" | "extra-large" | "full"
 		width?: string
 		height?: string
+		class?: string
 		style?: string
 	}
+
+	/** Other native attributes and events (`id`, `data-*`, `onkeydown`, …) go to `<fluent-dialog>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		    modal = undefined,
@@ -196,7 +201,9 @@
 		    size = "medium",
 		    width = undefined,
 		    height = undefined,
-		    style = undefined
+		    class: className = undefined,
+		    style = undefined,
+		    ...rest
 	    }: Props = $props()
 
 	// Size mappings
@@ -358,9 +365,10 @@
 <fluent-dialog
 	use:portal
 	bind:this={element}
+	{...rest}
 	{...attrs({modal, trapFocus, ariaDescribedby, ariaLabelledby, ariaLabel})}
 	hidden={!open}
-	class="dialog-positioned"
+	class={["dialog-positioned", className]}
 	style={dialogStyle + (style ? ` ${style}` : '')}
 >
 	<div class="dialog-container">

@@ -1,34 +1,32 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../../types/index.js"
 
 	type Orientation = "horizontal" | "vertical"
 
-	type Props = {
+	type OwnProps = {
 		children?: Snippet
 		orientation?: Orientation
 		class?: string
 		style?: string
 	}
 
-	// Filter out null/undefined values from object to prevent Svelte 5 spreading errors
-	function filterNullProps(obj: Record<string, any> | undefined): Record<string, any> {
-		if (!obj) return {}
-		return Object.fromEntries(
-			Object.entries(obj).filter(([_, value]) => value != null)
-		)
-	}
+	/** Other native attributes and events (`id`, `role`, `aria-*`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		children = undefined,
 		orientation = "vertical",
 		class: className = "",
-		style = ""
+		style = "",
+		...rest
 	}: Props = $props()
 
 	let element: HTMLElement | undefined = $state()
 </script>
 
 <div
+	{...rest}
 	bind:this={element}
 	{style}
 	class="layout {className}"

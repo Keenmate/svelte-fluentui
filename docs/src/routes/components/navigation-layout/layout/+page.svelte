@@ -12,7 +12,8 @@
 	const properties: Property[] = [
 		{name: "orientation", type: '"horizontal" | "vertical"', default: '"vertical"', description: "Layout orientation"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names"},
-		{name: "style", type: "string", default: '""', description: "Inline style string"}
+		{name: "style", type: "string", default: '""', description: "Inline style string"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
 	]
 
 	const actions: Property[] = []

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import Button from "./Button.svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		/** Placeholder text shown in the pill. */
 		placeholder?: string
 		/**
@@ -16,6 +17,9 @@
 		onclick?: (event: MouseEvent) => void
 	}
 
+	/** Other native attributes and events (`id`, `title`, `onfocus`, …) go to the underlying `<fluent-button>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/i.test(navigator.platform)
 
 	let {
@@ -23,8 +27,13 @@
 		shortcut = isMac ? "⌘K" : "Ctrl K",
 		size = "medium",
 		class: className = "",
-		onclick = undefined
+		onclick = undefined,
+		...rest
 	}: Props = $props()
+
+	// Forwarded to a child component whose own prop types are narrower than
+	// HTMLAttributes (no `null`), so hand the spread over untyped.
+	const forwarded = $derived(rest as Record<string, unknown>)
 </script>
 
 {#snippet searchIcon()}
@@ -46,6 +55,7 @@
 	and the shortcut hint pins to the trailing edge.
 -->
 <Button
+	{...forwarded}
 	appearance="neutral"
 	type="button"
 	class={`cp-trigger cp-trigger--${size} ${className}`.trim()}

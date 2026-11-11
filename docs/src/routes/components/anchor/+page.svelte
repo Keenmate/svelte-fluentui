@@ -27,7 +27,8 @@
 		{name: "type", type: "string", default: "undefined", description: "Hint of the linked resource's MIME type"},
 		{name: "appearance", type: '"neutral" | "accent" | "hypertext" | "stealth" | "transparent"', default: "undefined", description: "Visual style variant"},
 		{name: "preventDefault", type: "boolean", default: "false", description: "Prevent default navigation behavior"},
-		{name: "use", type: "(node: HTMLAnchorElement) => any", default: "undefined", description: "Svelte action applied to the anchor element"}
+		{name: "use", type: "(node: HTMLAnchorElement) => any", default: "undefined", description: "Svelte action applied to the anchor element"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-anchor"}
 	]
 
 	const callbacks: Property[] = [

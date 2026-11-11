@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 	/**
 	 * Custom Badge Component - FluentUI styled
 	 *
@@ -14,7 +15,7 @@
 	type BadgeAppearance = "accent" | "lightweight" | "neutral" | "outline" | "tint" | (string & {})
 	type BadgeSize = "extra-small" | "small" | "medium" | "large" | "extra-large"
 
-	type Props = {
+	type OwnProps = {
 		color?: BadgeColor
 		fill?: string
 		appearance?: BadgeAppearance
@@ -41,10 +42,14 @@
 		/** Native tooltip; surface the full text here when truncating. */
 		title?: string
 		children?: Snippet
+		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
 		class?: string
 		style?: string
 	}
+
+	/** Other native attributes and events (`id`, `role`, `aria-*`, `onkeydown`, …) go to the root `<span>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		color = undefined,
@@ -62,7 +67,8 @@
 		children = undefined,
 		onclick = undefined,
 		class: className = "",
-		style = ""
+		style = "",
+		...rest
 	}: Props = $props()
 
 	// ellipsisStart implies truncate
@@ -104,6 +110,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <span
+	{...rest}
 	class={classes}
 	style={computedStyle || null}
 	title={title || null}

@@ -9,7 +9,9 @@
 		description: string
 	}
 
-	const properties: Property[] = []
+	const properties: Property[] = [
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
+	]
 
 	const actions: Property[] = []
 

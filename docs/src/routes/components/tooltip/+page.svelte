@@ -1,6 +1,8 @@
 <script lang="ts">
-	import {Tooltip, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
+	import {Tooltip, Button, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
+
+	let boundVisible = $state<boolean | undefined>(undefined)
 
 	type Property = {
 		name: string
@@ -16,7 +18,8 @@
 		{name: "maxWidth", type: "string", default: "undefined", description: "Maximum width for wrapping long content"},
 		{name: "position", type: '"top" | "bottom" | "start" | "end"', default: '"top"', description: "Position relative to the anchor; start/end follow the anchor's text direction"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
-		{name: "visible", type: "boolean", default: "undefined", description: "Forces tooltip to be visible (default: shows on hover)"}
+		{name: "visible", type: "boolean", default: "undefined", description: "Bindable. undefined (default) = shown on hover/focus; the tooltip writes the state back so bind:visible tracks it and assigning true/false shows/hides it. Starting with true/false forces it and ignores hover."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the tooltip div"}
 	]
 
 	const actions: Property[] = []
@@ -97,6 +100,22 @@
 				{/snippet}
 			</Tooltip>
 		</p>
+
+		<h3>Bindable visibility</h3>
+		<p>
+			Leave <code>visible</code> undefined for hover behaviour and <code>bind:visible</code> to observe it;
+			assigning <code>true</code>/<code>false</code> shows or hides it programmatically.
+		</p>
+		<Stack orientation="horizontal" gap="1rem" verticalAlign="center">
+			<span id="bound-visible" style="cursor: pointer; text-decoration: underline;">Hover me</span>
+			<Tooltip anchor="bound-visible" position="end" bind:visible={boundVisible}>
+				{#snippet children()}
+					Bound tooltip
+				{/snippet}
+			</Tooltip>
+			<Button onclick={() => (boundVisible = !boundVisible)}>Toggle</Button>
+			<span>visible: <code data-testid="tooltip-bound-state">{String(boundVisible)}</code></span>
+		</Stack>
 
 		<h3>With delay</h3>
 		<p>

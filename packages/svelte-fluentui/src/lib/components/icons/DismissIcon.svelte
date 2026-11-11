@@ -1,9 +1,19 @@
 <script lang="ts">
-	let {size = 14}: {size?: number | string} = $props()
+	import type {SVGAttributes} from "svelte/elements"
+
+	type OwnProps = {
+		size?: number | string
+	}
+
+	/** Other native attributes (`class`, `style`, `part`, …) go to the `<svg>`. */
+	type Props = OwnProps & Omit<SVGAttributes<SVGSVGElement>, keyof OwnProps>
+
+	let {size = 14, class: className = undefined, ...rest}: Props = $props()
 </script>
 
 <svg
-	class="fluent-dismiss-icon"
+	{...rest}
+	class={["fluent-dismiss-icon", className]}
 	width={size}
 	height={size}
 	viewBox="0 0 24 24"

@@ -6,8 +6,9 @@
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import type {CommandPaletteItem, CommandPaletteFilter, CommandPaletteActionDetail} from "./CommandPalette.types.js"
 	import {createLinkActivation, resolveActionItem, runAction} from "../action-items/index.js"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		/** Items to search. Each is either navigation (`href`) or an action (`onClick`). */
 		items: CommandPaletteItem[]
 		/** Controlled open state. Bind it to drive the palette from your own trigger. */
@@ -44,6 +45,9 @@
 		footer?: Snippet
 	}
 
+	/** Other native attributes and events (`id`, `class`, `aria-label`, …) go to the palette panel (`role="dialog"`). */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		items,
 		open = $bindable(false),
@@ -59,7 +63,9 @@
 		onOpenChange = undefined,
 		item: itemSnippet = undefined,
 		empty: emptySnippet = undefined,
-		footer: footerSnippet = undefined
+		footer: footerSnippet = undefined,
+		class: className = undefined,
+		...rest
 	}: Props = $props()
 
 	let query = $state("")
@@ -332,10 +338,11 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div class="cp-backdrop" onclick={closePalette}></div>
 		<div
-			class="cp-panel"
 			role="dialog"
 			aria-modal="true"
 			aria-label="Command palette"
+			{...rest}
+			class={["cp-panel", className]}
 		>
 			<div class="cp-search-row">
 				<svg class="cp-search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">

@@ -7,16 +7,21 @@
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		children?: Snippet
 	}
 
+	/** Other native attributes and events (`class`, `style`, `aria-label`, …) go to `<fluent-breadcrumb>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
-		children = undefined
-	    }: Props = $props()
+		children = undefined,
+		...rest
+	}: Props = $props()
 </script>
 
-<fluent-breadcrumb >
+<fluent-breadcrumb {...rest}>
 	{@render children?.()}
 </fluent-breadcrumb>

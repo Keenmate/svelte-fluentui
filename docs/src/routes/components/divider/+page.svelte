@@ -13,7 +13,8 @@
 		{name: "orientation", type: '"horizontal" | "vertical"', default: '"horizontal"', description: "Layout direction of the divider line"},
 		{name: "role", type: '"separator" | "presentation"', default: '"separator"', description: "ARIA role — `presentation` removes the divider from the accessibility tree when it's purely decorative"},
 		{name: "class", type: "string", default: '""', description: "Extra class names forwarded to the host"},
-		{name: "style", type: "string", default: '""', description: "Inline style appended after the wrapper's own color override. Use to repoint `--neutral-stroke-divider-rest` for a custom color, or set `height` for vertical dividers"}
+		{name: "style", type: "string", default: '""', description: "Inline style appended after the wrapper's own color override. Use to repoint `--neutral-stroke-divider-rest` for a custom color, or set `height` for vertical dividers"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-divider"}
 	]
 
 	const propertyColumns = [

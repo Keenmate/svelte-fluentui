@@ -2,8 +2,9 @@
 	import type {Snippet} from "svelte"
 	import NavExpander from "./NavExpander.svelte"
 	import {styleList} from "../../helpers/html.js"
+	import type {RestProps} from "../../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		width?: string
 		collapsed?: boolean
 		collapsible?: boolean
@@ -11,12 +12,16 @@
 		class?: string
 	}
 
+	/** Other native attributes and events (`id`, `aria-label`, …) go to the root `<div role="menu">`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		    width       = undefined,
 		    collapsed   = $bindable(),
 		    collapsible = undefined,
 		    children    = undefined,
-		    class: className = undefined
+		    class: className = undefined,
+		    ...rest
 	    }: Props = $props()
 
 	const computedStyle = $derived(styleList(
@@ -26,6 +31,7 @@
 
 <div
 	role="menu"
+	{...rest}
 	class="fluent-nav-menu {className || ''}"
 	class:collapsed
 	style={computedStyle}

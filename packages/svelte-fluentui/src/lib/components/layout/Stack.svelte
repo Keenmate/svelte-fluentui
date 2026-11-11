@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		children?: Snippet
 		orientation?: "vertical" | "horizontal"
 		horizontalAlign?: "start" | "center" | "end" | "stretch" | "space-between" | "space-around"
@@ -18,13 +19,8 @@
 		style?: string
 	}
 
-	// Filter out null/undefined values from object to prevent Svelte 5 spreading errors
-	function filterNullProps(obj: Record<string, any> | undefined): Record<string, any> {
-		if (!obj) return {}
-		return Object.fromEntries(
-			Object.entries(obj).filter(([_, value]) => value != null)
-		)
-	}
+	/** Other native attributes and events (`id`, `role`, `aria-*`, `onclick`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		children = undefined,
@@ -39,7 +35,8 @@
 		reversed = false,
 		wrap = false,
 		class: className = "",
-		style = ""
+		style = "",
+		...rest
 	}: Props = $props()
 
 	const computedClass = $derived([
@@ -55,6 +52,7 @@
 </script>
 
 <div
+	{...rest}
 	class={computedClass}
 	data-reverse={reversed ? "true" : undefined}
 	style:flex-wrap={wrap ? "wrap" : undefined}

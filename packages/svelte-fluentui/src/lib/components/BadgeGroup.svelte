@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 	/**
 	 * BadgeGroup — a flex-wrap container that limits how many child badges are
 	 * visible. Ported from pure-admin's `pa-badge-group`, with the visible limit
@@ -13,13 +14,15 @@
 	 *   tail), and clicking it reveals/collapses the hidden badges.
 	 *
 	 * Hidden children stay in the DOM (so filtering/sorting still see them) —
-	 * they're just `display: none`. `showAll` forces everything visible.
+	 * they're just `display: none`. `showAll` (bindable) reveals everything; in
+	 * expandable mode the built-in toggle flips it, so `bind:showAll` tracks
+	 * the expanded state.
 	 */
 
-	type Props = {
+	type OwnProps = {
 		/** Max badges shown before the overflow is hidden. */
 		limit?: number
-		/** Reveal all children, ignoring `limit` (hard override). */
+		/** Reveal all children, ignoring `limit`. Bindable; the expandable toggle writes it. */
 		showAll?: boolean
 		/** Render a built-in clickable "+N more" / "Show less" toggle. */
 		expandable?: boolean
@@ -34,20 +37,23 @@
 		style?: string
 	}
 
+	/** Other native attributes and events (`id`, `role`, `aria-*`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		limit = 5,
-		showAll = false,
+		showAll = $bindable(false),
 		expandable = false,
 		moreLabel = (n: number) => `+${n} more`,
 		lessLabel = "Show less",
 		gap = "0.5rem",
 		children = undefined,
 		class: className = "",
-		style = ""
+		style = "",
+		...rest
 	}: Props = $props()
 
 	let containerEl: HTMLDivElement | undefined = $state()
-	let expanded = $state(false)
 	let hiddenCount = $state(0)
 
 	function badgeChildren(): HTMLElement[] {
@@ -61,7 +67,7 @@
 	function applyLimit() {
 		const kids = badgeChildren()
 		const total = kids.length
-		const revealed = showAll || (expandable && expanded)
+		const revealed = showAll
 		const lastIndex = total - 1
 		kids.forEach((el, i) => {
 			let hide: boolean
@@ -75,7 +81,7 @@
 	}
 
 	function toggle() {
-		expanded = !expanded
+		showAll = !showAll
 	}
 
 	$effect(() => {
@@ -83,7 +89,6 @@
 		void limit
 		void showAll
 		void expandable
-		void expanded
 		applyLimit()
 
 		// re-apply when children are added/removed (dynamic lists)
@@ -94,14 +99,15 @@
 </script>
 
 <div
+	{...rest}
 	bind:this={containerEl}
 	class={`badge-group${className ? ` ${className}` : ""}`}
 	style={`--badge-group-gap: ${gap};${style ? ` ${style}` : ""}`}
 >
 	{@render children?.()}
 	{#if expandable && hiddenCount > 0}
-		<button type="button" class="badge-group-toggle" aria-expanded={expanded} onclick={toggle}>
-			{expanded ? lessLabel : moreLabel(hiddenCount)}
+		<button type="button" class="badge-group-toggle" aria-expanded={showAll} onclick={toggle}>
+			{showAll ? lessLabel : moreLabel(hiddenCount)}
 		</button>
 	{/if}
 </div>

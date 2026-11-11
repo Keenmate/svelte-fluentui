@@ -1,17 +1,25 @@
 <script lang="ts">
-	type Props = {
+	import type {RestProps} from "../../types/index.js"
+
+	type OwnProps = {
 		width?: string | number
 	}
 
+	/** Other native attributes and events (`id`, `class`, `style`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
-		    width    = undefined
-	    }: Props = $props()
+		width = undefined,
+		class: className = undefined,
+		...rest
+	}: Props = $props()
 
 	let widthCssVar = $derived(width && `${width}px`)
 </script>
 
 <div
-	class="spacer"
+	{...rest}
+	class={["spacer", className]}
 	class:auto-width={!width}
 	style:--spacer-width={widthCssVar}
 ></div>

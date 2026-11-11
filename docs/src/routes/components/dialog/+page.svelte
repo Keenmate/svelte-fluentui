@@ -38,7 +38,8 @@
 		{name: "height", type: "string", default: "undefined", description: "Custom height (overrides size)"},
 		{name: "ariaDescribedby", type: "string", default: "undefined", description: "Accessibility: described by"},
 		{name: "ariaLabelledby", type: "string", default: "undefined", description: "Accessibility: labelled by"},
-		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label"}
+		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-dialog"}
 	]
 
 	const actions: Property[] = [

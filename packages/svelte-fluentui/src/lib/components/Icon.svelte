@@ -1,11 +1,12 @@
 <script lang="ts">
 	import iconMap from 'virtual:fluentui-icons'
+	import type {RestProps} from '../types/index.js'
 
 	type IconSize = 16 | 20 | 24 | 28 | 32 | 48
 	type IconVariant = 'regular' | 'filled'
 	type IconColor = 'neutral' | 'accent' | 'warning' | 'info' | 'error' | 'success' | 'fill' | 'fill-inverse' | 'lightweight' | 'disabled' | 'custom'
 
-	type Props = {
+	type OwnProps = {
 		name: string
 		size?: IconSize
 		variant?: IconVariant
@@ -17,6 +18,9 @@
 		title?: string
 		width?: string
 	}
+
+	/** Other native attributes and events (`id`, `role`, `aria-*`, `onclick`, …) go to the root `<span>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	// Color enum to CSS variable mapping (matching FluentUI Blazor)
 	const colorMap: Record<IconColor, string> = {
@@ -43,7 +47,8 @@
 		class: className = '',
 		style: styleParam = '',
 		title = undefined,
-		width = undefined
+		width = undefined,
+		...rest
 	}: Props = $props()
 
 	// Resolve the fill color: color enum > customColor > currentColor
@@ -153,18 +158,18 @@
 </script>
 
 {#if error}
-	<span class="fluent-icon-error" style={computedStyle} title={error}>⚠️</span>
+	<span {...rest} class="fluent-icon-error" style={computedStyle} title={error}>⚠️</span>
 {:else if isLoading}
-	<span class="fluent-icon-loading" style={computedStyle} title="Loading icon..."></span>
+	<span {...rest} class="fluent-icon-loading" style={computedStyle} title="Loading icon..."></span>
 {:else if hoverEffect && svgContentFilled}
 	<!-- Hover effect: show both regular and filled -->
-	<span class="fluent-icon fluent-icon-hoverable {className}" style={computedStyle}>
+	<span {...rest} class="fluent-icon fluent-icon-hoverable {className}" style={computedStyle}>
 		<span class="icon-regular" {title}>{@html svgContent}</span>
 		<span class="icon-filled" {title}>{@html svgContentFilled}</span>
 	</span>
 {:else}
 	<!-- Standard icon without hover effect -->
-	<span class="fluent-icon {className}" style={computedStyle} {title}>
+	<span {...rest} class="fluent-icon {className}" style={computedStyle} {title}>
 		{@html svgContent}
 	</span>
 {/if}

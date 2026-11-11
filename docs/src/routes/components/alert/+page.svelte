@@ -14,7 +14,8 @@
 		{name: "title", type: "string", default: "undefined", description: "The header/title text"},
 		{name: "dismissible", type: "boolean", default: "false", description: "Whether the alert can be dismissed"},
 		{name: "class", type: "string", default: "undefined", description: "Custom CSS classes"},
-		{name: "style", type: "string", default: "undefined", description: "Inline styles"}
+		{name: "style", type: "string", default: "undefined", description: "Inline styles"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
 	]
 
 	const slots: Property[] = [

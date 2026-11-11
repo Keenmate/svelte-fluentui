@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 	/**
 	 * Label — a lightweight, tag-style indicator: tinted background + coloured
 	 * border in the variant colour, medium weight. Sits alongside Badge for
@@ -12,7 +13,7 @@
 	type LabelColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info"
 	type LabelSize = "extra-small" | "small" | "medium" | "large" | "extra-large"
 
-	type Props = {
+	type OwnProps = {
 		color?: LabelColor
 		size?: LabelSize
 		/** Transparent background; fills with the tint on hover. */
@@ -20,10 +21,14 @@
 		/** Icon slot rendered before the label text. */
 		icon?: Snippet
 		children?: Snippet
+		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
 		class?: string
 		style?: string
 	}
+
+	/** Other native attributes and events (`id`, `title`, `aria-*`, …) go to the root `<span>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		color = "primary",
@@ -33,7 +38,8 @@
 		children = undefined,
 		onclick = undefined,
 		class: className = "",
-		style = ""
+		style = "",
+		...rest
 	}: Props = $props()
 
 	let classes = $derived.by(() => {
@@ -47,7 +53,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<span class={classes} style={style || null} onclick={onclick}>
+<span {...rest} class={classes} style={style || null} onclick={onclick}>
 	{#if icon}<span class="fluent-label-icon">{@render icon()}</span>{/if}
 	{@render children?.()}
 </span>

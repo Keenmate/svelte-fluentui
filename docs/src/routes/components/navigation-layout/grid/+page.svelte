@@ -46,7 +46,8 @@
 		{name: "justify", type: "JustifyContent", default: "flex-start", description: "Horizontal alignment of items (flex-spacing mode only)"},
 		{name: "adaptiveRendering", type: "boolean", default: "false", description: "Only render items for current breakpoint (flex-spacing mode only)"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names"},
-		{name: "style", type: "string", default: '""', description: "Inline CSS styles"}
+		{name: "style", type: "string", default: '""', description: "Inline CSS styles"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the outer grid-container div"}
 	]
 
 	const gridCallbacks: Property[] = [
@@ -69,7 +70,8 @@
 		{name: "adaptiveRendering", type: "boolean", default: "undefined", description: "Override parent Grid adaptiveRendering for this item"},
 		{name: "hiddenWhen", type: "GridItemHidden", default: "undefined", description: 'Hide item at a breakpoint. Supports exact (e.g. "xs"), "-up" (e.g. "md-up"), or "-down" (e.g. "lg-down") suffixes'},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names"},
-		{name: "style", type: "string", default: '""', description: "Inline CSS styles"}
+		{name: "style", type: "string", default: '""', description: "Inline CSS styles"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the item div"}
 	]
 
 	const gridItemCallbacks: Property[] = []

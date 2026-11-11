@@ -1,12 +1,15 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../../types/index.js"
 	import Stack from "../layout/Stack.svelte"
 	import {StackHorizontalAlign, StackOrientation, StackVerticalAlign} from "../../fluent-ui/constants/stack.js"
 
-	type Props = {
+	type OwnProps = {
 		href?: string
 		rel?: string
+		target?: string
 		count?: number
+		/** Highlights the item as the current one. Controlled by the app (e.g. from the current route). */
 		active?: boolean
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
@@ -15,14 +18,19 @@
 		class?: string
 	}
 
+	/** Other native attributes and events (`target`, `title`, `aria-current`, `onkeydown`, …) go to the inner `<a>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		    href     = undefined,
 		    rel      = undefined,
-		    active   = $bindable(),
+		    target   = undefined,
+		    active   = undefined,
 		    onclick = undefined,
 		    icon = undefined,
 		    children = undefined,
-		    class: className = undefined
+		    class: className = undefined,
+		    ...rest
 	    }: Props = $props()
 </script>
 
@@ -31,8 +39,10 @@
 >
 	<div class="fluentui-counterbadge-container">
 		<a
+			{...rest}
 			{href}
 			{rel}
+			{target}
 			class:active
 			{onclick}
 		>

@@ -2,6 +2,8 @@
 	import {Badge, Label, CompositeBadge, BadgeGroup, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
+	let groupShowAll = $state(false)
+
 	type Property = {
 		name: string
 		type: string
@@ -20,14 +22,16 @@
 		{name: "ellipsisStart", type: "boolean", default: "false", description: "Truncate from the START (keeps the tail visible) — for paths/breadcrumbs. Implies truncate."},
 		{name: "maxWidth", type: "string", default: "undefined", description: "Max width (any CSS length) that drives truncation."},
 		{name: "title", type: "string", default: "undefined", description: "Native tooltip; surface the full text here when truncating."},
-		{name: "radius", type: "string", default: "undefined", description: "Custom border-radius (any CSS length). Wins over default and circular radii via inline-style specificity."}
+		{name: "radius", type: "string", default: "undefined", description: "Custom border-radius (any CSS length). Wins over default and circular radii via inline-style specificity."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the Badge span"}
 	]
 
 	const labelProps: Property[] = [
 		{name: "color", type: '"primary" | "secondary" | "success" | "warning" | "danger" | "info"', default: '"primary"', description: "Semantic color."},
 		{name: "size", type: '"extra-small" | "small" | "medium" | "large" | "extra-large"', default: '"medium"', description: "Size scale (matches Badge)."},
 		{name: "outline", type: "boolean", default: "false", description: "Transparent background; fills with the tint on hover."},
-		{name: "icon", type: "Snippet", default: "undefined", description: "Icon slot before the label text."}
+		{name: "icon", type: "Snippet", default: "undefined", description: "Icon slot before the label text."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the Label span"}
 	]
 
 	const compositeProps: Property[] = [
@@ -39,16 +43,18 @@
 		{name: "button", type: "Snippet", default: "× glyph", description: "Right button section content."},
 		{name: "showButton", type: "boolean", default: "true", description: "Render the button section."},
 		{name: "onLabelClick", type: "(ctx: {sourceEvent}) => void", default: "undefined", description: "Label click handler (adds pointer/hover)."},
-		{name: "onButtonClick", type: "(ctx: {sourceEvent}) => void", default: "undefined", description: "Button click handler."}
+		{name: "onButtonClick", type: "(ctx: {sourceEvent}) => void", default: "undefined", description: "Button click handler."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the CompositeBadge root div"}
 	]
 
 	const groupProps: Property[] = [
 		{name: "limit", type: "number", default: "5", description: "Max badges shown before overflow is hidden."},
-		{name: "showAll", type: "boolean", default: "false", description: "Reveal all children, ignoring limit (hard override)."},
+		{name: "showAll", type: "boolean", default: "false", description: "Reveal all children, ignoring limit. Bindable: in expandable mode the built-in toggle writes it, so bind:showAll tracks the expanded state."},
 		{name: "expandable", type: "boolean", default: "false", description: "Render a built-in clickable +N more / Show less toggle (don't supply a manual tail)."},
 		{name: "moreLabel", type: "(hiddenCount: number) => string", default: "n => `+${n} more`", description: "Label for the collapsed toggle."},
 		{name: "lessLabel", type: "string", default: '"Show less"', description: "Label for the expanded toggle."},
-		{name: "gap", type: "string", default: '"0.5rem"', description: "Gap between badges (any CSS length)."}
+		{name: "gap", type: "string", default: '"0.5rem"', description: "Gap between badges (any CSS length)."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the BadgeGroup root div"}
 	]
 
 	const callbacks: Property[] = [
@@ -374,8 +380,12 @@
 		</p>
 
 		<h3>Expandable (click to reveal)</h3>
-		<p>With <code>expandable</code>, the group owns the toggle — click <code>+N more</code> to show the rest, <code>Show less</code> to collapse.</p>
-		<BadgeGroup limit={5} expandable>
+		<p>
+			With <code>expandable</code>, the group owns the toggle — click <code>+N more</code> to show the rest,
+			<code>Show less</code> to collapse. The toggle writes <code>showAll</code>, so <code>bind:showAll</code>
+			tracks it (currently <code data-testid="badge-group-show-all">{groupShowAll}</code>).
+		</p>
+		<BadgeGroup limit={5} expandable bind:showAll={groupShowAll}>
 			<Badge color="brand" appearance="accent">React</Badge>
 			<Badge color="informative">TypeScript</Badge>
 			<Badge color="success">Node.js</Badge>

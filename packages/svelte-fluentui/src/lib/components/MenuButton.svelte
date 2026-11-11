@@ -18,8 +18,9 @@
 	import { portal } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
 	import { resolveMenuEntries, runAction } from "../action-items/index.js"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		/** Menu entries: items (`{id, text, icon, isDisabled, isDanger, onClick, …}`) and dividers (`{divider: true}`). */
 		items: MenuEntry<object>[]
 		/** Button appearance (passed through to `<fluent-button>`). */
@@ -51,6 +52,9 @@
 		beforeActionCallback?: (detail: MenuButtonActionDetail) => unknown
 	}
 
+	/** Other native attributes and events (`id`, `title`, `aria-label`, `onfocus`, …) go to the trigger `<fluent-button>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		items,
 		appearance = undefined,
@@ -64,7 +68,8 @@
 		end = undefined,
 		onOpenChange = undefined,
 		onAction = undefined,
-		beforeActionCallback = undefined
+		beforeActionCallback = undefined,
+		...rest
 	}: Props = $props()
 
 	/*
@@ -178,6 +183,7 @@
 <span bind:this={anchorEl} class="fluent-menu-button-anchor">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<fluent-button
+		{...rest}
 		{...attrs({appearance, disabled, style})}
 		class={className}
 		aria-haspopup="menu"

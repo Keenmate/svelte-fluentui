@@ -6,14 +6,19 @@
 </script>
 
 <script lang="ts">
-	type Props = {
+	import type {RestProps} from "../types/index.js"
+
+	type OwnProps = {
 		class?: string
 		style?: string
 		orientation?: "horizontal" | "vertical"
 		role?: "separator" | "presentation"
 	}
 
-	let {class: className = "", style = "", orientation = "horizontal", role = "separator"}: Props = $props()
+	/** Other native attributes and events go to `<fluent-divider>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
+	let {class: className = "", style = "", orientation = "horizontal", role = "separator", ...rest}: Props = $props()
 </script>
 
 <!-- fluent-divider's shadow DOM borders itself with `--neutral-stroke-divider-rest`
@@ -22,9 +27,9 @@
      `--neutral-stroke-rest` so the line actually shows up. The variable is
      inherited into the shadow DOM, so setting it on the host suffices. -->
 <fluent-divider
+	{...rest}
 	class={className}
 	{orientation}
 	{role}
 	style="--neutral-stroke-divider-rest: var(--neutral-stroke-rest); {style}"
 ></fluent-divider>
-

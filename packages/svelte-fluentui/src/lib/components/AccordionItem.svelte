@@ -15,13 +15,16 @@
 <script lang="ts">
 	import {accordionContext} from "../contexts.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		/** Unique item identifier. Required. */
 		id: string
 		/** Heading level for the role="heading" wrapper (accessibility). */
 		headingLevel?: string | number
-		/** Explicitly control expanded state; falls back to the parent value. */
+		/** Explicitly control expanded state; falls back to the parent value when
+		 * left `undefined`. Bindable: once set to `true`/`false` (or when the item
+		 * has no parent `<Accordion>`), user toggles write the new state back. */
 		expanded?: boolean
 		/** Disable the item: not togglable and skipped in keyboard navigation. */
 		disabled?: boolean
@@ -32,22 +35,27 @@
 		/** Custom expand/collapse icon. Receives the current isExpanded boolean. */
 		icon?: Snippet<[isExpanded: boolean]>
 		children?: Snippet
-		/** Fires when this item expands or collapses. */
 		/** Fires when the user expands or collapses this item. */
 		onExpandedChange?: (ctx: {expanded: boolean; sourceEvent: Event}) => void
 	}
 
+	/** Other native attributes and events (`class`, `style`, `data-*`, …) go to the root `<div>`.
+	 * `id` is the item identifier and lands on the heading button. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		id,
 		headingLevel = 2,
-		expanded = undefined,
+		expanded = $bindable(),
 		heading = undefined,
 		start = undefined,
 		end = undefined,
 		icon = undefined,
 		disabled = false,
 		children = undefined,
-		onExpandedChange = undefined
+		onExpandedChange = undefined,
+		class: className = undefined,
+		...rest
 	}: Props = $props()
 
 	const ctx = accordionContext.get()
@@ -58,8 +66,14 @@
 
 	function handleClick(ev: MouseEvent) {
 		if (disabled) return
+		const next = !isExpanded
+		// Controlled (explicit `expanded`) or standalone (no parent): write the
+		// new state back so `bind:expanded` and uncontrolled standalone items work.
+		// Parent-driven items leave `expanded` undefined so they keep following
+		// the Accordion value.
+		if (expanded !== undefined || !ctx) expanded = next
 		ctx?.toggle(id)
-		onExpandedChange?.({expanded: !isExpanded, sourceEvent: ev})
+		onExpandedChange?.({expanded: next, sourceEvent: ev})
 	}
 
 	function handleKeydown(ev: KeyboardEvent) {
@@ -67,7 +81,7 @@
 	}
 </script>
 
-<div class="fluent-accordion-item" class:expanded={isExpanded} class:disabled>
+<div {...rest} class={["fluent-accordion-item", className]} class:expanded={isExpanded} class:disabled>
 	<!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
 	<div class="fluent-accordion-item__heading" class:toggle-start={toggleStart} role="heading" aria-level={Number(headingLevel)}>
 		{#if start}

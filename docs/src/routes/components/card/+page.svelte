@@ -15,7 +15,8 @@
 		{name: "areaRestricted", type: "boolean", default: "undefined", description: "Restrict area"},
 		{name: "class", type: "string", default: "undefined", description: "Custom CSS classes"},
 		{name: "style", type: "string", default: "undefined", description: "Inline styles"},
-		{name: "minimalStyle", type: "boolean", default: "undefined", description: "Use minimal styling"}
+		{name: "minimalStyle", type: "boolean", default: "undefined", description: "Use minimal styling"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
 	]
 
 	const slots: Property[] = [

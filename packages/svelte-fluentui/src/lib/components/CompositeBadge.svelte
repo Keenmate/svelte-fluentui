@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 	/**
 	 * CompositeBadge — a three-section chip: [icon][label][button].
 	 * Use for notification pills, status + count, or interactive/dismissible
@@ -13,7 +14,7 @@
 
 	type CompositeColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark"
 
-	type Props = {
+	type OwnProps = {
 		color?: CompositeColor
 		/** Override only the label (middle) section colour. */
 		labelColor?: CompositeColor
@@ -37,6 +38,9 @@
 		style?: string
 	}
 
+	/** Other native attributes and events (`id`, `title`, `aria-*`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		color = "primary",
 		labelColor = undefined,
@@ -49,7 +53,8 @@
 		onLabelClick = undefined,
 		onButtonClick = undefined,
 		class: className = "",
-		style = ""
+		style = "",
+		...rest
 	}: Props = $props()
 
 	let classes = $derived.by(() => {
@@ -62,7 +67,7 @@
 	})
 </script>
 
-<div class={classes} style={style || null}>
+<div {...rest} class={classes} style={style || null}>
 	{#if icon}<span class="composite-badge-icon">{@render icon()}</span>{/if}
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->

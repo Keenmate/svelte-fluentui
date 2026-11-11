@@ -13,7 +13,8 @@
 		{name: "id", type: "string", default: "undefined", description: "Unique identifier"},
 		{name: "class", type: "string", default: '""', description: "CSS class for styling"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
-		{name: "orientation", type: '"horizontal" | "vertical"', default: '"horizontal"', description: "Toolbar layout direction"}
+		{name: "orientation", type: '"horizontal" | "vertical"', default: '"horizontal"', description: "Toolbar layout direction"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-toolbar"}
 	]
 
 	const actions: Property[] = []

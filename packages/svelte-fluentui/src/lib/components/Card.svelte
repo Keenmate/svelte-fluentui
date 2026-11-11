@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		width?: string | number
 		height?: string | number
 		areaRestricted?: boolean
@@ -11,6 +12,9 @@
 		children?: Snippet
 	}
 
+	/** Other native attributes and events (`id`, `onclick`, `aria-*`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		width = undefined,
 		height = undefined,
@@ -18,7 +22,8 @@
 		class: classParam = undefined,
 		style: styleParam = undefined,
 		minimalStyle = undefined,
-		children = undefined
+		children = undefined,
+		...rest
 	}: Props = $props()
 
 	let computedStyle = $derived.by(() => {
@@ -36,7 +41,7 @@
 	})
 </script>
 
-<div class={computedClass} style={computedStyle} >
+<div {...rest} class={computedClass} style={computedStyle} >
 	{@render children?.()}
 </div>
 

@@ -10,12 +10,13 @@
 		autoUpdate,
 		type Placement
 	} from "@floating-ui/dom"
+	import type {RestProps} from "../types/index.js"
 
 	/** Logical position: `start` / `end` follow the anchor's text direction. */
 	type PositionType = "bottom" | "top" | "start" | "end"
 	type AlignType = "center" | "top"
 
-	type Props = {
+	type OwnProps = {
 		anchor?: HTMLElement
 		visible?: boolean
 		style?: string
@@ -38,6 +39,9 @@
 		children?: Snippet
 	}
 
+	/** Other native attributes and events (`id`, `class`, `role`, `onkeydown`, …) go to the region `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		anchor = undefined,
 		visible = false,
@@ -47,7 +51,9 @@
 		align: alignProp = "center",
 		matchWidth = true,
 		availableHeight = false,
-		children = undefined
+		children = undefined,
+		class: className = undefined,
+		...rest
 	}: Props = $props()
 
 	const isRtl = $derived(!!anchor && typeof getComputedStyle !== "undefined" && getComputedStyle(anchor).direction === "rtl")
@@ -162,11 +168,12 @@
 {#if anchor}
 	{#if visible}
 		<div
+			{...rest}
 			use:portal
 			use:topLayer
 			use:position={{anchor, placement, matchWidth, availableHeight}}
 			popover="manual"
-			class="positioning-region positioning-region-floating"
+			class={["positioning-region positioning-region-floating", className]}
 			{title}
 			style="position: fixed; top: 0; left: 0; {style}"
 		>
@@ -175,7 +182,7 @@
 	{/if}
 {:else}
 	<!-- Static wrapper mode (NavLink, NavExpander) — no anchor, just a layout passthrough. -->
-	<div class="positioning-region" {title} {style}>
+	<div {...rest} class={["positioning-region", className]} {title} {style}>
 		{@render children?.()}
 	</div>
 {/if}

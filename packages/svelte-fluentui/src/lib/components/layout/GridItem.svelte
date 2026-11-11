@@ -2,6 +2,7 @@
 	import {gridContext} from "../../contexts.js"
 	import {attrs} from "../../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../../types/index.js"
 	import {onMount} from "svelte"
 	import {
 		acquireContainer,
@@ -13,7 +14,7 @@
 	type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly"
 	type GridItemHidden = "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xs-up" | "sm-up" | "md-up" | "lg-up" | "xl-up" | "xxl-up" | "xs-down" | "sm-down" | "md-down" | "lg-down" | "xl-down" | "xxl-down"
 
-	type Props = {
+	type OwnProps = {
 		children?: Snippet
 		xs?: number
 		sm?: number
@@ -29,6 +30,9 @@
 		style?: string
 	}
 
+	/** Other native attributes and events (`id`, `role`, `aria-*`, …) go to the item `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		children = undefined,
 		xs = undefined,
@@ -42,7 +46,8 @@
 		adaptiveRendering = undefined,
 		hiddenWhen = undefined,
 		class: className = "",
-		style = ""
+		style = "",
+		...rest
 	}: Props = $props()
 
 	const grid = gridContext.get()
@@ -146,6 +151,7 @@
 
 {#if shouldRender() && !isHidden()}
 	<div
+		{...rest}
 		bind:this={itemElement}
 		class={className}
 		style={computedStyle}

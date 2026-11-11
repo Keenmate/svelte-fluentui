@@ -17,7 +17,8 @@
 		{name: "width", type: "string", default: "undefined", description: "Explicit NavMenu width. Defaults to 100% of parent"},
 		{name: "collapsed", type: "boolean", default: "undefined", description: "Collapsed state (bindable). Shrinks the menu to a narrow rail"},
 		{name: "collapsible", type: "boolean", default: "undefined", description: "Show a collapse/expand button at the top of the menu"},
-		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"}
+		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div role=menu"}
 	]
 
 	const navMenuCallbacks: Property[] = []
@@ -30,7 +31,8 @@
 		{name: "title", type: "string", default: "undefined", description: "Unique identifier used to persist expanded state in localStorage"},
 		{name: "expanded", type: "boolean", default: "false", description: "Expanded state (bindable)"},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the group and all its children"},
-		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"}
+		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the outer NavItem div"}
 	]
 
 	const navGroupCallbacks: Property[] = []
@@ -47,7 +49,8 @@
 		{name: "target", type: "string", default: "undefined", description: "Link target attribute"},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text (useful in collapsed mode)"},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the item"},
-		{name: "group", type: "boolean", default: "undefined", description: "Style the item as a group header"}
+		{name: "group", type: "boolean", default: "undefined", description: "Style the item as a group header"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the outer NavItem div"}
 	]
 
 	const navLinkItemCallbacks: Property[] = [
@@ -64,7 +67,8 @@
 	const navItemProperties: Property[] = [
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the item"},
 		{name: "group", type: "boolean", default: "undefined", description: "Style the item as a group header"},
-		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"}
+		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div role=menuitem"}
 	]
 
 	const navItemCallbacks: Property[] = [

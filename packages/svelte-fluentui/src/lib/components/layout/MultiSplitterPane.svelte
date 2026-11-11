@@ -19,8 +19,9 @@
 	import type {Snippet} from "svelte"
 	import {onMount, onDestroy} from "svelte"
 	import type {PaneHandle} from "../../types/multi-splitter.js"
+	import type {RestProps} from "../../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		children?: Snippet
 		/** Initial size: "200px" or "30%". If omitted, shares leftover with other unsized panes. */
 		size?: string
@@ -32,7 +33,12 @@
 		minimize?: boolean
 		class?: string
 		style?: string
+		/** Native `click` event on the pane, forwarded untouched. */
+		onclick?: (event: MouseEvent) => void
 	}
+
+	/** Other native attributes and events (`id`, `role`, `aria-*`, …) go to the pane `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		children = undefined,
@@ -41,7 +47,9 @@
 		max = undefined,
 		minimize = false,
 		class: className = "",
-		style = ""
+		style = "",
+		onclick = undefined,
+		...rest
 	}: Props = $props()
 
 	const ctx = multiSplitterContext.getRequired("MultiSplitterPane must be a direct child of MultiSplitter")
@@ -80,6 +88,7 @@
 		if (handle) ctx.onGutterDblClick(e, handle)
 	}
 	function handlePaneClick(e: MouseEvent) {
+		onclick?.(e)
 		if (handle) ctx.onPaneClick(e, handle)
 	}
 </script>
@@ -87,6 +96,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
+	{...rest}
 	bind:this={paneEl}
 	class="fluent-multi-splitter-pane fluent-multi-splitter-pane--{ctx.orientation} {className}"
 	class:fluent-multi-splitter-pane--minimized={isMinimized}

@@ -35,7 +35,8 @@
 		{name: "value", type: "string | string[]", default: "null", description: "Expanded item ID(s). In multiple mode, set to an array of every item id to expand all at once; null collapses all"},
 		{name: "multiple", type: "boolean", default: "false", description: "Allow multiple items open"},
 		{name: "togglePosition", type: '"start" | "end"', default: '"end"', description: "Side the expand/collapse chevron sits on. \"end\" = right (LTR default), \"start\" = left"},
-		{name: "gap", type: "string", default: "undefined", description: "Gap between items (any CSS length, e.g. \"0.5rem\"). Defaults to the FluentUI spacing"}
+		{name: "gap", type: "string", default: "undefined", description: "Gap between items (any CSS length, e.g. \"0.5rem\"). Defaults to the FluentUI spacing"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
 	]
 
 	const accordionCallbacks: Property[] = [
@@ -49,8 +50,9 @@
 	const accordionItemProperties: Property[] = [
 		{name: "id", type: "string", default: "Required", description: "Unique item identifier"},
 		{name: "headingLevel", type: "string | number", default: "2", description: "Heading level for accessibility (aria-level)"},
-		{name: "expanded", type: "boolean", default: "undefined", description: "Controls expanded state (falls back to parent Accordion's value)"},
-		{name: "disabled", type: "boolean", default: "false", description: "Disable the item: not togglable and skipped in keyboard navigation"}
+		{name: "expanded", type: "boolean", default: "undefined", description: "Controls expanded state; undefined falls back to the parent Accordion's value. Bindable: when set (or standalone without an Accordion), user toggles write the new state back."},
+		{name: "disabled", type: "boolean", default: "false", description: "Disable the item: not togglable and skipped in keyboard navigation"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div (id stays the item id on the heading button)"}
 	]
 
 	const accordionItemCallbacks: Property[] = [

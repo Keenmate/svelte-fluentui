@@ -8,8 +8,9 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		appearance?: string
 		autofocus?: boolean
 		disabled?: boolean
@@ -30,8 +31,12 @@
 		"aria-label"?: string
 		/** Native HTML `title` — text shown as a browser tooltip when hovering the button. */
 		title?: string
+		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
 	}
+
+	/** Other native attributes and events (`onkeydown`, `onfocus`, `id`, `aria-*`, …) go to `<fluent-button>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		appearance = undefined,
@@ -53,7 +58,8 @@
 		class: className = undefined,
 		"aria-label": ariaLabel = undefined,
 		title = undefined,
-		onclick = undefined
+		onclick = undefined,
+		...rest
 	}: Props = $props()
 </script>
 
@@ -61,6 +67,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-button
+	{...rest}
 	{...attrs({
 		type, name, appearance, autofocus, formaction, form, formenctype, formmethod,
 		formnovalidate, formtarget, disabled, style, class: className, "aria-label": ariaLabel,

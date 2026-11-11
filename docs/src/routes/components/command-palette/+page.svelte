@@ -19,7 +19,8 @@
 		{name: "shortcut", type: "string", default: '"mod+k"', description: "Global shortcut that toggles the palette. mod = ⌘ on Mac, Ctrl elsewhere"},
 		{name: "enableShortcut", type: "boolean", default: "true", description: "Register the built-in global shortcut listener. Disable to drive open yourself"},
 		{name: "closeOnSelect", type: "boolean", default: "true", description: "Close the palette after an item is selected"},
-		{name: "filterCallback", type: "({items, term}) => CommandPaletteItem[]", default: "undefined", description: "Override the built-in fuzzy scorer with app-specific search (server-side, scopes, weighting)"}
+		{name: "filterCallback", type: "({items, term}) => CommandPaletteItem[]", default: "undefined", description: "Override the built-in fuzzy scorer with app-specific search (server-side, scopes, weighting)"},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the palette panel (role=dialog)"}
 	]
 
 	const itemShape: Property[] = [

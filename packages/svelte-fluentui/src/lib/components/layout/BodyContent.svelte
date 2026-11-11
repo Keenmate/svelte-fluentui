@@ -1,16 +1,22 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {RestProps} from "../../types/index.js"
 
-	type Props = {
+	type OwnProps = {
 		children?: Snippet
 	}
 
+	/** Other native attributes and events (`id`, `class`, `style`, `aria-*`, …) go to the root `<div>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
-		children = undefined
+		children = undefined,
+		class: className = undefined,
+		...rest
 	    }: Props = $props()
 </script>
 
-<div class="body-content">
+<div {...rest} class={["body-content", className]}>
 	{@render children?.()}
 </div>
 

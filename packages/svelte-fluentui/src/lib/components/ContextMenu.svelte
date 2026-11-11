@@ -14,12 +14,13 @@
 	import { portal } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
 	import {getMenuChildren, resolveMenuEntries, runAction, type MenuEntry, type MenuItem, type ResolvedMenuEntry} from "../action-items/index.js"
+	import type {RestProps} from "../types/index.js"
 
 	type Entry = MenuEntry<ContextMenuContext>
 	type Item = MenuItem<ContextMenuContext>
 	type Resolved = ResolvedMenuEntry<ContextMenuContext, string>
 
-	type Props = {
+	type OwnProps = {
 		/**
 		 * Menu entries: items (`{id, text, icon, isDisabled, isDanger, onClick, …}`), dividers
 		 * (`{divider: true}`), and items with `children` — a side submenu, or an inline
@@ -48,7 +49,12 @@
 		onAction?: (detail: ContextMenuActionDetail) => void
 		/** Called before an item runs; return `false` (or a Promise resolving to `false`) to cancel. */
 		beforeActionCallback?: (detail: ContextMenuActionDetail) => unknown
+		/** Native `contextmenu` event on the trigger zone, forwarded untouched (runs before the menu opens). */
+		oncontextmenu?: (event: MouseEvent) => void
 	}
+
+	/** Other native attributes and events (`class`, `style`, `id`, …) go to the trigger-zone `<span>`. */
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		items,
@@ -64,7 +70,10 @@
 		children = undefined,
 		onOpenChange = undefined,
 		onAction = undefined,
-		beforeActionCallback = undefined
+		beforeActionCallback = undefined,
+		oncontextmenu = undefined,
+		class: className = undefined,
+		...rest
 	}: Props = $props()
 
 	let open = $state(false)
@@ -76,6 +85,7 @@
 	const host = {}
 
 	function onContextMenu(e: MouseEvent) {
+		oncontextmenu?.(e)
 		if (disabled || resolveMenuEntries(items, {x: e.clientX, y: e.clientY}).length === 0) return
 		e.preventDefault()
 		e.stopPropagation()
@@ -393,7 +403,7 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<span class="fluent-context-menu-wrapper" oncontextmenu={onContextMenu}>
+<span {...rest} class={["fluent-context-menu-wrapper", className]} oncontextmenu={onContextMenu}>
 	{@render children?.()}
 </span>
 

@@ -18,7 +18,9 @@
 -->
 
 <script lang="ts">
-	type Props = {
+	import type {RestProps} from "../types/index.js"
+
+	type OwnProps = {
 		text?: string
 		variant?: "inline" | "external"
 		contrast?: boolean
@@ -29,6 +31,9 @@
 		onRemove?: (ctx: {sourceEvent: MouseEvent}) => void
 	}
 
+	/** Other native attributes and events go to the root `<span>`. */
+	type Props = OwnProps & RestProps<OwnProps>
+
 	let {
 		text = "",
 		variant = "inline",
@@ -36,12 +41,15 @@
 		showRemove = true,
 		removeLabel = undefined,
 		title = undefined,
-		onRemove = undefined
+		onRemove = undefined,
+		class: className = "",
+		...rest
 	}: Props = $props()
 </script>
 
 <span
-	class="fluent-chip"
+	{...rest}
+	class={["fluent-chip", className]}
 	class:external={variant === "external"}
 	class:contrast
 	{...title ? {title} : {}}
