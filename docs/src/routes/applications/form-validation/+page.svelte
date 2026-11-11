@@ -252,9 +252,9 @@
 			return
 		}
 		toast.error(`${count} field${count > 1 ? "s" : ""} need attention`)
-		smJumpTo(Object.keys(smErrors)[0])
+		smJumpTo({field: Object.keys(smErrors)[0]})
 	}
-	function smJumpTo(field: string) {
+	function smJumpTo({field}: {field: string}) {
 		const wrapper = document.getElementById(`sm-${field}`)
 		if (!wrapper) return
 		wrapper.scrollIntoView({behavior: "smooth", block: "center"})
@@ -556,7 +556,7 @@
 			<ValidationSummary
 				errors={smErrors}
 				labels={smFieldLabels}
-				onjumpto={smJumpTo}
+				onFieldClick={smJumpTo}
 			/>
 
 			<Grid spacing={3}>

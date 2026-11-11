@@ -17,7 +17,8 @@
 		 * Called when a user clicks an error link. Receives the field name from
 		 * `errors`. Typical use: scroll to + focus the offending input.
 		 */
-		onjumpto?: (field: string) => void
+		/** Fires when the user clicks an error; the default jump-to-field navigation is prevented. */
+		onFieldClick?: (ctx: {field: string}) => void
 		class?: string
 		style?: string
 		children?: Snippet
@@ -27,7 +28,7 @@
 		errors = {},
 		labels = {},
 		title = "Please fix the following:",
-		onjumpto = undefined,
+		onFieldClick = undefined,
 		class: className = "",
 		style = "",
 		children = undefined
@@ -42,9 +43,9 @@
 	const errorCount = $derived(errorEntries.length)
 
 	function handleClick(e: Event, field: string) {
-		if (onjumpto) {
+		if (onFieldClick) {
 			e.preventDefault()
-			onjumpto(field)
+			onFieldClick({field})
 		}
 	}
 </script>

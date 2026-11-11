@@ -49,7 +49,7 @@
 		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(smEmail)) errs.email = "Invalid email format"
 		smErrors = errs
 	}
-	function smJump(field: string) {
+	function smJump({field}: {field: string}) {
 		document.getElementById(`fld-summary-${field}`)?.scrollIntoView({
 			behavior: "smooth",
 			block: "center"
@@ -79,7 +79,7 @@
 		{name: "errors", type: "Record<string, string>", default: "{}", description: "Map of field-name → error message. Falsy values are filtered out. Empty map renders nothing."},
 		{name: "labels", type: "Record<string, string>", default: "{}", description: "Map of field-name → human-readable label. Falls back to the field name if missing."},
 		{name: "title", type: "string", default: '"Please fix the following:"', description: "Heading rendered above the error list."},
-		{name: "onjumpto", type: "(field: string) => void", default: "undefined", description: "Called when a user clicks an error link. Receives the field name. Typical use: scroll to + focus the offending input."},
+		{name: "onFieldClick", type: "(ctx: {field: string}) => void", default: "undefined", description: "Fires when the user clicks an error link. Typical use: scroll to + focus the offending input."},
 		{name: "children", type: "Snippet", default: "undefined", description: "Optional snippet rendered after the error list (e.g. a 'Contact support' link)."}
 	]
 </script>
@@ -353,7 +353,7 @@
 				as the user types.
 			</p>
 
-			<ValidationSummary errors={smErrors} labels={smLabels} onjumpto={smJump} />
+			<ValidationSummary errors={smErrors} labels={smLabels} onFieldClick={smJump} />
 
 			<Grid spacing={3}>
 				<GridItem xs={12} md={6}>

@@ -128,8 +128,8 @@
 
 	const callbacks: Property[] = [
 		{
-			name: "ondismiss",
-			type: "() => void",
+			name: "onDismiss",
+			type: "(ctx: {sourceEvent: MouseEvent}) => void",
 			default: "undefined",
 			description: "Called when the dismiss button is clicked (topCTAType=\"dismiss\")"
 		},

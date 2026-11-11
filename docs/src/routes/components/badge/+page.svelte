@@ -38,8 +38,8 @@
 		{name: "label", type: "Snippet", default: "undefined", description: "Middle label section content."},
 		{name: "button", type: "Snippet", default: "× glyph", description: "Right button section content."},
 		{name: "showButton", type: "boolean", default: "true", description: "Render the button section."},
-		{name: "onlabelclick", type: "(ev) => void", default: "undefined", description: "Label click handler (adds pointer/hover)."},
-		{name: "onbuttonclick", type: "(ev) => void", default: "undefined", description: "Button click handler."}
+		{name: "onLabelClick", type: "(ctx: {sourceEvent}) => void", default: "undefined", description: "Label click handler (adds pointer/hover)."},
+		{name: "onButtonClick", type: "(ctx: {sourceEvent}) => void", default: "undefined", description: "Button click handler."}
 	]
 
 	const groupProps: Property[] = [
@@ -353,11 +353,11 @@
 		<h3>Dismissible &amp; Mixed Sections</h3>
 		<p>Default button is a <code>×</code>. Override just the button with <code>buttonColor="danger"</code> for a red dismiss.</p>
 		<Stack orientation="horizontal" gap="0.5rem" style="flex-wrap: wrap; align-items: center;">
-			<CompositeBadge color="primary" labelColor="info" buttonColor="danger" onbuttonclick={() => alert("dismiss")}>
+			<CompositeBadge color="primary" labelColor="info" buttonColor="danger" onButtonClick={() => alert("dismiss")}>
 				{#snippet icon()}📧{/snippet}
 				{#snippet label()}New messages{/snippet}
 			</CompositeBadge>
-			<CompositeBadge color="success" labelColor="secondary" onlabelclick={() => alert("open")} onbuttonclick={() => alert("dismiss")}>
+			<CompositeBadge color="success" labelColor="secondary" onLabelClick={() => alert("open")} onButtonClick={() => alert("dismiss")}>
 				{#snippet icon()}✓{/snippet}
 				{#snippet label()}CI passed{/snippet}
 			</CompositeBadge>

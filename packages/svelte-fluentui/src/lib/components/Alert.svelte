@@ -10,7 +10,8 @@
 		dismissable?: boolean
 		class?: string
 		style?: string
-		ondismiss?: () => void
+		/** Fires when the user dismisses the alert. */
+		onDismiss?: (ctx: {sourceEvent: MouseEvent}) => void
 		icon?: Snippet
 		children?: Snippet
 	}
@@ -21,16 +22,16 @@
 		dismissable = false,
 		class: classParam = undefined,
 		style: styleParam = undefined,
-		ondismiss = undefined,
+		onDismiss = undefined,
 		icon = undefined,
 		children = undefined
 	}: Props = $props()
 
 	let dismissed = $state(false)
 
-	function handleDismiss() {
+	function handleDismiss(event: MouseEvent) {
 		dismissed = true
-		ondismiss?.()
+		onDismiss?.({sourceEvent: event})
 	}
 
 	let computedClass = $derived.by(() => {

@@ -35,7 +35,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "ondismiss", type: "() => void", default: "undefined", description: "Fired when dismiss button is clicked"},
+		{name: "onDismiss", type: "(ctx: {sourceEvent: MouseEvent}) => void", default: "undefined", description: "Fires when the user dismisses the toast"},
 		{name: "ontopactionclick", type: "() => void", default: "undefined", description: "Fired when top right action is clicked"},
 		{name: "onprimaryactionclick", type: "() => void", default: "undefined", description: "Fired when primary action is clicked"},
 		{name: "onsecondaryactionclick", type: "() => void", default: "undefined", description: "Fired when secondary action is clicked"}

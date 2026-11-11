@@ -29,8 +29,10 @@
 		showButton?: boolean
 		/** Accessible title/tooltip for the button. */
 		buttonTitle?: string
-		onlabelclick?: (ev: MouseEvent) => void
-		onbuttonclick?: (ev: MouseEvent) => void
+		/** Fires when the user clicks the label section (makes it look clickable). */
+		onLabelClick?: (ctx: {sourceEvent: MouseEvent}) => void
+		/** Fires when the user clicks the button section. */
+		onButtonClick?: (ctx: {sourceEvent: MouseEvent}) => void
 		class?: string
 		style?: string
 	}
@@ -44,8 +46,8 @@
 		button = undefined,
 		showButton = true,
 		buttonTitle = undefined,
-		onlabelclick = undefined,
-		onbuttonclick = undefined,
+		onLabelClick = undefined,
+		onButtonClick = undefined,
 		class: className = "",
 		style = ""
 	}: Props = $props()
@@ -54,7 +56,7 @@
 		let cls = ["composite-badge", `composite-badge-${color}`]
 		if (labelColor) cls.push(`composite-badge-label-${labelColor}`)
 		if (buttonColor) cls.push(`composite-badge-btn-${buttonColor}`)
-		if (onlabelclick) cls.push("is-clickable")
+		if (onLabelClick) cls.push("is-clickable")
 		if (className) cls.push(className)
 		return cls.join(" ")
 	})
@@ -64,9 +66,9 @@
 	{#if icon}<span class="composite-badge-icon">{@render icon()}</span>{/if}
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<span class="composite-badge-label" onclick={onlabelclick}>{@render label?.()}</span>
+	<span class="composite-badge-label" onclick={onLabelClick ? (event) => onLabelClick({sourceEvent: event}) : undefined}>{@render label?.()}</span>
 	{#if showButton}
-		<button class="composite-badge-button" type="button" title={buttonTitle || null} onclick={onbuttonclick}>
+		<button class="composite-badge-button" type="button" title={buttonTitle || null} onclick={(event) => onButtonClick?.({sourceEvent: event})}>
 			{#if button}{@render button()}{:else}&times;{/if}
 		</button>
 	{/if}

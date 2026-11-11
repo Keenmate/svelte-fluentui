@@ -23,7 +23,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "ondismiss", type: "() => void", default: "undefined", description: "Called when the dismiss button is clicked"}
+		{name: "onDismiss", type: "(ctx: {sourceEvent: MouseEvent}) => void", default: "undefined", description: "Fires when the user dismisses the alert"}
 	]
 
 	const propertyColumns = [
@@ -99,11 +99,11 @@
 		<h2 class="content-subhead">Dismissable</h2>
 		<p style="margin-bottom: 1rem;">Dismissed count: {dismissCount}</p>
 		<Stack orientation="vertical" gap="1rem">
-			<Alert intent="info" title="Dismissable Alert" dismissable ondismiss={handleDismiss}>
+			<Alert intent="info" title="Dismissable Alert" dismissable onDismiss={handleDismiss}>
 				Click the X button to dismiss this alert.
 			</Alert>
 
-			<Alert intent="warning" title="Another Dismissable" dismissable ondismiss={handleDismiss}>
+			<Alert intent="warning" title="Another Dismissable" dismissable onDismiss={handleDismiss}>
 				This warning can also be dismissed.
 			</Alert>
 		</Stack>

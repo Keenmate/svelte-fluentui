@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Alert, Toast:** `ondismiss()` → `onDismiss({sourceEvent})`
+- **Chip:** `onremove(event)` → `onRemove({sourceEvent})`
+- **CompositeBadge:** `onlabelclick(ev)`, `onbuttonclick(ev)` → `onLabelClick({sourceEvent})`, `onButtonClick({sourceEvent})`
+- **ValidationSummary:** `onjumpto(field)` → `onFieldClick({field})`
 - **InputFile:** `uploadFileCallback(file, onProgress, signal, chunk)` → `uploadCallback({file, signal, reportProgress, chunk})` — `file` is the `InputFileItem` (`file.file` is the native `File`)
 - **InputFile:** `onFileSelected(files)`, `onFileUploaded(file, item)`, `onFileError(file, error, item?)` → `onFileAdd({files})`, `onFileUpload({file, fileIndex})`, `onFileError({file, error})` — `file`/`files` are `InputFileItem`s (rejected files get a transient one)
 - **InputFile:** `onCompleted()`, `onValidityChange(valid, reasons)` → `onUploadComplete({files})`, `onValidityChange({isValid, reasons})`

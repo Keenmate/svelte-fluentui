@@ -252,7 +252,7 @@
 				<Alert
 					intent="danger"
 					dismissable
-					ondismiss={() => maxFiveAlertShown = false}
+					onDismiss={() => maxFiveAlertShown = false}
 					style="margin-bottom: 0.5rem;"
 				>
 					{maxFiveError.message}

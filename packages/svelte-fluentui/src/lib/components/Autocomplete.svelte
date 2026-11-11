@@ -679,7 +679,7 @@
 						text={getOptionText(value)}
 						variant="external"
 						showRemove={!disabled && !readonly}
-						onremove={(e) => removeOption(value, e)}
+						onRemove={({sourceEvent: e}) => removeOption(value, e)}
 					/>
 				{/each}
 			</div>
@@ -724,7 +724,7 @@
 						variant="inline"
 						contrast={readonly || appearance === 'filled'}
 						showRemove={!disabled && !readonly}
-						onremove={(e) => removeOption(value, e)}
+						onRemove={({sourceEvent: e}) => removeOption(value, e)}
 					/>
 				{/each}
 			{/if}
@@ -803,7 +803,7 @@
 						text={getOptionText(value)}
 						variant="external"
 						showRemove={!disabled && !readonly}
-						onremove={(e) => removeOption(value, e)}
+						onRemove={({sourceEvent: e}) => removeOption(value, e)}
 					/>
 				{/each}
 			</div>

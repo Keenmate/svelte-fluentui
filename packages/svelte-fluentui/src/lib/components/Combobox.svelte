@@ -756,7 +756,7 @@
 				variant="external"
 				showRemove={!disabled && !readonly}
 				removeLabel={`Remove ${chipLabel(val)}`}
-				onremove={(e) => removeValue(val, e)}
+				onRemove={({sourceEvent: e}) => removeValue(val, e)}
 			/>
 		{/each}
 	</div>
@@ -838,7 +838,7 @@
 						contrast={readonly || appearance === "filled"}
 						showRemove={!disabled && !readonly}
 						removeLabel={`Remove ${chipLabel(val)}`}
-						onremove={(e) => removeValue(val, e)}
+						onRemove={({sourceEvent: e}) => removeValue(val, e)}
 					/>
 				{/each}
 			{/if}

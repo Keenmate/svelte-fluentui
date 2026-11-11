@@ -25,7 +25,8 @@
 		showRemove?: boolean
 		removeLabel?: string
 		title?: string
-		onremove?: (event: MouseEvent) => void
+		/** Fires when the user clicks the remove (×) button. */
+		onRemove?: (ctx: {sourceEvent: MouseEvent}) => void
 	}
 
 	let {
@@ -35,7 +36,7 @@
 		showRemove = true,
 		removeLabel = undefined,
 		title = undefined,
-		onremove = undefined
+		onRemove = undefined
 	}: Props = $props()
 </script>
 
@@ -53,7 +54,7 @@
 			tabindex="-1"
 			aria-label={removeLabel ?? `Remove ${text}`}
 			title={removeLabel ?? `Remove ${text}`}
-			onclick={onremove}
+			onclick={(event) => onRemove?.({sourceEvent: event})}
 		>
 			<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
 				<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>

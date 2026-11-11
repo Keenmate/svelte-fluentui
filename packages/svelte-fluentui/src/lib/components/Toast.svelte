@@ -17,7 +17,8 @@
 		topAction?: string
 		primaryAction?: string
 		secondaryAction?: string
-		ondismiss?: () => void
+		/** Fires when the user dismisses the toast. */
+		onDismiss?: (ctx: {sourceEvent: MouseEvent}) => void
 		ontopactionclick?: () => void
 		onprimaryactionclick?: () => void
 		onsecondaryactionclick?: () => void
@@ -32,15 +33,15 @@
 		topAction,
 		primaryAction,
 		secondaryAction,
-		ondismiss,
+		onDismiss,
 		ontopactionclick,
 		onprimaryactionclick,
 		onsecondaryactionclick,
 		children
 	}: Props = $props()
 
-	function handleDismiss() {
-		ondismiss?.()
+	function handleDismiss(event: MouseEvent) {
+		onDismiss?.({sourceEvent: event})
 	}
 
 	function handleTopActionClick() {
