@@ -128,7 +128,7 @@
 		 *  the header text and the longest cell value. Without `maxWidth`, very long values will widen the
 		 *  column unbounded — set a `maxWidth` if you want a hard cap. */
 		nowrap?: boolean
-		align?: "left" | "center" | "right"
+		align?: "start" | "center" | "end"
 		/** Formats the cell's value for display. */
 		getDisplayValueCallback?: (ctx: {value: any; row: T; column: Column<T>}) => string
 		/** Renders the whole cell as an HTML string (takes precedence over getDisplayValueCallback). */
@@ -368,7 +368,7 @@
 		if (column.minWidth) parts.push(`min-width: ${column.minWidth}`)
 		else if (columnMinWidth && !column.autoWidth) parts.push(`min-width: ${columnMinWidth}`)
 		if (column.maxWidth) parts.push(`max-width: ${column.maxWidth}`)
-		if (includeAlign) parts.push(`text-align: ${column.align || "left"}`)
+		if (includeAlign) parts.push(`text-align: ${column.align || "start"}`)
 		return parts.join("; ")
 	}
 
@@ -378,7 +378,7 @@
 	// would drag the column past the header's max-width (and the ellipsis on a `nowrap` cell
 	// could never trigger).
 	function getColumnBodyStyle(column: Column<T>): string {
-		const parts: string[] = [`text-align: ${column.align || "left"}`]
+		const parts: string[] = [`text-align: ${column.align || "start"}`]
 		if (column.autoWidth) {
 			parts.push("width: 1%", "white-space: nowrap")
 		} else {

@@ -326,7 +326,7 @@
 				</tr>
 				<tr>
 					<td>align</td>
-					<td>"left" | "center" | "right"</td>
+					<td>"start" | "center" | "end"</td>
 					<td>"left"</td>
 					<td>Text alignment</td>
 				</tr>

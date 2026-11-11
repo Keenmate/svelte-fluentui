@@ -278,7 +278,7 @@ test.describe("label rendering", () => {
 // =============================================================================
 
 test.describe("tagsPosition", () => {
-	test("'above': selected-options block is the first child (above input)", async ({page}) => {
+	test("'top': selected-options block is the first child (above input)", async ({page}) => {
 		const wrap = wrapById(page, "tags-above")
 		// Two chips already prefilled. .selected-options should be a sibling
 		// rendered before .autocomplete-input-container in the container.
@@ -287,7 +287,7 @@ test.describe("tagsPosition", () => {
 		await expect(firstChild).toHaveClass(/selected-options/)
 	})
 
-	test("'below': selected-options block is the last child (below input)", async ({page}) => {
+	test("'bottom': selected-options block is the last child (below input)", async ({page}) => {
 		const wrap = wrapById(page, "tags-below")
 		const container = wrap.locator(".autocomplete-container")
 		const lastChild = container.locator("> :last-child")

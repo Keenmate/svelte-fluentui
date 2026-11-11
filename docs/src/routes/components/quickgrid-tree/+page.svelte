@@ -60,10 +60,10 @@
 	const orgColumns = [
 		{field: "name",      title: "Organization", tree: true,    sortable: false, filterable: true,  minWidth: "260px"},
 		{field: "head",      title: "Head",         filterable: true},
-		{field: "headcount", title: "Headcount",    align: "right" as const, width: "120px",
+		{field: "headcount", title: "Headcount",    align: "end" as const, width: "120px",
 		 filterable: true, filterCallback: numericRangeFilter("headcount"),
 		 getDisplayValueCallback: ({value: v}: {value: number}) => v.toLocaleString()},
-		{field: "budget",    title: "Budget",       align: "right" as const, width: "150px",
+		{field: "budget",    title: "Budget",       align: "end" as const, width: "150px",
 		 filterable: true, filterCallback: numericRangeFilter("budget"),
 		 getDisplayValueCallback: ({value: v}: {value: number}) => "$" + v.toLocaleString()},
 		{field: "region",    title: "Region",       width: "120px", filterable: true}
@@ -92,7 +92,7 @@
 
 	const folderColumns = [
 		{field: "name",     title: "Name",     tree: true, filterable: true, minWidth: "260px"},
-		{field: "size",     title: "Size",     width: "100px", align: "right" as const},
+		{field: "size",     title: "Size",     width: "100px", align: "end" as const},
 		{field: "modified", title: "Modified", width: "140px"}
 	]
 
@@ -187,7 +187,7 @@
 			field: "salary",
 			title: "Salary",
 			width: "140px",
-			align: "right" as const,
+			align: "end" as const,
 			getIsEditableCallback: ({row}: {row: TeamRow}) => isEmployee(row),
 			editor: "number" as const,
 			editorOptions: {min: 0, max: 1_000_000, step: 1000},
@@ -197,7 +197,7 @@
 			field: "headcount",
 			title: "Headcount",
 			width: "120px",
-			align: "right" as const,
+			align: "end" as const,
 			getDisplayValueCallback: ({value: v}: {value: number | undefined}) => v === undefined ? "—" : String(v)
 		}
 	]

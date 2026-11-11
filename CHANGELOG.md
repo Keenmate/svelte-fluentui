@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Select, Combobox:** `position="above"` / `"below"` → `position="top"` / `"bottom"`
+- **Autocomplete, Combobox:** `tagsPosition="above"` / `"below"` → `tagsPosition="top"` / `"bottom"`
+- **InputFile:** `chipsPosition="below"` → `chipsPosition="bottom"` (default)
+- **QuickGrid columns:** `align: "left"` / `"right"` → `align: "start"` / `"end"` (follows text direction)
 - **QuickGrid columns:** `isEditable` (boolean or `(row) => boolean`), `isTree` → `editable` (boolean) + `getIsEditableCallback({row, column})`, `tree`
 - **QuickGrid:** `isRowEditable` (boolean or `(row) => boolean`) → `rowEditable` (boolean) + `getIsRowEditableCallback({row})`
 - **exports:** `AnchorButton` (alias of `Anchor`) → removed — use `Anchor`

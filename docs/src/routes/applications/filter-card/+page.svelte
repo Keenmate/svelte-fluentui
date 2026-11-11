@@ -79,8 +79,8 @@
 		{field: "name", title: "Product", sortable: true, filterable: true},
 		{field: "category", title: "Category", sortable: true, filterable: true},
 		{field: "tags", title: "Tags", render: (row: Product) => row.tags.join(", ")},
-		{field: "price", title: "Price", sortable: true, align: "right" as const, render: (row: Product) => `$${row.price}`},
-		{field: "stock", title: "Stock", sortable: true, align: "right" as const}
+		{field: "price", title: "Price", sortable: true, align: "end" as const, render: (row: Product) => `$${row.price}`},
+		{field: "stock", title: "Stock", sortable: true, align: "end" as const}
 	]
 
 	function resetFilters() {

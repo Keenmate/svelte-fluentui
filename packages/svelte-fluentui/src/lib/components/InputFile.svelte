@@ -201,7 +201,7 @@
 		selectorAppearance = "card",
 		listAppearance = "list",
 		cardSize = "compact",
-		chipsPosition = "below",
+		chipsPosition = "bottom",
 		expandOnDrag = false,
 		expandOnDragTarget = undefined,
 		initialItems = undefined,

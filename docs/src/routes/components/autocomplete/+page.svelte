@@ -165,7 +165,7 @@
 		{name: "initialOptionsCount", type: "number", default: "maxOptionsSearch", description: "Initial options count limit"},
 		{name: "keepOpen", type: "boolean", default: "true", description: "Multi-select only: keep the dropdown open after each pick so several can be chosen in a row. Set false to close on each selection (single-select always closes)."},
 		{name: "selectValueOnTab", type: "boolean", default: "true", description: "Select highlighted option on Tab key"},
-		{name: "tagsPosition", type: '"inline" | "above" | "below"', default: '"inline"', description: "Position of selected tags: inside input (inline), above input, or below input"},
+		{name: "tagsPosition", type: '"inline" | "top" | "bottom"', default: '"inline"', description: "Position of selected tags: inside input (inline), above input, or below input"},
 		{name: "immediateDelay", type: "number", default: "0", description: "Debounce delay in ms before search"},
 		{name: "loading", type: "boolean", default: "undefined", description: "External loading state control"},
 		{name: "id", type: "string", default: "undefined", description: "Element ID"},
@@ -288,7 +288,7 @@
 					<Autocomplete
 						bind:value={tagsAboveValue}
 						options={colors}
-						tagsPosition="above"
+						tagsPosition="top"
 						label="Colors"
 						placeholder="Search..."
 					/>
@@ -302,7 +302,7 @@
 					<Autocomplete
 						bind:value={tagsBelowValue}
 						options={programmingLanguages}
-						tagsPosition="below"
+						tagsPosition="bottom"
 						label="Languages"
 						placeholder="Search..."
 					/>

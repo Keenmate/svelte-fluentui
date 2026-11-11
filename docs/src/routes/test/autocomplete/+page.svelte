@@ -273,25 +273,25 @@
 </div>
 
 <div class="fixture">
-	<div class="fixture-label">tagsPosition='above' — chips render above input</div>
+	<div class="fixture-label">tagsPosition='top' — chips render above input</div>
 	<div id="tags-above-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="tags-above"
 			options={fruits}
 			bind:value={tagsAboveSel}
-			tagsPosition="above"
+			tagsPosition="top"
 		/>
 	</div>
 </div>
 
 <div class="fixture">
-	<div class="fixture-label">tagsPosition='below' — chips render below input</div>
+	<div class="fixture-label">tagsPosition='bottom' — chips render below input</div>
 	<div id="tags-below-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="tags-below"
 			options={fruits}
 			bind:value={tagsBelowSel}
-			tagsPosition="below"
+			tagsPosition="bottom"
 		/>
 	</div>
 </div>

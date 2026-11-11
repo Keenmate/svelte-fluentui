@@ -166,7 +166,7 @@
 		selector: "card",
 		list: "list",
 		cardSize: "compact",
-		chipsPosition: "below",
+		chipsPosition: "bottom",
 		expandOnDrag: false,
 		multiple: true,
 		disabled: false
@@ -435,7 +435,7 @@
 						<Select label="chipsPosition" bind:value={playgroundChipsPosition} disabled={playgroundList !== "chips"}>
 							{#snippet children()}
 								<Option value="end">end</Option>
-								<Option value="below">below</Option>
+								<Option value="bottom">bottom</Option>
 							{/snippet}
 						</Select>
 						<Checkbox bind:checked={playgroundMultiple}>multiple</Checkbox>

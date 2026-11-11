@@ -129,4 +129,4 @@ export type InputFileLabels = {
 export type InputFileSelectorAppearance = "card" | "button" | "minimal"
 export type InputFileListAppearance = "list" | "chips" | "popover" | "none"
 export type InputFileCardSize = "minimal" | "compact" | "big"
-export type InputFileChipsPosition = "end" | "below"
+export type InputFileChipsPosition = "end" | "bottom"

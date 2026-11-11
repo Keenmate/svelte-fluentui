@@ -46,7 +46,7 @@
 		/** Accepted for API compatibility (no-op — value is option-based). */
 		currentValue?: string
 		placeholder?: string
-		position?: "above" | "below"
+		position?: "top" | "bottom"
 		disabled?: boolean
 		/** Non-editable: the value shows but can't be changed (no typing, no opening,
 		 * chips can't be removed). Unlike `disabled`, it stays focusable and un-dimmed. */
@@ -82,7 +82,7 @@
 		/** Multi-select only: where the selected-value chips render. `inline` (default)
 		 * keeps them inside the control; `above`/`below` render them as a wrapping row
 		 * outside the control (matching Autocomplete's `tagsPosition`). */
-		tagsPosition?: "inline" | "above" | "below"
+		tagsPosition?: "inline" | "top" | "bottom"
 		minSearchLength?: number
 		/** Text shown inside the dropdown when the filter matches no options. */
 		noDataText?: string
@@ -707,7 +707,7 @@
 
 	// ---------- Computed ----------
 	const forcedPlacement = $derived<"top" | "bottom" | undefined>(
-		position === "above" ? "top" : position === "below" ? "bottom" : undefined
+		position
 	)
 
 	const controlStyle = $derived(() => {
@@ -804,8 +804,8 @@
 		{@render optionList()}
 	</div>
 
-	<!-- Tags ABOVE (multi-select, tagsPosition="above") -->
-	{#if externalTags && tagsPosition === "above"}
+	<!-- Tags above (multi-select, tagsPosition="top") -->
+	{#if externalTags && tagsPosition === "top"}
 		{@render externalChips()}
 	{/if}
 
@@ -880,8 +880,8 @@
 		</button>
 	</div>
 
-	<!-- Tags BELOW (multi-select, tagsPosition="below") -->
-	{#if externalTags && tagsPosition === "below"}
+	<!-- Tags below (multi-select, tagsPosition="bottom") -->
+	{#if externalTags && tagsPosition === "bottom"}
 		{@render externalChips()}
 	{/if}
 
@@ -1061,7 +1061,7 @@
 	   there. Inline chips pass contrast={readonly || filled} so they stay visible
 	   when the control background matches the chip fill. */
 
-	/* ===== External chips row (tagsPosition above/below) ===== */
+	/* ===== External chips row (tagsPosition top/bottom) ===== */
 	/* A wrapping row that sits outside the control; the chips themselves are the
 	   shared Chip component with variant="external" (self-bordered). */
 	.combobox-external-chips {

@@ -112,7 +112,7 @@
 		{name: "multiple", type: "boolean", default: "false", description: "Allow multiple selections"},
 		{name: "name", type: "string", default: "undefined", description: "Form field name"},
 		{name: "open", type: "boolean", default: "undefined", description: "Controls dropdown open state"},
-		{name: "position", type: '"above" | "below"', default: "undefined", description: "Forces dropdown position"},
+		{name: "position", type: '"top" | "bottom"', default: "undefined", description: "Forces dropdown position"},
 		{name: "required", type: "boolean", default: "undefined", description: "Required for form validation"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text"},
@@ -401,7 +401,7 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Position above</strong>
-					<Select label="Items" position="above">
+					<Select label="Items" position="top">
 						{#snippet children()}
 							<Option value="1">Opens above</Option>
 							<Option value="2">Option 2</Option>
@@ -413,7 +413,7 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Position below</strong>
-					<Select label="Items" position="below">
+					<Select label="Items" position="bottom">
 						{#snippet children()}
 							<Option value="1">Opens below</Option>
 							<Option value="2">Option 2</Option>

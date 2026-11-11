@@ -590,7 +590,7 @@
 	const rowActionsColumns = [
 		{field: "id", title: "ID", width: "80px", align: "center" as const},
 		{field: "name", title: "Name", editable: true, editor: "text" as const},
-		{field: "value", title: "Value", width: "120px", align: "right" as const, editable: true, editor: "number" as const}
+		{field: "value", title: "Value", width: "120px", align: "end" as const, editable: true, editor: "number" as const}
 	]
 
 	function handleRowAction(detail: {action: string; rowIndex: number; row: SimpleItem}) {

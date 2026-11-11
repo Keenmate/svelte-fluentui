@@ -178,7 +178,7 @@
 		{name: "options", type: "OptionItem[]", default: "undefined", description: "Array of option items"},
 		{name: "multiple", type: "boolean", default: "false", description: "Multi-select: selected values render as removable chips and the input stays a filter. value/onChange carry the full array."},
 		{name: "keepOpen", type: "boolean", default: "true", description: "Multi-select only: keep the dropdown open after each pick so several can be chosen in a row. Set false to close on each pick."},
-		{name: "tagsPosition", type: '"inline" | "above" | "below"', default: '"inline"', description: "Multi-select only: where the selected-value chips render — inside the control (inline), or as a wrapping row above/below it."},
+		{name: "tagsPosition", type: '"inline" | "top" | "bottom"', default: '"inline"', description: "Multi-select only: where the selected-value chips render — inside the control (inline), or as a wrapping row above/below it."},
 		{name: "label", type: "string", default: "undefined", description: "Label text displayed above the combobox"},
 		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder text"},
 		{name: "autocomplete", type: '"inline" | "list" | "both" | "none"', default: "undefined", description: "Autocomplete behavior"},
@@ -190,7 +190,7 @@
 		{name: "filterCallback", type: "(ctx: {term, option}) => boolean", default: "undefined", description: "Custom client-side matcher replacing the built-in substring match. Ignored when onSearch is set."},
 		{name: "loading", type: "boolean", default: "undefined", description: "Parent-controlled loading flag for async onSearch; shows loadingText instead of the empty-state message while true."},
 		{name: "loadingText", type: "string", default: '"Searching…"', description: "Text shown while loading is true."},
-		{name: "position", type: '"above" | "below"', default: "undefined", description: "Dropdown position"},
+		{name: "position", type: '"top" | "bottom"', default: "undefined", description: "Dropdown position"},
 		{name: "appearance", type: '"outline" | "filled"', default: "outline", description: "Visual style"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disable the combobox"},
 		{name: "readonly", type: "boolean", default: "false", description: "Non-editable: the value shows but can't be changed (no typing, dropdown won't open, chips can't be removed). Unlike disabled, it stays focusable and un-dimmed."},
@@ -298,7 +298,7 @@
 		<p>
 			With <code>multiple</code>, control where the selected-value chips render using the
 			<code>tagsPosition</code> prop. Default is <code>"inline"</code> (chips inside the control, like
-			FluentUI Blazor); <code>"above"</code> / <code>"below"</code> render them as a wrapping row
+			FluentUI Blazor); <code>"top"</code> / <code>"bottom"</code> render them as a wrapping row
 			outside the control while the input stays a plain filter.
 		</p>
 		<Grid columns={3} gap="1rem">
@@ -314,7 +314,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Above</strong>
 					<small style="color: var(--neutral-foreground-hint);">Chips appear above the control</small>
-					<Combobox id="tags-above" bind:value={tagsAboveValue} options={songs} multiple tagsPosition="above" label="Select songs" placeholder="Filter songs…" />
+					<Combobox id="tags-above" bind:value={tagsAboveValue} options={songs} multiple tagsPosition="top" label="Select songs" placeholder="Filter songs…" />
 					<small>Selected: {tagsAboveValue.length ? tagsAboveValue.join(", ") : "None"}</small>
 				</Stack>
 			</GridItem>
@@ -322,7 +322,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Below</strong>
 					<small style="color: var(--neutral-foreground-hint);">Chips appear below the control</small>
-					<Combobox id="tags-below" bind:value={tagsBelowValue} options={songs} multiple tagsPosition="below" label="Select songs" placeholder="Filter songs…" />
+					<Combobox id="tags-below" bind:value={tagsBelowValue} options={songs} multiple tagsPosition="bottom" label="Select songs" placeholder="Filter songs…" />
 					<small>Selected: {tagsBelowValue.length ? tagsBelowValue.join(", ") : "None"}</small>
 				</Stack>
 			</GridItem>
@@ -540,13 +540,13 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Position above</strong>
-					<Combobox id="above" bind:value={aboveValue} options={sizes} position="above" />
+					<Combobox id="above" bind:value={aboveValue} options={sizes} position="top" />
 				</Stack>
 			</GridItem>
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Position below</strong>
-					<Combobox id="below" bind:value={belowValue} options={sizes} position="below" />
+					<Combobox id="below" bind:value={belowValue} options={sizes} position="bottom" />
 				</Stack>
 			</GridItem>
 		</Grid>

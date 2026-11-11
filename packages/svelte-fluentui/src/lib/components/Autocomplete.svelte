@@ -59,7 +59,7 @@
 		loading?: boolean
 		immediateDelay?: number
 		selectValueOnTab?: boolean
-		tagsPosition?: "inline" | "above" | "below"
+		tagsPosition?: "inline" | "top" | "bottom"
 		headerContent?: Snippet
 		footerContent?: Snippet
 		optionTemplate?: Snippet<[OptionItem<T>]>
@@ -671,8 +671,8 @@
 	{/if}
 
 	<div class="autocomplete-container">
-		<!-- Tags ABOVE (if tagsPosition === 'above') -->
-		{#if tagsPosition === 'above' && showTags}
+		<!-- Tags above the control (tagsPosition === 'top') -->
+		{#if tagsPosition === 'top' && showTags}
 			<div class="selected-options">
 				{#each selectedOptions as value}
 					<Chip
@@ -795,8 +795,8 @@
 			{/if}
 		</div>
 
-		<!-- Tags BELOW (if tagsPosition === 'below') -->
-		{#if tagsPosition === 'below' && showTags}
+		<!-- Tags below the control (tagsPosition === 'bottom') -->
+		{#if tagsPosition === 'bottom' && showTags}
 			<div class="selected-options">
 				{#each selectedOptions as value}
 					<Chip

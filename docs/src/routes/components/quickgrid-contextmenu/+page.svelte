@@ -122,7 +122,7 @@
 		{field: "id", title: "ID", width: "80px", align: "center" as const},
 		{field: "name", title: "Product Name", sortable: true},
 		{field: "category", title: "Category", sortable: true},
-		{field: "price", title: "Price", width: "120px", align: "right" as const, getDisplayValueCallback: ({value: v}: {value: number}) => `$${v.toFixed(2)}`},
+		{field: "price", title: "Price", width: "120px", align: "end" as const, getDisplayValueCallback: ({value: v}: {value: number}) => `$${v.toFixed(2)}`},
 		{field: "stock", title: "Stock", width: "100px", align: "center" as const},
 		{field: "active", title: "Status", width: "100px", align: "center" as const, getDisplayValueCallback: ({value: v}: {value: boolean}) => v ? "✓" : "✗"}
 	]
@@ -188,7 +188,7 @@
 				{value: "Accessories", label: "Accessories"}
 			]
 		}},
-		{field: "price", title: "Price", width: "120px", align: "right" as const, editable: true, editor: "number" as const, getDisplayValueCallback: ({value: v}: {value: number}) => `$${v.toFixed(2)}`},
+		{field: "price", title: "Price", width: "120px", align: "end" as const, editable: true, editor: "number" as const, getDisplayValueCallback: ({value: v}: {value: number}) => `$${v.toFixed(2)}`},
 		{field: "stock", title: "Stock", width: "100px", align: "center" as const, editable: true, editor: "number" as const},
 		{field: "active", title: "Active", width: "100px", align: "center" as const, editable: true, editor: "checkbox" as const}
 	]

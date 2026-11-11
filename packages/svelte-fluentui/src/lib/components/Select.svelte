@@ -37,7 +37,7 @@
 		style?: string
 		open?: boolean
 		/** Force the dropdown above/below the trigger. Default: auto (flip()). */
-		position?: "above" | "below"
+		position?: "top" | "bottom"
 		multiple?: boolean
 		disabled?: boolean
 		/** Non-editable: the value shows but can't be changed (dropdown won't open,
@@ -527,7 +527,7 @@
 
 	// Forced position support: prop -> Floating UI placement.
 	const forcedPlacement = $derived<"top" | "bottom" | undefined>(
-		position === "above" ? "top" : position === "below" ? "bottom" : undefined
+		position
 	)
 
 	const displayText = $derived(getOptionText(selectedSingle))
