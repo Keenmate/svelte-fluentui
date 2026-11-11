@@ -120,9 +120,9 @@
 		{field: "id", title: "ID", width: "80px", align: "center" as const},
 		{field: "name", title: "Product Name", sortable: true},
 		{field: "category", title: "Category", sortable: true},
-		{field: "price", title: "Price", width: "120px", align: "right" as const, format: (v: number) => `$${v.toFixed(2)}`},
+		{field: "price", title: "Price", width: "120px", align: "right" as const, getDisplayValueCallback: ({value: v}: {value: number}) => `$${v.toFixed(2)}`},
 		{field: "stock", title: "Stock", width: "100px", align: "center" as const},
-		{field: "active", title: "Status", width: "100px", align: "center" as const, format: (v: boolean) => v ? "✓" : "✗"}
+		{field: "active", title: "Status", width: "100px", align: "center" as const, getDisplayValueCallback: ({value: v}: {value: boolean}) => v ? "✓" : "✗"}
 	]
 
 	// Read-only context menu
@@ -186,7 +186,7 @@
 				{value: "Accessories", label: "Accessories"}
 			]
 		}},
-		{field: "price", title: "Price", width: "120px", align: "right" as const, isEditable: true, editor: "number" as const, format: (v: number) => `$${v.toFixed(2)}`},
+		{field: "price", title: "Price", width: "120px", align: "right" as const, isEditable: true, editor: "number" as const, getDisplayValueCallback: ({value: v}: {value: number}) => `$${v.toFixed(2)}`},
 		{field: "stock", title: "Stock", width: "100px", align: "center" as const, isEditable: true, editor: "number" as const},
 		{field: "active", title: "Active", width: "100px", align: "center" as const, isEditable: true, editor: "checkbox" as const}
 	]
@@ -342,7 +342,7 @@
 			editable
 			editTrigger="dblclick"
 			contextMenu={editableContextMenu}
-			onrowchange={handleRowChange}
+			onRowChange={handleRowChange}
 		/>
 
 		<h3>Example Usage</h3>

@@ -91,7 +91,7 @@
 			title: "Name",
 			sortable: true,
 			filterable: true,
-			template: (row: Component) => `<a href="${row.href}" class="component-link">${row.name}</a>`
+			renderCellCallback: ({row}: {row: Component}) => `<a href="${row.href}" class="component-link">${row.name}</a>`
 		} as any,
 		{field: "description", title: "Description", filterable: true}
 	]

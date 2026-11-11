@@ -21,10 +21,10 @@
 	]
 
 	const editableCallbacks: Property[] = [
-		{name: "onrowchange", type: "(detail: RowChangeDetail) => void", default: "undefined", description: "Called when a cell value is committed; detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
-		{name: "onroweditstart", type: "(detail: { row, rowIndex, field }) => void", default: "undefined", description: "Called when a cell enters edit mode"},
-		{name: "onroweditcancel", type: "(detail: { row, rowIndex, field }) => void", default: "undefined", description: "Called when editing is cancelled (e.g. Escape key)"},
-		{name: "onvalidationerror", type: "(detail: { row, rowIndex, field, error }) => void", default: "undefined", description: "Called when a value fails validation"}
+		{name: "onRowChange", type: "(ctx: RowChangeDetail) => void", default: "undefined", description: "Called when a cell value is committed; detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
+		{name: "onEditStart", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Called when a cell enters edit mode"},
+		{name: "onEditCancel", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Called when editing is cancelled (e.g. Escape key)"},
+		{name: "onValidationError", type: "(ctx: { row, rowIndex, field, column, error }) => void", default: "undefined", description: "Called when a value fails validation"}
 	]
 
 	const editableSlots: Property[] = [
@@ -122,8 +122,8 @@
 			isEditable: true,
 			editor: "custom" as const,
 			showEditButton: true,
-			format: (value: any) => value ? JSON.stringify(value).substring(0, 20) + (JSON.stringify(value).length > 20 ? "..." : "") : "(empty)",
-			oncelledit: (context: CustomEditorContext) => {
+			getDisplayValueCallback: ({value}: {value: any}) => value ? JSON.stringify(value).substring(0, 20) + (JSON.stringify(value).length > 20 ? "..." : "") : "(empty)",
+			editCallback: (context: CustomEditorContext) => {
 				jsonEditorContext = context
 				jsonEditorValue = context.value ? JSON.stringify(context.value, null, 2) : ""
 				jsonError = null
@@ -176,8 +176,8 @@
 			isEditable: true,
 			editor: "custom" as const,
 			showEditButton: true,
-			format: (value: any) => value ? JSON.stringify(value).substring(0, 30) + (JSON.stringify(value).length > 30 ? "..." : "") : "(empty)",
-			oncelledit: (context: CustomEditorContext) => {
+			getDisplayValueCallback: ({value}: {value: any}) => value ? JSON.stringify(value).substring(0, 30) + (JSON.stringify(value).length > 30 ? "..." : "") : "(empty)",
+			editCallback: (context: CustomEditorContext) => {
 				jsonEditorContext = context
 				jsonEditorValue = context.value ? JSON.stringify(context.value, null, 2) : ""
 				jsonError = null
@@ -265,7 +265,7 @@
 	const popularCountries = allCountries.slice(0, 10)
 
 	// Fake API search with delay - supports AbortSignal for cancellation
-	async function searchCountries(query: string, _row: unknown, signal?: AbortSignal): Promise<typeof allCountries> {
+	async function searchCountries({term: query, signal}: {term: string; signal?: AbortSignal}): Promise<typeof allCountries> {
 		// Simulate network delay (300-800ms) with abort support
 		const delay = 300 + Math.random() * 500
 		await new Promise<void>((resolve, reject) => {
@@ -349,7 +349,7 @@
 			title: "Name (text)",
 			isEditable: true,
 			editor: "text" as const,
-			onbeforecommit: ({value}: {value: unknown}) => {
+			beforeCommitCallback: ({value}: {value: unknown}) => {
 				const strValue = String(value || "").trim()
 				if (!strValue) return "Name is required"
 				if (strValue.length < 2) return "Name must be at least 2 characters"
@@ -368,7 +368,7 @@
 			isEditable: true,
 			editor: "number" as const,
 			editorOptions: {min: 0, max: 150},
-			onbeforecommit: ({value}: {value: unknown}) => {
+			beforeCommitCallback: ({value}: {value: unknown}) => {
 				const numValue = Number(value)
 				if (isNaN(numValue)) return "Age must be a number"
 				if (numValue < 0) return "Age cannot be negative"
@@ -383,7 +383,7 @@
 			align: "center" as const,
 			isEditable: true,
 			editor: "number" as const,
-			onbeforecommit: ({value}: {value: unknown}) => {
+			beforeCommitCallback: ({value}: {value: unknown}) => {
 				const numValue = Number(value)
 				if (numValue < 0 || numValue > 100) {
 					return "Score must be between 0 and 100"
@@ -402,7 +402,7 @@
 			width: "150px",
 			isEditable: true,
 			editor: "select" as const,
-			format: (value: string | null) => getStatusLabel(value),
+			getDisplayValueCallback: ({value}: {value: string | null}) => getStatusLabel(value),
 			editorOptions: {
 				options: statusOptions,
 				valueMember: "value",
@@ -416,7 +416,7 @@
 			width: "170px",
 			isEditable: true,
 			editor: "combobox" as const,
-			format: (value: string | null) => getCityName(value),
+			getDisplayValueCallback: ({value}: {value: string | null}) => getCityName(value),
 			editorOptions: {
 				options: cityOptions,
 				valueMember: "value",
@@ -433,12 +433,12 @@
 			isEditable: true,
 			editor: "autocomplete" as const,
 			// Display country name instead of ISO code
-			format: (value: string | null) => getCountryName(value),
+			getDisplayValueCallback: ({value}: {value: string | null}) => getCountryName(value),
 			editorOptions: {
 				// Initial options shown before user types
 				initialOptions: popularCountries,
 				// Async search with fake API delay
-				onSearch: searchCountries,
+				searchCallback: searchCountries,
 				// Start searching after 1 character
 				minSearchLength: 1,
 				// Debounce search calls
@@ -451,7 +451,7 @@
 				emptyLabel: "-- Select country --",
 				placeholder: "Search countries..."
 			},
-			onbeforecommit: ({value}: {value: unknown}) => {
+			beforeCommitCallback: ({value}: {value: unknown}) => {
 				// Country is optional, but if provided must be valid
 				if (value && !allCountries.find(c => c.value === value)) {
 					return "Please select a valid country"
@@ -476,8 +476,8 @@
 			isEditable: true,
 			editor: "custom" as const,
 			showEditButton: true,
-			format: (value: any) => value ? JSON.stringify(value).substring(0, 15) + (JSON.stringify(value).length > 15 ? "..." : "") : "(empty)",
-			oncelledit: (context: CustomEditorContext) => {
+			getDisplayValueCallback: ({value}: {value: any}) => value ? JSON.stringify(value).substring(0, 15) + (JSON.stringify(value).length > 15 ? "..." : "") : "(empty)",
+			editCallback: (context: CustomEditorContext) => {
 				jsonEditorContext = context
 				jsonEditorValue = context.value ? JSON.stringify(context.value, null, 2) : ""
 				jsonError = null
@@ -522,7 +522,7 @@
 			title: "Username",
 			isEditable: true,
 			editor: "text" as const,
-			onbeforecommit: async ({value}: {value: unknown}) => {
+			beforeCommitCallback: async ({value}: {value: unknown}) => {
 				const strValue = String(value || "").trim().toLowerCase()
 				if (!strValue) return "Username is required"
 				if (strValue.length < 3) return "Username must be at least 3 characters"
@@ -540,7 +540,7 @@
 			title: "Email",
 			isEditable: true,
 			editor: "text" as const,
-			onbeforecommit: ({value}: {value: unknown}) => {
+			beforeCommitCallback: ({value}: {value: unknown}) => {
 				const strValue = String(value || "")
 				if (!strValue.includes("@")) return "Invalid email"
 				return {valid: true, transformedValue: strValue.toLowerCase()}
@@ -889,7 +889,7 @@
 			columns={editableColumns}
 			editable
 			editTrigger="dblclick"
-			onrowchange={handleRowChange}
+			onRowChange={handleRowChange}
 			pageable
 			pageSize={8}
 		/>
@@ -905,7 +905,7 @@
 			items={sampleData}
 			columns={alwaysEditableColumns}
 			editable
-			onrowchange={handleRowChange}
+			onRowChange={handleRowChange}
 			pageable
 			pageSize={10}
 			striped={false}
@@ -935,7 +935,7 @@
 			columns={navigateColumns}
 			editable
 			editTrigger="navigate"
-			onrowchange={handleRowChange}
+			onRowChange={handleRowChange}
 			pageable
 			pageSize={10}
 		/>
@@ -946,7 +946,7 @@
 			items={sampleData}
 			columns={mixedTriggerColumns}
 			editable
-			onrowchange={handleRowChange}
+			onRowChange={handleRowChange}
 			pageable
 			pageSize={8}
 		/>
@@ -958,19 +958,19 @@
 		</div>
 
 		<h3>Custom Editor: JSON in Dialog</h3>
-		<p>Click the edit button (✎) in the Metadata column to open a JSON editor dialog. This demonstrates using <code>editor: "custom"</code> with <code>oncelledit</code> callback.</p>
+		<p>Click the edit button (✎) in the Metadata column to open a JSON editor dialog. This demonstrates using <code>editor: "custom"</code> with <code>editCallback</code> callback.</p>
 		<QuickGrid
 			items={sampleData}
 			columns={jsonEditorColumns}
 			editable
-			onrowchange={handleRowChange}
+			onRowChange={handleRowChange}
 			pageable
 			pageSize={8}
 		/>
 
-		<h3>Validation with onbeforecommit (Excel-like)</h3>
+		<h3>Validation with beforeCommitCallback (Excel-like)</h3>
 		<p>
-			Use <code>onbeforecommit</code> for validation and value transformation. Invalid cells stay marked until fixed.
+			Use <code>beforeCommitCallback</code> for validation and value transformation. Invalid cells stay marked until fixed.
 			Click a cell and use arrow keys to navigate, type to edit. Try entering invalid values:
 		</p>
 		<ul style="margin: 0.5rem 0 1rem 1.5rem;">
@@ -986,7 +986,7 @@
 			editTrigger="navigate"
 			checkboxAlwaysEditable
 			bind:invalidCells={validationInvalidCells}
-			onrowchange={handleValidationRowChange}
+			onRowChange={handleValidationRowChange}
 		/>
 		<div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
 			{#if validationLastChange}
@@ -1003,7 +1003,7 @@
 
 		<h3>Async Validation</h3>
 		<p>
-			<code>onbeforecommit</code> supports async validation. Try changing a username to "admin", "root", "system", or "test" - these are reserved and will show a validation error after the async check.
+			<code>beforeCommitCallback</code> supports async validation. Try changing a username to "admin", "root", "system", or "test" - these are reserved and will show a validation error after the async check.
 		</p>
 		<QuickGrid
 			items={asyncValidationData}
@@ -1011,7 +1011,7 @@
 			editable
 			editTrigger="dblclick"
 			bind:invalidCells={asyncInvalidCells}
-			onrowchange={handleAsyncValidationRowChange}
+			onRowChange={handleAsyncValidationRowChange}
 		/>
 		{#if asyncLastChange}
 			<p style="margin-top: 1rem; padding: 0.5rem; background: var(--neutral-layer-2, #f5f5f5); border-radius: 4px;">
@@ -1030,7 +1030,7 @@
 			editTrigger="dblclick"
 			showRowActions
 			onrowaction={handleRowAction}
-			onrowchange={handleRowActionsRowChange}
+			onRowChange={handleRowActionsRowChange}
 		/>
 		{#if lastRowAction}
 			<p style="margin-top: 1rem; padding: 0.5rem; background: var(--neutral-layer-2, #f5f5f5); border-radius: 4px;">
@@ -1050,7 +1050,7 @@
 			showRowActions
 			rowActions={['moveUp', 'moveDown', 'duplicate', 'delete']}
 			onrowaction={handleRowAction2}
-			onrowchange={handleRowActionsRowChange2}
+			onRowChange={handleRowActionsRowChange2}
 		/>
 		{#if lastRowAction2}
 			<p style="margin-top: 1rem; padding: 0.5rem; background: var(--neutral-layer-2, #f5f5f5); border-radius: 4px;">
@@ -1098,7 +1098,7 @@
 			toolbarAlign={toolbarAlignment}
 			toolbarTrigger={toolbarTriggerMode}
 			ontoolbarclick={handleToolbarClick}
-			onrowchange={handleToolbarRowChange}
+			onRowChange={handleToolbarRowChange}
 		/>
 		{#if lastToolbarAction}
 			<p style="margin-top: 1rem; padding: 0.5rem; background: var(--neutral-layer-2, #f5f5f5); border-radius: 4px;">
@@ -1237,7 +1237,7 @@ ${'<'}QuickGrid
   columns={columns}
   editable
   editTrigger="dblclick"
-  onrowchange={handleRowChange}
+  onRowChange={handleRowChange}
 />`}</pre>
 
 		<h3>Async Validation Code Example</h3>
@@ -1249,7 +1249,7 @@ ${'<'}QuickGrid
     isEditable: true,
     editor: "text",
     // Supports both sync and async validation
-    validate: async (value, row) => {
+    validateCallback: async ({value, row}) => {
       // Async API call to check uniqueness
       const exists = await checkEmailExists(value, row.id)
       return exists ? "Email already in use" : null
@@ -1261,7 +1261,7 @@ ${'<'}QuickGrid
   items={data}
   columns={columns}
   editable
-  onvalidationerror={(detail) => {
+  onValidationError={(detail) => {
     console.log(\`Validation failed: \${detail.error}\`)
   }}
 />`}</pre>
@@ -1289,8 +1289,8 @@ ${'<'}QuickGrid
     editor: "select",
     editorOptions: {
       // Load options dynamically
-      loadOptions: async (row, field) => {
-        const departments = await fetchDepartments(row.companyId)
+      loadOptionsCallback: async ({row, signal}) => {
+        const departments = await fetchDepartments(row.companyId, {signal})
         return departments.map(d => ({ value: d.id, label: d.name }))
       },
       optionsLoadTrigger: "ondropdownopen"
@@ -1299,7 +1299,7 @@ ${'<'}QuickGrid
 ]`}</pre>
 
 		<h3>Custom Editor (Dialog)</h3>
-		<p>Use <code>editor: "custom"</code> with <code>oncelledit</code> callback to implement custom editors like dialogs, JSON editors, color pickers, etc.</p>
+		<p>Use <code>editor: "custom"</code> with <code>editCallback</code> callback to implement custom editors like dialogs, JSON editors, color pickers, etc.</p>
 		<pre>{`${'<'}script>
   let showJsonDialog = false
   let jsonEditorContext = null
@@ -1311,8 +1311,8 @@ ${'<'}QuickGrid
       isEditable: true,
       editor: "custom",
       showEditButton: true,  // Shows edit icon in cell
-      format: (value) => value ? "{ ... }" : "(empty)",
-      oncelledit: (context) => {
+      getDisplayValueCallback: ({value}) => value ? "{ ... }" : "(empty)",
+      editCallback: (context) => {
         // context provides: value, row, rowIndex, field, commit(), cancel()
         jsonEditorContext = context
         showJsonDialog = true
@@ -1321,12 +1321,12 @@ ${'<'}QuickGrid
   ]
 
   function handleJsonSave(newJson) {
-    jsonEditorContext?.commit(newJson)  // Fires onrowchange
+    jsonEditorContext?.commit(newJson)  // Fires onRowChange
     showJsonDialog = false
   }
 ${'<'}/script>
 
-${'<'}QuickGrid {items} {columns} editable onrowchange={handleRowChange} />
+${'<'}QuickGrid {items} {columns} editable onRowChange={handleRowChange} />
 
 {#if showJsonDialog}
   ${'<'}Dialog open onOpenChange={({open}) => { if (!open) jsonEditorContext?.cancel() }}>
@@ -1337,14 +1337,14 @@ ${'<'}QuickGrid {items} {columns} editable onrowchange={handleRowChange} />
   ${'<'}/Dialog>
 {/if}`}</pre>
 
-		<h3>onbeforecommit Code Example</h3>
+		<h3>beforeCommitCallback Code Example</h3>
 		<pre>{`const columns = [
   {
     field: "email",
     title: "Email",
     isEditable: true,
     editor: "text",
-    onbeforecommit: ({ value, row }) => {
+    beforeCommitCallback: ({ value, row }) => {
       const email = String(value || "").trim()
 
       // Validation
@@ -1363,7 +1363,7 @@ ${'<'}QuickGrid {items} {columns} editable onrowchange={handleRowChange} />
     title: "Age",
     isEditable: true,
     editor: "number",
-    onbeforecommit: async ({ value }) => {
+    beforeCommitCallback: async ({ value }) => {
       // Async validation example
       const num = Number(value)
       if (num < 0) return "Age cannot be negative"
@@ -1391,7 +1391,7 @@ function handleRowChange(detail) {
   columns={columns}
   editable
   bind:invalidCells={invalidCells}
-  onrowchange={handleRowChange}
+  onRowChange={handleRowChange}
 />`}</pre>
 
 		<h3>Using invalidCells</h3>
@@ -1457,22 +1457,22 @@ function clearError(rowIndex, field) {
 					<td>editorOptions</td>
 					<td>object</td>
 					<td>undefined</td>
-					<td>Editor options (min/max, options, loadOptions, etc.)</td>
+					<td>Editor options (min/max, options, loadOptionsCallback, etc.)</td>
 				</tr>
 				<tr>
-					<td>onbeforecommit</td>
+					<td>beforeCommitCallback</td>
 					<td>(context) =&gt; ValidationResult | boolean | string | null | Promise</td>
 					<td>undefined</td>
 					<td>Validate and optionally transform value before commit</td>
 				</tr>
 				<tr>
-					<td>validate</td>
-					<td>(value, row) =&gt; string | null | Promise</td>
+					<td>validateCallback</td>
+					<td>(&#123;value, row, column&#125;) =&gt; string | null | Promise</td>
 					<td>undefined</td>
-					<td>Legacy validation (use onbeforecommit instead)</td>
+					<td>Simple validation — return an error message or null (prefer beforeCommitCallback)</td>
 				</tr>
 				<tr>
-					<td>oncelledit</td>
+					<td>editCallback</td>
 					<td>(context) =&gt; void</td>
 					<td>undefined</td>
 					<td>Custom editor callback (for editor="custom")</td>
@@ -1589,7 +1589,7 @@ function clearError(rowIndex, field) {
 
 	<Card>
 		<h2>CustomEditorContext</h2>
-		<p>The context object passed to <code>oncelledit</code>:</p>
+		<p>The context object passed to <code>editCallback</code>:</p>
 		<table class="member-table">
 			<thead>
 				<tr>
@@ -1603,7 +1603,7 @@ function clearError(rowIndex, field) {
 				<tr><td>row</td><td>T</td><td>Full row data</td></tr>
 				<tr><td>rowIndex</td><td>number</td><td>Row index in current view</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name being edited</td></tr>
-				<tr><td>commit</td><td>(newValue) =&gt; void</td><td>Call to save new value (fires onrowchange)</td></tr>
+				<tr><td>commit</td><td>(newValue) =&gt; void</td><td>Call to save new value (fires onRowChange)</td></tr>
 				<tr><td>cancel</td><td>() =&gt; void</td><td>Call to cancel editing</td></tr>
 			</tbody>
 		</table>
@@ -1623,7 +1623,7 @@ function clearError(rowIndex, field) {
 			</thead>
 			<tbody>
 				<tr><td>options</td><td>EditorOption[]</td><td>select, autocomplete</td><td>Static options array</td></tr>
-				<tr><td>loadOptions</td><td>(row, field) =&gt; Promise&lt;EditorOption[]&gt;</td><td>select, autocomplete</td><td>Dynamic options loader</td></tr>
+				<tr><td>loadOptionsCallback</td><td>(&#123;row, column, signal&#125;) =&gt; Promise&lt;EditorOption[]&gt;</td><td>select, autocomplete</td><td>Dynamic options loader</td></tr>
 				<tr><td>optionsLoadTrigger</td><td>"immediate" | "oneditstart" | "ondropdownopen"</td><td>select, autocomplete</td><td>When to load dynamic options</td></tr>
 				<tr><td>min</td><td>number</td><td>number</td><td>Minimum value</td></tr>
 				<tr><td>max</td><td>number</td><td>number</td><td>Maximum value</td></tr>
@@ -1649,7 +1649,7 @@ function clearError(rowIndex, field) {
 
 	<Card>
 		<h2>RowChangeDetail</h2>
-		<p>The detail object passed to <code>onrowchange</code>:</p>
+		<p>The detail object passed to <code>onRowChange</code>:</p>
 		<table class="member-table">
 			<thead>
 				<tr>
@@ -1674,7 +1674,7 @@ function clearError(rowIndex, field) {
 
 	<Card>
 		<h2>BeforeCommitContext</h2>
-		<p>The context object passed to <code>onbeforecommit</code>:</p>
+		<p>The context object passed to <code>beforeCommitCallback</code>:</p>
 		<table class="member-table">
 			<thead>
 				<tr>
@@ -1695,7 +1695,7 @@ function clearError(rowIndex, field) {
 
 	<Card>
 		<h2>ValidationResult</h2>
-		<p><code>onbeforecommit</code> can return various types:</p>
+		<p><code>beforeCommitCallback</code> can return various types:</p>
 		<table class="member-table">
 			<thead>
 				<tr>

@@ -34,10 +34,10 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onrowchange", type: "(detail: RowChangeDetail<T>) => void", default: "undefined", description: "Fired when a cell value is committed during inline editing. Detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
-		{name: "onroweditstart", type: "(detail: { row, rowIndex, field }) => void", default: "undefined", description: "Fired when a cell enters edit mode"},
-		{name: "onroweditcancel", type: "(detail: { row, rowIndex, field }) => void", default: "undefined", description: "Fired when editing is cancelled (e.g. Escape key)"},
-		{name: "onvalidationerror", type: "(detail: { row, rowIndex, field, error }) => void", default: "undefined", description: "Fired when a commit is blocked by a validation error"},
+		{name: "onRowChange", type: "(ctx: RowChangeDetail<T>) => void", default: "undefined", description: "Fired when a cell value is committed during inline editing. Detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
+		{name: "onEditStart", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Fired when a cell enters edit mode"},
+		{name: "onEditCancel", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Fired when editing is cancelled (e.g. Escape key)"},
+		{name: "onValidationError", type: "(ctx: { row, rowIndex, field, column, error }) => void", default: "undefined", description: "Fired when a commit is blocked by a validation error"},
 		{name: "ontoolbarclick", type: "(detail: ToolbarClickDetail<T>) => void", default: "undefined", description: "Fired when a row toolbar button is clicked. Detail includes item, rowIndex, row"},
 		{name: "oncontextmenuopen", type: "(context: ContextMenuContext<T>) => void", default: "undefined", description: "Fired when the context menu is opened. Receives row, rowIndex, colIndex, column, cellValue"}
 	]
@@ -109,7 +109,7 @@
 			title: "Status",
 			width: "120px",
 			align: "center" as const,
-			format: (value: boolean) => (value ? "✓ Active" : "✗ Inactive")
+			getDisplayValueCallback: ({value}: {value: boolean}) => (value ? "✓ Active" : "✗ Inactive")
 		}
 	]
 
@@ -155,7 +155,7 @@
 			sortable: true,
 			filterable: false,
 			align: "center" as const,
-			format: (value: boolean) => (value ? "✓ Active" : "✗ Inactive")
+			getDisplayValueCallback: ({value}: {value: boolean}) => (value ? "✓ Active" : "✗ Inactive")
 		}
 	]
 </script>
@@ -331,8 +331,8 @@
 					<td>Text alignment</td>
 				</tr>
 				<tr>
-					<td>format</td>
-					<td>(value, row) =&gt; string</td>
+					<td>getDisplayValueCallback</td>
+					<td>(&#123;value, row, column&#125;) =&gt; string</td>
 					<td>undefined</td>
 					<td>Custom cell formatter</td>
 				</tr>

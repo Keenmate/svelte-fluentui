@@ -36,7 +36,7 @@
 	// `op + number` — the grid then ignores this filter (no rows hidden) and paints the
 	// input red. Plain text without an operator is treated as a substring search.
 	function numericRangeFilter(field: keyof Org) {
-		return (filterValue: string, row: Org): boolean | null => {
+		return ({term: filterValue, row}: {term: string; row: Org}): boolean | null => {
 			const trimmed = filterValue.trim()
 			if (!trimmed) return true
 			const opMatch = trimmed.match(/^(>=|<=|>|<|=)\s*(-?\d+(?:\.\d+)?)$/)
@@ -61,11 +61,11 @@
 		{field: "name",      title: "Organization", isTree: true,    sortable: false, filterable: true,  minWidth: "260px"},
 		{field: "head",      title: "Head",         filterable: true},
 		{field: "headcount", title: "Headcount",    align: "right" as const, width: "120px",
-		 filterable: true, filter: numericRangeFilter("headcount"),
-		 format: (v: number) => v.toLocaleString()},
+		 filterable: true, filterCallback: numericRangeFilter("headcount"),
+		 getDisplayValueCallback: ({value: v}: {value: number}) => v.toLocaleString()},
 		{field: "budget",    title: "Budget",       align: "right" as const, width: "150px",
-		 filterable: true, filter: numericRangeFilter("budget"),
-		 format: (v: number) => "$" + v.toLocaleString()},
+		 filterable: true, filterCallback: numericRangeFilter("budget"),
+		 getDisplayValueCallback: ({value: v}: {value: number}) => "$" + v.toLocaleString()},
 		{field: "region",    title: "Region",       width: "120px", filterable: true}
 	]
 
@@ -114,7 +114,7 @@
 	]
 
 	const callbacks: PropertyRow[] = [
-		{name: "onfilterchange", type: "(filters: Record<string, string>) => void", default: "undefined", description: "When provided, internal client-side filtering is bypassed entirely. Filter inputs still render and fire this callback with a copy of the current {field: value} map on every keystroke. Caller is expected to update items (typical server-side pattern: debounce, post to backend, replace items)."}
+		{name: "onFiltersChange", type: "(ctx: {filters: Record<string, string>}) => void", default: "undefined", description: "When provided, internal client-side filtering is bypassed entirely. Filter inputs still render and fire this callback with a copy of the current {field: value} map on every keystroke. Caller is expected to update items (typical server-side pattern: debounce, post to backend, replace items)."}
 	]
 
 	const slots: PropertyRow[] = [
@@ -123,7 +123,7 @@
 
 	const columnProperties: PropertyRow[] = [
 		{name: "isTree", type: "boolean", default: "undefined", description: "Mark this column as the tree column. It renders the indentation (level × 1.25rem padding-inline-start) and the expand/collapse chevron."},
-		{name: "filter", type: "(filterValue: string, row: T) => boolean | null", default: "undefined", description: "Custom filter predicate that replaces the built-in substring match for this column. Return true/false to keep/drop the row, or null when the input string is syntactically invalid (e.g. \">\" without a number) — the grid then ignores the filter for that column AND adds a .invalid class to the input so the user sees a red border."}
+		{name: "filterCallback", type: "(ctx: {term, row, column}) => boolean | null", default: "undefined", description: "Custom filter predicate that replaces the built-in substring match for this column. Return true/false to keep/drop the row, or null when the input string is syntactically invalid (e.g. \">\" without a number) — the grid then ignores the filter for that column AND adds a .invalid class to the input so the user sees a red border."}
 	]
 
 	const propertyColumns = [
@@ -173,7 +173,7 @@
 			field: "kind",
 			title: "Type",
 			width: "110px",
-			format: (v: string) => v === "team" ? "Team" : "Employee"
+			getDisplayValueCallback: ({value: v}: {value: string}) => v === "team" ? "Team" : "Employee"
 		},
 		{
 			field: "role",
@@ -181,7 +181,7 @@
 			width: "180px",
 			isEditable: isEmployee,           // per-row predicate — only employees
 			editor: "text" as const,
-			format: (v: string | undefined) => v ?? "—"
+			getDisplayValueCallback: ({value: v}: {value: string | undefined}) => v ?? "—"
 		},
 		{
 			field: "salary",
@@ -191,14 +191,14 @@
 			isEditable: isEmployee,
 			editor: "number" as const,
 			editorOptions: {min: 0, max: 1_000_000, step: 1000},
-			format: (v: number | null | undefined) => v == null ? "—" : "$" + v.toLocaleString()
+			getDisplayValueCallback: ({value: v}: {value: number | null | undefined}) => v == null ? "—" : "$" + v.toLocaleString()
 		},
 		{
 			field: "headcount",
 			title: "Headcount",
 			width: "120px",
 			align: "right" as const,
-			format: (v: number | undefined) => v === undefined ? "—" : String(v)
+			getDisplayValueCallback: ({value: v}: {value: number | undefined}) => v === undefined ? "—" : String(v)
 		}
 	]
 
@@ -351,7 +351,7 @@
 			editable
 			editTrigger={teamEditTrigger}
 			idMember="path"
-			onrowchange={handleTeamRowChange}
+			onRowChange={handleTeamRowChange}
 			contextMenu={[
 				"expand-all",
 				"collapse-all",

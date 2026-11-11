@@ -26,7 +26,8 @@
 	type EditorOptions = {
 		// === SHARED (select/autocomplete) ===
 		options?: EditorOption[]
-		loadOptions?: (row: T, field: string) => Promise<EditorOption[]>
+		/** Loads the options for this row. `signal` aborts when a newer load for the column starts or the grid unmounts. */
+		loadOptionsCallback?: (ctx: {row: T; column: Column<T>; signal: AbortSignal}) => Promise<EditorOption[]>
 		optionsLoadTrigger?: OptionsLoadTrigger  // Default: "oneditstart"
 		valueMember?: string    // Property to use as value (default: "value")
 		displayMember?: string  // Property to use as display (default: "label")
@@ -57,7 +58,8 @@
 
 		// === AUTOCOMPLETE ===
 		initialOptions?: EditorOption[]  // Show before search (popular items)
-		onSearch?: (query: string, row: T, signal?: AbortSignal) => Promise<EditorOption[]>
+		/** Server-side search for the autocomplete editor. */
+		searchCallback?: (ctx: {term: string; row: T; column: Column<T>; signal?: AbortSignal}) => Promise<EditorOption[]>
 		minSearchLength?: number         // Min chars before search (default: 1)
 		debounceMs?: number              // Debounce search calls (default: 300)
 		multiple?: boolean               // Allow multiple selections
@@ -69,6 +71,7 @@
 		row: T
 		rowIndex: number
 		field: string
+		column: Column<T>
 		commit: (newValue: any) => void
 		cancel: () => void
 	}
@@ -92,9 +95,10 @@
 		row: T
 		rowIndex: number
 		field: string
+		column: Column<T>
 	}
 
-	// onbeforecommit can return:
+	// beforeCommitCallback can return:
 	// - ValidationResult object
 	// - boolean (true = valid, false = invalid with no message)
 	// - string (error message = invalid)
@@ -124,8 +128,10 @@
 		 *  column unbounded — set a `maxWidth` if you want a hard cap. */
 		nowrap?: boolean
 		align?: "left" | "center" | "right"
-		format?: (value: any, row: T) => string
-		template?: (row: T) => string
+		/** Formats the cell's value for display. */
+		getDisplayValueCallback?: (ctx: {value: any; row: T; column: Column<T>}) => string
+		/** Renders the whole cell as an HTML string (takes precedence over getDisplayValueCallback). */
+		renderCellCallback?: (ctx: {row: T; column: Column<T>}) => string
 		snippet?: Snippet<[T]>
 		// Custom filter predicate. When set, replaces the built-in substring match for this
 		// column. Called once per row with the raw filter input string and the row.
@@ -135,7 +141,7 @@
 		// `.invalid` class so the UI can surface the bad-syntax state. Assumes the
 		// validity is a property of the input string, not the row, so the grid only
 		// probes the first row to decide validity.
-		filter?: (filterValue: string, row: T) => boolean | null
+		filterCallback?: (ctx: {term: string; row: T; column: Column<T>}) => boolean | null
 		// Editing props
 		// `true`/`false` for a static gate, or `(row) => boolean` for per-row decisions
 		// (e.g. tree grids where only leaf rows are editable). When omitted, defaults to false.
@@ -143,12 +149,12 @@
 		editor?: EditorType
 		editTrigger?: EditTrigger  // Per-column override
 		editorOptions?: EditorOptions
-		// Validation - can return error message or null (deprecated, use onbeforecommit)
-		validate?: (value: any, row: T) => string | null | Promise<string | null>
-		// Before commit callback - validates and optionally transforms value
-		onbeforecommit?: (context: BeforeCommitContext<T>) => BeforeCommitResult | Promise<BeforeCommitResult>
-		// Custom editor callback
-		oncelledit?: (context: CustomEditorContext<T>) => void
+		/** Validates a new value: return an error message, or null when valid. Prefer beforeCommitCallback. */
+		validateCallback?: (ctx: {value: any; row: T; column: Column<T>}) => string | null | Promise<string | null>
+		/** Validates and optionally transforms a value before it is committed (see BeforeCommitResult). */
+		beforeCommitCallback?: (ctx: BeforeCommitContext<T>) => BeforeCommitResult | Promise<BeforeCommitResult>
+		/** Custom editor (`editor: "custom"`): open your own UI, then call `ctx.commit(value)` or `ctx.cancel()`. */
+		editCallback?: (ctx: CustomEditorContext<T>) => void
 		// Show edit button in cell
 		showEditButton?: boolean
 		// Tree mode: render this column with indent + expand/collapse chevron
@@ -314,12 +320,16 @@
 		// owns the filtered dataset (typical for server-side search). Filter inputs still
 		// render and fire this callback with a copy of the current `{field: value}` map on
 		// every keystroke — debounce + post to your backend, then update `items`.
-		onfilterchange?: (filters: Record<string, string>) => void
-		// Callbacks
-		onrowchange?: (detail: RowChangeDetail<T>) => void
-		onroweditstart?: (detail: { row: T, rowIndex: number, field: string }) => void
-		onroweditcancel?: (detail: { row: T, rowIndex: number, field: string }) => void
-		onvalidationerror?: (detail: { row: T, rowIndex: number, field: string, error: string }) => void
+		onFiltersChange?: (ctx: {filters: Record<string, string>}) => void
+		// Events
+		/** Fires after every committed cell edit (valid or not — see `isValid`). */
+		onRowChange?: (ctx: RowChangeDetail<T>) => void
+		/** Fires when a cell enters edit mode. */
+		onEditStart?: (ctx: {row: T; rowIndex: number; field: string; column: Column<T>}) => void
+		/** Fires when a cell edit is cancelled. */
+		onEditCancel?: (ctx: {row: T; rowIndex: number; field: string; column: Column<T> | undefined}) => void
+		/** Fires when a committed value fails validation. */
+		onValidationError?: (ctx: {row: T; rowIndex: number; field: string; column: Column<T>; error: string}) => void
 		ontoolbarclick?: (detail: ToolbarClickDetail<T>) => void
 		onrowaction?: (detail: RowActionClickDetail<T>) => void  // Deprecated: use ontoolbarclick
 	}
@@ -368,12 +378,12 @@
 		defaultExpandDepth = undefined,
 		treeDoubleClickBehavior = "none",
 		// Filter delegation
-		onfilterchange = undefined,
+		onFiltersChange = undefined,
 		// Callbacks
-		onrowchange = undefined,
-		onroweditstart = undefined,
-		onroweditcancel = undefined,
-		onvalidationerror = undefined,
+		onRowChange = undefined,
+		onEditStart = undefined,
+		onEditCancel = undefined,
+		onValidationError = undefined,
 		ontoolbarclick = undefined,
 		onrowaction = undefined  // Legacy callback
 	}: Props<T> = $props()
@@ -516,7 +526,7 @@
 		columns.forEach(column => {
 			const field = String(column.field)
 			if (
-				column.editorOptions?.loadOptions &&
+				column.editorOptions?.loadOptionsCallback &&
 				column.editorOptions?.optionsLoadTrigger === "immediate" &&
 				!dynamicOptionsCache[field]
 			) {
@@ -708,18 +718,18 @@
 		for (const [field, filterValue] of Object.entries(filters)) {
 			if (!filterValue) continue
 			const col = columns.find((c) => String(c.field) === field)
-			if (!col?.filter) continue
-			const probe = col.filter(filterValue, items[0])
+			if (!col?.filterCallback) continue
+			const probe = col.filterCallback({term: filterValue, row: items[0], column: col})
 			if (probe === null) result[field] = false
 		}
 		return result
 	})
 
 	// Computed: filtered items (tree-aware: includes ancestors of matches).
-	// When `onfilterchange` is provided the caller owns filtering — we render the inputs
+	// When `onFiltersChange` is provided the caller owns filtering — we render the inputs
 	// and fire the callback, but skip internal filtering entirely (server-side mode).
 	let filteredItems = $derived.by(() => {
-		if (onfilterchange) return treeOrderedItems
+		if (onFiltersChange) return treeOrderedItems
 		if (!filterable || Object.keys(filters).length === 0) return treeOrderedItems
 
 		const matchesFilter = (item: T) =>
@@ -727,8 +737,8 @@
 				if (!filterValue) return true
 				// Per-column custom predicate wins over the built-in substring match.
 				const col = columns.find((c) => String(c.field) === field)
-				if (col?.filter) {
-					const result = col.filter(filterValue, item)
+				if (col?.filterCallback) {
+					const result = col.filterCallback({term: filterValue, row: item, column: col})
 					// null = invalid input → don't filter, treat row as a match.
 					return result === null ? true : result
 				}
@@ -834,7 +844,7 @@
 		filters[field] = value
 		currentPage = 1 // Reset to first page when filtering
 		// Pass a shallow copy so callers can't mutate our internal state.
-		onfilterchange?.({ ...filters })
+		onFiltersChange?.({filters: {...filters}})
 	}
 
 	function goToPage(page: number) {
@@ -853,21 +863,21 @@
 	}
 
 	function getCellValue(item: T, column: Column<T>, rowIndex?: number): string {
-		if (column.template) {
-			return column.template(item)
+		if (column.renderCellCallback) {
+			return column.renderCellCallback({row: item, column})
 		}
 		// Use draft value if available
 		const value = rowIndex !== undefined
 			? getCellRawValue(item, rowIndex, String(column.field))
 			: item[column.field as keyof T]
-		if (column.format) {
-			return column.format(value, item)
+		if (column.getDisplayValueCallback) {
+			return column.getDisplayValueCallback({value, row: item, column})
 		}
 		return String(value ?? "")
 	}
 
 	function hasTemplate(column: Column<T>): boolean {
-		return !!column.template
+		return !!column.renderCellCallback
 	}
 
 	function hasSnippet(column: Column<T>): boolean {
@@ -875,21 +885,34 @@
 	}
 
 	// Dynamic options loading
+	// One in-flight load per column; a newer load (or unmount) aborts the previous one.
+	const optionLoads = new Map<string, AbortController>()
+	$effect(() => () => {
+		for (const controller of optionLoads.values()) controller.abort()
+	})
+
 	async function loadOptionsForColumn(column: Column<T>, row: T, field: string): Promise<EditorOption[]> {
-		if (!column.editorOptions?.loadOptions) return column.editorOptions?.options || []
+		if (!column.editorOptions?.loadOptionsCallback) return column.editorOptions?.options || []
 
 		const cacheKey = field
+		optionLoads.get(cacheKey)?.abort()
+		const controller = new AbortController()
+		optionLoads.set(cacheKey, controller)
 		loadingOptions[cacheKey] = true
 
 		try {
-			const options = await column.editorOptions.loadOptions(row, field)
+			const options = await column.editorOptions.loadOptionsCallback({row, column, signal: controller.signal})
+			if (controller.signal.aborted) return []
 			dynamicOptionsCache[cacheKey] = options
 			return options
 		} catch (error) {
-			console.error(`Failed to load options for ${field}:`, error)
+			if (!controller.signal.aborted) console.error(`Failed to load options for ${field}:`, error)
 			return []
 		} finally {
-			loadingOptions[cacheKey] = false
+			if (optionLoads.get(cacheKey) === controller) {
+				optionLoads.delete(cacheKey)
+				loadingOptions[cacheKey] = false
+			}
 		}
 	}
 
@@ -910,17 +933,13 @@
 			options: getOptionsForColumn(column)
 		}
 
-		// Wrap onSearch to include row context and pass through signal
-		if (column.editorOptions?.onSearch) {
-			const originalOnSearch = column.editorOptions.onSearch
-			baseOptions.onSearch = (query: string, signal?: AbortSignal) => originalOnSearch(query, row, signal)
+		// Adapt the public callbacks to GridCellEditor's internal (positional) ones
+		const searchCallback = column.editorOptions?.searchCallback
+		if (searchCallback) {
+			baseOptions.onSearch = (term: string, signal?: AbortSignal) => searchCallback({term, row, column, signal})
 		}
-
-		// Wrap loadOptions to include row context (for dynamic loading)
-		if (column.editorOptions?.loadOptions) {
-			const originalLoadOptions = column.editorOptions.loadOptions
-			const field = String(column.field)
-			baseOptions.loadOptions = () => originalLoadOptions(row, field)
+		if (column.editorOptions?.loadOptionsCallback) {
+			baseOptions.loadOptions = () => loadOptionsForColumn(column, row, String(column.field))
 		}
 
 		return baseOptions
@@ -962,12 +981,13 @@
 		}
 
 		// Handle custom editor
-		if (column.editor === "custom" && column.oncelledit) {
+		if (column.editor === "custom" && column.editCallback) {
 			const context: CustomEditorContext<T> = {
 				value: item[column.field as keyof T],
 				row: item,
 				rowIndex,
 				field: columnField,
+				column,
 				commit: (newValue: any) => {
 					commitEditDirect(rowIndex, column, newValue, item, colIndex)
 				},
@@ -979,7 +999,7 @@
 					}
 				}
 			}
-			column.oncelledit(context)
+			column.editCallback(context)
 			// Mark as editing so we can show visual feedback
 			editingCell = { rowIndex, field }
 			return
@@ -987,20 +1007,20 @@
 
 		// Load options if needed (oneditstart trigger)
 		if (
-			column.editorOptions?.loadOptions &&
+			column.editorOptions?.loadOptionsCallback &&
 			(column.editorOptions?.optionsLoadTrigger === "oneditstart" || !column.editorOptions?.optionsLoadTrigger)
 		) {
 			await loadOptionsForColumn(column, item, columnField)
 		}
 
 		editingCell = { rowIndex, field, initialSearchQuery }
-		onroweditstart?.({ row: item, rowIndex, field })
+		onEditStart?.({row: item, rowIndex, field, column})
 	}
 
 	function cancelEdit(item: T, rowIndex: number) {
 		if (editingCell) {
 			const field = editingCell.field
-			onroweditcancel?.({ row: item, rowIndex, field })
+			onEditCancel?.({row: item, rowIndex, field, column: columns.find((c) => String(c.field) === field)})
 			editingCell = null
 			currentCellError = null
 		}
@@ -1090,8 +1110,8 @@
 		// Remove from invalid cells if it was invalid
 		removeInvalidCell(rowKey, field)
 
-		// Always fire onrowchange with isValid: true
-		onrowchange?.({
+		// Always fire onRowChange with isValid: true
+		onRowChange?.({
 			row: item,
 			draftRow: draftRow || { ...item, [field]: newValue } as T,
 			rowIndex,
@@ -1121,16 +1141,17 @@
 		isValidating = true
 
 		try {
-			// First, run onbeforecommit if defined (new preferred way)
-			if (column.onbeforecommit) {
+			// First, run beforeCommitCallback if defined (preferred)
+			if (column.beforeCommitCallback) {
 				const context: BeforeCommitContext<T> = {
 					value: newValue,
 					oldValue,
 					row: item,
 					rowIndex,
-					field
+					field,
+					column
 				}
-				const result = column.onbeforecommit(context)
+				const result = column.beforeCommitCallback(context)
 				const resolvedResult = result instanceof Promise ? await result : result
 				const normalized = normalizeValidationResult(resolvedResult, newValue)
 
@@ -1138,9 +1159,9 @@
 				validationErrorMsg = normalized.message || null
 				finalValue = normalized.finalValue
 			}
-			// Fall back to legacy validate function if no onbeforecommit
-			else if (column.validate) {
-				const result = column.validate(newValue, item)
+			// Otherwise the simpler validateCallback
+			else if (column.validateCallback) {
+				const result = column.validateCallback({value: newValue, row: item, column})
 				const error = result instanceof Promise ? await result : result
 
 				if (error) {
@@ -1169,12 +1190,12 @@
 		} else {
 			addInvalidCell(rowKey, field, validationErrorMsg || "Invalid value")
 			currentCellError = validationErrorMsg
-			onvalidationerror?.({ row: item, rowIndex, field, error: validationErrorMsg || "Invalid value" })
+			onValidationError?.({row: item, rowIndex, field, column, error: validationErrorMsg || "Invalid value"})
 		}
 
-		// Always fire onrowchange (with isValid flag)
+		// Always fire onRowChange (with isValid flag)
 		// draftRow contains all user changes including invalid ones
-		onrowchange?.({
+		onRowChange?.({
 			row: item,
 			draftRow: draftRow || { ...item, [field]: finalValue } as T,
 			rowIndex,

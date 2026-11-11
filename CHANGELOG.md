@@ -11,6 +11,12 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **QuickGrid column:** `format(value, row)`, `template(row)` → `getDisplayValueCallback({value, row, column})`, `renderCellCallback({row, column})`
+- **QuickGrid column:** `filter(filterValue, row)`, `validate(value, row)` → `filterCallback({term, row, column})`, `validateCallback({value, row, column})`
+- **QuickGrid column:** `onbeforecommit(ctx)`, `oncelledit(ctx)` → `beforeCommitCallback(ctx)` (same result semantics, ctx gains `column`), `editCallback(ctx)`
+- **QuickGrid editorOptions:** `loadOptions(row, field)`, `onSearch(query, row, signal)` → `loadOptionsCallback({row, column, signal})`, `searchCallback({term, row, column, signal})`
+- **QuickGrid:** `onfilterchange(filters)`, `onrowchange(detail)` → `onFiltersChange({filters})`, `onRowChange(ctx)`
+- **QuickGrid:** `onroweditstart`, `onroweditcancel`, `onvalidationerror` → `onEditStart`, `onEditCancel`, `onValidationError` (ctx gains `column`)
 - **DataGrid:** `onCloseColumnOptions`, `onCloseColumnResize` → removed — `<fluent-data-grid>` never fires them
 - **DataGrid, DataGridRow, DataGridCell:** hand-forwarded `onkeydown` / `onclick` / `ondblclick` / `onfocus` → any native event or attribute via `...rest`
 - **Anchor, AppBarItem, NavExpander, NavItem, NavLink, NavLinkItem:** `onClick(ev)` → `onclick(ev)` — the native click event (AppBarItem's was never wired; now it is)

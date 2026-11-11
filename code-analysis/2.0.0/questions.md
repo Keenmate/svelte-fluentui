@@ -81,3 +81,14 @@ said to drop `preventClose`, but it does more than veto: it hides the × button 
 overlay clicks inert. Without it a "must answer" dialog would show a × that does nothing. **Kept for
 now.** Options: keep it (maybe rename to `closable={false}` / `dismissible`-style), or drop it and add a
 `showCloseButton` prop. Your call.
+
+## Q10 — QuickGrid `beforeCommitCallback` result vs the before* contract
+
+Renamed `onbeforecommit` → `beforeCommitCallback` but **kept its result semantics**:
+`ValidationResult | boolean | string | null`, where a returned *string is an error message*. The generic
+before* contract (05 rule 6) says any returned value *replaces* the value. Options:
+(a) keep as is and document QuickGrid's commit callback as a validation callback (maybe rename to
+`validateCallback` and fold the old `validate` into it), or (b) follow the contract strictly:
+`false` rejects, `{error}` rejects with a message, `{value}` / other value replaces.
+Also: `editCallback` is my name for the old `oncelledit` (custom editor hook; 05 said "verify →
+renderEditorCallback" — it doesn't render, it hands you commit/cancel).
