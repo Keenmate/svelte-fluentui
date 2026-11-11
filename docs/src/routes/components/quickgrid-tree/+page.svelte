@@ -58,7 +58,7 @@
 	}
 
 	const orgColumns = [
-		{field: "name",      title: "Organization", isTree: true,    sortable: false, filterable: true,  minWidth: "260px"},
+		{field: "name",      title: "Organization", tree: true,    sortable: false, filterable: true,  minWidth: "260px"},
 		{field: "head",      title: "Head",         filterable: true},
 		{field: "headcount", title: "Headcount",    align: "right" as const, width: "120px",
 		 filterable: true, filterCallback: numericRangeFilter("headcount"),
@@ -91,7 +91,7 @@
 	]
 
 	const folderColumns = [
-		{field: "name",     title: "Name",     isTree: true, filterable: true, minWidth: "260px"},
+		{field: "name",     title: "Name",     tree: true, filterable: true, minWidth: "260px"},
 		{field: "size",     title: "Size",     width: "100px", align: "right" as const},
 		{field: "modified", title: "Modified", width: "140px"}
 	]
@@ -122,7 +122,7 @@
 	]
 
 	const columnProperties: PropertyRow[] = [
-		{name: "isTree", type: "boolean", default: "undefined", description: "Mark this column as the tree column. It renders the indentation (level × 1.25rem padding-inline-start) and the expand/collapse chevron."},
+		{name: "tree", type: "boolean", default: "undefined", description: "Mark this column as the tree column. It renders the indentation (level × 1.25rem padding-inline-start) and the expand/collapse chevron."},
 		{name: "filterCallback", type: "(ctx: {term, row, column}) => boolean | null", default: "undefined", description: "Custom filter predicate that replaces the built-in substring match for this column. Return true/false to keep/drop the row, or null when the input string is syntactically invalid (e.g. \">\" without a number) — the grid then ignores the filter for that column AND adds a .invalid class to the input so the user sees a red border."}
 	]
 
@@ -141,7 +141,7 @@
 
 	// === Mixed-editability tree (teams + employees) ===
 	// Heterogeneous tree where parent rows (teams) are read-only summaries and
-	// only the leaves (employees) are editable. Demonstrates `column.isEditable`
+	// only the leaves (employees) are editable. Demonstrates `column.getIsEditableCallback`
 	// as a per-row predicate so role/salary can be edited on employees but not on
 	// the team rows that aggregate them.
 	type TeamRow = {
@@ -168,7 +168,7 @@
 	const isEmployee = (row: TeamRow) => row.kind === "employee"
 
 	const teamColumns = [
-		{field: "name", title: "Name", isTree: true, minWidth: "260px"},
+		{field: "name", title: "Name", tree: true, minWidth: "260px"},
 		{
 			field: "kind",
 			title: "Type",
@@ -179,7 +179,7 @@
 			field: "role",
 			title: "Role",
 			width: "180px",
-			isEditable: isEmployee,           // per-row predicate — only employees
+			getIsEditableCallback: ({row}: {row: TeamRow}) => isEmployee(row),   // per-row decision — only employees
 			editor: "text" as const,
 			getDisplayValueCallback: ({value: v}: {value: string | undefined}) => v ?? "—"
 		},
@@ -188,7 +188,7 @@
 			title: "Salary",
 			width: "140px",
 			align: "right" as const,
-			isEditable: isEmployee,
+			getIsEditableCallback: ({row}: {row: TeamRow}) => isEmployee(row),
 			editor: "number" as const,
 			editorOptions: {min: 0, max: 1_000_000, step: 1000},
 			getDisplayValueCallback: ({value: v}: {value: number | null | undefined}) => v == null ? "—" : "$" + v.toLocaleString()
@@ -223,7 +223,7 @@
 
 	<p>
 		QuickGrid renders hierarchical data when each row carries a path string (PostgreSQL ltree style: <code>1.2.3</code>, POSIX-style <code>/1/2/3</code>, or Windows-style <code>C:\foo\bar</code>).
-		Mark one column with <code>isTree: true</code> and the grid handles indentation, expand/collapse, ancestor-aware filtering, and optional double-click-to-toggle.
+		Mark one column with <code>tree: true</code> and the grid handles indentation, expand/collapse, ancestor-aware filtering, and optional double-click-to-toggle.
 	</p>
 
 	<References links={[
@@ -303,15 +303,15 @@
 		<h3>Editable per row type — teams vs employees</h3>
 		<p>
 			Heterogeneous tree where parent rows (teams) are read-only summaries and only the leaves (employees) are editable.
-			Each editable column carries a per-row predicate via <code>isEditable: (row) =&gt; boolean</code> — here
-			<code>(row) =&gt; row.kind === "employee"</code> — so a click on <strong>Role</strong> or
+			Each editable column carries a per-row decision via <code>getIsEditableCallback: (&#123;row&#125;) =&gt; boolean</code> — here
+			<code>row.kind === "employee"</code> — so a click on <strong>Role</strong> or
 			<strong>Salary</strong> on an employee row focuses an editable cell, but the same cells on a team row are skipped entirely.
 			Tab / Shift-Tab traversal skips read-only rows in every mode (try tabbing from the last editable cell on Parker — you'll
 			land on Maximoff, jumping over the Product team row).
 		</p>
 		<p>
 			For an all-or-nothing row gate that does not vary per column, use the grid-level
-			<code>isRowEditable</code> prop instead — same shape (<code>boolean | (row) =&gt; boolean</code>), one place.
+			<code>rowEditable</code> prop (or <code>getIsRowEditableCallback</code>) instead — one place.
 		</p>
 		<p>
 			Right-click any row to access predefined tree commands: <code>expand-all</code> / <code>collapse-all</code>

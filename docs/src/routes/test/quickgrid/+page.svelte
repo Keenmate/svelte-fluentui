@@ -10,7 +10,7 @@
 	let log = $state<string[]>([])
 
 	const columns = [
-		{field: "name", title: "Name", isEditable: true, editor: "text" as const,
+		{field: "name", title: "Name", editable: true, editor: "text" as const,
 			beforeCommitCallback: ({value}: {value: unknown}) => String(value).length < 2 ? "Too short" : null},
 		{field: "qty", title: "Qty", filterable: true,
 			getDisplayValueCallback: ({value}: {value: number}) => `${value} pcs`,

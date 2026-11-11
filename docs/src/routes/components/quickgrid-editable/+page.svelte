@@ -14,7 +14,7 @@
 
 	const editableProperties: Property[] = [
 		{name: "editable", type: "boolean", default: "false", description: "Enable inline editing mode for the grid"},
-		{name: "isRowEditable", type: "boolean | (row) => boolean", default: "true", description: "Row-level editability gate. Returns false to make the entire row read-only (useful in tree grids where parent / category rows are not editable)"},
+		{name: "rowEditable / getIsRowEditableCallback", type: "boolean / ({row}) => boolean", default: "true", description: "Row-level editability gate. Returns false to make the entire row read-only (useful in tree grids where parent / category rows are not editable)"},
 		{name: "editTrigger", type: "'click' | 'dblclick' | 'button' | 'always' | 'navigate'", default: "'dblclick'", description: "How to trigger cell editing at the grid level (can be overridden per column)"},
 		{name: "dropdownShowOnFocus", type: "boolean", default: "true", description: "Auto-show editor for dropdown types (select, combobox, autocomplete) when cell is focused in navigate mode"},
 		{name: "checkboxAlwaysEditable", type: "boolean", default: "false", description: "Make checkboxes always interactive, even when editTrigger is 'navigate'"},
@@ -80,15 +80,15 @@
 	// Editable columns configuration
 	const editableColumns = [
 		{field: "id", title: "ID", width: "80px", align: "center" as const},
-		{field: "name", title: "Name", isEditable: true, editor: "text" as const},
-		{field: "age", title: "Age", width: "100px", align: "center" as const, isEditable: true, editor: "number" as const, editorOptions: {min: 0, max: 120}},
-		{field: "city", title: "City", isEditable: true, editor: "text" as const},
-		{field: "active", title: "Active", width: "100px", align: "center" as const, isEditable: true, editor: "checkbox" as const},
+		{field: "name", title: "Name", editable: true, editor: "text" as const},
+		{field: "age", title: "Age", width: "100px", align: "center" as const, editable: true, editor: "number" as const, editorOptions: {min: 0, max: 120}},
+		{field: "city", title: "City", editable: true, editor: "text" as const},
+		{field: "active", title: "Active", width: "100px", align: "center" as const, editable: true, editor: "checkbox" as const},
 		{
 			field: "role",
 			title: "Role",
 			width: "150px",
-			isEditable: true,
+			editable: true,
 			editor: "select" as const,
 			editorOptions: {
 				options: [
@@ -103,24 +103,24 @@
 	// Always editable columns (Excel-like spreadsheet)
 	const alwaysEditableColumns = [
 		{field: "id", title: "ID", width: "60px", align: "center" as const},
-		{field: "name", title: "Name", isEditable: true, editor: "text" as const, editTrigger: "always" as const},
-		{field: "age", title: "Age", width: "80px", align: "center" as const, isEditable: true, editor: "number" as const, editTrigger: "always" as const, editorOptions: {min: 0, max: 120}},
-		{field: "city", title: "City", isEditable: true, editor: "text" as const, editTrigger: "always" as const},
-		{field: "active", title: "Active", width: "80px", align: "center" as const, isEditable: true, editor: "checkbox" as const, editTrigger: "always" as const}
+		{field: "name", title: "Name", editable: true, editor: "text" as const, editTrigger: "always" as const},
+		{field: "age", title: "Age", width: "80px", align: "center" as const, editable: true, editor: "number" as const, editTrigger: "always" as const, editorOptions: {min: 0, max: 120}},
+		{field: "city", title: "City", editable: true, editor: "text" as const, editTrigger: "always" as const},
+		{field: "active", title: "Active", width: "80px", align: "center" as const, editable: true, editor: "checkbox" as const, editTrigger: "always" as const}
 	]
 
 	// Navigate mode columns (arrow keys to move, type to edit)
 	const navigateColumns = [
 		{field: "id", title: "ID", width: "60px", align: "center" as const},
-		{field: "name", title: "Name", isEditable: true, editor: "text" as const},
-		{field: "age", title: "Age", width: "80px", align: "center" as const, isEditable: true, editor: "number" as const, editorOptions: {min: 0, max: 120}},
-		{field: "city", title: "City", isEditable: true, editor: "text" as const},
-		{field: "active", title: "Active", width: "80px", align: "center" as const, isEditable: true, editor: "checkbox" as const},
+		{field: "name", title: "Name", editable: true, editor: "text" as const},
+		{field: "age", title: "Age", width: "80px", align: "center" as const, editable: true, editor: "number" as const, editorOptions: {min: 0, max: 120}},
+		{field: "city", title: "City", editable: true, editor: "text" as const},
+		{field: "active", title: "Active", width: "80px", align: "center" as const, editable: true, editor: "checkbox" as const},
 		{
 			field: "metadata",
 			title: "Metadata",
 			width: "150px",
-			isEditable: true,
+			editable: true,
 			editor: "custom" as const,
 			showEditButton: true,
 			getDisplayValueCallback: ({value}: {value: any}) => value ? JSON.stringify(value).substring(0, 20) + (JSON.stringify(value).length > 20 ? "..." : "") : "(empty)",
@@ -136,10 +136,10 @@
 	// Mixed edit triggers columns
 	const mixedTriggerColumns = [
 		{field: "id", title: "ID", width: "60px", align: "center" as const},
-		{field: "name", title: "Name (dblclick)", isEditable: true, editor: "text" as const, editTrigger: "dblclick" as const},
-		{field: "city", title: "City (click)", isEditable: true, editor: "text" as const, editTrigger: "click" as const},
-		{field: "age", title: "Age (button)", width: "100px", align: "center" as const, isEditable: true, editor: "number" as const, editTrigger: "button" as const, showEditButton: true},
-		{field: "active", title: "Active (always)", width: "100px", align: "center" as const, isEditable: true, editor: "checkbox" as const, editTrigger: "always" as const}
+		{field: "name", title: "Name (dblclick)", editable: true, editor: "text" as const, editTrigger: "dblclick" as const},
+		{field: "city", title: "City (click)", editable: true, editor: "text" as const, editTrigger: "click" as const},
+		{field: "age", title: "Age (button)", width: "100px", align: "center" as const, editable: true, editor: "number" as const, editTrigger: "button" as const, showEditButton: true},
+		{field: "active", title: "Active (always)", width: "100px", align: "center" as const, editable: true, editor: "checkbox" as const, editTrigger: "always" as const}
 	]
 
 	// Custom JSON editor columns
@@ -168,13 +168,13 @@
 
 	const jsonEditorColumns = [
 		{field: "id", title: "ID", width: "60px", align: "center" as const},
-		{field: "name", title: "Name", isEditable: true, editor: "text" as const},
-		{field: "email", title: "Email", isEditable: true, editor: "text" as const},
+		{field: "name", title: "Name", editable: true, editor: "text" as const},
+		{field: "email", title: "Email", editable: true, editor: "text" as const},
 		{
 			field: "metadata",
 			title: "Metadata (JSON)",
 			width: "200px",
-			isEditable: true,
+			editable: true,
 			editor: "custom" as const,
 			showEditButton: true,
 			getDisplayValueCallback: ({value}: {value: any}) => value ? JSON.stringify(value).substring(0, 30) + (JSON.stringify(value).length > 30 ? "..." : "") : "(empty)",
@@ -348,7 +348,7 @@
 		{
 			field: "name",
 			title: "Name (text)",
-			isEditable: true,
+			editable: true,
 			editor: "text" as const,
 			beforeCommitCallback: ({value}: {value: unknown}) => {
 				const strValue = String(value || "").trim()
@@ -366,7 +366,7 @@
 			title: "Age (number)",
 			width: "120px",
 			align: "center" as const,
-			isEditable: true,
+			editable: true,
 			editor: "number" as const,
 			editorOptions: {min: 0, max: 150},
 			beforeCommitCallback: ({value}: {value: unknown}) => {
@@ -382,7 +382,7 @@
 			title: "Score (number)",
 			width: "130px",
 			align: "center" as const,
-			isEditable: true,
+			editable: true,
 			editor: "number" as const,
 			beforeCommitCallback: ({value}: {value: unknown}) => {
 				const numValue = Number(value)
@@ -401,7 +401,7 @@
 			title: "Status (select)",
 			headerInfo: "Click cell to show dropdown toggle, then click toggle to open options",
 			width: "150px",
-			isEditable: true,
+			editable: true,
 			editor: "select" as const,
 			getDisplayValueCallback: ({value}: {value: string | null}) => getStatusLabel(value),
 			editorOptions: {
@@ -415,7 +415,7 @@
 			title: "City (combobox)",
 			headerInfo: "Type to filter options, or click toggle to see all",
 			width: "170px",
-			isEditable: true,
+			editable: true,
 			editor: "combobox" as const,
 			getDisplayValueCallback: ({value}: {value: string | null}) => getCityName(value),
 			editorOptions: {
@@ -431,7 +431,7 @@
 			title: "Country (autocomplete)",
 			headerInfo: "Type to search countries via async API",
 			width: "210px",
-			isEditable: true,
+			editable: true,
 			editor: "autocomplete" as const,
 			// Display country name instead of ISO code
 			getDisplayValueCallback: ({value}: {value: string | null}) => getCountryName(value),
@@ -466,7 +466,7 @@
 			headerInfo: "Toggle verification status",
 			width: "130px",
 			align: "center" as const,
-			isEditable: true,
+			editable: true,
 			editor: "checkbox" as const
 		},
 		{
@@ -474,7 +474,7 @@
 			title: "Settings (JSON)",
 			headerInfo: "Click edit button to open JSON editor",
 			width: "150px",
-			isEditable: true,
+			editable: true,
 			editor: "custom" as const,
 			showEditButton: true,
 			getDisplayValueCallback: ({value}: {value: any}) => value ? JSON.stringify(value).substring(0, 15) + (JSON.stringify(value).length > 15 ? "..." : "") : "(empty)",
@@ -521,7 +521,7 @@
 		{
 			field: "username",
 			title: "Username",
-			isEditable: true,
+			editable: true,
 			editor: "text" as const,
 			beforeCommitCallback: async ({value}: {value: unknown}) => {
 				const strValue = String(value || "").trim().toLowerCase()
@@ -539,7 +539,7 @@
 		{
 			field: "email",
 			title: "Email",
-			isEditable: true,
+			editable: true,
 			editor: "text" as const,
 			beforeCommitCallback: ({value}: {value: unknown}) => {
 				const strValue = String(value || "")
@@ -589,8 +589,8 @@
 
 	const rowActionsColumns = [
 		{field: "id", title: "ID", width: "80px", align: "center" as const},
-		{field: "name", title: "Name", isEditable: true, editor: "text" as const},
-		{field: "value", title: "Value", width: "120px", align: "right" as const, isEditable: true, editor: "number" as const}
+		{field: "name", title: "Name", editable: true, editor: "text" as const},
+		{field: "value", title: "Value", width: "120px", align: "right" as const, editable: true, editor: "number" as const}
 	]
 
 	function handleRowAction(detail: {action: string; rowIndex: number; row: SimpleItem}) {
@@ -1200,14 +1200,14 @@ ${'<'}QuickGrid
 
   const columns = [
     { field: "id", title: "ID", width: "80px" },
-    { field: "name", title: "Name", isEditable: true, editor: "text" },
-    { field: "age", title: "Age", isEditable: true, editor: "number",
+    { field: "name", title: "Name", editable: true, editor: "text" },
+    { field: "age", title: "Age", editable: true, editor: "number",
       editorOptions: { min: 0, max: 120 } },
-    { field: "active", title: "Active", isEditable: true, editor: "checkbox" },
+    { field: "active", title: "Active", editable: true, editor: "checkbox" },
     {
       field: "role",
       title: "Role",
-      isEditable: true,
+      editable: true,
       editor: "select",
       editorOptions: {
         options: [
@@ -1241,7 +1241,7 @@ ${'<'}QuickGrid
   {
     field: "email",
     title: "Email",
-    isEditable: true,
+    editable: true,
     editor: "text",
     // Supports both sync and async validation
     validateCallback: async ({value, row}) => {
@@ -1280,7 +1280,7 @@ ${'<'}QuickGrid
   {
     field: "departmentId",
     title: "Department",
-    isEditable: true,
+    editable: true,
     editor: "select",
     editorOptions: {
       // Load options dynamically
@@ -1303,7 +1303,7 @@ ${'<'}QuickGrid
     {
       field: "metadata",
       title: "Metadata",
-      isEditable: true,
+      editable: true,
       editor: "custom",
       showEditButton: true,  // Shows edit icon in cell
       getDisplayValueCallback: ({value}) => value ? "{ ... }" : "(empty)",
@@ -1337,7 +1337,7 @@ ${'<'}QuickGrid {items} {columns} editable onRowChange={handleRowChange} />
   {
     field: "email",
     title: "Email",
-    isEditable: true,
+    editable: true,
     editor: "text",
     beforeCommitCallback: ({ value, row }) => {
       const email = String(value || "").trim()
@@ -1356,7 +1356,7 @@ ${'<'}QuickGrid {items} {columns} editable onRowChange={handleRowChange} />
   {
     field: "age",
     title: "Age",
-    isEditable: true,
+    editable: true,
     editor: "number",
     beforeCommitCallback: async ({ value }) => {
       // Async validation example
@@ -1431,10 +1431,10 @@ function clearError(rowIndex, field) {
 			</thead>
 			<tbody>
 				<tr>
-					<td>isEditable</td>
-					<td>boolean | (row) =&gt; boolean</td>
-					<td>undefined</td>
-					<td>Enable editing for this column. Pass a callback for per-row decisions (e.g. only leaf rows in a tree)</td>
+					<td>editable / getIsEditableCallback</td>
+					<td>boolean / (&#123;row, column&#125;) =&gt; boolean</td>
+					<td>false</td>
+					<td>Enable editing for this column; the callback decides per row (e.g. only leaf rows in a tree) and wins</td>
 				</tr>
 				<tr>
 					<td>editor</td>

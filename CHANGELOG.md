@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **QuickGrid columns:** `isEditable` (boolean or `(row) => boolean`), `isTree` → `editable` (boolean) + `getIsEditableCallback({row, column})`, `tree`
+- **QuickGrid:** `isRowEditable` (boolean or `(row) => boolean`) → `rowEditable` (boolean) + `getIsRowEditableCallback({row})`
 - **exports:** `AnchorButton` (alias of `Anchor`) → removed — use `Anchor`
 - **Icon:** `primaryFill` → removed — use `color` / `customColor`
 - **Tabs:** `overflow`, `moreButtonId`, `styleMoreValues` (no effect since the rewrite) → removed — use `responsive="menu"`

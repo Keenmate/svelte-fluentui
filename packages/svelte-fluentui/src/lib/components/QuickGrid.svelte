@@ -144,9 +144,10 @@
 		// probes the first row to decide validity.
 		filterCallback?: (ctx: {term: string; row: T; column: Column<T>}) => boolean | null
 		// Editing props
-		// `true`/`false` for a static gate, or `(row) => boolean` for per-row decisions
-		// (e.g. tree grids where only leaf rows are editable). When omitted, defaults to false.
-		isEditable?: boolean | ((row: T) => boolean)
+		/** Cells in this column can be edited (when the grid is `editable`). Default `false`. */
+		editable?: boolean
+		/** Per-row decision (e.g. only leaf rows in a tree); wins over `editable`. */
+		getIsEditableCallback?: (ctx: {row: T; column: Column<T>}) => boolean
 		editor?: EditorType
 		editTrigger?: EditTrigger  // Per-column override
 		editorOptions?: EditorOptions
@@ -158,8 +159,8 @@
 		editCallback?: (ctx: CustomEditorContext<T>) => void
 		// Show edit button in cell
 		showEditButton?: boolean
-		// Tree mode: render this column with indent + expand/collapse chevron
-		isTree?: boolean
+		/** Tree mode: render this column with indent + expand/collapse chevron (never editable). */
+		tree?: boolean
 	}
 
 	type RowChangeDetail<T> = {
@@ -236,10 +237,11 @@
 		editable?: boolean
 		editTrigger?: EditTrigger
 		dropdownShowOnFocus?: boolean  // Auto-show editor for dropdown types when cell is focused
-		// Row-level editability gate. Evaluated before the per-column `isEditable` so a `false`
-		// here short-circuits all cells in the row (useful for tree grids where parent / category
-		// rows are read-only and only leaves are editable). Defaults to true.
-		isRowEditable?: boolean | ((row: T) => boolean)
+		// Row-level editability gate, evaluated before the column's: `false` here makes the
+		// whole row read-only (e.g. parent / category rows in a tree grid). Default `true`.
+		rowEditable?: boolean
+		/** Per-row decision; wins over `rowEditable`. */
+		getIsRowEditableCallback?: (ctx: {row: T}) => boolean
 		checkboxAlwaysEditable?: boolean  // Make checkboxes always interactive, even in navigate mode
 		// Invalid cells state (bindable for external tracking)
 		invalidCells?: CellValidationState[]
@@ -306,7 +308,8 @@
 		editable = false,
 		editTrigger = "dblclick",
 		dropdownShowOnFocus = true,
-		isRowEditable = true,
+		rowEditable = true,
+		getIsRowEditableCallback = undefined,
 		checkboxAlwaysEditable = false,
 		invalidCells = $bindable([]),
 		// Row toolbar
@@ -904,17 +907,15 @@
 	function isCellEditable(column: Column<T>, row: T): boolean {
 		if (!editable) return false
 		// Tree column is structural (chevron + indentation) — never editable,
-		// regardless of column.isEditable. Inline editing the cell that owns
+		// regardless of column.editable. Inline editing the cell that owns
 		// the expand affordance creates ambiguous click targets and was the
 		// source of repeat regressions (rc17/rc18). Consumers who need a
 		// "rename" affordance should expose it via a separate column or a
 		// context-menu / button action.
-		if (column.isTree) return false
-		const rowGate = typeof isRowEditable === "function" ? isRowEditable(row) : isRowEditable
+		if (column.tree) return false
+		const rowGate = getIsRowEditableCallback ? getIsRowEditableCallback({row}) : rowEditable
 		if (!rowGate) return false
-		const colGate = column.isEditable
-		if (colGate === undefined) return false
-		return typeof colGate === "function" ? colGate(row) : colGate
+		return column.getIsEditableCallback ? column.getIsEditableCallback({row, column}) : (column.editable ?? false)
 	}
 
 	function getColumnEditTrigger(column: Column<T>): EditTrigger {
@@ -1188,7 +1189,7 @@
 		// dblclicks elsewhere in the cell. Leaves fall through to the edit logic below.
 		if (
 			isTreeMode &&
-			column.isTree &&
+			column.tree &&
 			treeDoubleClickBehavior === "toggle" &&
 			rowHasChildren(item)
 		) {
@@ -2299,7 +2300,7 @@
 									</div>
 								{/if}
 								{/snippet}
-								{#if isTreeMode && column.isTree}
+								{#if isTreeMode && column.tree}
 									{@const _path = getRowPath(item)}
 									{@const _level = getRowLevel(item)}
 									{@const _hasChildren = rowHasChildren(item)}

@@ -6,7 +6,7 @@
 
 	const columns = [
 		{field: "id", title: "Id", width: "60px"},
-		{field: "pick", title: "Pick", width: "200px", isEditable: true, editor: "select" as const, editorOptions: {options}}
+		{field: "pick", title: "Pick", width: "200px", editable: true, editor: "select" as const, editorOptions: {options}}
 	]
 </script>
 

@@ -337,10 +337,10 @@
 					<td>Custom cell formatter</td>
 				</tr>
 				<tr>
-					<td>isEditable</td>
-					<td>boolean | (row) =&gt; boolean</td>
-					<td>undefined</td>
-					<td>Enable editing (<a href="/components/quickgrid-editable">see editable docs</a>). Pass a callback for per-row decisions (e.g. only edit leaf rows in a tree)</td>
+					<td>editable / getIsEditableCallback</td>
+					<td>boolean / (&#123;row, column&#125;) =&gt; boolean</td>
+					<td>false</td>
+					<td>Enable editing (<a href="/components/quickgrid-editable">see editable docs</a>); the callback decides per row and wins</td>
 				</tr>
 			</tbody>
 		</table>
