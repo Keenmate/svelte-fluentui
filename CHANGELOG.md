@@ -151,6 +151,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - FluentUI element registration moved to `<script module>` via `fluent-ui/register.ts` — once per
   component type instead of on every instance.
 - Snippet props typed as `Snippet` / `Snippet<[...]>` instead of `any` (`SlotType` alias removed).
+- **Checkbox — unchecking actually unchecks.** Going from checked to unchecked (or through the
+  three-state cycle) removed the `checked` attribute, but FAST's `checked` property stayed `true`,
+  so the box kept its tick while the value was `false`. The `checked` / `indeterminate` properties
+  are now kept in sync.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

@@ -84,11 +84,22 @@
 	const isCurrentMessageSnippet = $derived(typeof currentMessage === "function")
 
 	let element: HTMLElement & {
+		checked: boolean
+		indeterminate: boolean
 		checkValidity: () => boolean
 		reportValidity: () => boolean
 		setCustomValidity: (message: string) => void
 		setValidity: (flags: any, message: any, anchor: any) => void
 	}
+
+	// Keep FAST's `checked` / `indeterminate` *properties* in sync. Removing the
+	// attribute (when `checked` goes true -> false/null) does not clear the property,
+	// so the box stayed visually checked while the value was false.
+	$effect(() => {
+		if (!element) return
+		element.checked = checked === true
+		element.indeterminate = checked === null
+	})
 
 	// Expose validation methods
 	export function checkValidity() {
