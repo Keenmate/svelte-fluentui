@@ -57,7 +57,7 @@ export interface ActionItem<Ctx = object, A extends string = string> {
 	getIsToggledCallback?(ctx: Ctx): boolean
 
 	/** Runs on click with the surface context plus the invocation fields — the same object `onAction` gets. Awaited. */
-	onClick?(detail: ActionEventDetail<Ctx, A>): void | Promise<void>
+	onClick?(detail: ActionEventDetail<Ctx, A>): unknown
 }
 
 /** A menu item: an `ActionItem` that may hold child items. */
