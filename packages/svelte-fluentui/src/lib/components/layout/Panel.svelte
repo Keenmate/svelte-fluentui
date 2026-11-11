@@ -13,7 +13,8 @@
 		closeOnOutsideClick?: boolean
 		closeOnEscape?: boolean
 		pinned?: boolean
-		onclose?: () => void
+		/** Fires when the user closes the panel (Escape, overlay, outside click, close button). */
+		onOpenChange?: (ctx: {open: boolean}) => void
 		children?: Snippet
 		class?: string
 		style?: string
@@ -28,7 +29,7 @@
 		closeOnOutsideClick = true,
 		closeOnEscape = true,
 		pinned = false,
-		onclose = undefined,
+		onOpenChange = undefined,
 		children = undefined,
 		class: className = undefined,
 		style = undefined
@@ -69,8 +70,9 @@
 	}
 
 	function close() {
+		if (!open) return
 		open = false
-		onclose?.()
+		onOpenChange?.({open: false})
 	}
 
 	function onOverlayClick() {

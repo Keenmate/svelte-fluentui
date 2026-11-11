@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Panel:** `onclose()` → `onOpenChange({open})`
+- **CommandPalette, MenuButton:** `onopen()`, `onclose()` → `onOpenChange({open})`
+- **ContextMenu:** `onopen({x, y})`, `onclose()` → `onOpenChange({open, x, y})`
 - **Dialog:** `visible` (bindable) → `open` (bindable)
 - **Dialog:** `onClose()` → `onOpenChange({open})` (fires on open and close)
 - **Dialog:** `onbeforeclose()` (sync, `false` vetoes) → `beforeCloseCallback({reason})` — may be async; `reason` is `escape` / `close-button` / `overlay` / `dismiss` / `action`; not called for `hide()` from code

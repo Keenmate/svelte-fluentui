@@ -1329,7 +1329,7 @@ ${'<'}/script>
 ${'<'}QuickGrid {items} {columns} editable onrowchange={handleRowChange} />
 
 {#if showJsonDialog}
-  ${'<'}Dialog open onclose={() => jsonEditorContext?.cancel()}>
+  ${'<'}Dialog open onOpenChange={({open}) => { if (!open) jsonEditorContext?.cancel() }}>
     ${'<'}JsonEditor
       value={jsonEditorContext?.value}
       onsave={handleJsonSave}

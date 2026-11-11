@@ -69,8 +69,8 @@
 		start?: Snippet
 		/** Slot rendered inside the button's `end` slot (icon after label). */
 		end?: Snippet
-		onopen?: () => void
-		onclose?: () => void
+		/** Fires when the menu opens or closes. */
+		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
 	let {
@@ -84,8 +84,7 @@
 		children = undefined,
 		start = undefined,
 		end = undefined,
-		onopen = undefined,
-		onclose = undefined
+		onOpenChange = undefined
 	}: Props = $props()
 
 	/*
@@ -101,14 +100,13 @@
 		if (disabled) return
 		const next = !open
 		open = next
-		if (next) onopen?.()
-		else onclose?.()
+		onOpenChange?.({open: next})
 	}
 
 	function closeMenu() {
 		if (!open) return
 		open = false
-		onclose?.()
+		onOpenChange?.({open: false})
 	}
 
 	async function runItem(item: MenuButtonItem) {

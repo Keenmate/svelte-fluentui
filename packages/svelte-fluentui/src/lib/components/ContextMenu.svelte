@@ -26,8 +26,8 @@
 		offsetMenuY?: number
 		/** Children rendered inside the context-menu trigger zone. */
 		children?: Snippet
-		onopen?: (detail: { x: number; y: number }) => void
-		onclose?: () => void
+		/** Fires when the menu opens (with the pointer position) or closes. */
+		onOpenChange?: (ctx: {open: boolean; x?: number; y?: number}) => void
 	}
 
 	let {
@@ -42,8 +42,7 @@
 		offsetMenuX = 8,
 		offsetMenuY = 0,
 		children = undefined,
-		onopen = undefined,
-		onclose = undefined
+		onOpenChange = undefined
 	}: Props = $props()
 
 	let open = $state(false)
@@ -58,14 +57,14 @@
 		e.stopPropagation()
 		cursor = { x: e.clientX, y: e.clientY }
 		open = true
-		onopen?.({ x: e.clientX, y: e.clientY })
+		onOpenChange?.({open: true, x: e.clientX, y: e.clientY})
 	}
 
 	function closeMenu() {
 		if (!open) return
 		open = false
 		closeAllSubmenus()
-		onclose?.()
+		onOpenChange?.({open: false})
 	}
 
 	async function runItem(item: MenuButtonItem) {

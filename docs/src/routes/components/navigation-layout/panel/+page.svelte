@@ -29,7 +29,7 @@
 	]
 
 	const panelCallbacks: Property[] = [
-		{name: "onclose", type: "() => void", default: "undefined", description: "Fires after the panel closes (via overlay, Escape, or open=false)"}
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the user closes the panel (overlay, Escape, outside click, close button)"}
 	]
 
 	const panelSlots: Property[] = [

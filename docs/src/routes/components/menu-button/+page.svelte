@@ -31,8 +31,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onopen", type: "() => void", default: "undefined", description: "Fired when the menu opens."},
-		{name: "onclose", type: "() => void", default: "undefined", description: "Fired when the menu closes (from click-outside, Escape, or an item click)."}
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the menu opens or closes (click-outside, Escape, or an item click)."}
 	]
 
 	const slots: Property[] = [

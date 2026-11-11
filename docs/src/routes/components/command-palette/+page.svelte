@@ -38,8 +38,7 @@
 
 	const callbacks: Property[] = [
 		{name: "onselect", type: "(item: CommandPaletteItem) => void", default: "undefined", description: "Fired with the selected item before its navigation/action runs"},
-		{name: "onopen", type: "() => void", default: "undefined", description: "Fired when the palette opens"},
-		{name: "onclose", type: "() => void", default: "undefined", description: "Fired when the palette closes"}
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the palette opens or closes"}
 	]
 
 	const slots: Property[] = [

@@ -30,8 +30,8 @@
 		filter?: CommandPaletteFilter
 		/** Called with the selected item before navigation/action runs. */
 		onselect?: (item: CommandPaletteItem) => void
-		onopen?: () => void
-		onclose?: () => void
+		/** Fires when the palette opens or closes. */
+		onOpenChange?: (ctx: {open: boolean}) => void
 		/** Replace a result row's rendering. Receives the item and whether it's the active row. */
 		item?: Snippet<[item: CommandPaletteItem, selected: boolean]>
 		/** Replace the empty-state body. Receives the current query. */
@@ -51,8 +51,7 @@
 		closeOnSelect = true,
 		filter = undefined,
 		onselect = undefined,
-		onopen = undefined,
-		onclose = undefined,
+		onOpenChange = undefined,
 		item: itemSnippet = undefined,
 		empty: emptySnippet = undefined,
 		footer: footerSnippet = undefined
@@ -176,7 +175,7 @@
 		open = true
 		query = ""
 		selectedIndex = 0
-		onopen?.()
+		onOpenChange?.({open: true})
 		await tick()
 		inputEl?.focus()
 	}
@@ -184,7 +183,7 @@
 	function closePalette() {
 		if (!open) return
 		open = false
-		onclose?.()
+		onOpenChange?.({open: false})
 	}
 
 	function selectItem(it: CommandPaletteItem) {

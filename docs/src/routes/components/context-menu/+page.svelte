@@ -18,8 +18,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onopen", type: "(detail: { x: number; y: number }) => void", default: "undefined", description: "Fired when the menu opens. `x`/`y` are the viewport-relative cursor coordinates"},
-		{name: "onclose", type: "() => void", default: "undefined", description: "Fired when the menu closes (click-outside, Escape, right-click elsewhere, or an item click)"}
+		{name: "onOpenChange", type: "(ctx: {open: boolean; x?: number; y?: number}) => void", default: "undefined", description: "Fires when the menu opens (x/y = viewport-relative cursor position) or closes (click-outside, Escape, right-click elsewhere, or an item click)"}
 	]
 
 	const slots: Property[] = [
@@ -175,7 +174,7 @@
 			Right-click inside the box below. The browser's native context menu is
 			suppressed for this area and ours opens at the cursor.
 		</p>
-		<ContextMenu items={fileItems} onopen={({x, y}) => lastCursor = {x, y}}>
+		<ContextMenu items={fileItems} onOpenChange={({open, x, y}) => { if (open && x !== undefined && y !== undefined) lastCursor = {x, y} }}>
 			<div class="demo-box">
 				<strong>Right-click me</strong>
 				<div class="demo-hint">
