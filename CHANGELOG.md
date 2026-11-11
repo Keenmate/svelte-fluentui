@@ -11,6 +11,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Panel (`side`):** `"left"` / `"right"` (default `"right"`) → `"start"` / `"end"` only (default `"end"`; follow the writing direction)
 - **Badge, Label (`size`):** `"xs"` / `"sm"` / `"lg"` / `"xl"` → `"extra-small"` / `"small"` / `"large"` / `"extra-large"` (`"medium"` unchanged)
 - **Badge, Label CSS classes:** `.badge-xs` … `.badge-xl`, `.fluent-label-xs` … `-xl` → `.badge-extra-small` … `.badge-extra-large`, `.fluent-label-extra-small` … `-extra-large`
 - **InputFile (`cardSize`):** `"minimal"` / `"compact"` (default) / `"big"` → `"small"` / `"medium"` (default) / `"large"`

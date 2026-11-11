@@ -112,4 +112,6 @@ Everything else that positions things now uses logical values (Tooltip, Position
 Select/Combobox, Toast, column `align`). Panel accepts both `"left" | "right"` (physical) and
 `"start" | "end"` (logical, flips with `dir="rtl"`), default `"right"`. Options: (a) keep both —
 physical sides are sometimes intended (e.g. a fixed settings drawer); (b) drop `left`/`right`, default
-`"end"`. Not changed yet.
+`"end"`.
+
+**Decided 2026-11-11: (b) start/end only, default `"end"`.** Done.

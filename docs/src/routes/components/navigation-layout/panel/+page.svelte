@@ -2,8 +2,8 @@
 	import {Panel, Button, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
-	let rightOpen = $state(false)
-	let leftOpen = $state(false)
+	let endOpen = $state(false)
+	let startOpen = $state(false)
 	let wideOpen = $state(false)
 	let noOverlayOpen = $state(false)
 	let stickyOpen = $state(false)
@@ -18,7 +18,7 @@
 
 	const panelProperties: Property[] = [
 		{name: "open", type: "boolean", default: "false", description: "Open state (bindable)"},
-		{name: "side", type: '"left" | "right" | "start" | "end"', default: '"right"', description: "Edge the panel slides in from. \"left\"/\"right\" are physical; \"start\"/\"end\" are logical and flip with dir=\"rtl\""},
+		{name: "side", type: '"start" | "end"', default: '"end"', description: "Edge the panel slides in from; follows the writing direction (flips with dir=\"rtl\")"},
 		{name: "width", type: "string", default: '"320px"', description: "Panel width (any CSS length)"},
 		{name: "top", type: "string", default: '"0"', description: "Top offset for the panel + overlay (any CSS length). Leaves the area above (e.g. a sticky header / top nav) visible and interactive so the trigger remains clickable while the drawer is open."},
 		{name: "overlay", type: "boolean", default: "true", description: "Render a dimmed backdrop behind the panel"},
@@ -47,7 +47,7 @@
 <Stack orientation="vertical" gap="1rem">
 	<Meta
 		title="Panel"
-		description="A slide-in side panel primitive — left or right edge, optional overlay, Escape-to-close. Build profile panels, filter drawers, and details pane on top."
+		description="A slide-in side panel primitive — start or end edge, optional overlay, Escape-to-close. Build profile panels, filter drawers, and details pane on top."
 		keywords="svelte, fluentui, panel, drawer, sidebar, flyout, slide-in"
 	/>
 
@@ -68,39 +68,39 @@
 
 		<Stack orientation="vertical" gap="1.5rem">
 			<div>
-				<h3>Right side (default)</h3>
-				<p class="example-description">Slides in from the right with a dimmed overlay. Click overlay or press Escape to close.</p>
-				<Button appearance="accent" onclick={() => rightOpen = true}>Open right panel</Button>
-				<Panel bind:open={rightOpen}>
+				<h3>End side (default)</h3>
+				<p class="example-description">Slides in from the end edge (the right in LTR) with a dimmed overlay. Click overlay or press Escape to close.</p>
+				<Button appearance="accent" onclick={() => endOpen = true}>Open end panel</Button>
+				<Panel bind:open={endOpen}>
 					<div class="demo-panel">
 						<div class="demo-panel__header">
-							<h3>Right panel</h3>
+							<h3>End panel</h3>
 						</div>
 						<div class="demo-panel__body">
-							<p>This panel slid in from the right edge.</p>
+							<p>This panel slid in from the end edge.</p>
 							<p>Press <kbd>Esc</kbd> or click the dimmed area to close.</p>
 						</div>
 						<div class="demo-panel__footer">
-							<Button onclick={() => rightOpen = false}>Close</Button>
+							<Button onclick={() => endOpen = false}>Close</Button>
 						</div>
 					</div>
 				</Panel>
 			</div>
 
 			<div>
-				<h3>Left side</h3>
-				<p class="example-description"><span class="component-name">side="left"</span> swaps the anchor edge.</p>
-				<Button onclick={() => leftOpen = true}>Open left panel</Button>
-				<Panel bind:open={leftOpen} side="left">
+				<h3>Start side</h3>
+				<p class="example-description"><span class="component-name">side="start"</span> swaps the anchor edge (the left edge in LTR).</p>
+				<Button onclick={() => startOpen = true}>Open start panel</Button>
+				<Panel bind:open={startOpen} side="start">
 					<div class="demo-panel">
 						<div class="demo-panel__header">
-							<h3>Left panel</h3>
+							<h3>Start panel</h3>
 						</div>
 						<div class="demo-panel__body">
-							<p>Slid in from the left edge.</p>
+							<p>Slid in from the start edge.</p>
 						</div>
 						<div class="demo-panel__footer">
-							<Button onclick={() => leftOpen = false}>Close</Button>
+							<Button onclick={() => startOpen = false}>Close</Button>
 						</div>
 					</div>
 				</Panel>
@@ -150,9 +150,7 @@
 				<h3 dir="ltr">RTL — logical <span class="component-name">side="start"</span></h3>
 				<p class="example-description" dir="ltr">
 					In RTL, <span class="component-name">side="start"</span> anchors to the right edge and slides in
-					from the right. Use it whenever you want the panel to follow writing direction (drawer menus,
-					filter panes); use the physical <span class="component-name">"left"</span> / <span class="component-name">"right"</span>
-					when you specifically want a fixed side regardless of locale.
+					from the right — sides always follow the writing direction.
 				</p>
 				<Button appearance="accent" onclick={() => rtlOpen = true}>افتح اللوحة</Button>
 				<Panel bind:open={rtlOpen} side="start">

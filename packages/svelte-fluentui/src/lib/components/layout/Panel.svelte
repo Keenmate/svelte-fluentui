@@ -2,7 +2,8 @@
 	import type {Snippet} from "svelte"
 	import {pushLayer} from "../../helpers/layer-stack.js"
 
-	type Side = "left" | "right" | "start" | "end"
+	/** Logical edge: `start`/`end` follow the writing direction. */
+	type Side = "start" | "end"
 
 	type Props = {
 		open?: boolean
@@ -22,7 +23,7 @@
 
 	let {
 		open = $bindable(false),
-		side = "right",
+		side = "end",
 		width = "320px",
 		top = "0",
 		overlay = true,
@@ -143,10 +144,8 @@
 <style lang="scss">
 	.fluent-panel-root {
 		position: fixed;
-		top: var(--panel-top, 0);
-		right: 0;
-		bottom: 0;
-		left: 0;
+		inset-block: var(--panel-top, 0) 0;
+		inset-inline: 0;
 		z-index: var(--fluent-z-modal, 1050);
 		// Never block the page — only the overlay and the panel surface
 		// (re-enabled below) capture pointer events.
@@ -181,20 +180,8 @@
 	// Closed-state per-side transforms — declared BEFORE the --open rule so
 	// the open rule wins on source order at equal specificity.
 
-	// Physical sides — never flip with direction.
-	.fluent-panel-root--right .fluent-panel {
-		right: 0;
-		box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
-		transform: translateX(100%);
-	}
-
-	.fluent-panel-root--left .fluent-panel {
-		left: 0;
-		box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
-		transform: translateX(-100%);
-	}
-
-	// Logical sides — follow the writing direction (start = left in LTR, right in RTL).
+	// Sides follow the writing direction (start = left in LTR, right in RTL);
+	// translateX and box-shadow offsets are physical, hence the --rtl overrides.
 	.fluent-panel-root--start .fluent-panel {
 		inset-inline-start: 0;
 		box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
@@ -202,8 +189,6 @@
 	}
 
 	.fluent-panel-root--start.fluent-panel-root--rtl .fluent-panel {
-		inset-inline-start: unset;
-		right: 0;
 		box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
 		transform: translateX(100%);
 	}
@@ -215,8 +200,6 @@
 	}
 
 	.fluent-panel-root--end.fluent-panel-root--rtl .fluent-panel {
-		inset-inline-end: unset;
-		left: 0;
 		box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
 		transform: translateX(-100%);
 	}
@@ -259,8 +242,7 @@
 		z-index: var(--fluent-z-panel-pinned, 1);
 	}
 
-	.fluent-panel--pinned-end,
-	.fluent-panel--pinned-right {
+	.fluent-panel--pinned-end {
 		border-inline-end: none;
 		border-inline-start: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
 	}
