@@ -30,7 +30,7 @@
 	let minLenSelected = $state<string[]>([])
 	let asyncCallCount = $state(0)
 
-	async function asyncSearch(text: string): Promise<Fruit[]> {
+	async function asyncSearch({term: text}: {term: string}): Promise<Fruit[]> {
 		asyncCallCount++
 		await new Promise((r) => setTimeout(r, 50))
 		const q = text.toLowerCase()
@@ -39,14 +39,16 @@
 
 	// Out-of-order responses: a one-letter query answers slower than a longer one
 	let staleSelected = $state<string[]>([])
-	async function outOfOrderSearch(text: string): Promise<Fruit[]> {
+	let abortedSearches = $state(0)
+	async function outOfOrderSearch({term: text, signal}: {term: string; signal: AbortSignal}): Promise<Fruit[]> {
+		signal.addEventListener("abort", () => abortedSearches++)
 		const slow = text.length === 1
 		await new Promise(r => setTimeout(r, slow ? 600 : 50))
 		return slow ? [{value: "stale", text: "Stale result"}] : [{value: "fresh", text: "Fresh result"}]
 	}
 
 	// Slow async search for loading-indicator assertion
-	async function slowAsyncSearch(text: string): Promise<Fruit[]> {
+	async function slowAsyncSearch({term: text}: {term: string}): Promise<Fruit[]> {
 		await new Promise((r) => setTimeout(r, 400))
 		const q = text.toLowerCase()
 		return fruits.filter((f) => f.text.toLowerCase().includes(q))
@@ -54,7 +56,7 @@
 
 	// Debounced async — tracks how many times the callback ran
 	let debouncedCallCount = $state(0)
-	async function debouncedSearch(text: string): Promise<Fruit[]> {
+	async function debouncedSearch({term: text}: {term: string}): Promise<Fruit[]> {
 		debouncedCallCount++
 		const q = text.toLowerCase()
 		return fruits.filter((f) => f.text.toLowerCase().includes(q))
@@ -93,7 +95,7 @@
 		<Autocomplete
 			id="single"
 			options={fruits}
-			bind:selectedOptions={singleSelected}
+			bind:value={singleSelected}
 			maxSelectedOptions={1}
 			placeholder="Pick one"
 		/>
@@ -107,7 +109,7 @@
 		<Autocomplete
 			id="multi"
 			options={fruits}
-			bind:selectedOptions={multiSelected}
+			bind:value={multiSelected}
 			placeholder="Pick many"
 		/>
 	</div>
@@ -120,7 +122,7 @@
 		<Autocomplete
 			id="prefilled"
 			options={fruits}
-			bind:selectedOptions={prefilledSelected}
+			bind:value={prefilledSelected}
 			placeholder="Has chips"
 		/>
 	</div>
@@ -133,7 +135,7 @@
 		<Autocomplete
 			id="initial"
 			options={fruits}
-			bind:selectedOptions={initialSelected}
+			bind:value={initialSelected}
 			showInitialOptions
 			initialOptionsCount={5}
 			placeholder="Focus to see options"
@@ -147,7 +149,7 @@
 		<Autocomplete
 			id="max"
 			options={fruits}
-			bind:selectedOptions={maxSelected}
+			bind:value={maxSelected}
 			maxSelectedOptions={3}
 			placeholder="Max 3"
 		/>
@@ -156,12 +158,12 @@
 </div>
 
 <div class="fixture">
-	<div class="fixture-label">async — uses onoptionssearch callback with 50ms latency</div>
+	<div class="fixture-label">async — uses searchCallback with 50ms latency</div>
 	<div id="async-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="async"
-			bind:selectedOptions={asyncSelected}
-			onoptionssearch={asyncSearch}
+			bind:value={asyncSelected}
+			searchCallback={asyncSearch}
 			placeholder="Type to search"
 		/>
 	</div>
@@ -173,7 +175,7 @@
 	<div id="slow-async-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="slow-async"
-			onoptionssearch={slowAsyncSearch}
+			searchCallback={slowAsyncSearch}
 			placeholder="Type to search"
 		/>
 	</div>
@@ -184,7 +186,7 @@
 	<div id="debounced-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="debounced"
-			onoptionssearch={debouncedSearch}
+			searchCallback={debouncedSearch}
 			immediateDelay={300}
 			placeholder="Type fast"
 		/>
@@ -198,7 +200,7 @@
 		<Autocomplete
 			id="minlen"
 			options={fruits}
-			bind:selectedOptions={minLenSelected}
+			bind:value={minLenSelected}
 			minSearchLength={3}
 			placeholder="Type 3+ chars"
 		/>
@@ -246,7 +248,7 @@
 		<Autocomplete
 			id="labeled"
 			options={fruits}
-			bind:selectedOptions={labeledSel}
+			bind:value={labeledSel}
 			label="Fruit"
 			required
 			placeholder="Pick a fruit"
@@ -260,7 +262,7 @@
 		<Autocomplete
 			id="label-tpl"
 			options={fruits}
-			bind:selectedOptions={labelTplSel}
+			bind:value={labelTplSel}
 			placeholder="Custom label"
 		>
 			{#snippet labelTemplate()}
@@ -276,7 +278,7 @@
 		<Autocomplete
 			id="tags-above"
 			options={fruits}
-			bind:selectedOptions={tagsAboveSel}
+			bind:value={tagsAboveSel}
 			tagsPosition="above"
 		/>
 	</div>
@@ -288,7 +290,7 @@
 		<Autocomplete
 			id="tags-below"
 			options={fruits}
-			bind:selectedOptions={tagsBelowSel}
+			bind:value={tagsBelowSel}
 			tagsPosition="below"
 		/>
 	</div>
@@ -300,7 +302,7 @@
 		<Autocomplete
 			id="keepopen"
 			options={fruits}
-			bind:selectedOptions={keepOpenSel}
+			bind:value={keepOpenSel}
 			keepOpen
 			placeholder="Pick many, stay open"
 		/>
@@ -313,7 +315,7 @@
 		<Autocomplete
 			id="no-tab"
 			options={fruits}
-			bind:selectedOptions={noTabSel}
+			bind:value={noTabSel}
 			selectValueOnTab={false}
 		/>
 	</div>
@@ -325,7 +327,7 @@
 		<Autocomplete
 			id="limited"
 			options={fruits}
-			bind:selectedOptions={limitedSel}
+			bind:value={limitedSel}
 			maxOptionsSearch={2}
 		/>
 	</div>
@@ -337,7 +339,7 @@
 		<Autocomplete
 			id="no-empty-overlay"
 			options={fruits}
-			bind:selectedOptions={noEmptyOverlaySel}
+			bind:value={noEmptyOverlaySel}
 			showOverlayOnEmptyResults={false}
 		/>
 	</div>
@@ -349,7 +351,7 @@
 		<Autocomplete
 			id="slots"
 			options={fruits}
-			bind:selectedOptions={slotsSel}
+			bind:value={slotsSel}
 			showInitialOptions
 		>
 			{#snippet headerContent()}
@@ -368,7 +370,7 @@
 		<Autocomplete
 			id="option-tpl"
 			options={fruits}
-			bind:selectedOptions={optionTplSel}
+			bind:value={optionTplSel}
 			showInitialOptions
 		>
 			{#snippet optionTemplate(option)}
@@ -384,7 +386,7 @@
 		<Autocomplete
 			id="icons"
 			options={fruits}
-			bind:selectedOptions={iconsSel}
+			bind:value={iconsSel}
 		>
 			{#snippet startIcon()}
 				<span data-testid="start-icon">🔍</span>
@@ -397,13 +399,13 @@
 </div>
 
 <div class="fixture">
-	<div class="fixture-label">ondismissed tracker — counts dropdown close events</div>
+	<div class="fixture-label">onOpenChange tracker — counts dropdown close events</div>
 	<div id="dismiss-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="dismiss"
 			options={fruits}
-			bind:selectedOptions={dismissTrackerSelected}
-			ondismissed={() => dismissCount++}
+			bind:value={dismissTrackerSelected}
+			onOpenChange={({open}) => { if (!open) dismissCount++ }}
 		/>
 	</div>
 	<div id="dismiss-count" data-value={dismissCount}></div>
@@ -412,6 +414,7 @@
 <div class="fixture">
 	<div class="fixture-label">out-of-order async — the older, slower response must be dropped</div>
 	<div id="stale-wrap" style="max-width: 320px">
-		<Autocomplete id="stale" onoptionssearch={outOfOrderSearch} bind:selectedOptions={staleSelected} />
+		<Autocomplete id="stale" searchCallback={outOfOrderSearch} bind:value={staleSelected} />
+		<div id="stale-aborted" data-value={abortedSearches}></div>
 	</div>
 </div>

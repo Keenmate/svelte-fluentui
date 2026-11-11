@@ -135,7 +135,7 @@
 						label="Tags"
 						placeholder="Filter by tags..."
 						options={tagOptions}
-						bind:selectedOptions={selectedTags}
+						bind:value={selectedTags}
 					/>
 				</div>
 

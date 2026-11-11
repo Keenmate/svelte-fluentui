@@ -24,7 +24,7 @@
 		<Autocomplete
 			id="initial-query"
 			options={fruits}
-			bind:selectedOptions={selected}
+			bind:value={selected}
 			initialSearchQuery="ban"
 		/>
 	</div>

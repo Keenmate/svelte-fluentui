@@ -2,7 +2,7 @@ import {test, expect, type Page, type Locator} from "@playwright/test"
 
 /**
  * Covers Autocomplete behavior: chip selection, search/filter, multi vs single,
- * backspace-removes-last-chip, initial options, async onoptionssearch,
+ * backspace-removes-last-chip, initial options, async searchCallback,
  * maxSelectedOptions cap, minSearchLength gate, and disabled options.
  *
  * Fixture: docs/src/routes/test/autocomplete/+page.svelte
@@ -180,7 +180,7 @@ test("maxSelectedOptions: fourth selection is rejected", async ({page}) => {
 })
 
 // =============================================================================
-// async onoptionssearch
+// async searchCallback
 // =============================================================================
 
 test("async search: each keystroke (after gate) triggers the callback", async ({page}) => {
@@ -496,7 +496,7 @@ test.describe("keyboard", () => {
 })
 
 // =============================================================================
-// max-message + ondismissed + outside-click
+// max-message + onOpenChange({open: false}) + outside-click
 // =============================================================================
 
 test("max-message: renders when maxSelectedOptions cap is reached (multi mode)", async ({page}) => {
@@ -512,7 +512,7 @@ test("max-message: renders when maxSelectedOptions cap is reached (multi mode)",
 	await expect(wrap.locator(".max-message")).toContainText("Maximum 3 selections")
 })
 
-test("outside-click closes the dropdown and fires ondismissed", async ({page}) => {
+test("outside-click closes the dropdown and fires onOpenChange({open: false})", async ({page}) => {
 	const wrap = await open(page, "dismiss")
 
 	await inputOf(wrap).fill("a")
@@ -531,7 +531,7 @@ test("outside-click closes the dropdown and fires ondismissed", async ({page}) =
 // loading indicator (slow async)
 // =============================================================================
 
-test("loading indicator: visible while onoptionssearch promise is in flight", async ({page}) => {
+test("loading indicator: visible while searchCallback promise is in flight", async ({page}) => {
 	const wrap = wrapById(page, "slow-async")
 
 	await inputOf(wrap).click()
@@ -574,4 +574,6 @@ test("async: a slower response for an older query is dropped", async ({page}) =>
 	await page.waitForTimeout(800)
 	await expect(optionByText(page, "Fresh result")).toBeVisible()
 	await expect(optionByText(page, "Stale result")).toHaveCount(0)
+	// the superseded search was told to stop via its AbortSignal
+	await expect(page.locator("#stale-aborted")).not.toHaveAttribute("data-value", "0")
 })

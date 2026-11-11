@@ -9,6 +9,7 @@
 
 <script lang="ts">
 	import type { Snippet } from "svelte"
+	import { untrack } from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Chip from "./Chip.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
@@ -20,7 +21,8 @@
 	}
 
 	type Props<T = any> = {
-		selectedOptions?: T[]
+		/** Selected option values (bindable). */
+		value?: T[]
 		options?: OptionItem<T>[]
 		placeholder?: string
 		disabled?: boolean
@@ -74,13 +76,16 @@
 		class?: string
 		style?: string
 		initialSearchQuery?: string
-		onoptionssearch?: (searchText: string) => Promise<OptionItem<T>[]> | OptionItem<T>[]
-		onselectedoptionschange?: (selected: T[]) => void
-		ondismissed?: () => void
+		/** Provides options for a search term (server-side search). `signal` aborts when a newer search starts or the component unmounts. */
+		searchCallback?: (ctx: {term: string; signal: AbortSignal}) => Promise<OptionItem<T>[]> | OptionItem<T>[]
+		/** Fires when the user adds or removes a selection. */
+		onChange?: (ctx: {value: T[]}) => void
+		/** Fires when the options dropdown opens or closes. */
+		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
 	let {
-		selectedOptions = $bindable([]),
+		value: selectedOptions = $bindable([]),
 		options = [],
 		placeholder = "Type to search...",
 		disabled = false,
@@ -119,15 +124,15 @@
 		class: className = "",
 		style = "",
 		initialSearchQuery = "",
-		onoptionssearch = undefined,
-		onselectedoptionschange = undefined,
-		ondismissed = undefined
+		searchCallback = undefined,
+		onChange = undefined,
+		onOpenChange = undefined
 	}: Props = $props()
 
 	let searchText = $state("")
 	let isOpen = $state(false)
 	let filteredOptions = $state<OptionItem[]>([])
-	// Value -> label cache. A selected option can come from an async `onoptionssearch`
+	// Value -> label cache. A selected option can come from an async `searchCallback`
 	// result set that isn't part of the local `options` prop; once selected, that
 	// result set churns and the option's text is lost, so a chip would fall back to
 	// the raw value id. We remember each picked option's text here so getOptionText
@@ -144,8 +149,12 @@
 	// after a newer search, or after the component is gone, is dropped.
 	let searchSeq = 0
 
+	// Aborts the in-flight searchCallback when a newer search starts or on unmount.
+	let searchAbort: AbortController | undefined
+
 	$effect(() => () => {
 		searchSeq++
+		searchAbort?.abort()
 		if (debounceTimer) clearTimeout(debounceTimer)
 	})
 
@@ -179,13 +188,15 @@
 		isSearching = true
 
 		try {
-			if (onoptionssearch) {
+			if (searchCallback) {
+				searchAbort?.abort()
+				const abort = (searchAbort = new AbortController())
 				let results: OptionItem[]
 				try {
-					results = await onoptionssearch(text)
+					results = await searchCallback({term: text, signal: abort.signal})
 				} catch (error) {
-					if (seq !== searchSeq) return
-					console.error("[Autocomplete] onoptionssearch failed:", error)
+					if (seq !== searchSeq || abort.signal.aborted) return
+					console.error("[Autocomplete] searchCallback failed:", error)
 					results = []
 				}
 				if (seq !== searchSeq) return
@@ -301,7 +312,7 @@
 			// Sync sources: if nothing is left to pick (everything is selected), don't
 			// leave an empty "No results found" dropdown hanging open — close it. (Async
 			// results aren't known synchronously, so leave those to performSearch.)
-			if (!onoptionssearch && filteredOptions.length === 0) {
+			if (!searchCallback && filteredOptions.length === 0) {
 				closeDropdown()
 			}
 		} else {
@@ -309,7 +320,7 @@
 			closeDropdown()
 		}
 
-		onselectedoptionschange?.(selectedOptions)
+		onChange?.({value: selectedOptions})
 	}
 
 	// Refresh the currently-open dropdown list to reflect the current selection and
@@ -339,11 +350,11 @@
 		if (isOpen) {
 			refreshOpenList()
 		}
-		onselectedoptionschange?.(selectedOptions)
+		onChange?.({value: selectedOptions})
 	}
 
 	// Get display text for a selected value. Prefer the local `options` prop, then
-	// the label cached at selection time (covers async `onoptionssearch` results
+	// the label cached at selection time (covers async `searchCallback` results
 	// that aren't in `options`), and only then fall back to the raw value.
 	function getOptionText(value: any): string {
 		const option = options.find(opt => opt.value === value)
@@ -365,19 +376,24 @@
 		})
 	})
 
-	// Close dropdown and call ondismissed callback
 	function closeDropdown() {
-		if (isOpen) {
-			isOpen = false
-			ondismissed?.()
-		}
+		isOpen = false
 	}
+
+	// onOpenChange on every open/close transition (isOpen is set from many paths).
+	let lastOpen = false
+	$effect(() => {
+		const open = isOpen
+		if (open === lastOpen) return
+		lastOpen = open
+		untrack(() => onOpenChange?.({open}))
+	})
 
 	// Show all available options (minus already-selected) in the dropdown.
 	// Used by Ctrl+Space and any caller that wants to force-open the list.
 	function showAllOptions() {
 		if (disabled || readonly) return
-		if (onoptionssearch) {
+		if (searchCallback) {
 			// Async mode: trigger a search with the current text (or empty)
 			performSearch(searchText)
 			return
@@ -395,7 +411,7 @@
 	//
 	// Why not just showAllOptions(): with an empty query and showInitialOptions on,
 	// focusing already shows the curated initial list. showAllOptions() would then
-	// *also* fire an async onoptionssearch("") that replaces those initial items a
+	// *also* fire an async searchCallback("") that replaces those initial items a
 	// moment later — the "5 items flash then get swapped" bug. So when there's a
 	// curated initial list to show, we don't kick off a search; we only force the
 	// full "show everything" list when there's nothing better to display.
@@ -588,7 +604,7 @@
 		// In single-select mode, clear selection when user starts typing
 		if (hasSingleSelection) {
 			selectedOptions = []
-			onselectedoptionschange?.(selectedOptions)
+			onChange?.({value: selectedOptions})
 		}
 
 		searchText = target.value
@@ -602,7 +618,7 @@
 		if (!disabled && !readonly) {
 			selectedOptions = []
 			searchText = ""
-			onselectedoptionschange?.(selectedOptions)
+			onChange?.({value: selectedOptions})
 		}
 	}
 

@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Autocomplete:** `selectedOptions` (bindable) → `value` (bindable)
+- **Autocomplete:** `onselectedoptionschange(selected)` → `onChange({value})`
+- **Autocomplete:** `onoptionssearch(searchText)` → options → `searchCallback({term, signal})` → options (`signal` aborts when a newer search starts)
+- **Autocomplete:** `ondismissed()` → `onOpenChange({open})` (fires on open and close)
 - **Calendar:** `onDateSelected(value)` + `onDatesSelected(values)` → one `onChange({value})` (`Date` in single mode, `Date[]` in multiple/range); `value` and `selectedDates` are now bindable and updated by the calendar
 - **Calendar:** `onSelectionError(error)`, code `max_selectable_days_exceeded` → `onSelectionReject(ctx)`, code `max-selectable-days-exceeded`
 - **Calendar:** `onPickerMonthChange(month)`, `onDayHover(date)` → `onPickerMonthChange({pickerMonth})`, `onDayHover({date})`

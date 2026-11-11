@@ -361,7 +361,7 @@
 					label="Accessories"
 					placeholder="Type or press Ctrl+Space to see all accessories"
 					options={mobileAccessoryOptions}
-					bind:selectedOptions={mobileAccessories}
+					bind:value={mobileAccessories}
 				/>
 
 				<Checkbox bind:checked={mobileBYOSim}>Bring your own SIM (no carrier activation needed)</Checkbox>
@@ -411,7 +411,7 @@
 						label="Required features"
 						placeholder="Pick features (Ctrl+Space for all)"
 						options={printerFeatureOptions}
-						bind:selectedOptions={printerFeatures}
+						bind:value={printerFeatures}
 					/>
 				{/if}
 
@@ -491,7 +491,7 @@
 					label="Applications / licenses"
 					placeholder="Search or press Ctrl+Space for all"
 					options={softwareOptions}
-					bind:selectedOptions={softwareApps}
+					bind:value={softwareApps}
 				/>
 
 				<Grid spacing={3}>

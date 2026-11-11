@@ -60,3 +60,16 @@ changes). Options: split the fixture into smaller routes, or run that file seria
   demo, order-form). Fix as part of the Phase 4 docs updates, or a separate cleanup commit?
 - `/components/tabs` logs "lock_16_regular.svg not found" — icon referenced by a dynamic name;
   needs `iconsInclude` in the docs Vite config or a static reference.
+
+## Q8 — Names I picked where the 05 mapping table was silent (applied rule 1)
+
+The 05 table doesn't list every function prop. Where the return value is used I renamed per rule 1
+(`get…Callback` / `…Callback`, one ctx object). Easy to rename again if you prefer other words:
+- Calendar `selectableDates` → `getIsDateSelectableCallback({date})` (also DatePicker)
+- Calendar `highlightDates` → `getDatesToHighlightCallback({date})`
+- Calendar `selectDates` → `getDatesToSelectCallback({date})`
+- Combobox `filter` → `filterCallback({term, option})`
+- Calendar `onSelectionError` → `onSelectionReject` (as in the table) and its code value is now
+  kebab-case `max-selectable-days-exceeded` (value-casing rule).
+- `maxSelectableDays` left as is for now; rulebook D-NC-22 would make it `maxSelectedDayCount` —
+  will do it with the other limit renames (`maxSelectedOptions` → `maxSelectionCount`) unless you object.

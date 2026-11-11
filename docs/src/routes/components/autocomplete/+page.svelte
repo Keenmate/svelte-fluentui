@@ -91,7 +91,7 @@
 	let tagsAboveValue = $state<string[]>(["red", "blue"])
 	let tagsBelowValue = $state<string[]>(["js", "ts"])
 
-	async function handleAsyncSearch(searchText: string) {
+	async function handleAsyncSearch({term: searchText}: {term: string}) {
 		await new Promise(resolve => setTimeout(resolve, 500))
 		return countries.filter(c =>
 			c.text.toLowerCase().includes(searchText.toLowerCase())
@@ -103,7 +103,7 @@
 
 	// Search used by the minSearchLength demo — counts calls so we can show
 	// that the function is NOT invoked for sub-threshold queries.
-	async function handleMinSearchLengthSearch(searchText: string) {
+	async function handleMinSearchLengthSearch({term: searchText}: {term: string}) {
 		minSearchLengthCalls += 1
 		await new Promise(resolve => setTimeout(resolve, 300))
 		return countries.filter(c =>
@@ -114,14 +114,14 @@
 	// Search across the extended language list (which includes Elixir & Erlang).
 	// Used with showInitialOptions + options={programmingLanguages}: the base list
 	// shows on focus, and typing surfaces the search-only entries.
-	async function handleLanguageSearch(searchText: string) {
+	async function handleLanguageSearch({term: searchText}: {term: string}) {
 		await new Promise(resolve => setTimeout(resolve, 300))
 		return searchOnlyLanguages.filter(l =>
 			l.text.toLowerCase().includes(searchText.toLowerCase())
 		)
 	}
 
-	async function handlePeopleSearch(searchText: string) {
+	async function handlePeopleSearch({term: searchText}: {term: string}) {
 		await new Promise(resolve => setTimeout(resolve, 400))
 		return people.filter(p =>
 			p.text.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -129,11 +129,12 @@
 		)
 	}
 
-	function handleSelectionChange(selected: string[]) {
+	function handleSelectionChange({value: selected}: {value: string[]}) {
 		callbackMessage = `Selection changed: ${selected.length > 0 ? selected.join(", ") : "None"}`
 	}
 
-	function handleDismissed() {
+	function handleOpenChange({open}: {open: boolean}) {
+		if (open) return
 		dismissedMessage = `Dropdown closed at ${new Date().toLocaleTimeString()}`
 	}
 
@@ -145,7 +146,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "selectedOptions", type: "T[]", default: "[]", description: "Array of selected values (bindable)"},
+		{name: "value", type: "T[]", default: "[]", description: "Array of selected values (bindable)"},
 		{name: "options", type: "OptionItem[]", default: "[]", description: "Available options for selection"},
 		{name: "placeholder", type: "string", default: '"Type to search..."', description: "Placeholder text for input"},
 		{name: "label", type: "string", default: "undefined", description: "Label text above component"},
@@ -158,7 +159,7 @@
 		{name: "multiple", type: "boolean", default: "undefined", description: "Explicitly enable multi-select mode"},
 		{name: "maxSelectedOptions", type: "number", default: "undefined", description: "Max selections allowed (1 = single-select)"},
 		{name: "maxOptionsSearch", type: "number", default: "9", description: "Max options shown in dropdown"},
-		{name: "minSearchLength", type: "number", default: "undefined", description: "Minimum typed characters before search runs. Below the threshold, onoptionssearch is NOT called and the dropdown stays closed."},
+		{name: "minSearchLength", type: "number", default: "undefined", description: "Minimum typed characters before search runs. Below the threshold, searchCallback is NOT called and the dropdown stays closed."},
 		{name: "showOverlayOnEmptyResults", type: "boolean", default: "true", description: "Show dropdown on no results"},
 		{name: "showInitialOptions", type: "boolean", default: "false", description: "Show options on focus when empty"},
 		{name: "initialOptionsCount", type: "number", default: "maxOptionsSearch", description: "Initial options count limit"},
@@ -179,9 +180,9 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onoptionssearch", type: "(searchText: string) => Promise<OptionItem[]> | OptionItem[]", default: "undefined", description: "Called when user types to search. Return filtered options (sync or async). If omitted, built-in case-insensitive contains filter is used."},
-		{name: "onselectedoptionschange", type: "(selected: T[]) => void", default: "undefined", description: "Called when the selected options array changes (item added or removed)."},
-		{name: "ondismissed", type: "() => void", default: "undefined", description: "Called when the dropdown closes."}
+		{name: "searchCallback", type: "(ctx: {term: string, signal: AbortSignal}) => Promise<OptionItem[]> | OptionItem[]", default: "undefined", description: "Called when the user types. Return matching options (sync or async); signal aborts when a newer search starts. If omitted, a case-insensitive contains filter is used."},
+		{name: "onChange", type: "(ctx: {value: T[]}) => void", default: "undefined", description: "Fires when the user adds or removes a selection."},
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the dropdown opens or closes."}
 	]
 
 	const slots: Property[] = [
@@ -229,7 +230,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Basic</strong>
 					<Autocomplete
-						bind:selectedOptions={basicValue}
+						bind:value={basicValue}
 						options={countries}
 						label="Select countries"
 						placeholder="Type to search..."
@@ -241,7 +242,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Pre-selected</strong>
 					<Autocomplete
-						bind:selectedOptions={preselectedValue}
+						bind:value={preselectedValue}
 						options={countries}
 						label="Countries"
 					/>
@@ -252,7 +253,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Single-select (maxSelectedOptions=1)</strong>
 					<Autocomplete
-						bind:selectedOptions={singleSelectValue}
+						bind:value={singleSelectValue}
 						options={colors}
 						maxSelectedOptions={1}
 						label="Select a color"
@@ -271,7 +272,7 @@
 					<strong>Inline (default)</strong>
 					<small style="color: var(--neutral-foreground-hint);">Tags appear inside the input field</small>
 					<Autocomplete
-						bind:selectedOptions={tagsInlineValue}
+						bind:value={tagsInlineValue}
 						options={countries}
 						tagsPosition="inline"
 						label="Countries"
@@ -285,7 +286,7 @@
 					<strong>Above</strong>
 					<small style="color: var(--neutral-foreground-hint);">Tags appear above the input field</small>
 					<Autocomplete
-						bind:selectedOptions={tagsAboveValue}
+						bind:value={tagsAboveValue}
 						options={colors}
 						tagsPosition="above"
 						label="Colors"
@@ -299,7 +300,7 @@
 					<strong>Below</strong>
 					<small style="color: var(--neutral-foreground-hint);">Tags appear below the input field</small>
 					<Autocomplete
-						bind:selectedOptions={tagsBelowValue}
+						bind:value={tagsBelowValue}
 						options={programmingLanguages}
 						tagsPosition="below"
 						label="Languages"
@@ -317,7 +318,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Explicit single-select</strong>
 					<Autocomplete
-						bind:selectedOptions={singleSelectValue}
+						bind:value={singleSelectValue}
 						options={colors}
 						multiple={false}
 						label="Select a color"
@@ -335,8 +336,8 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Max 5 options shown</strong>
 					<Autocomplete
-						bind:selectedOptions={asyncValue}
-						onoptionssearch={handleAsyncSearch}
+						bind:value={asyncValue}
+						searchCallback={handleAsyncSearch}
 						maxOptionsSearch={5}
 						label="Search countries"
 						placeholder="Type to search..."
@@ -348,7 +349,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>With max selections</strong>
 					<Autocomplete
-						bind:selectedOptions={maxSelectValue}
+						bind:value={maxSelectValue}
 						options={colors}
 						maxSelectedOptions={3}
 						label="Select up to 3 colors"
@@ -365,7 +366,7 @@
 			dropdown on every selection. (Single-select always closes on pick.)
 		</p>
 		<p>
-			Both use <code>showInitialOptions</code> + <code>onoptionssearch</code>: focus shows the core
+			Both use <code>showInitialOptions</code> + <code>searchCallback</code>: focus shows the core
 			languages, and typing searches the extended set — <strong>Elixir</strong> and <strong>Erlang</strong>
 			appear only when you search (type <code>e</code>, <code>eli</code>, or <code>erl</code>).
 		</p>
@@ -375,9 +376,9 @@
 					<strong>keepOpen = true (default)</strong>
 					<small style="color: var(--neutral-foreground-hint);">Dropdown stays open — pick several in a row.</small>
 					<Autocomplete
-						bind:selectedOptions={keepOpenValue}
+						bind:value={keepOpenValue}
 						options={programmingLanguages}
-						onoptionssearch={handleLanguageSearch}
+						searchCallback={handleLanguageSearch}
 						showInitialOptions={true}
 						keepOpen={true}
 						label="Programming languages"
@@ -391,9 +392,9 @@
 					<strong>keepOpen = false</strong>
 					<small style="color: var(--neutral-foreground-hint);">Dropdown closes after each pick.</small>
 					<Autocomplete
-						bind:selectedOptions={keepOpenClosingValue}
+						bind:value={keepOpenClosingValue}
 						options={programmingLanguages}
-						onoptionssearch={handleLanguageSearch}
+						searchCallback={handleLanguageSearch}
 						showInitialOptions={true}
 						keepOpen={false}
 						label="Programming languages"
@@ -411,9 +412,9 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Initial popular options</strong>
 					<Autocomplete
-						bind:selectedOptions={initialOptionsValue}
+						bind:value={initialOptionsValue}
 						options={popularCountries}
-						onoptionssearch={handleCountrySearch}
+						searchCallback={handleCountrySearch}
 						showInitialOptions={true}
 						initialOptionsCount={5}
 						label="Select country"
@@ -426,7 +427,7 @@
 
 		<h3>Search-only items with initial values</h3>
 		<p>
-			Combine <code>showInitialOptions</code> with <code>onoptionssearch</code>: the initial list (shown
+			Combine <code>showInitialOptions</code> with <code>searchCallback</code>: the initial list (shown
 			on focus, from <code>options</code>) holds the core languages, while <strong>Elixir</strong> and
 			<strong>Erlang</strong> live only in the search dataset. Focus to see the initial values, then type
 			<code>e</code>, <code>eli</code>, or <code>erl</code> to surface the search-only entries.
@@ -436,9 +437,9 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Initial values + search</strong>
 					<Autocomplete
-						bind:selectedOptions={langSearchValue}
+						bind:value={langSearchValue}
 						options={programmingLanguages}
-						onoptionssearch={handleLanguageSearch}
+						searchCallback={handleLanguageSearch}
 						showInitialOptions={true}
 						label="Programming languages"
 						placeholder="Focus for core list, search for Elixir/Erlang..."
@@ -454,7 +455,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Disabled</strong>
 					<Autocomplete
-						bind:selectedOptions={disabledValue}
+						bind:value={disabledValue}
 						options={countries}
 						disabled={true}
 						label="Disabled"
@@ -465,7 +466,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Readonly</strong>
 					<Autocomplete
-						bind:selectedOptions={readonlyValue}
+						bind:value={readonlyValue}
 						options={countries}
 						readonly={true}
 						label="Readonly"
@@ -476,7 +477,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Required</strong>
 					<Autocomplete
-						bind:selectedOptions={requiredValue}
+						bind:value={requiredValue}
 						options={countries}
 						required={true}
 						label="Required"
@@ -491,7 +492,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Outline (default)</strong>
 					<Autocomplete
-						bind:selectedOptions={outlineValue}
+						bind:value={outlineValue}
 						options={colors}
 						appearance="outline"
 						label="Outline appearance"
@@ -502,7 +503,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Filled</strong>
 					<Autocomplete
-						bind:selectedOptions={filledValue}
+						bind:value={filledValue}
 						options={colors}
 						appearance="filled"
 						label="Filled appearance"
@@ -517,7 +518,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Custom width (300px)</strong>
 					<Autocomplete
-						bind:selectedOptions={widthValue}
+						bind:value={widthValue}
 						options={colors}
 						width="300px"
 						label="Fixed width"
@@ -548,7 +549,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<Slider id="ac-maxheight" bind:value={acMaxHeightPx} min={100} max={400} step={20} label={`maxDropdownHeight: ${acMaxHeightPx}px`} />
 					<Autocomplete
-						bind:selectedOptions={maxHeightAcValue}
+						bind:value={maxHeightAcValue}
 						options={countries}
 						showInitialOptions={true}
 						initialOptionsCount={30}
@@ -574,7 +575,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<Slider id="ac-ddwidth" bind:value={acDropdownWidthPx} min={160} max={520} step={20} label={`dropdownWidth: ${acDropdownWidthPx}px`} />
 					<Autocomplete
-						bind:selectedOptions={dropdownWidthAcValue}
+						bind:value={dropdownWidthAcValue}
 						options={countries}
 						showInitialOptions={true}
 						initialOptionsCount={30}
@@ -596,8 +597,8 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>300ms delay</strong>
 					<Autocomplete
-						bind:selectedOptions={debounceValue}
-						onoptionssearch={handleAsyncSearch}
+						bind:value={debounceValue}
+						searchCallback={handleAsyncSearch}
 						immediateDelay={300}
 						label="Search with debounce"
 						placeholder="Type to search (300ms delay)..."
@@ -608,15 +609,15 @@
 		</Grid>
 
 		<h3>Minimum search length</h3>
-		<p>Use <code>minSearchLength</code> to skip the search entirely until the user has typed enough characters. Below the threshold, <code>onoptionssearch</code> is never invoked — essential when searching against large/expensive backends.</p>
+		<p>Use <code>minSearchLength</code> to skip the search entirely until the user has typed enough characters. Below the threshold, <code>searchCallback</code> is never invoked — essential when searching against large/expensive backends.</p>
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>minSearchLength={3}</strong>
 					<small style="color: var(--neutral-foreground-hint);">The call counter stays at 0 until you type 3 characters.</small>
 					<Autocomplete
-						bind:selectedOptions={minSearchLengthValue}
-						onoptionssearch={handleMinSearchLengthSearch}
+						bind:value={minSearchLengthValue}
+						searchCallback={handleMinSearchLengthSearch}
 						minSearchLength={3}
 						immediateDelay={200}
 						label="Search countries"
@@ -634,8 +635,8 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<Autocomplete
-						bind:selectedOptions={templateValue}
-						onoptionssearch={handlePeopleSearch}
+						bind:value={templateValue}
+						searchCallback={handlePeopleSearch}
 						label="Search people"
 						placeholder="Search by name or email..."
 					>
@@ -660,7 +661,7 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<Autocomplete
-						bind:selectedOptions={headerFooterValue}
+						bind:value={headerFooterValue}
 						options={colors}
 						showInitialOptions={true}
 						label="Select colors"
@@ -691,7 +692,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Search icon (startIcon)</strong>
 					<Autocomplete
-						bind:selectedOptions={iconValue}
+						bind:value={iconValue}
 						options={colors}
 						showInitialOptions={true}
 						label="Search colors"
@@ -710,7 +711,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Filter icon (endIcon)</strong>
 					<Autocomplete
-						bind:selectedOptions={endIconValue}
+						bind:value={endIconValue}
 						options={colors}
 						showInitialOptions={true}
 						label="Filter colors"
@@ -734,7 +735,7 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>selectValueOnTab = true (default)</strong>
 					<Autocomplete
-						bind:selectedOptions={selectOnTabValue}
+						bind:value={selectOnTabValue}
 						options={colors}
 						selectValueOnTab={true}
 						label="Tab to select"
@@ -760,11 +761,11 @@
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>onselectedoptionschange</strong>
+					<strong>onChange</strong>
 					<Autocomplete
-						bind:selectedOptions={callbackValue}
+						bind:value={callbackValue}
 						options={colors}
-						onselectedoptionschange={handleSelectionChange}
+						onChange={handleSelectionChange}
 						label="Select colors"
 					/>
 					<small>{callbackMessage || "Make a selection..."}</small>
@@ -772,10 +773,10 @@
 			</GridItem>
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>ondismissed</strong>
+					<strong>onOpenChange</strong>
 					<Autocomplete
 						options={colors}
-						ondismissed={handleDismissed}
+						onOpenChange={handleOpenChange}
 						showInitialOptions={true}
 						label="Open then close dropdown"
 					/>
@@ -802,7 +803,7 @@
 ${'<'}/script>
 
 ${'<'}Autocomplete
-  bind:selectedOptions={selected}
+  bind:value={selected}
   options={options}
   label="Select options"
   placeholder="Type to search..."
@@ -810,8 +811,8 @@ ${'<'}Autocomplete
 
 		<h3>With Async Search</h3>
 		<pre><code>{`${'<'}script lang="ts">
-  async function searchItems(searchText: string) {
-    const response = await fetch(\`/api/search?q=\${searchText}\`)
+  async function searchItems({term, signal}) {
+    const response = await fetch(\`/api/search?q=\${term}\`, {signal})
     const data = await response.json()
     return data.map(item => ({
       value: item.id,
@@ -823,15 +824,15 @@ ${'<'}Autocomplete
 ${'<'}/script>
 
 ${'<'}Autocomplete
-  bind:selectedOptions={selected}
-  onoptionssearch={searchItems}
+  bind:value={selected}
+  searchCallback={searchItems}
   label="Search items"
   immediateDelay={300}
 />`}</code></pre>
 
 		<h3>Custom Option Template</h3>
 		<pre><code>{`<Autocomplete
-  bind:selectedOptions={selected}
+  bind:value={selected}
   options={people}
   label="Select person"
 >
