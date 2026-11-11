@@ -1,17 +1,24 @@
+<script lang="ts" module>
+	import type {ActionEventDetail, ActionItem} from "../../action-items/index.js"
+
+	/** A top-bar item: an action item (`text`, `icon`, `isDisabled`, `onClick`, …), usually with an `href`. */
+	export type TopNavItem = ActionItem<object> & {
+		href?: string
+		target?: string
+		rel?: string
+	}
+	export type TopNavActionDetail = ActionEventDetail<object> & {item: TopNavItem}
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import Icon from "../Icon.svelte"
+	import {createLinkActivation, resolveActionItem, runAction} from "../../action-items/index.js"
 	import Panel from "./Panel.svelte"
 	import NavMenu from "../nav/NavMenu.svelte"
 	import NavGroup from "../nav/NavGroup.svelte"
 	import NavLinkItem from "../nav/NavLinkItem.svelte"
 	import DismissIcon from "../icons/DismissIcon.svelte"
-
-	type NavItem = {
-		label: string
-		href: string
-		icon?: string
-		onClick?: () => void
-	}
 
 	type NavGroupItem = {
 		title: string
@@ -25,7 +32,8 @@
 		brand?: string
 		brandHref?: string
 		brandTemplate?: Snippet
-		items?: NavItem[]
+		/** Bar items (links and/or actions); they move into the drawer when the bar collapses. */
+		items?: TopNavItem[]
 		children?: Snippet
 		navigationGroups?: NavGroupItem[]
 		drawerContent?: Snippet<[close: () => void]>
@@ -37,6 +45,10 @@
 		menuToggleTemplate?: Snippet<[{open: boolean; toggle: () => void}]>
 		class?: string
 		style?: string
+		/** Fires after an item ran (its `onClick`, or the navigation started). */
+		onAction?: (detail: TopNavActionDetail) => void
+		/** Called before an item runs or navigates; return `false` (or a Promise resolving to `false`) to cancel. */
+		beforeActionCallback?: (detail: TopNavActionDetail) => unknown
 	}
 
 	let {
@@ -54,7 +66,9 @@
 		menuToggleSize = 42,
 		menuToggleTemplate = undefined,
 		class: className = "",
-		style = ""
+		style = "",
+		onAction = undefined,
+		beforeActionCallback = undefined
 	}: Props = $props()
 
 	let mobileMenuOpen = $state(false)
@@ -92,11 +106,56 @@
 		mobileMenuOpen = false
 	}
 
-	function handleNavClick(item: NavItem) {
-		item.onClick?.()
-		closeMobileMenu()
+	const actionHost = {}
+	const activateLink = createLinkActivation()
+
+	async function handleNavClick(item: TopNavItem, event: MouseEvent) {
+		if (resolveActionItem(item, {}).isDisabled) {
+			event.preventDefault()
+			return
+		}
+		const run = () => runAction({
+			host: actionHost,
+			detail: {
+				action: item.action ?? "custom",
+				id: item.id,
+				item,
+				source: "toolbar",
+				sourceEvent: event,
+				triggerElement: event.currentTarget as HTMLElement
+			} satisfies TopNavActionDetail,
+			beforeActionCallback,
+			emitAction: (d) => onAction?.(d)
+		})
+		const ran = item.href ? await activateLink(event, run, !!beforeActionCallback) : await run()
+		if (ran) closeMobileMenu()
 	}
 </script>
+
+{#snippet navItem(item: TopNavItem)}
+	{@const r = resolveActionItem(item, {})}
+	{#if r.isVisible}
+		<a
+			href={r.isDisabled ? undefined : item.href}
+			target={item.target ?? null}
+			rel={item.rel ?? null}
+			class="nav-item {r.cssClass}"
+			class:disabled={r.isDisabled}
+			role={item.href ? null : "button"}
+			tabindex={item.href ? null : 0}
+			title={r.tooltip ?? null}
+			aria-disabled={r.isDisabled ? "true" : null}
+			onclickcapture={(event: MouseEvent) => handleNavClick(item, event)}
+		>
+			{#if r.icon}
+				<span class="nav-icon">
+					{#if typeof r.icon === "string"}<Icon name={r.icon} size={20} />{:else}{@render r.icon()}{/if}
+				</span>
+			{/if}
+			<span class="nav-text">{r.text}</span>
+		</a>
+	{/if}
+{/snippet}
 
 <nav
 	class="topnav {className}"
@@ -140,16 +199,7 @@
 			{#if items.length > 0}
 				<div class="topnav-items">
 					{#each items as item}
-						<a
-							href={item.href}
-							class="nav-item"
-							onclick={() => handleNavClick(item)}
-						>
-							{#if item.icon}
-								<span class="nav-icon">{item.icon}</span>
-							{/if}
-							<span class="nav-text">{item.label}</span>
-						</a>
+						{@render navItem(item)}
 					{/each}
 				</div>
 			{/if}
@@ -179,16 +229,7 @@
 			{#if items.length > 0}
 				<div class="topnav-drawer-items">
 					{#each items as item}
-						<a
-							href={item.href}
-							class="nav-item"
-							onclick={() => handleNavClick(item)}
-						>
-							{#if item.icon}
-								<span class="nav-icon">{item.icon}</span>
-							{/if}
-							<span class="nav-text">{item.label}</span>
-						</a>
+						{@render navItem(item)}
 					{/each}
 				</div>
 			{/if}
@@ -416,5 +457,10 @@
 
 	.topnav--force-expand .nav-divider {
 		display: block;
+	}
+
+	.nav-item.disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 </style>

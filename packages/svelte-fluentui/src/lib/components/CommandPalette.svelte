@@ -4,7 +4,7 @@
 	import Icon from "./Icon.svelte"
 	import {portal} from "../actions/portal.js"
 	import type {CommandPaletteItem, CommandPaletteFilter, CommandPaletteActionDetail} from "./CommandPalette.types.js"
-	import {resolveActionItem, runAction} from "../action-items/index.js"
+	import {createLinkActivation, resolveActionItem, runAction} from "../action-items/index.js"
 
 	type Props = {
 		/** Items to search. Each is either navigation (`href`) or an action (`onClick`). */
@@ -191,46 +191,36 @@
 	}
 
 	const actionHost = {}
-	// Anchors re-clicked after an async beforeActionCallback allowed them.
-	const allowedAnchors = new WeakSet<HTMLElement>()
+	// Navigation rows: cancel + replay so beforeActionCallback can veto them.
+	const activateLink = createLinkActivation()
 
 	function isDisabled(it: CommandPaletteItem): boolean {
 		return resolveActionItem(it, {term: query.trim()}).isDisabled
 	}
 
 	async function selectItem(it: CommandPaletteItem, event: MouseEvent) {
-		const trigger = event.currentTarget as HTMLElement
 		if (isDisabled(it)) {
 			event.preventDefault()
 			return
 		}
-		const isLink = !!it.href && !it.onClick
-		if (isLink && allowedAnchors.has(trigger)) {
-			// Second pass after the veto check: let the router handle this click.
-			allowedAnchors.delete(trigger)
-			return
-		}
-		// A navigation row can only be vetoed by cancelling the click now and
-		// replaying it once beforeActionCallback has answered. Anchors listen in
-		// the capture phase so this runs before the host router's click handler.
-		const replay = isLink && !!beforeActionCallback
-		if (replay) event.preventDefault()
-		const detail: CommandPaletteActionDetail = {
-			term: query.trim(),
-			action: it.action ?? "custom",
-			id: it.id,
-			item: it,
-			source: "palette",
-			sourceEvent: event,
-			triggerElement: trigger
-		}
-		const ran = await runAction({host: actionHost, detail, beforeActionCallback, emitAction: (d) => onAction?.(d)})
-		if (!ran) return
-		if (replay) {
-			allowedAnchors.add(trigger)
-			trigger.click()
-		}
-		if (closeOnSelect) closePalette()
+		const run = () => runAction({
+			host: actionHost,
+			detail: {
+				term: query.trim(),
+				action: it.action ?? "custom",
+				id: it.id,
+				item: it,
+				source: "palette",
+				sourceEvent: event,
+				triggerElement: event.currentTarget as HTMLElement
+			} satisfies CommandPaletteActionDetail,
+			beforeActionCallback,
+			emitAction: (d) => onAction?.(d)
+		})
+		const ran = it.href && !it.onClick
+			? await activateLink(event, run, !!beforeActionCallback)
+			: await run()
+		if (ran && closeOnSelect) closePalette()
 	}
 
 	// Enter activates the highlighted row by clicking its DOM node — works for both

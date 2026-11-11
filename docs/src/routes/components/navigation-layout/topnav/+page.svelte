@@ -17,15 +17,15 @@
 	}
 
 	const simpleItems = [
-		{label: "Home", href: "/"},
-		{label: "Docs", href: "/getting-started"},
-		{label: "Components", href: "/components"}
+		{text: "Home", href: "/"},
+		{text: "Docs", href: "/getting-started"},
+		{text: "Components", href: "/components"}
 	]
 
 	const iconItems = [
-		{label: "Home", href: "/", icon: "🏠"},
-		{label: "Docs", href: "/getting-started", icon: "📘"},
-		{label: "Components", href: "/components", icon: "🧩"}
+		{text: "Home", href: "/", icon: "home"},
+		{text: "Docs", href: "/getting-started", icon: "book"},
+		{text: "Components", href: "/components", icon: "apps"}
 	]
 
 	const navigationGroups = [
@@ -59,7 +59,9 @@
 		{name: "brand", type: "string", default: '"Brand"', description: "Brand label shown on the left (ignored when brandTemplate is provided)"},
 		{name: "brandHref", type: "string", default: '"/"', description: "URL the brand label links to (ignored when brandTemplate is provided)"},
 		{name: "brandTemplate", type: "Snippet", default: "undefined", description: "Optional snippet that replaces the default brand link — use for logos, version badges, composite brand content"},
-		{name: "items", type: "NavItem[]", default: "[]", description: "Desktop nav items — { label, href, icon?, onClick? }"},
+		{name: "items", type: "TopNavItem[]", default: "[]", description: "Bar items — action items with href: { text, href?, icon?, isDisabled?, onClick? }"},
+		{name: "onAction", type: "(detail: {action, id, item, source, sourceEvent}) => void", default: "undefined", description: "Fires after an item ran (its onClick, or the navigation started)"},
+		{name: "beforeActionCallback", type: "(detail) => unknown", default: "undefined", description: "Called before an item runs or navigates; return false (or resolve to false) to cancel"},
 		{name: "navigationGroups", type: "NavGroupItem[]", default: "[]", description: "Groups shown in the mobile sidebar — { title, icon, items: { label, href }[] }"},
 		{name: "drawerContent", type: "Snippet<[() => void]>", default: "undefined", description: "Custom mobile drawer content (rendered after items + groups). Receives a closeDrawer fn so consumer-supplied links can dismiss the drawer on click."},
 		{name: "collapse", type: '"auto" | "always" | "never"', default: '"auto"', description: 'Force the collapse state. "auto" uses the 960px container query; "always" keeps the hamburger visible at every width (useful when the consumer wants to hide a paired desktop sidebar at a custom breakpoint); "never" keeps items expanded at every width.'},
@@ -116,7 +118,7 @@
 			<div class="example-item">
 				<h3>With item icons</h3>
 				<p class="example-description">
-					Items accept an optional <span class="component-name">icon</span> string rendered before the label.
+					Items accept an optional <span class="component-name">icon</span> — a Fluent icon name or a snippet — rendered before the text.
 				</p>
 				<div class="topnav-frame">
 					<TopNav brand="My App" items={iconItems} />

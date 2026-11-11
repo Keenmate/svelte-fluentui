@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **TopNav:** per-item `onClick()` only → item `onClick(detail)` + `onAction` + `beforeActionCallback` (can veto links)
+- **TopNav items:** `{label, href, icon (text glyph), onClick()}` → action item `{text, href?, icon (Fluent name or snippet), isDisabled, onClick(detail)}` (type `TopNavItem`)
 - **Toast:** `ontopactionclick()`, `onprimaryactionclick()`, `onsecondaryactionclick()` → one `onAction(detail)` (`detail.id` says which) + `beforeActionCallback`
 - **Toast:** `topAction` / `primaryAction` / `secondaryAction`: string → `string` or an action item (a string gets `id` `top` / `primary` / `secondary`)
 - **CommandPalette:** `onselect(item)` → `onAction(detail)` + `beforeActionCallback(detail)` (can veto navigation rows too); `detail.term` is the search text

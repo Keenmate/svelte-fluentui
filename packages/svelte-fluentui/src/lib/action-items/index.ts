@@ -14,6 +14,7 @@ export type {
 	ResolvedActionItem
 } from "./types.js"
 export {
+	createLinkActivation,
 	createMenuDivider,
 	getMenuChildren,
 	isMenuDivider,

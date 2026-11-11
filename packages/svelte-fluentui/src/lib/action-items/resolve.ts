@@ -209,3 +209,28 @@ export async function runAction<D extends ActionInvocation<any, any>>(opts: RunA
 		else trigger?.setAttribute("aria-busy", previousBusy)
 	}
 }
+
+/**
+ * Activation for an `<a>` item whose navigation `beforeActionCallback` must be able to veto.
+ * Attach the returned handler with `onclickcapture` (so it runs before the host router):
+ * it cancels the native click while `run()` decides, then replays the click once it
+ * resolved `true`, letting the router handle the navigation as usual.
+ */
+export function createLinkActivation() {
+	const allowed = new WeakSet<HTMLElement>()
+	return async function activate(event: MouseEvent, run: () => Promise<boolean>, canVeto: boolean): Promise<boolean> {
+		const anchor = event.currentTarget as HTMLElement
+		if (allowed.has(anchor)) {
+			// The replayed click: let it through untouched.
+			allowed.delete(anchor)
+			return false
+		}
+		if (canVeto) event.preventDefault()
+		const ran = await run()
+		if (ran && canVeto) {
+			allowed.add(anchor)
+			anchor.click()
+		}
+		return ran
+	}
+}
