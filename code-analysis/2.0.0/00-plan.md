@@ -55,6 +55,13 @@ is at `e2e/`, fixtures at `docs/src/routes/test/*`). Outcomes that differ from t
 
 ## Phase 2 — Foundations
 
+**Status 2026-11-11:** done — svelte peer ^5.29, `Snippet` types, `fluent-ui/register.ts` (module-level
+registration), `lib/contexts.ts`, `helpers/attrs.ts` (+ all wrappers migrated), `helpers/layer-stack.ts`,
+`helpers/date.ts`, `helpers/locale.ts`, `lib/action-items/` (port of core `/actions`; folder name = Q2),
+`types RestProps<Own>`. Not done: Prettier pass (Q5), stores → runes (needs an API shape), the
+floating / listbox-nav / async-search / selection-context helpers and FieldLabel / PickerField /
+MenuSurface internals (Phase 3 work).
+
 - `svelte` peer `^5.0.0` → `^5.29` (BREAKING peer).
 - Prettier pass over package (semicolons, broken `}: Props` indent) — separate commit, no logic.
 - `SlotType = any` → `Snippet<[...]>` (68 files).
@@ -71,6 +78,19 @@ is at `e2e/`, fixtures at `docs/src/routes/test/*`). Outcomes that differ from t
 Order: popup layer (dismiss + Escape + floating + listbox nav) across Select, Combobox, Autocomplete, DatePicker, TimePicker, MenuButton, ContextMenu, Tabs overflow, InputFile, QuickGrid, Panel, Dialog, Tooltip → attrs() in all wrappers → async search → selection context → menus (QuickGrid → ContextMenu) → field labels / pickers → a11y (`aria-activedescendant`, picker ARIA, QuickGrid `aria-sort`, clickable spans → buttons, Tooltip describedby/Escape, Calendar roving focus).
 
 ## Phase 4 — Public API (BREAKING)
+
+**Status 2026-11-11 (in progress):**
+- Events/callbacks per 05: done for every form, picker, surface, display, layout and nav component,
+  DataGrid, QuickGrid columns/editor/grid events. ActionItem model: MenuButton, ContextMenu, Dialog
+  actions done; **left:** QuickGrid row toolbar + context menu, CommandPalette commands, Toast actions,
+  TopNav items.
+- Renames done: `visible`→`open` (Dialog), `multi`→`multiple`, `selectedOptions`→`value`,
+  `dismissable`→`dismissible`, `threeState`, `hourCycle`, AccordionItem `heading`, `start`/`end`
+  snippets, kebab values (`2-digit`, `edit-start`, `move-up`), `maxFiles` dropped, stub components removed.
+- **Left:** intent palette (Toast `error`→`danger`; Field — see Q11), positions → logical, size scale,
+  limits (`maxSelectedOptions` → `maxSelectionCount`, Q8), QuickGrid `is*` props, empty-state /
+  debounce / close-behaviour names, `...rest` on the remaining components, bindable gaps, type
+  exports (QuickGrid types), drop `ProgressBar`/`AnchorButton` aliases + deprecated QuickGrid props.
 
 - Callbacks & events per [05-callbacks-events](05-callbacks-events.md): camelCase component events with one `ctx` (`onChange({ value })`), lowercase only for untouched native DOM events via `...rest`, `before*Callback` / `get*Callback` / `*Callback` contracts, `ActionItem` + one `onAction` for every menu/toolbar/dialog/palette/toast surface (port of core `/actions` into `lib/actions/`).
 - Value casing: `two_digit`, `max_selectable_days_exceeded`, `moveUp/moveDown`, `oneditstart/ondropdownopen`, accent color keys, Stack enums.

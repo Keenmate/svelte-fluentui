@@ -95,3 +95,11 @@ before* contract (05 rule 6) says any returned value *replaces* the value. Optio
 `false` rejects, `{error}` rejects with a message, `{value}` / other value replaces.
 Also: `editCallback` is my name for the old `oncelledit` (custom editor hook; 05 said "verify →
 renderEditorCallback" — it doesn't render, it hands you commit/cancel).
+
+## Q11 — `danger` vs `error` for validation / message intent
+
+The plan follows the BlissFramework rulebook (D-NC-23: `info | success | warning | danger`). Microsoft
+Fluent UI itself uses `error` (Fluent v9 `MessageBar intent`, `Field validationState`, `Toast intent`).
+Alert already uses `danger`; Toast (`variant: "error"` + `toast.error()`) and Field
+(`validationState: "error"`) don't. Not changed yet — which wins for 2.0: the rulebook (`danger`
+everywhere, `toast.danger()`?) or Fluent naming (`error`, and Alert moves back to `error`)?
