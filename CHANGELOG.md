@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Calendar, DatePicker:** `dayFormat="two_digit"` → `dayFormat="2-digit"`
+- **QuickGrid editorOptions:** `optionsLoadTrigger` `"oneditstart"` / `"ondropdownopen"` → `"edit-start"` / `"dropdown-open"`
+- **QuickGrid rowToolbar:** `"moveUp"` / `"moveDown"` → `"move-up"` / `"move-down"`
 - **Accordion, Listbox:** `multi` → `multiple`
 - **Alert, Dialog:** `dismissable` → `dismissible`
 - **QuickGrid column:** `format(value, row)`, `template(row)` → `getDisplayValueCallback({value, row, column})`, `renderCellCallback({row, column})`

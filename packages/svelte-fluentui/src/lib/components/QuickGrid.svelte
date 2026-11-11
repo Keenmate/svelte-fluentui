@@ -14,7 +14,7 @@
 
 	type EditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
 	type EditTrigger = "click" | "dblclick" | "button" | "always" | "navigate"
-	type OptionsLoadTrigger = "immediate" | "oneditstart" | "ondropdownopen"
+	type OptionsLoadTrigger = "immediate" | "edit-start" | "dropdown-open"
 	type DateOutputFormat = "date" | "iso" | "timestamp"
 
 	type EditorOption = {
@@ -28,7 +28,7 @@
 		options?: EditorOption[]
 		/** Loads the options for this row. `signal` aborts when a newer load for the column starts or the grid unmounts. */
 		loadOptionsCallback?: (ctx: {row: T; column: Column<T>; signal: AbortSignal}) => Promise<EditorOption[]>
-		optionsLoadTrigger?: OptionsLoadTrigger  // Default: "oneditstart"
+		optionsLoadTrigger?: OptionsLoadTrigger  // Default: "edit-start"
 		valueMember?: string    // Property to use as value (default: "value")
 		displayMember?: string  // Property to use as display (default: "label")
 		allowEmpty?: boolean    // Allow null/empty selection
@@ -173,7 +173,7 @@
 	}
 
 	// Row toolbar types
-	type PredefinedToolbarItemType = 'add' | 'delete' | 'duplicate' | 'moveUp' | 'moveDown'
+	type PredefinedToolbarItemType = 'add' | 'delete' | 'duplicate' | 'move-up' | 'move-down'
 
 	type RowToolbarItem<T> = {
 		// Identity
@@ -1005,10 +1005,10 @@
 			return
 		}
 
-		// Load options if needed (oneditstart trigger)
+		// Load options if needed ("edit-start" trigger)
 		if (
 			column.editorOptions?.loadOptionsCallback &&
-			(column.editorOptions?.optionsLoadTrigger === "oneditstart" || !column.editorOptions?.optionsLoadTrigger)
+			(column.editorOptions?.optionsLoadTrigger === "edit-start" || !column.editorOptions?.optionsLoadTrigger)
 		) {
 			await loadOptionsForColumn(column, item, columnField)
 		}
@@ -1720,8 +1720,8 @@
 		add: { icon: 'add', title: 'Add row below' },
 		delete: { icon: 'delete', title: 'Delete row', danger: true },
 		duplicate: { icon: 'copy', title: 'Duplicate row' },
-		moveUp: { icon: 'arrow_up', title: 'Move row up' },
-		moveDown: { icon: 'arrow_down', title: 'Move row down' }
+		'move-up': { icon: 'arrow_up', title: 'Move row up' },
+		'move-down': { icon: 'arrow_down', title: 'Move row down' }
 	}
 
 	// Normalize toolbar config: convert string shorthand to full objects

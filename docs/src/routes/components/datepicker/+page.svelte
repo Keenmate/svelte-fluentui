@@ -49,7 +49,7 @@
 		{name: "getIsDateSelectableCallback", type: "(ctx: {date: Date}) => boolean", default: "undefined", description: "Inverse of getIsDateDisabledCallback — return true to allow a date. Composes with the other date filters."},
 		{name: "disabledSelectable", type: "boolean", default: "undefined", description: "When true, disabled days still receive disabled styling rather than being hidden."},
 		{name: "disabledCheckAllDaysOfMonthYear", type: "boolean", default: "undefined", description: "When true, a month/year is treated as disabled only if every day inside it is disabled."},
-		{name: "dayFormat", type: '"two_digit" | null', default: "undefined", description: 'Day cell format. "two_digit" renders "01" instead of "1".'},
+		{name: "dayFormat", type: '"2-digit" | null', default: "undefined", description: 'Day cell format. "2-digit" renders "01" instead of "1".'},
 		{name: "cellSize", type: "string | number", default: "undefined", description: 'Day-cell edge length for the calendar popup (default 28px). Numbers are treated as px; strings pass through as-is (e.g. "2.5rem", "32px"). Resizes the whole grid proportionally.'},
 		{name: "gap", type: "string | number", default: "undefined", description: "Gap between cells in the calendar popup (default 2px). Same accepted forms as cellSize."},
 		{name: "animatePeriodChanges", type: "boolean", default: "undefined", description: "Animate transitions between months/years inside the popup. By default only the Months view animates."},
@@ -211,7 +211,7 @@
 			<DatePicker
 				label="Two-digit days"
 				placeholder="Choose a date"
-				dayFormat="two_digit"
+				dayFormat="2-digit"
 			/>
 		</Stack>
 

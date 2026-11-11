@@ -40,7 +40,7 @@
 		disabledSelectable?: boolean
 		/** When true, treat a month/year as disabled only if every contained day is disabled. */
 		disabledCheckAllDaysOfMonthYear?: boolean
-		/** Day cell format. "two_digit" renders "01" instead of "1". */
+		/** Day cell format. "2-digit" renders "01" instead of "1". */
 		dayFormat?: typeof DayFormat["TwoDigit"] | null
 		/** Day-cell edge length for the calendar popup (default 28px). Resizes the whole grid proportionally. */
 		cellSize?: string | number

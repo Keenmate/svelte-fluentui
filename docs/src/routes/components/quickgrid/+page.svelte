@@ -25,7 +25,7 @@
 		{name: "checkboxAlwaysEditable", type: "boolean", default: "false", description: "Make checkbox cells always interactive regardless of edit trigger"},
 		{name: "invalidCells", type: "CellValidationState[]", default: "[]", description: "Bindable array of cells with validation errors"},
 		{name: "showRowToolbar", type: "boolean", default: "false", description: "Show floating row toolbar with action buttons"},
-		{name: "rowToolbar", type: "RowToolbarConfig<T>[]", default: "undefined", description: 'Toolbar items — predefined strings ("add", "delete", "duplicate", "moveUp", "moveDown") or custom objects'},
+		{name: "rowToolbar", type: "RowToolbarConfig<T>[]", default: "undefined", description: 'Toolbar items — predefined strings ("add", "delete", "duplicate", "move-up", "move-down") or custom objects'},
 		{name: "toolbarAlign", type: '"center" | "top"', default: '"center"', description: "Vertical alignment of the row toolbar"},
 		{name: "toolbarTrigger", type: '"hover" | "click" | "button"', default: '"hover"', description: "How to reveal the row toolbar"},
 		{name: "contextMenu", type: "ContextMenuItem<T>[]", default: "undefined", description: "Context menu items shown on right-click"},

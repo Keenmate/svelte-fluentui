@@ -621,7 +621,7 @@
 				lastRowAction = `Duplicated row ${rowIndex + 1}`
 				break
 			}
-			case 'moveUp': {
+			case 'move-up': {
 				if (rowIndex > 0) {
 					const items = [...rowActionsData]
 					;[items[rowIndex - 1], items[rowIndex]] = [items[rowIndex], items[rowIndex - 1]]
@@ -630,7 +630,7 @@
 				}
 				break
 			}
-			case 'moveDown': {
+			case 'move-down': {
 				if (rowIndex < rowActionsData.length - 1) {
 					const items = [...rowActionsData]
 					;[items[rowIndex], items[rowIndex + 1]] = [items[rowIndex + 1], items[rowIndex]]
@@ -678,7 +678,7 @@
 				lastRowAction2 = `Duplicated row ${rowIndex + 1}`
 				break
 			}
-			case 'moveUp': {
+			case 'move-up': {
 				if (rowIndex > 0) {
 					const items = [...rowActionsData2]
 					;[items[rowIndex - 1], items[rowIndex]] = [items[rowIndex], items[rowIndex - 1]]
@@ -687,7 +687,7 @@
 				}
 				break
 			}
-			case 'moveDown': {
+			case 'move-down': {
 				if (rowIndex < rowActionsData2.length - 1) {
 					const items = [...rowActionsData2]
 					;[items[rowIndex], items[rowIndex + 1]] = [items[rowIndex + 1], items[rowIndex]]
@@ -739,7 +739,7 @@
 		label?: string
 		row?: number
 		group?: number
-		type?: 'add' | 'delete' | 'duplicate' | 'moveUp' | 'moveDown'
+		type?: 'add' | 'delete' | 'duplicate' | 'move-up' | 'move-down'
 		danger?: boolean
 		disabled?: boolean | ((row: SimpleItem, rowIndex: number) => boolean)
 		onclick?: (detail: {row: SimpleItem; rowIndex: number}) => void | Promise<void>
@@ -747,8 +747,8 @@
 
 	const advancedToolbar: (string | ToolbarItem)[] = [
 		// Row 1: Move actions (group 1) | CRUD actions (group 2)
-		{id: 'moveUp', type: 'moveUp', icon: '↑', title: 'Move up', row: 1, group: 1, disabled: (row, idx) => idx === 0},
-		{id: 'moveDown', type: 'moveDown', icon: '↓', title: 'Move down', row: 1, group: 1, disabled: (row, idx) => idx === toolbarData.length - 1},
+		{id: 'move-up', type: 'move-up', icon: '↑', title: 'Move up', row: 1, group: 1, disabled: (row, idx) => idx === 0},
+		{id: 'move-down', type: 'move-down', icon: '↓', title: 'Move down', row: 1, group: 1, disabled: (row, idx) => idx === toolbarData.length - 1},
 		{id: 'add', type: 'add', icon: '+', title: 'Add row below', row: 1, group: 2},
 		{id: 'duplicate', type: 'duplicate', icon: '⧉', title: 'Duplicate', row: 1, group: 2},
 		{id: 'delete', type: 'delete', icon: '−', title: 'Delete', danger: true, row: 1, group: 2},
@@ -800,7 +800,7 @@
 					lastToolbarAction = `Duplicated "${row.name}"`
 					break
 				}
-				case 'moveUp': {
+				case 'move-up': {
 					if (rowIndex > 0) {
 						const items = [...toolbarData]
 						;[items[rowIndex - 1], items[rowIndex]] = [items[rowIndex], items[rowIndex - 1]]
@@ -809,7 +809,7 @@
 					}
 					break
 				}
-				case 'moveDown': {
+				case 'move-down': {
 					if (rowIndex < toolbarData.length - 1) {
 						const items = [...toolbarData]
 						;[items[rowIndex], items[rowIndex + 1]] = [items[rowIndex + 1], items[rowIndex]]
@@ -1048,7 +1048,7 @@
 			editable
 			editTrigger="dblclick"
 			showRowActions
-			rowActions={['moveUp', 'moveDown', 'duplicate', 'delete']}
+			rowActions={['move-up', 'move-down', 'duplicate', 'delete']}
 			onrowaction={handleRowAction2}
 			onRowChange={handleRowActionsRowChange2}
 		/>
@@ -1110,9 +1110,9 @@
 		<pre>{`// Define toolbar with multi-row layout, groups, and custom actions
 const advancedToolbar = [
   // Row 1: Move actions (group 1) | CRUD actions (group 2)
-  { id: 'moveUp', type: 'moveUp', icon: '↑', title: 'Move up', row: 1, group: 1,
+  { id: 'move-up', type: 'move-up', icon: '↑', title: 'Move up', row: 1, group: 1,
     disabled: (row, idx) => idx === 0 },
-  { id: 'moveDown', type: 'moveDown', icon: '↓', title: 'Move down', row: 1, group: 1,
+  { id: 'move-down', type: 'move-down', icon: '↓', title: 'Move down', row: 1, group: 1,
     disabled: (row, idx) => idx === items.length - 1 },
   { id: 'add', type: 'add', icon: '+', title: 'Add', row: 1, group: 2 },
   { id: 'duplicate', type: 'duplicate', icon: '⧉', title: 'Duplicate', row: 1, group: 2 },
@@ -1277,8 +1277,8 @@ ${'<'}QuickGrid
 			</thead>
 			<tbody>
 				<tr><td>immediate</td><td>Load once when grid mounts, cache forever</td></tr>
-				<tr><td>oneditstart</td><td>Load when cell enters edit mode (default)</td></tr>
-				<tr><td>ondropdownopen</td><td>Load when dropdown opens (lazy)</td></tr>
+				<tr><td>edit-start</td><td>Load when cell enters edit mode (default)</td></tr>
+				<tr><td>dropdown-open</td><td>Load when dropdown opens (lazy)</td></tr>
 			</tbody>
 		</table>
 		<pre>{`const columns = [
@@ -1293,7 +1293,7 @@ ${'<'}QuickGrid
         const departments = await fetchDepartments(row.companyId, {signal})
         return departments.map(d => ({ value: d.id, label: d.name }))
       },
-      optionsLoadTrigger: "ondropdownopen"
+      optionsLoadTrigger: "dropdown-open"
     }
   }
 ]`}</pre>
@@ -1566,8 +1566,8 @@ function clearError(rowIndex, field) {
 				<tr><td>'add'</td><td>+</td><td>Add a new row below</td></tr>
 				<tr><td>'delete'</td><td>−</td><td>Delete the row (shown in red on hover)</td></tr>
 				<tr><td>'duplicate'</td><td>⧉</td><td>Duplicate the row</td></tr>
-				<tr><td>'moveUp'</td><td>↑</td><td>Move the row up</td></tr>
-				<tr><td>'moveDown'</td><td>↓</td><td>Move the row down</td></tr>
+				<tr><td>'move-up'</td><td>↑</td><td>Move the row up</td></tr>
+				<tr><td>'move-down'</td><td>↓</td><td>Move the row down</td></tr>
 			</tbody>
 		</table>
 		<h3>RowActionClickDetail</h3>
@@ -1624,7 +1624,7 @@ function clearError(rowIndex, field) {
 			<tbody>
 				<tr><td>options</td><td>EditorOption[]</td><td>select, autocomplete</td><td>Static options array</td></tr>
 				<tr><td>loadOptionsCallback</td><td>(&#123;row, column, signal&#125;) =&gt; Promise&lt;EditorOption[]&gt;</td><td>select, autocomplete</td><td>Dynamic options loader</td></tr>
-				<tr><td>optionsLoadTrigger</td><td>"immediate" | "oneditstart" | "ondropdownopen"</td><td>select, autocomplete</td><td>When to load dynamic options</td></tr>
+				<tr><td>optionsLoadTrigger</td><td>"immediate" | "edit-start" | "dropdown-open"</td><td>select, autocomplete</td><td>When to load dynamic options</td></tr>
 				<tr><td>min</td><td>number</td><td>number</td><td>Minimum value</td></tr>
 				<tr><td>max</td><td>number</td><td>number</td><td>Maximum value</td></tr>
 				<tr><td>step</td><td>number</td><td>number</td><td>Step increment</td></tr>

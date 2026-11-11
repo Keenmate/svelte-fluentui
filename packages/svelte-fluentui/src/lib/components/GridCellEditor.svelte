@@ -3,7 +3,7 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 
 	type EditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
-	type OptionsLoadTrigger = "immediate" | "oneditstart" | "ondropdownopen"
+	type OptionsLoadTrigger = "immediate" | "edit-start" | "dropdown-open"
 	type DateOutputFormat = "date" | "iso" | "timestamp"
 
 	type EditorOption = {
@@ -521,11 +521,11 @@
 		}
 	})
 
-	// Handle ondropdownopen loading for select
+	// Handle dropdown-open loading for select
 	async function handleDropdownFocus() {
 		if (
 			options.loadOptions &&
-			options.optionsLoadTrigger === "ondropdownopen" &&
+			options.optionsLoadTrigger === "dropdown-open" &&
 			!hasLoadedOnDropdown
 		) {
 			isLoadingOptions = true

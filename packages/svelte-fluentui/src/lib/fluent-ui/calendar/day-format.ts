@@ -1,3 +1,3 @@
 export default {
-	TwoDigit: "two_digit"
+	TwoDigit: "2-digit"
 } as const
