@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Toast (`ToastPosition`, `toast.*({position})`, `dismissAll(position)`):** `"top-right"` / `"top-left"` / `"bottom-right"` / `"bottom-left"` → `"top-end"` / `"top-start"` / `"bottom-end"` / `"bottom-start"` (default `"top-end"`; flip with `dir="rtl"`)
+- **ToastContainer CSS classes:** `.fluent-toast-container--top-right` etc. → `--top-end` / `--top-start` / `--bottom-end` / `--bottom-start`
 - **Tooltip:** `position` `"left"` / `"right"` → `"start"` / `"end"` (follow the anchor's text direction)
 - **PositioningRegion:** `position` `"left"` / `"right"` → `"start"` / `"end"`
 - **Select, Combobox:** `position="above"` / `"below"` → `position="top"` / `"bottom"`

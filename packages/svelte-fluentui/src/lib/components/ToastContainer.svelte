@@ -37,11 +37,11 @@
 	// Group toasts by position
 	let toastsByPosition = $derived.by(() => {
 		const grouped: Record<ToastPosition, ToastInstance[]> = {
-			"top-right": [],
-			"top-left": [],
+			"top-end": [],
+			"top-start": [],
 			"top-center": [],
-			"bottom-right": [],
-			"bottom-left": [],
+			"bottom-end": [],
+			"bottom-start": [],
 			"bottom-center": []
 		}
 

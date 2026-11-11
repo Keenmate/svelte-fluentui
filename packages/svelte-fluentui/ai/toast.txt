@@ -58,18 +58,18 @@ OPTIONS:
 variant?: "success" | "error" | "warning" | "info"
 title?: string             # Default based on variant
 message?: string           # Toast message
-position?: ToastPosition   # Where to show (default: "top-right")
+position?: ToastPosition   # Where to show (default: "top-end")
 duration?: number          # Auto-dismiss time in ms (default: 5000)
 showProgress?: boolean     # Show progress bar (default: false)
 persistent?: boolean       # Don't auto-dismiss (default: false)
 
 
 POSITIONS:
-- "top-right"    (default)
-- "top-left"
+- "top-end"    (default)
+- "top-start"
 - "top-center"
-- "bottom-right"
-- "bottom-left"
+- "bottom-end"
+- "bottom-start"
 - "bottom-center"
 
 
@@ -91,7 +91,7 @@ toast.info("New update available")
 
 WITH OPTIONS:
 toast.success("Uploaded!", {
-  position: "bottom-right",
+  position: "bottom-end",
   duration: 3000
 })
 
@@ -268,9 +268,9 @@ MULTIPLE TOASTS
 Multiple toasts stack automatically.
 Each position handles its own stack.
 
-toast.success("First toast", { position: "top-right" })
-toast.info("Second toast", { position: "top-right" })
-// Both stack in top-right corner
+toast.success("First toast", { position: "top-end" })
+toast.info("Second toast", { position: "top-end" })
+// Both stack in top-end corner
 
 
 CLICK TO DISMISS
@@ -292,7 +292,7 @@ Issue: Toast not showing
 Solution: Ensure ToastContainer is in root layout
 
 Issue: Toast in wrong position
-Solution: Check position option, default is "top-right"
+Solution: Check position option, default is "top-end"
 
 Issue: Toast not auto-dismissing
 Solution: Check persistent option, default is false

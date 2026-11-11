@@ -40,28 +40,28 @@
 		})
 	}
 
-	function showTopLeft() {
-		lastToastId = toast.success("Top Left Position", {position: "top-left"})
+	function showTopStart() {
+		lastToastId = toast.success("Top Start Position", {position: "top-start"})
 	}
 
 	function showTopCenter() {
 		lastToastId = toast.info("Top Center Position", {position: "top-center"})
 	}
 
-	function showTopRight() {
-		lastToastId = toast.success("Top Right Position", {position: "top-right"})
+	function showTopEnd() {
+		lastToastId = toast.success("Top End Position", {position: "top-end"})
 	}
 
-	function showBottomLeft() {
-		lastToastId = toast.warning("Bottom Left Position", {position: "bottom-left"})
+	function showBottomStart() {
+		lastToastId = toast.warning("Bottom Start Position", {position: "bottom-start"})
 	}
 
 	function showBottomCenter() {
 		lastToastId = toast.info("Bottom Center Position", {position: "bottom-center"})
 	}
 
-	function showBottomRight() {
-		lastToastId = toast.error("Bottom Right Position", {position: "bottom-right"})
+	function showBottomEnd() {
+		lastToastId = toast.error("Bottom End Position", {position: "bottom-end"})
 	}
 
 	function dismissLast() {
@@ -104,7 +104,7 @@
 			name: "topCTAType",
 			type: '"dismiss" | "timestamp" | "action"',
 			default: "undefined",
-			description: "Controls the top-right action area: dismiss button, timestamp display, or a custom action link"
+			description: "Controls the top-end action area: dismiss button, timestamp display, or a custom action link"
 		},
 		{
 			name: "topAction",
@@ -222,8 +222,8 @@
 		},
 		{
 			name: "position",
-			type: '"top-right" | "top-left" | "top-center" | "bottom-right" | "bottom-left" | "bottom-center"',
-			default: '"top-right"',
+			type: '"top-end" | "top-start" | "top-center" | "bottom-end" | "bottom-start" | "bottom-center"',
+			default: '"top-end"',
 			description: "Toast position on screen"
 		},
 		{
@@ -305,12 +305,12 @@ const id = toast.success('Operation completed!');
 
 		<h3>Positions</h3>
 		<div class="button-grid">
-			<Button appearance="accent" onclick={showTopLeft}>Top Left</Button>
+			<Button appearance="accent" onclick={showTopStart}>Top Start</Button>
 			<Button appearance="accent" onclick={showTopCenter}>Top Center</Button>
-			<Button appearance="accent" onclick={showTopRight}>Top Right</Button>
-			<Button appearance="accent" onclick={showBottomLeft}>Bottom Left</Button>
+			<Button appearance="accent" onclick={showTopEnd}>Top End</Button>
+			<Button appearance="accent" onclick={showBottomStart}>Bottom Start</Button>
 			<Button appearance="accent" onclick={showBottomCenter}>Bottom Center</Button>
-			<Button appearance="accent" onclick={showBottomRight}>Bottom Right</Button>
+			<Button appearance="accent" onclick={showBottomEnd}>Bottom End</Button>
 		</div>
 
 		<h3>Dismiss Actions</h3>
@@ -345,7 +345,7 @@ toast.dismiss(id);
 toast.dismissAll();
 
 // Dismiss toasts in specific position
-toast.dismissAll('top-right');`}</code></pre>
+toast.dismissAll('top-end');`}</code></pre>
 	</Card>
 
 	<Grid spacing={3}>

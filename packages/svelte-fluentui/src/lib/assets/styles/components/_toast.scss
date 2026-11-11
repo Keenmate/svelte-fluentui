@@ -34,37 +34,42 @@
 	overflow: visible;
 	background: transparent;
 
-	// Position variations
-	&--top-right {
-		top: $spacing-lg;
-		right: $spacing-lg;
+	// Position variations (logical: start/end follow the writing direction)
+	&--top-end {
+		inset-block-start: $spacing-lg;
+		inset-inline-end: $spacing-lg;
 	}
 
-	&--top-left {
-		top: $spacing-lg;
-		left: $spacing-lg;
+	&--top-start {
+		inset-block-start: $spacing-lg;
+		inset-inline-start: $spacing-lg;
 	}
 
-	&--bottom-right {
-		bottom: $spacing-lg;
-		right: $spacing-lg;
+	&--bottom-end {
+		inset-block-end: $spacing-lg;
+		inset-inline-end: $spacing-lg;
 	}
 
-	&--bottom-left {
-		bottom: $spacing-lg;
-		left: $spacing-lg;
+	&--bottom-start {
+		inset-block-end: $spacing-lg;
+		inset-inline-start: $spacing-lg;
+	}
+
+	// Centered horizontally without a physical translate, so it is
+	// direction-agnostic.
+	&--top-center,
+	&--bottom-center {
+		inset-inline: 0;
+		margin-inline: auto;
+		inline-size: fit-content;
 	}
 
 	&--top-center {
-		top: $spacing-lg;
-		left: 50%;
-		transform: translateX(-50%);
+		inset-block-start: $spacing-lg;
 	}
 
 	&--bottom-center {
-		bottom: $spacing-lg;
-		left: 50%;
-		transform: translateX(-50%);
+		inset-block-end: $spacing-lg;
 	}
 }
 
@@ -86,9 +91,17 @@
 	overflow: hidden;
 	cursor: pointer;
 
-	// Animation states
+	// Animation states. Toasts slide in from the inline edge their container is
+	// pinned to. translateX is physical, so flip its sign in RTL:
+	// --_fluent-toast-inline-sign is 1 in LTR, -1 in RTL.
+	--_fluent-toast-inline-sign: 1;
+
+	&:dir(rtl) {
+		--_fluent-toast-inline-sign: -1;
+	}
+
 	opacity: 0;
-	transform: translateX(100%);
+	transform: translateX(calc(100% * var(--_fluent-toast-inline-sign)));
 	transition:
 		opacity $transition-normal ease,
 		transform $transition-normal ease;
@@ -100,20 +113,20 @@
 
 	&.fluent-toast--hide {
 		opacity: 0;
-		transform: translateX(100%);
+		transform: translateX(calc(100% * var(--_fluent-toast-inline-sign)));
 	}
 
-	// Left position animations
-	.fluent-toast-container--top-left &,
-	.fluent-toast-container--bottom-left & {
-		transform: translateX(-100%);
+	// Start position animations (slide in from the inline-start edge)
+	.fluent-toast-container--top-start &,
+	.fluent-toast-container--bottom-start & {
+		transform: translateX(calc(-100% * var(--_fluent-toast-inline-sign)));
 
 		&.fluent-toast--show {
 			transform: translateX(0);
 		}
 
 		&.fluent-toast--hide {
-			transform: translateX(-100%);
+			transform: translateX(calc(-100% * var(--_fluent-toast-inline-sign)));
 		}
 	}
 
@@ -148,7 +161,7 @@
 .fluent-toast__content {
 	flex: 1;
 	min-width: 0;
-	padding-right: $spacing-xl;
+	padding-inline-end: $spacing-xl;
 }
 
 .fluent-toast__title {
@@ -169,8 +182,8 @@
 // Toast close button
 .fluent-toast__close {
 	position: absolute;
-	top: $spacing-md;
-	right: $spacing-md;
+	inset-block-start: $spacing-md;
+	inset-inline-end: $spacing-md;
 	background: none;
 	border: none;
 	color: var(--neutral-foreground-rest);
@@ -200,8 +213,8 @@
 // Toast progress bar
 .fluent-toast__progress {
 	position: absolute;
-	bottom: 0;
-	left: 0;
+	inset-block-end: 0;
+	inset-inline-start: 0;
 	height: 3px;
 	width: 100%;
 	background-color: currentColor;
@@ -222,7 +235,7 @@
 
 // Success toast
 .fluent-toast--success {
-	border-left: 4px solid $color-success;
+	border-inline-start: 4px solid $color-success;
 
 	.fluent-toast__icon {
 		background-color: rgba($color-success, 0.1);
@@ -236,7 +249,7 @@
 
 // Error toast
 .fluent-toast--error {
-	border-left: 4px solid $color-error;
+	border-inline-start: 4px solid $color-error;
 
 	.fluent-toast__icon {
 		background-color: rgba($color-error, 0.1);
@@ -250,7 +263,7 @@
 
 // Warning toast
 .fluent-toast--warning {
-	border-left: 4px solid $color-warning;
+	border-inline-start: 4px solid $color-warning;
 
 	.fluent-toast__icon {
 		background-color: rgba($color-warning, 0.1);
@@ -264,7 +277,7 @@
 
 // Info toast
 .fluent-toast--info {
-	border-left: 4px solid $color-info;
+	border-inline-start: 4px solid $color-info;
 
 	.fluent-toast__icon {
 		background-color: rgba($color-info, 0.1);
@@ -280,24 +293,25 @@
 
 @media (max-width: 768px) {
 	.fluent-toast-container {
-		left: $spacing-md !important;
-		right: $spacing-md !important;
+		inset-inline: $spacing-md !important;
+		margin-inline: 0 !important;
+		inline-size: auto !important;
 		transform: none !important;
 
-		&--top-right,
-		&--top-left,
+		&--top-end,
+		&--top-start,
 		&--top-center {
-			top: $spacing-md;
+			inset-block-start: $spacing-md;
 		}
 
-		&--bottom-right,
-		&--bottom-left,
+		&--bottom-end,
+		&--bottom-start,
 		&--bottom-center {
-			bottom: $spacing-md;
+			inset-block-end: $spacing-md;
 		}
 	}
 
 	.fluent-toast {
-		max-width: 100%;
+		max-inline-size: 100%;
 	}
 }

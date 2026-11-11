@@ -3,11 +3,11 @@ import {writable} from "svelte/store"
 export type ToastVariant = "success" | "error" | "warning" | "info"
 
 export type ToastPosition =
-	| "top-right"
-	| "top-left"
+	| "top-end"
+	| "top-start"
 	| "top-center"
-	| "bottom-right"
-	| "bottom-left"
+	| "bottom-end"
+	| "bottom-start"
 	| "bottom-center"
 
 export interface ToastOptions {
@@ -31,7 +31,7 @@ let toastCounter = 0
 
 // Default configuration
 const defaults = {
-	position: "top-right" as ToastPosition,
+	position: "top-end" as ToastPosition,
 	duration: 5000,
 	showProgress: false,
 	persistent: false
