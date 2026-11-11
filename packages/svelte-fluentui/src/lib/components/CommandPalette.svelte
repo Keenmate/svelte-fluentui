@@ -1,12 +1,13 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {onMount, tick} from "svelte"
+	import {onMount, tick, untrack} from "svelte"
 	import Icon from "./Icon.svelte"
 	import {portal} from "../actions/portal.js"
-	import type {CommandPaletteItem, CommandPaletteFilter} from "./CommandPalette.types.js"
+	import type {CommandPaletteItem, CommandPaletteFilter, CommandPaletteActionDetail} from "./CommandPalette.types.js"
+	import {resolveActionItem, runAction} from "../action-items/index.js"
 
 	type Props = {
-		/** Items to search. Each is either navigation (`href`) or an action (`onSelect`). */
+		/** Items to search. Each is either navigation (`href`) or an action (`onClick`). */
 		items: CommandPaletteItem[]
 		/** Controlled open state. Bind it to drive the palette from your own trigger. */
 		open?: boolean
@@ -27,9 +28,11 @@
 		/** Close the palette after an item is selected. */
 		closeOnSelect?: boolean
 		/** Override the built-in fuzzy scorer with app-specific search. */
-		filter?: CommandPaletteFilter
-		/** Called with the selected item before navigation/action runs. */
-		onselect?: (item: CommandPaletteItem) => void
+		filterCallback?: CommandPaletteFilter
+		/** Fires after an item ran (its `onClick`, or the navigation started). */
+		onAction?: (detail: CommandPaletteActionDetail) => void
+		/** Called before an item runs or navigates; return `false` (or a Promise resolving to `false`) to cancel. */
+		beforeActionCallback?: (detail: CommandPaletteActionDetail) => unknown
 		/** Fires when the palette opens or closes. */
 		onOpenChange?: (ctx: {open: boolean}) => void
 		/** Replace a result row's rendering. Receives the item and whether it's the active row. */
@@ -49,8 +52,9 @@
 		shortcut = "mod+k",
 		enableShortcut = true,
 		closeOnSelect = true,
-		filter = undefined,
-		onselect = undefined,
+		filterCallback = undefined,
+		onAction = undefined,
+		beforeActionCallback = undefined,
 		onOpenChange = undefined,
 		item: itemSnippet = undefined,
 		empty: emptySnippet = undefined,
@@ -81,7 +85,7 @@
 	// Score: higher = better match. 0 = no match. Layered so exact / prefix beat
 	// substring beat fuzzy-subsequence. Searches title, meta, group and keywords.
 	function score(it: CommandPaletteItem, needle: string): number {
-		const title = it.title.toLowerCase()
+		const title = it.text.toLowerCase()
 		if (title === needle) return 1000
 		if (title.startsWith(needle)) return 500 - (title.length - needle.length)
 		const group = (it.group ?? "").toLowerCase()
@@ -104,7 +108,7 @@
 	const results = $derived.by(() => {
 		const q = trimmedQuery
 		if (!q) return []
-		if (filter) return filter(items, q).slice(0, maxResults)
+		if (filterCallback) return filterCallback({items, term: q}).slice(0, maxResults)
 		const needle = q.toLowerCase()
 		return items
 			.map((it) => ({it, s: score(it, needle)}))
@@ -153,7 +157,7 @@
 	const itemCount = $derived(rows.filter((r) => r.kind === "item").length)
 
 	function itemKey(it: CommandPaletteItem): string {
-		return it.id ?? it.href ?? it.title
+		return it.id ?? it.href ?? it.text
 	}
 
 	// Split a title around the first contiguous match of the query for <mark>
@@ -186,13 +190,47 @@
 		onOpenChange?.({open: false})
 	}
 
-	function selectItem(it: CommandPaletteItem) {
-		if (it.disabled) return
-		onselect?.(it)
+	const actionHost = {}
+	// Anchors re-clicked after an async beforeActionCallback allowed them.
+	const allowedAnchors = new WeakSet<HTMLElement>()
+
+	function isDisabled(it: CommandPaletteItem): boolean {
+		return resolveActionItem(it, {term: query.trim()}).isDisabled
+	}
+
+	async function selectItem(it: CommandPaletteItem, event: MouseEvent) {
+		const trigger = event.currentTarget as HTMLElement
+		if (isDisabled(it)) {
+			event.preventDefault()
+			return
+		}
+		const isLink = !!it.href && !it.onClick
+		if (isLink && allowedAnchors.has(trigger)) {
+			// Second pass after the veto check: let the router handle this click.
+			allowedAnchors.delete(trigger)
+			return
+		}
+		// A navigation row can only be vetoed by cancelling the click now and
+		// replaying it once beforeActionCallback has answered. Anchors listen in
+		// the capture phase so this runs before the host router's click handler.
+		const replay = isLink && !!beforeActionCallback
+		if (replay) event.preventDefault()
+		const detail: CommandPaletteActionDetail = {
+			term: query.trim(),
+			action: it.action ?? "custom",
+			id: it.id,
+			item: it,
+			source: "palette",
+			sourceEvent: event,
+			triggerElement: trigger
+		}
+		const ran = await runAction({host: actionHost, detail, beforeActionCallback, emitAction: (d) => onAction?.(d)})
+		if (!ran) return
+		if (replay) {
+			allowedAnchors.add(trigger)
+			trigger.click()
+		}
 		if (closeOnSelect) closePalette()
-		// Actions run inline; navigation rows are real <a> elements, so a click
-		// (mouse or the synthetic Enter click below) lets the host router handle it.
-		it.onSelect?.()
 	}
 
 	// Enter activates the highlighted row by clicking its DOM node — works for both
@@ -217,6 +255,21 @@
 	$effect(() => {
 		query
 		selectedIndex = 0
+	})
+
+	// However it was opened (shortcut, trigger, or `bind:open` from the app),
+	// start with an empty query and the search input focused.
+	let wasOpen = false
+	$effect(() => {
+		const isOpen = open
+		if (isOpen && !wasOpen) {
+			untrack(() => {
+				query = ""
+				selectedIndex = 0
+			})
+			tick().then(() => inputEl?.focus())
+		}
+		wasOpen = isOpen
 	})
 
 	// Keep highlighted row in view during keyboard nav.
@@ -259,11 +312,11 @@
 
 {#snippet rowBody(it: CommandPaletteItem)}
 	{#if it.icon}
-		<span class="cp-item-icon"><Icon name={it.icon} size={20} /></span>
+		<span class="cp-item-icon">{#if typeof it.icon === "string"}<Icon name={it.icon} size={20} />{:else}{@render it.icon()}{/if}</span>
 	{/if}
 	<span class="cp-item-content">
 		<span class="cp-item-title">
-			{#each highlight(it.title) as seg}{#if seg.mark}<mark>{seg.text}</mark>{:else}{seg.text}{/if}{/each}
+			{#each highlight(it.text) as seg}{#if seg.mark}<mark>{seg.text}</mark>{:else}{seg.text}{/if}{/each}
 		</span>
 		{#if it.meta}<span class="cp-item-meta">{it.meta}</span>{/if}
 	</span>
@@ -311,19 +364,19 @@
 				{#each rows as row (row.kind === "header" ? "h:" + row.label : itemKey(row.item) + ":" + row.index)}
 					{#if row.kind === "header"}
 						<div class="cp-section">{row.label}</div>
-					{:else if row.item.href && !row.item.onSelect}
+					{:else if row.item.href && !row.item.onClick}
 						<!-- Navigation row — real <a> so the host router handles the click. -->
 						<a
 							class="cp-item"
 							class:selected={row.index === selectedIndex}
-							class:disabled={row.item.disabled}
+							class:disabled={isDisabled(row.item)}
 							data-idx={row.index}
-							href={row.item.disabled ? undefined : row.item.href}
+							href={isDisabled(row.item) ? undefined : row.item.href}
 							target={row.item.target ?? null}
 							rel={row.item.rel ?? null}
 							role="option"
 							aria-selected={row.index === selectedIndex}
-							onclick={() => selectItem(row.item)}
+							onclickcapture={(event) => selectItem(row.item, event)}
 							onmousemove={() => (selectedIndex = row.index)}
 						>
 							{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}
@@ -335,10 +388,10 @@
 							class="cp-item"
 							class:selected={row.index === selectedIndex}
 							data-idx={row.index}
-							disabled={row.item.disabled || undefined}
+							disabled={isDisabled(row.item) || undefined}
 							role="option"
 							aria-selected={row.index === selectedIndex}
-							onclick={() => selectItem(row.item)}
+							onclick={(event) => selectItem(row.item, event)}
 							onmousemove={() => (selectedIndex = row.index)}
 						>
 							{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}

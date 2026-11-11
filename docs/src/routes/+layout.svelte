@@ -392,9 +392,9 @@
 	const paletteItems: CommandPaletteItem[] = navigation
 		.flatMap((navItem) =>
 			navItem.href
-				? [{title: navItem.title, href: navItem.href, icon: navItem.icon}]
+				? [{text: navItem.title, href: navItem.href, icon: navItem.icon}]
 				: (navItem.items ?? []).map((it) => ({
-					title: it.label,
+					text: it.label,
 					href: it.href,
 					group: navItem.title,
 					icon: navItem.icon,
@@ -402,7 +402,7 @@
 					rel: (it as any).rel
 				}))
 		)
-		.sort((a, b) => a.title.localeCompare(b.title))
+		.sort((a, b) => a.text.localeCompare(b.text))
 
 	let paletteOpen = $state(false)
 

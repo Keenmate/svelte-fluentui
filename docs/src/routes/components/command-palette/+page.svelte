@@ -11,7 +11,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "items", type: "CommandPaletteItem[]", default: "[]", description: "Searchable entries. Each is either navigation (href) or an action (onSelect)"},
+		{name: "items", type: "CommandPaletteItem[]", default: "[]", description: "Searchable entries. Each is either navigation (href) or an action (onClick)"},
 		{name: "open", type: "boolean", default: "false", description: "Controlled, bindable open state. Drive it from your own trigger with bind:open"},
 		{name: "placeholder", type: "string", default: '"Search…"', description: "Input placeholder text"},
 		{name: "homeItems", type: "CommandPaletteItem[]", default: "items", description: "Items shown on the idle screen (before typing), grouped by `group`. Defaults to the first maxResults of items"},
@@ -19,25 +19,27 @@
 		{name: "shortcut", type: "string", default: '"mod+k"', description: "Global shortcut that toggles the palette. mod = ⌘ on Mac, Ctrl elsewhere"},
 		{name: "enableShortcut", type: "boolean", default: "true", description: "Register the built-in global shortcut listener. Disable to drive open yourself"},
 		{name: "closeOnSelect", type: "boolean", default: "true", description: "Close the palette after an item is selected"},
-		{name: "filter", type: "CommandPaletteFilter", default: "undefined", description: "Override the built-in fuzzy scorer with app-specific search (server-side, scopes, weighting)"}
+		{name: "filterCallback", type: "({items, term}) => CommandPaletteItem[]", default: "undefined", description: "Override the built-in fuzzy scorer with app-specific search (server-side, scopes, weighting)"}
 	]
 
 	const itemShape: Property[] = [
-		{name: "title", type: "string", default: "—", description: "Primary line (required)"},
+		{name: "text", type: "string", default: "—", description: "Primary line (required)"},
 		{name: "meta", type: "string", default: "undefined", description: "Secondary muted line, e.g. a SKU or path"},
-		{name: "icon", type: "string", default: "undefined", description: "FluentUI icon name passed to <Icon>"},
+		{name: "icon", type: "string | Snippet", default: "undefined", description: "FluentUI icon name passed to <Icon>, or a snippet"},
 		{name: "badge", type: "string", default: "undefined", description: "Trailing badge text"},
 		{name: "shortcut", type: "string", default: "undefined", description: 'Trailing keycap hint, space-separated, e.g. "Ctrl ,"'},
 		{name: "group", type: "string", default: "undefined", description: "Section heading on the idle screen; trailing chip in search results"},
 		{name: "keywords", type: "string[]", default: "undefined", description: "Extra search terms / aliases that match but aren't shown"},
 		{name: "href", type: "string", default: "undefined", description: "Navigation target. Rendered as an <a> so the host router handles the click"},
 		{name: "target / rel", type: "string", default: "undefined", description: "Anchor target/rel, only meaningful with href"},
-		{name: "onSelect", type: "() => void", default: "undefined", description: "Action callback. Takes precedence over href"},
-		{name: "disabled", type: "boolean", default: "false", description: "Render the row but make it non-interactive"}
+		{name: "id", type: "string", default: "undefined", description: "Identifies the item in onAction"},
+		{name: "onClick", type: "(detail) => void | Promise<void>", default: "undefined", description: "Action callback. Takes precedence over href"},
+		{name: "isDisabled", type: "boolean", default: "false", description: "Render the row but make it non-interactive (or getIsDisabledCallback)"}
 	]
 
 	const callbacks: Property[] = [
-		{name: "onselect", type: "(item: CommandPaletteItem) => void", default: "undefined", description: "Fired with the selected item before its navigation/action runs"},
+		{name: "onAction", type: "(detail: {term, action, id, item, source, sourceEvent}) => void", default: "undefined", description: "Fires after an item ran (its onClick, or the navigation started)"},
+		{name: "beforeActionCallback", type: "(detail) => unknown", default: "undefined", description: "Called before an item runs or navigates; return false (or resolve to false) to cancel"},
 		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the palette opens or closes"}
 	]
 
@@ -64,30 +66,30 @@
 	// shortcut disabled so it doesn't fight the docs' own Ctrl+K palette).
 	let basicOpen = $state(false)
 	const commands: CommandPaletteItem[] = [
-		{title: "New document", icon: "document_add", shortcut: "Ctrl N", group: "Create", onSelect: () => setAction("New document")},
-		{title: "New folder", icon: "folder_add", group: "Create", onSelect: () => setAction("New folder")},
-		{title: "Upload files", icon: "arrow_upload", group: "Create", onSelect: () => setAction("Upload files")},
-		{title: "Toggle theme", icon: "weather_moon", shortcut: "Ctrl T", group: "View", onSelect: () => setAction("Toggle theme")},
-		{title: "Open settings", icon: "settings", shortcut: "Ctrl ,", group: "View", onSelect: () => setAction("Open settings")},
-		{title: "Sign out", icon: "sign_out", group: "Account", onSelect: () => setAction("Sign out")}
+		{text: "New document", icon: "document_add", shortcut: "Ctrl N", group: "Create", onClick: () => setAction("New document")},
+		{text: "New folder", icon: "folder_add", group: "Create", onClick: () => setAction("New folder")},
+		{text: "Upload files", icon: "arrow_upload", group: "Create", onClick: () => setAction("Upload files")},
+		{text: "Toggle theme", icon: "weather_moon", shortcut: "Ctrl T", group: "View", onClick: () => setAction("Toggle theme")},
+		{text: "Open settings", icon: "settings", shortcut: "Ctrl ,", group: "View", onClick: () => setAction("Open settings")},
+		{text: "Sign out", icon: "sign_out", group: "Account", onClick: () => setAction("Sign out")}
 	]
 
 	// Rich items — icon + meta + badge, navigation entries.
 	let richOpen = $state(false)
 	const records: CommandPaletteItem[] = [
-		{title: 'MacBook Pro 16"', meta: "SKU: MBP-16-001 • $2,499.00", icon: "laptop", badge: "In Stock", group: "Products", keywords: ["apple", "laptop"], href: "#macbook"},
-		{title: "iPhone 15 Pro", meta: "SKU: IP15P-256 • $999.00", icon: "phone", badge: "New", group: "Products", keywords: ["apple", "mobile"], href: "#iphone"},
-		{title: "AirPods Pro", meta: "SKU: APP-GEN2 • $249.00", icon: "headphones", badge: "Popular", group: "Products", href: "#airpods"},
-		{title: "Order #1001", meta: "John Doe • $1,234.56 • 2 items", icon: "box", badge: "Shipped", group: "Orders", href: "#o1001"},
-		{title: "Order #1002", meta: "Jane Smith • $567.89 • 1 item", icon: "box", badge: "Processing", group: "Orders", href: "#o1002"},
-		{title: "Invoice #INV-501", meta: "Order #1001 • Due in 5 days", icon: "receipt", badge: "Unpaid", group: "Invoices", href: "#inv501"}
+		{text: 'MacBook Pro 16"', meta: "SKU: MBP-16-001 • $2,499.00", icon: "laptop", badge: "In Stock", group: "Products", keywords: ["apple", "laptop"], href: "#macbook"},
+		{text: "iPhone 15 Pro", meta: "SKU: IP15P-256 • $999.00", icon: "phone", badge: "New", group: "Products", keywords: ["apple", "mobile"], href: "#iphone"},
+		{text: "AirPods Pro", meta: "SKU: APP-GEN2 • $249.00", icon: "headphones", badge: "Popular", group: "Products", href: "#airpods"},
+		{text: "Order #1001", meta: "John Doe • $1,234.56 • 2 items", icon: "box", badge: "Shipped", group: "Orders", href: "#o1001"},
+		{text: "Order #1002", meta: "Jane Smith • $567.89 • 1 item", icon: "box", badge: "Processing", group: "Orders", href: "#o1002"},
+		{text: "Invoice #INV-501", meta: "Order #1001 • Due in 5 days", icon: "receipt", badge: "Unpaid", group: "Invoices", href: "#inv501"}
 	]
 
 	// Custom filter escape hatch — exact prefix match only, case-insensitive.
 	let filterOpen = $state(false)
-	function prefixFilter(items: CommandPaletteItem[], query: string): CommandPaletteItem[] {
-		const q = query.toLowerCase()
-		return items.filter((it) => it.title.toLowerCase().startsWith(q))
+	function prefixFilter({items, term}: {items: CommandPaletteItem[]; term: string}): CommandPaletteItem[] {
+		const q = term.toLowerCase()
+		return items.filter((it) => it.text.toLowerCase().startsWith(q))
 	}
 </script>
 
@@ -105,7 +107,7 @@
 		<code>CommandPaletteItem</code>s and runs the chosen one. Each item is either
 		<strong>navigation</strong> (carries an <code>href</code> — rendered as a real
 		<code>&lt;a&gt;</code> so your router handles the click, no framework import) or an
-		<strong>action</strong> (carries an <code>onSelect</code> callback). The same palette
+		<strong>action</strong> (carries an <code>onClick</code> callback). The same palette
 		that powers this site's <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> search.
 	</p>
 
@@ -129,7 +131,7 @@
 		<p>
 			Drive the palette from <code>&lt;CommandPaletteTrigger&gt;</code> (a search pill
 			that mirrors the navbar trigger) or any button via <code>bind:open</code>. Items
-			here run <code>onSelect</code> actions and show icons, grouped sections on the
+			here run <code>onClick</code> actions and show icons, grouped sections on the
 			idle screen, and keycap shortcut hints.
 		</p>
 		<Stack orientation="horizontal" gap="0.75rem" verticalAlign="center">
@@ -137,7 +139,7 @@
 			<Button appearance="accent" onclick={() => (basicOpen = true)}>Open palette</Button>
 		</Stack>
 		<div class="demo-status">Last action: <strong>{lastAction}</strong></div>
-		<CommandPalette bind:open={basicOpen} items={commands} enableShortcut={false} placeholder="Run a command…" onselect={(it) => setAction(it.title)} />
+		<CommandPalette bind:open={basicOpen} items={commands} enableShortcut={false} placeholder="Run a command…" onAction={({item}) => setAction(item.text ?? "")} />
 
 		<h3>Rich items: icon, meta, badge</h3>
 		<p>
@@ -156,7 +158,7 @@
 			case-insensitive title prefix.
 		</p>
 		<CommandPaletteTrigger placeholder="Prefix search…" shortcut={null} onclick={() => (filterOpen = true)} />
-		<CommandPalette bind:open={filterOpen} items={records} filter={prefixFilter} enableShortcut={false} placeholder="Type a title prefix…" />
+		<CommandPalette bind:open={filterOpen} items={records} filterCallback={prefixFilter} enableShortcut={false} placeholder="Type a title prefix…" />
 
 		<h3>Global shortcut</h3>
 		<p>

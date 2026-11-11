@@ -1,22 +1,20 @@
+import type {ActionEventDetail, ActionItem} from "../action-items/index.js"
+
+/** The palette's surface context: the current search term. */
+export type CommandPaletteContext = {term: string}
+
 /**
- * A single entry in the command palette. Entries are either *navigation*
- * (carry an `href`) or *actions* (carry an `onSelect`). Navigation entries
- * render as real `<a>` elements so SvelteKit (or any router that intercepts
- * anchor clicks) handles client-side navigation with no framework import.
+ * A palette entry: an action item (`text`, `icon`, `isDisabled`, `onClick`, `shortcut`, …)
+ * plus palette fields. Entries are either *navigation* (carry an `href`, rendered as a real
+ * `<a>` so the host router handles the click) or *actions* (run `onClick`).
  */
-export type CommandPaletteItem = {
-	/** Stable identity for keyed rendering. Falls back to `title` when omitted. */
-	id?: string
+export type CommandPaletteItem = ActionItem<CommandPaletteContext> & {
 	/** Primary line. */
-	title: string
+	text: string
 	/** Secondary muted line (e.g. "SKU: MBP-16-001 • $2,499.00"). */
 	meta?: string
-	/** FluentUI icon name passed to `<Icon name>`. For arbitrary content, use the `item` snippet on `<CommandPalette>`. */
-	icon?: string
 	/** Trailing badge text (e.g. "In Stock"). */
 	badge?: string
-	/** Trailing keycap hint, space-separated (e.g. "Ctrl ,"). Display only. */
-	shortcut?: string
 	/** Section heading on the idle/home screen; rendered as a trailing chip in search results. */
 	group?: string
 	/** Extra search terms / aliases that match but aren't shown. */
@@ -27,16 +25,14 @@ export type CommandPaletteItem = {
 	target?: string
 	/** Anchor rel. Only meaningful with `href`. */
 	rel?: string
-	/** Action callback. Takes precedence over `href` when both are present. */
-	onSelect?: () => void
-	/** Render the row but make it non-interactive. */
-	disabled?: boolean
 }
 
+/** What `onAction`, `beforeActionCallback` and an item's `onClick` receive; `item` is the palette item. */
+export type CommandPaletteActionDetail = ActionEventDetail<CommandPaletteContext> & {item: CommandPaletteItem}
+
 /**
- * Custom filter/rank hook. Receives the full item list and the trimmed query,
- * returns the items to show in result order. Overrides the built-in fuzzy
- * scorer entirely — the escape hatch for app-specific search (server-side,
- * scopes, weighting, etc.).
+ * Custom filter/rank hook (`filterCallback`). Receives the full item list and the trimmed
+ * search term, returns the items to show in result order. Overrides the built-in fuzzy
+ * scorer entirely — the escape hatch for app-specific search.
  */
-export type CommandPaletteFilter = (items: CommandPaletteItem[], query: string) => CommandPaletteItem[]
+export type CommandPaletteFilter = (ctx: {items: CommandPaletteItem[]; term: string}) => CommandPaletteItem[]

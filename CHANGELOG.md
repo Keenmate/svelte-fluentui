@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **CommandPalette:** `onselect(item)` → `onAction(detail)` + `beforeActionCallback(detail)` (can veto navigation rows too); `detail.term` is the search text
+- **CommandPalette items:** `CommandPaletteItem` `{title, disabled, onSelect()}` → action item `{text, isDisabled, onClick(detail), …}` (+ `meta`, `badge`, `group`, `keywords`, `href`)
+- **CommandPalette:** `filter(items, query)` → `filterCallback({items, term})`
 - **Dialog:** `primaryAction` / `secondaryAction`: `{label, disabled, onClick() → false keeps open}` → action items: `{text, icon, isDisabled, onClick(detail), appearance, shouldCloseOnClick}` + `onAction` / `beforeActionCallback` on Dialog
 - **MenuButton, ContextMenu:** per-item `onclick()` only → item `onClick(detail)` + component `onAction(detail)` + `beforeActionCallback(detail)` (`false` cancels)
 - **MenuButton, ContextMenu items:** `MenuButtonItem` `{label, icon, disabled, visible, danger, dividerBefore, onclick(), children, expandable, defaultExpanded}` → `MenuEntry` `{text, icon, isDisabled, isVisible, isDanger, onClick(detail), children, isExpandable, isExpanded}`; dividers are their own `{divider: true}` entries; `MenuButtonItem` type removed
@@ -163,6 +166,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   three-state cycle) removed the `checked` attribute, but FAST's `checked` property stayed `true`,
   so the box kept its tick while the value was `false`. The `checked` / `indeterminate` properties
   are now kept in sync.
+- **CommandPalette — opening via `bind:open` focuses the search input.** Only the keyboard
+  shortcut path focused it and cleared the previous query; a palette opened from your own trigger
+  (`bind:open`) did neither.
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 

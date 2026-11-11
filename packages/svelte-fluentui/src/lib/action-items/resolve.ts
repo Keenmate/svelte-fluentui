@@ -1,5 +1,5 @@
 import type {
-	ActionEventDetail,
+	ActionInvocation,
 	ActionItem,
 	MenuDivider,
 	MenuEntry,
@@ -140,17 +140,17 @@ function busyKey(item: object): unknown {
 	return typeof id === "string" && id !== "" ? `id:${id}` : item
 }
 
-export type RunActionOptions<Ctx, A extends string> = {
+export type RunActionOptions<D extends ActionInvocation<any, any>> = {
 	/** The surface context plus the invocation fields. */
-	detail: ActionEventDetail<Ctx, A>
+	detail: D
 	/** Any object identifying the component instance — scopes the busy state. */
 	host: object
 	/** `false` (or a Promise resolving to `false`) cancels everything; a throw cancels and is logged. */
-	beforeActionCallback?: ((detail: ActionEventDetail<Ctx, A>) => unknown) | null
+	beforeActionCallback?: ((detail: D) => unknown) | null
 	/** The built-in behaviour for `detail.action`, if any. */
-	runBuiltIn?(detail: ActionEventDetail<Ctx, A>): void | Promise<void>
+	runBuiltIn?(detail: D): void | Promise<void>
 	/** Fire the component's `onAction` (after the built-in). */
-	emitAction?(detail: ActionEventDetail<Ctx, A>): void
+	emitAction?(detail: D): void
 }
 
 /**
@@ -160,10 +160,10 @@ export type RunActionOptions<Ctx, A extends string> = {
  * event still fires. The item is busy while it runs (a second activation is ignored,
  * the trigger gets `aria-busy`). Resolves `false` when cancelled, disabled or busy.
  */
-export async function runAction<Ctx, A extends string>(opts: RunActionOptions<Ctx, A>): Promise<boolean> {
+export async function runAction<D extends ActionInvocation<any, any>>(opts: RunActionOptions<D>): Promise<boolean> {
 	const {detail, host} = opts
-	const item = detail.item as ActionItem<Ctx, A>
-	const disabled = call(item.getIsDisabledCallback, detail as unknown as Ctx, "getIsDisabledCallback") ?? item.isDisabled
+	const item = detail.item as ActionItem<any, any>
+	const disabled = call(item.getIsDisabledCallback, detail, "getIsDisabledCallback") ?? item.isDisabled
 	if (disabled === true) return false
 
 	let running = busy.get(host)
