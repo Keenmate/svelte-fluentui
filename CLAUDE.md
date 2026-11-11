@@ -21,30 +21,34 @@ This is a Svelte wrapper library for FluentUI web components (version 2.6.x). Th
 ## Architecture
 
 ### Library Structure
-- `src/lib/` - Main library code that gets packaged
-- `src/lib/components/` - Svelte component wrappers for FluentUI web components
-- `src/lib/components/index.ts` - Main component exports
-- `src/routes/` - Demo/showcase pages for development and testing
+Monorepo: the library lives in `packages/svelte-fluentui/`, the docs/demo site in `docs/` (its `svelte.config.js` aliases `svelte-fluentui` to the library source, so `make dev` serves source), Playwright specs in `e2e/` (fixtures under `docs/src/routes/test/`).
+
+- `packages/svelte-fluentui/src/lib/` - Main library code that gets packaged
+- `packages/svelte-fluentui/src/lib/components/` - Svelte components (custom and FluentUI wrappers)
+- `packages/svelte-fluentui/src/lib/components/index.ts` - Main component exports
+- `packages/svelte-fluentui/src/lib/action-items/` - Shared ActionItem model (menus, toolbars, dialog/palette actions)
+- `packages/svelte-fluentui/src/lib/helpers/` - Shared helpers (`layer-stack.ts` Escape routing, `attrs.ts`, `locale.ts`, `date.ts`)
+- `docs/src/routes/` - Demo/showcase pages for development and testing
 
 ### Component Organization
 - Individual components: Button, Checkbox, TextField, etc.
-- Layout components: `src/lib/components/layout/` (Stack, Layout, Header, Footer, Grid, GridItem, MultiSplitter, etc.)
-- Navigation components: `src/lib/components/nav/` (AppBar, NavMenu, NavItem, etc.)
+- Layout components: `packages/svelte-fluentui/src/lib/components/layout/` (Stack, Layout, Header, Footer, Grid, GridItem, MultiSplitter, etc.)
+- Navigation components: `packages/svelte-fluentui/src/lib/components/nav/` (AppBar, NavMenu, NavItem, etc.)
 - Data components: QuickGrid (custom grid with sorting, filtering, pagination)
-- Icons: `src/lib/components/icons/`
-- FluentUI utilities: `src/lib/fluent-ui/` (calendar utilities, constants, setup)
+- Icons: `packages/svelte-fluentui/src/lib/components/icons/`
+- FluentUI utilities: `packages/svelte-fluentui/src/lib/fluent-ui/` (calendar utilities, constants, setup)
 
 ### Styling
 - Uses SCSS for component-specific styling
 - Tailwind CSS for utility classes
 - FluentUI web component styles imported via `@fluentui/web-components`
-- Main styles: `src/lib/main.scss`
-- Component styles: `src/assets/styles/components.scss`
-- FluentUI-specific styles: `src/assets/styles/fluent-ui/`
+- Main styles: `packages/svelte-fluentui/src/lib/main.scss`
+- Component styles: `packages/svelte-fluentui/src/lib/assets/styles/components.scss`
+- FluentUI-specific styles: `packages/svelte-fluentui/src/lib/assets/styles/fluent-ui/`
 
 ### Key Files
-- `src/lib/index.ts` - Main library entry point (exports from components/index.js)
-- `src/lib/components/index.ts` - All component exports
+- `packages/svelte-fluentui/src/lib/index.ts` - Main library entry point (exports from components/index.js)
+- `packages/svelte-fluentui/src/lib/components/index.ts` - All component exports
 - Package exports to `dist/` directory for publishing
 
 ## Dependencies
@@ -60,7 +64,7 @@ This is a Svelte wrapper library for FluentUI web components (version 2.6.x). Th
 
 - This project wraps FluentUI web components rather than reimplementing them
 - **IMPORTANT**: Do NOT use WebFetch to access fluentui-blazor.net - it always fails. The user will provide screenshots of the Blazor documentation pages instead.
-- Demo pages in `src/routes/components/` show component usage
+- Demo pages in `docs/src/routes/components/` show component usage
 - Library components should follow existing naming and export patterns
 - TypeScript checking is required before commits
 - Components are exported both individually and through index files
@@ -72,13 +76,13 @@ This project contains two types of components:
 #### Custom Implementations (No FluentUI wrapper)
 These are built from scratch using Svelte, styled with FluentUI design tokens:
 
-- **Accordion** - Custom stack of collapsible panels (NOT a `<fluent-accordion>` wrapper). Owns layout, spacing, and animation: `value` (single id or array), `multi`, `togglePosition` (start/end chevron side), `gap`, `onchange`, plus roving-focus keyboard nav. Provides an `AccordionSvelteContext` via the `fluent-accordion` context.
+- **Accordion** - Custom stack of collapsible panels (NOT a `<fluent-accordion>` wrapper). Owns layout, spacing, and animation: `value` (single id or array), `multiple`, `togglePosition` (start/end chevron side), `gap`, `onChange`, plus roving-focus keyboard nav. Provides an `AccordionSvelteContext` via the `fluent-accordion` context.
 - **AccordionItem** - A single collapsible panel (NOT a `<fluent-accordion-item>` wrapper). Plain themed CSS-grid heading `[start | button | end | icon]` + an animated `grid-template-rows` 0fr→1fr region that is `inert` while collapsed. Props: `id` (required), `header`, `headingLevel`, `expanded`, `disabled`; snippets `heading`/`start`/`end`/`icon` (receives `isExpanded`)/`children`.
 - **QuickGrid** - Advanced data grid with sorting, filtering, and pagination (inspired by ASP.NET QuickGrid)
 - **Card** - Content container with FluentUI styling
 - **Badge** - Small status/count indicator; a themed `<span>` (NOT a `<fluent-badge>` wrapper). Supports `color`/`fill` (token-based via `--badge-fill-*`/`--badge-color-*`), `appearance` (accent/lightweight/neutral/outline/tint), `size` (extra-small–extra-large), `circular`, `pill`, `radius`, an `icon` snippet, and text truncation — `truncate` (end ellipsis) or `ellipsisStart` (start-side ellipsis for paths/hierarchies) with `maxWidth` + `title`.
 - **Label** - Lighter tag-style indicator (tinted fill + coloured border, medium weight); `outline` variant, six semantic colours (primary/secondary/success/warning/danger/info), extra-small–extra-large size scale, `icon` slot. Colours resolve from the shared `--fluent-color-<name>-*` palette (see fluent-blazor-compat.scss).
-- **CompositeBadge** - Three-section `[icon][label][button]` chip (notification pills, status + count, dismissible chips). Base `color` applies to all sections; `labelColor`/`buttonColor` override the middle/right sections independently. `onlabelclick`/`onbuttonclick` handlers, default `×` button glyph.
+- **CompositeBadge** - Three-section `[icon][label][button]` chip (notification pills, status + count, dismissible chips). Base `color` applies to all sections; `labelColor`/`buttonColor` override the middle/right sections independently. `onLabelClick`/`onButtonClick` events, default `×` button glyph.
 - **BadgeGroup** - Flex-wrap container that hides child badges past a per-instance `limit` (default 5), always keeping the last child visible for a "+N more" tail (hidden badges stay in the DOM); `showAll` reveals everything. Limit applied via an effect + `MutationObserver`.
 - **Toast** - Notification/toast component (uses fluent-anchor but custom layout)
 - **Calendar** - Date picker with custom FluentUI calendar implementation
@@ -87,11 +91,12 @@ These are built from scratch using Svelte, styled with FluentUI design tokens:
 - **InputFile** - File upload with drag-drop, validation, and progress tracking (inspired by FluentUI Blazor)
 - **Autocomplete** - Multiple selection with tag/chip display, custom filtering, and initial options support for showing popular items before async search (inspired by FluentUI Blazor)
 - **Select** - Custom single/multi select; trigger + portalled listbox (via PositioningRegion) that escapes ancestor `overflow` clipping and caps height to the viewport. Renders `<Option>` children via the `selected-options` context.
-- **Combobox** - Custom single- or multi-select combobox: editable filtering input + portalled listbox (via PositioningRegion), same clipping/height fix as Select. Supports `autocomplete` modes (list/inline/both/none, diacritic-insensitive), `minSearchLength`, `onsearch` (server-side) / `filter` (custom matcher) callbacks, and `<Option>` children or an `options` array. `multiple` renders selected values as removable chips inside the control while the input stays a filter (`keepOpen`, default true, keeps the dropdown open after each pick; Backspace on an empty filter removes the last chip); `value`/`onchange` carry the full array in both modes.
+- **Combobox** - Custom single- or multi-select combobox: editable filtering input + portalled listbox (via PositioningRegion), same clipping/height fix as Select. Supports `autocomplete` modes (list/inline/both/none, diacritic-insensitive), `minSearchLength`, `onSearch` (server-side search event) / `filterCallback` (custom matcher), and `<Option>` children or an `options` array. `multiple` renders selected values as removable chips inside the control while the input stays a filter (`keepOpen`, default true, keeps the dropdown open after each pick; Backspace on an empty filter removes the last chip); `value`/`onChange` carry the full array in multiple mode.
 - **Option** - A single listbox row rendered as a plain themed `<div role="option">` (no longer wraps `<fluent-option>` — dropped for performance, since the custom element's shadow-DOM upgrade blocked the main thread on open). Consumed by Select/Combobox via the `selected-options` context. Parents read `data-value`/`data-option-label`/`data-option-context` and set `data-highlighted`/`data-filtered-out`/`disabled`; the component owns all row styling.
 - **OptionGroup** - A `role="group"` section header + its `<Option>` rows for grouped listboxes. Used directly in Select/Combobox children (`<OptionGroup label="…">`), or generated automatically by Combobox from the `group` field on `options` array items. Navigation/filtering only walk `.fluent-option`, so headers are skipped; Combobox hides an empty group via a `:has()` rule.
 - **Paginator** - Pagination control with custom logic
-- **Tab/Tabs** - Custom tabbed interface (NOT a `<fluent-tab>` wrapper — the Svelte rewrite renders plain `<button role="tab">` + `role="tabpanel"` divs). `Tab` renders no DOM of its own; it registers its props (label/icon/header/content snippets, `disabled`, `showClose`, `labelEditable`, `data`, `canLeave`, etc.) with the parent via the `fluent-tabs-context`, and `Tabs` reads the registered entries and renders the real tablist + panels. `Tabs` owns `activeId` (bindable), keyboard nav, the animated active indicator, swipe-to-navigate, and three `responsive` overflow modes (scroll / wrap / menu — menu measures via an off-screen shadow tablist). A tab can veto being navigated away from via its `canLeave?: () => boolean | Promise<boolean>` guard (for unsaved-data prompts): `Tabs` calls the *active* tab's `canLeave` before every interaction-driven switch (click/keyboard/swipe/overflow) and cancels if it resolves falsy — external `activeId` assignment bypasses it by design. A separate `canClose?: () => boolean | Promise<boolean>` guard vetoes the close (×) button before `oncloseclick` fires (leaving keeps the tab; closing destroys it) — it guards the tab *being closed*, not the active one. Both guards may be async. The only FluentUI web components involved are the menu-mode overflow popover (`<fluent-menu>`). `TabPanel` (below) wraps `<fluent-tab-panel>` but is a separate standalone export not used by Tab/Tabs.
+- **Tooltip** - Custom floating hint (NOT a `<fluent-tooltip>` wrapper), positioned with floating-ui; `position` is `top | bottom | start | end` (start/end follow the anchor's text direction).
+- **Tab/Tabs** - Custom tabbed interface (NOT a `<fluent-tab>` wrapper — the Svelte rewrite renders plain `<button role="tab">` + `role="tabpanel"` divs). `Tab` renders no DOM of its own; it registers its props (label/icon/header/content snippets, `disabled`, `showClose`, `labelEditable`, `data`, `beforeLeaveCallback`, etc.) with the parent via the `fluent-tabs-context`, and `Tabs` reads the registered entries and renders the real tablist + panels. `Tabs` owns `activeId` (bindable, `onActiveIdChange`), keyboard nav, the animated active indicator, swipe-to-navigate, and three `responsive` overflow modes (scroll / wrap / menu — menu measures via an off-screen shadow tablist). A tab can veto being navigated away from via its `beforeLeaveCallback` (for unsaved-data prompts): `Tabs` calls the *active* tab's callback before every interaction-driven switch (click/keyboard/swipe/overflow) and cancels if it returns/resolves `false` — external `activeId` assignment bypasses it by design. A separate `beforeCloseCallback` vetoes the close (×) button before `onTabClose` fires (leaving keeps the tab; closing destroys it) — it guards the tab *being closed*, not the active one. Both callbacks may be async. The only FluentUI web components involved are the menu-mode overflow popover (`<fluent-menu>`). `TabPanel` (below) wraps `<fluent-tab-panel>` but is a separate standalone export not used by Tab/Tabs.
 
 #### Layout Components (Custom implementations)
 Located in `src/lib/components/layout/`:
@@ -103,6 +108,7 @@ Located in `src/lib/components/layout/`:
 - **Footer** - Page footer section
 - **BodyContent** - Main content area
 - **Spacer** - Spacing utility
+- **Panel** - Slide-in side panel; `side` is `start | end` (default `end`), optional overlay, `pinned` mode
 - **MultiSplitter** - Resizable multi-panel splitter
 - **MultiSplitterPane** - Splitter panel
 
@@ -138,7 +144,6 @@ These wrap `<fluent-*>` web components from `@fluentui/web-components`:
 - **Textarea** → `<fluent-text-area>`
 - **TextField** → `<fluent-text-field>`
 - **Toolbar** → `<fluent-toolbar>`
-- **Tooltip** → `<fluent-tooltip>`
 
 **IMPORTANT for Wrapper Components:**
 - Only include properties that are actually supported by the underlying `<fluent-*>` component
@@ -148,7 +153,7 @@ These wrap `<fluent-*>` web components from `@fluentui/web-components`:
 ### Component Demo Pages
 
 All component demo pages follow a consistent structure:
-- Located in `src/routes/components/[component-name]/+page.svelte`
+- Located in `docs/src/routes/components/[component-name]/+page.svelte`
 - Use Stack, Grid, GridItem, and Card for layout
 - Include reference links to FluentUI Web Components Storybook and FluentUI Blazor docs
 - Show API documentation tables with properties, types, and descriptions
@@ -198,7 +203,7 @@ Variables are organized by their component/purpose:
 
 ### Property Names
 - Always use **camelCase** for property names
-- Examples: `horizontalAlign`, `autoUpdateMode`, `topCTAType`, `verticalAlign`
+- Examples: `horizontalAlign`, `topCTAType`, `verticalAlign`
 - ❌ Never use: `snake_case`, `PascalCase`, or `kebab-case` for property names
 
 ### Property Values
@@ -216,7 +221,7 @@ Variables are organized by their component/purpose:
 ```svelte
 <Stack orientation="vertical" gap="1rem" />
 <Grid justify="flex-start" spacing={3} />
-<Tooltip position="top" autoUpdateMode="auto" />
+<Tooltip position="top" />
 <Badge appearance="accent" />
 <Toast topCTAType="timestamp" />
 ```
@@ -225,7 +230,7 @@ Variables are organized by their component/purpose:
 ```svelte
 <Stack orientation="Vertical" gap="1rem" />
 <Grid justify="FlexStart" spacing={3} />
-<Tooltip position="Top" autoUpdateMode="Auto" />
+<Tooltip position="Top" />
 <Badge appearance="Accent" />
 <Toast topCTAType="Timestamp" />
 ```
