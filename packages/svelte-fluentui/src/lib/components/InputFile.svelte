@@ -33,6 +33,7 @@
 	import {untrack} from "svelte"
 	import {computePosition, flip, shift, offset, size, autoUpdate} from "@floating-ui/dom"
 	import {portal} from "../actions/portal.js"
+	import {pushLayer} from "../helpers/layer-stack.js"
 	import Button from "./Button.svelte"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 	import InputFileSelectorCard from "./InputFileSelectorCard.svelte"
@@ -510,14 +511,12 @@
 			if (popoverEl && path.includes(popoverEl)) return
 			popoverOpen = false
 		}
-		const escHandler = (e: KeyboardEvent) => {
-			if (e.key === "Escape") popoverOpen = false
-		}
 		document.addEventListener("click", handler)
-		document.addEventListener("keydown", escHandler)
+		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
+		const popLayer = pushLayer({onEscape: () => { popoverOpen = false }})
 		return () => {
 			document.removeEventListener("click", handler)
-			document.removeEventListener("keydown", escHandler)
+			popLayer()
 		}
 	})
 
