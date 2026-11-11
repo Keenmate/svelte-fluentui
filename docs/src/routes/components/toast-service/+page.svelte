@@ -108,19 +108,19 @@
 		},
 		{
 			name: "topAction",
-			type: "string",
+			type: "string | ActionItem",
 			default: "undefined",
 			description: "Label for the top action link (used when topCTAType is \"action\")"
 		},
 		{
 			name: "primaryAction",
-			type: "string",
+			type: "string | ActionItem",
 			default: "undefined",
 			description: "Label for the primary action link shown in the footer area"
 		},
 		{
 			name: "secondaryAction",
-			type: "string",
+			type: "string | ActionItem",
 			default: "undefined",
 			description: "Label for the secondary action link shown in the footer area"
 		}
@@ -134,22 +134,16 @@
 			description: "Called when the dismiss button is clicked (topCTAType=\"dismiss\")"
 		},
 		{
-			name: "ontopactionclick",
-			type: "() => void",
+			name: "onAction",
+			type: "(detail: {action, id, item, source, sourceEvent}) => void",
 			default: "undefined",
-			description: "Called when the top action link is clicked (topCTAType=\"action\")"
+			description: "Fires after any action link ran; id is the item's id or top / primary / secondary for plain-text actions"
 		},
 		{
-			name: "onprimaryactionclick",
-			type: "() => void",
+			name: "beforeActionCallback",
+			type: "(detail) => unknown",
 			default: "undefined",
-			description: "Called when the primary action link is clicked"
-		},
-		{
-			name: "onsecondaryactionclick",
-			type: "() => void",
-			default: "undefined",
-			description: "Called when the secondary action link is clicked"
+			description: "Called before an action link runs; return false (or resolve to false) to cancel"
 		}
 	]
 

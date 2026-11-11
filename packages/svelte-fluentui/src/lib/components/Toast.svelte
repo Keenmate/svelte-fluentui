@@ -3,25 +3,36 @@
 	import {registerFluentElements} from "../fluent-ui/register.js"
 
 	registerFluentElements(fluentAnchor())
+
+	import type {ActionEventDetail, ActionItem} from "../action-items/index.js"
+
+	/** A toast link: plain text (its `id` is the slot: `top`, `primary`, `secondary`) or an action item. */
+	export type ToastAction = string | ActionItem<object>
+	export type ToastActionDetail = ActionEventDetail<object>
 </script>
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import DismissIcon from "./icons/DismissIcon.svelte"
+	import {resolveActionItem, runAction} from "../action-items/index.js"
 
 	type Props = {
 		id?: string
 		title?: string
 		timestamp?: Date
 		topCTAType?: 'dismiss' | 'timestamp' | 'action'
-		topAction?: string
-		primaryAction?: string
-		secondaryAction?: string
+		/** Link in the header (with `topCTAType="action"`). */
+		topAction?: ToastAction
+		/** First link in the footer. */
+		primaryAction?: ToastAction
+		/** Second link in the footer. */
+		secondaryAction?: ToastAction
 		/** Fires when the user dismisses the toast. */
 		onDismiss?: (ctx: {sourceEvent: MouseEvent}) => void
-		ontopactionclick?: () => void
-		onprimaryactionclick?: () => void
-		onsecondaryactionclick?: () => void
+		/** Fires after an action link ran; `id` is the item's id, or `top` / `primary` / `secondary` for plain-text actions. */
+		onAction?: (detail: ToastActionDetail) => void
+		/** Called before an action link runs; return `false` (or a Promise resolving to `false`) to cancel. */
+		beforeActionCallback?: (detail: ToastActionDetail) => unknown
 		children?: Snippet
 	}
 
@@ -34,9 +45,8 @@
 		primaryAction,
 		secondaryAction,
 		onDismiss,
-		ontopactionclick,
-		onprimaryactionclick,
-		onsecondaryactionclick,
+		onAction,
+		beforeActionCallback,
 		children
 	}: Props = $props()
 
@@ -44,16 +54,31 @@
 		onDismiss?.({sourceEvent: event})
 	}
 
-	function handleTopActionClick() {
-		ontopactionclick?.()
+	function toItem(action: ToastAction | undefined, slot: string): ActionItem<object> | undefined {
+		if (action === undefined || action === "") return undefined
+		return typeof action === "string" ? {id: slot, text: action} : {id: slot, ...action}
 	}
 
-	function handlePrimaryActionClick() {
-		onprimaryactionclick?.()
-	}
+	const top = $derived(toItem(topAction, "top"))
+	const primary = $derived(toItem(primaryAction, "primary"))
+	const secondary = $derived(toItem(secondaryAction, "secondary"))
 
-	function handleSecondaryActionClick() {
-		onsecondaryactionclick?.()
+	const host = {}
+	async function runToastAction(item: ActionItem<object>, event: MouseEvent) {
+		event.preventDefault() // the links are href="#" for styling only
+		await runAction({
+			host,
+			detail: {
+				action: item.action ?? "custom",
+				id: item.id,
+				item,
+				source: "toast",
+				sourceEvent: event,
+				triggerElement: event.currentTarget as HTMLElement
+			},
+			beforeActionCallback,
+			emitAction: (detail) => onAction?.(detail)
+		})
 	}
 </script>
 
@@ -91,6 +116,24 @@
 	}
 </style>
 
+{#snippet actionLink(item: ActionItem<object>, cls: string)}
+	{@const r = resolveActionItem(item, {})}
+	{#if r.isVisible}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<fluent-anchor
+			href="#"
+			title={r.tooltip ?? r.text}
+			class={[cls, r.cssClass].filter(Boolean).join(" ")}
+			appearance="hypertext"
+			aria-disabled={r.isDisabled ? "true" : null}
+			onclick={(event: MouseEvent) => runToastAction(item, event)}
+		>
+			{r.text}
+		</fluent-anchor>
+	{/if}
+{/snippet}
+
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div class="fluent-toast fluent-toast--show" id={id} tabindex="0">
 	<div class="toast-header">
@@ -103,20 +146,8 @@
 				</button>
 			{:else if topCTAType === 'timestamp' && timestamp}
 				<span class="fluent-toast-small timestamp">{timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-			{:else if topCTAType === 'action' && topAction}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<fluent-anchor
-					href="#"
-					title={topAction}
-					class="toast-action-link"
-					appearance="hypertext"
-					onfocusin={() => {}}
-					onfocusout={() => {}}
-					onclick={handleTopActionClick}
-				>
-					{topAction}
-				</fluent-anchor>
+			{:else if topCTAType === 'action' && top}
+				{@render actionLink(top, "toast-action-link")}
 			{/if}
 		</div>
 	</div>
@@ -125,37 +156,13 @@
 		{@render children?.()}
 	{/if}
 
-	{#if primaryAction || secondaryAction}
+	{#if primary || secondary}
 		<div class="fluent-toast-actions">
-			{#if primaryAction}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<fluent-anchor
-					href="#"
-					title={primaryAction}
-					class="toast-action-link primary-action"
-					appearance="hypertext"
-					onfocusin={() => {}}
-					onfocusout={() => {}}
-					onclick={handlePrimaryActionClick}
-				>
-					{primaryAction}
-				</fluent-anchor>
+			{#if primary}
+				{@render actionLink(primary, "toast-action-link primary-action")}
 			{/if}
-			{#if secondaryAction}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<fluent-anchor
-					href="#"
-					title={secondaryAction}
-					class="toast-action-link"
-					appearance="hypertext"
-					onfocusin={() => {}}
-					onfocusout={() => {}}
-					onclick={handleSecondaryActionClick}
-				>
-					{secondaryAction}
-				</fluent-anchor>
+			{#if secondary}
+				{@render actionLink(secondary, "toast-action-link")}
 			{/if}
 		</div>
 	{/if}

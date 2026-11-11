@@ -4,17 +4,10 @@
 	let showToast = $state(false)
 	let toastId = "demo-toast"
 
-	function handleTopAction() {
-		console.log("Top action clicked")
-	}
-
-	function handlePrimaryAction() {
-		console.log("Primary action clicked")
-	}
-
-	function handleSecondaryAction() {
-		showToast = false
-		console.log("Secondary action clicked")
+	// One handler for every link: `id` is "top" / "primary" / "secondary" for plain-text actions.
+	function handleAction({id}: {id?: string}) {
+		if (id === "secondary") showToast = false
+		console.log(`${id} action clicked`)
 	}
 
 	type Property = {
@@ -29,16 +22,15 @@
 		{name: "title", type: "string", default: "undefined", description: "Main message or heading"},
 		{name: "timestamp", type: "Date", default: "undefined", description: 'Displayed if topCTAType is "Timestamp"'},
 		{name: "topCTAType", type: '"Dismiss" | "Timestamp" | "Action"', default: "undefined", description: "What to show on the top right"},
-		{name: "topAction", type: "string", default: "undefined", description: "Top right action text (if Action type)"},
-		{name: "primaryAction", type: "string", default: "undefined", description: "Primary button at bottom"},
-		{name: "secondaryAction", type: "string", default: "undefined", description: "Secondary button at bottom"}
+		{name: "topAction", type: "string | ActionItem", default: "undefined", description: "Top right action link (with topCTAType=\"action\"); a plain string gets id \"top\""},
+		{name: "primaryAction", type: "string | ActionItem", default: "undefined", description: "Primary link at the bottom; a plain string gets id \"primary\""},
+		{name: "secondaryAction", type: "string | ActionItem", default: "undefined", description: "Secondary link at the bottom; a plain string gets id \"secondary\""}
 	]
 
 	const callbacks: Property[] = [
 		{name: "onDismiss", type: "(ctx: {sourceEvent: MouseEvent}) => void", default: "undefined", description: "Fires when the user dismisses the toast"},
-		{name: "ontopactionclick", type: "() => void", default: "undefined", description: "Fired when top right action is clicked"},
-		{name: "onprimaryactionclick", type: "() => void", default: "undefined", description: "Fired when primary action is clicked"},
-		{name: "onsecondaryactionclick", type: "() => void", default: "undefined", description: "Fired when secondary action is clicked"}
+		{name: "onAction", type: "(detail: {action, id, item, source, sourceEvent}) => void", default: "undefined", description: "Fires after any action link ran; id tells which"},
+		{name: "beforeActionCallback", type: "(detail) => unknown", default: "undefined", description: "Called before an action link runs; return false (or resolve to false) to cancel"}
 	]
 
 	const slots: Property[] = [
@@ -100,9 +92,7 @@
 					topAction="Undo"
 					primaryAction="View Details"
 					secondaryAction="Dismiss"
-					ontopactionclick={handleTopAction}
-					onprimaryactionclick={handlePrimaryAction}
-					onsecondaryactionclick={handleSecondaryAction}
+					onAction={handleAction}
 				></Toast>
 			</div>
 		{/if}

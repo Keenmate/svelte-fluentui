@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Toast:** `ontopactionclick()`, `onprimaryactionclick()`, `onsecondaryactionclick()` → one `onAction(detail)` (`detail.id` says which) + `beforeActionCallback`
+- **Toast:** `topAction` / `primaryAction` / `secondaryAction`: string → `string` or an action item (a string gets `id` `top` / `primary` / `secondary`)
 - **CommandPalette:** `onselect(item)` → `onAction(detail)` + `beforeActionCallback(detail)` (can veto navigation rows too); `detail.term` is the search text
 - **CommandPalette items:** `CommandPaletteItem` `{title, disabled, onSelect()}` → action item `{text, isDisabled, onClick(detail), …}` (+ `meta`, `badge`, `group`, `keywords`, `href`)
 - **CommandPalette:** `filter(items, query)` → `filterCallback({items, term})`
@@ -169,6 +171,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **CommandPalette — opening via `bind:open` focuses the search input.** Only the keyboard
   shortcut path focused it and cleared the previous query; a palette opened from your own trigger
   (`bind:open`) did neither.
+- **Toast — action links no longer navigate to `#`.** They are `href="#"` for styling; clicking one
+  appended `#` to the URL (and scrolled to the top).
 
 ## [1.6.0-rc07] - 2026-08-14 [PUBLISHED]
 
