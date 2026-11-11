@@ -1694,6 +1694,14 @@
 		return [...lines.entries()].sort((a, b) => b[0] - a[0]).map(([, entries]) => entries)
 	})
 
+	// popupPosition is a physical side (decided from the space around the table);
+	// PositioningRegion takes logical start/end and flips them for RTL itself.
+	const toolbarRegionPosition = $derived.by(() => {
+		if (popupPosition === 'top') return 'top' as const
+		const rtl = !!hoveredRowElement && getComputedStyle(hoveredRowElement).direction === 'rtl'
+		return (popupPosition === 'left') !== rtl ? 'start' as const : 'end' as const
+	})
+
 	// Determine popup position based on available space
 	// Priority: 1. left, 2. right, 3. top
 	$effect(() => {
@@ -2012,7 +2020,7 @@
 <div bind:this={containerRef} class="quickgrid-container" {style} onfocusout={handleGridFocusOut}>
 	<!-- Row toolbar (uses fixed positioning to float outside container) -->
 	{#if resolvedShowToolbar && hoveredRowIndex !== null && hoveredRowElement}
-		<PositioningRegion anchor={hoveredRowElement} visible={true} position={popupPosition} align={toolbarAlign} matchWidth={false} style="width: auto;">
+		<PositioningRegion anchor={hoveredRowElement} visible={true} position={toolbarRegionPosition} align={toolbarAlign} matchWidth={false} style="width: auto;">
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				bind:this={popupElement}

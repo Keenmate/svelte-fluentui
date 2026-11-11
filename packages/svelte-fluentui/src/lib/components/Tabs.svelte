@@ -897,7 +897,7 @@
 			anchor={moreBtnRef}
 			visible={overflowOpen && overflowTabs.length > 0}
 			matchWidth={false}
-			position={isHorizontal ? "bottom" : "right"}
+			position={isHorizontal ? "bottom" : "end"}
 		>
 			<div class="fluent-tabs-overflow-menu context-menu">
 				<fluent-menu>

@@ -14,7 +14,7 @@
 		{name: "class", type: "string", default: '""', description: "CSS classes"},
 		{name: "delay", type: "number", default: "250", description: "Delay in milliseconds before showing tooltip after hover"},
 		{name: "maxWidth", type: "string", default: "undefined", description: "Maximum width for wrapping long content"},
-		{name: "position", type: '"top" | "bottom" | "left" | "right"', default: '"top"', description: "Position relative to anchor element"},
+		{name: "position", type: '"top" | "bottom" | "start" | "end"', default: '"top"', description: "Position relative to the anchor; start/end follow the anchor's text direction"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
 		{name: "visible", type: "boolean", default: "undefined", description: "Forces tooltip to be visible (default: shows on hover)"}
 	]
@@ -67,7 +67,7 @@
 			</Tooltip>
 
 			<span id="hover-target2" style="cursor: pointer; text-decoration: underline;">Hover me (right)</span>
-			<Tooltip anchor="hover-target2" position="right">
+			<Tooltip anchor="hover-target2" position="end">
 				{#snippet children()}
 					Tooltip on the right
 				{/snippet}
@@ -81,7 +81,7 @@
 			</Tooltip>
 
 			<span id="hover-target4" style="cursor: pointer; text-decoration: underline;">Hover me (left)</span>
-			<Tooltip anchor="hover-target4" position="left">
+			<Tooltip anchor="hover-target4" position="start">
 				{#snippet children()}
 					Tooltip on the left
 				{/snippet}
@@ -91,7 +91,7 @@
 		<h3>Always visible tooltip</h3>
 		<p>
 			<span id="always-visible">Always visible</span>
-			<Tooltip anchor="always-visible" position="right" visible={true}>
+			<Tooltip anchor="always-visible" position="end" visible={true}>
 				{#snippet children()}
 					This tooltip is always shown
 				{/snippet}

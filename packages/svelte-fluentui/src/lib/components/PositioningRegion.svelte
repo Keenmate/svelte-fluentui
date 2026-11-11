@@ -11,7 +11,8 @@
 		type Placement
 	} from "@floating-ui/dom"
 
-	type PositionType = "bottom" | "left" | "right" | "top"
+	/** Logical position: `start` / `end` follow the anchor's text direction. */
+	type PositionType = "bottom" | "top" | "start" | "end"
 	type AlignType = "center" | "top"
 
 	type Props = {
@@ -49,12 +50,15 @@
 		children = undefined
 	}: Props = $props()
 
+	const isRtl = $derived(!!anchor && typeof getComputedStyle !== "undefined" && getComputedStyle(anchor).direction === "rtl")
+	const physicalSide = $derived((positionProp === "start") !== isRtl ? "left" : "right")
+
 	const placement = $derived<Placement>(
 		positionProp === "bottom"
 			? "bottom-start"
 			: positionProp === "top"
 				? "top-start"
-				: positionProp === "left"
+				: physicalSide === "left"
 					? alignProp === "top"
 						? "left-end"
 						: "left"

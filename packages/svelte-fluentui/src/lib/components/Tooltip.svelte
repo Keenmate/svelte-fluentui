@@ -13,7 +13,9 @@
 		type Placement
 	} from "@floating-ui/dom"
 
-	type Position = "top" | "bottom" | "left" | "right"
+	/** Logical position: `start` / `end` follow the anchor's text direction. */
+	type Position = "top" | "bottom" | "start" | "end"
+	type PhysicalSide = "top" | "bottom" | "left" | "right"
 
 	type Props = {
 		class?: string
@@ -48,7 +50,13 @@
 	let arrowElement: HTMLDivElement | undefined = $state()
 	let isVisible = $state(false)
 	let isRendered = $state(false)
-	let actualPlacement = $state<Placement>(untrack(() => position) as Placement)
+	let actualPlacement = $state<Placement>("top")
+
+	function physicalPlacement(pos: Position, anchorEl: Element): Placement {
+		if (pos === "top" || pos === "bottom") return pos
+		const rtl = getComputedStyle(anchorEl).direction === "rtl"
+		return (pos === "start") !== rtl ? "left" : "right"
+	}
 	let referenceHidden = $state(false)
 	let showDelayTimer: ReturnType<typeof setTimeout> | null = null
 	let hideDelayTimer: ReturnType<typeof setTimeout> | null = null
@@ -75,7 +83,7 @@
 		}
 
 		const result = await computePosition(anchorEl, tooltipElement, {
-			placement: position as Placement,
+			placement: physicalPlacement(position, anchorEl),
 			strategy: "fixed",
 			middleware
 		})
@@ -87,8 +95,8 @@
 
 		const arrowData = result.middlewareData.arrow
 		if (arrowElement && arrowData) {
-			const side = result.placement.split("-")[0] as Position
-			const staticSideMap: Record<Position, string> = {
+			const side = result.placement.split("-")[0] as PhysicalSide
+			const staticSideMap: Record<PhysicalSide, string> = {
 				top: "bottom",
 				bottom: "top",
 				left: "right",

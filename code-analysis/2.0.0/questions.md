@@ -105,3 +105,11 @@ Fluent UI itself uses `error` (Fluent v9 `MessageBar intent`, `Field validationS
 Alert already uses `danger`; Toast (`variant: "error"` + `toast.error()`) and Field
 (`validationState: "error"`) don't. Not changed yet — which wins for 2.0: the rulebook (`danger`
 everywhere, `toast.danger()`?) or Fluent naming (`error`, and Alert moves back to `error`)?
+
+## Q12 — Panel `side`: keep `"left"` / `"right"`?
+
+Everything else that positions things now uses logical values (Tooltip, PositioningRegion,
+Select/Combobox, Toast, column `align`). Panel accepts both `"left" | "right"` (physical) and
+`"start" | "end"` (logical, flips with `dir="rtl"`), default `"right"`. Options: (a) keep both —
+physical sides are sometimes intended (e.g. a fixed settings drawer); (b) drop `left`/`right`, default
+`"end"`. Not changed yet.

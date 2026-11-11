@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Tooltip:** `position` `"left"` / `"right"` → `"start"` / `"end"` (follow the anchor's text direction)
+- **PositioningRegion:** `position` `"left"` / `"right"` → `"start"` / `"end"`
 - **Select, Combobox:** `position="above"` / `"below"` → `position="top"` / `"bottom"`
 - **Autocomplete, Combobox:** `tagsPosition="above"` / `"below"` → `tagsPosition="top"` / `"bottom"`
 - **InputFile:** `chipsPosition="below"` → `chipsPosition="bottom"` (default)
