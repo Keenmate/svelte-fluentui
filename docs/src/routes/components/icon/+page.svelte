@@ -15,7 +15,6 @@
 		{name: "variant", type: "'regular' | 'filled'", default: "'regular'", description: "Icon variant style"},
 		{name: "color", type: "'neutral' | 'accent' | 'warning' | 'info' | 'error' | 'success' | 'fill' | 'fill-inverse' | 'lightweight' | 'disabled' | 'custom'", default: "undefined", description: "Color enum mapping to FluentUI CSS variables"},
 		{name: "customColor", type: "string", default: "undefined", description: "Custom color value (hex, rgb, CSS variable). Only used when color=\"custom\""},
-		{name: "primaryFill", type: "string", default: "'currentColor'", description: "Legacy: Icon fill color. Use color instead"},
 		{name: "hoverEffect", type: "boolean", default: "false", description: "Switch to filled variant on hover"},
 		{name: "width", type: "string", default: "undefined", description: "Custom width (overrides size-based width)"},
 		{name: "title", type: "string", default: "undefined", description: "Accessible title for the icon"},
@@ -206,7 +205,7 @@ export default defineConfig({
 		</div>
 
 		<h3>Custom Color</h3>
-		<p>For custom colors, use <code>color="custom"</code> with <code>customColor</code>, or use the legacy <code>primaryFill</code> prop, or inherit via CSS <code>color</code>.</p>
+		<p>For custom colors, use <code>color="custom"</code> with <code>customColor</code>, or inherit via CSS <code>color</code>.</p>
 		<Stack orientation="horizontal" gap="1rem" style="align-items: center; flex-wrap: wrap;">
 			<Icon name="heart" size={32} variant="filled" color="custom" customColor="#e81123" />
 			<Icon name="checkmark_circle" size={32} variant="filled" color="custom" customColor="#107c10" />

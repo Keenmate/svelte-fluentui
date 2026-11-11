@@ -11,7 +11,6 @@
 		variant?: IconVariant
 		color?: IconColor
 		customColor?: string
-		primaryFill?: string  // Legacy prop, use color instead
 		hoverEffect?: boolean
 		class?: string
 		style?: string
@@ -40,7 +39,6 @@
 		variant = 'regular',
 		color = undefined,
 		customColor = undefined,
-		primaryFill = undefined,
 		hoverEffect = false,
 		class: className = '',
 		style: styleParam = '',
@@ -48,7 +46,7 @@
 		width = undefined
 	}: Props = $props()
 
-	// Resolve the fill color: color enum > customColor > primaryFill > currentColor
+	// Resolve the fill color: color enum > customColor > currentColor
 	let resolvedFill = $derived.by(() => {
 		if (color === 'custom' && customColor) {
 			return customColor
@@ -56,7 +54,7 @@
 		if (color && colorMap[color]) {
 			return colorMap[color]
 		}
-		return primaryFill || 'currentColor'
+		return 'currentColor'
 	})
 
 	let svgContent = $state<string>('')

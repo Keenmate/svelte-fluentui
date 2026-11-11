@@ -11,6 +11,9 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **exports:** `AnchorButton` (alias of `Anchor`) → removed — use `Anchor`
+- **Icon:** `primaryFill` → removed — use `color` / `customColor`
+- **Tabs:** `overflow`, `moreButtonId`, `styleMoreValues` (no effect since the rewrite) → removed — use `responsive="menu"`
 - **QuickGrid:** `ontoolbarclick(detail)` + deprecated `onrowaction(detail)` → one `onAction(detail)` (`source` is `row-toolbar` or `context-menu`; `action`, `id`, `row`, `rowIndex`, plus the cell for the menu) + `beforeActionCallback`
 - **QuickGrid:** `oncontextmenuopen(ctx)` → `onContextMenuOpen(ctx)`
 - **QuickGrid rowToolbar items:** `{id, icon, iconSnippet, title, label, row, group, type, danger, disabled(row, index), onclick({row, rowIndex})}` → action items `{id, action, icon (name or snippet), text, tooltip, isTextVisible, toolbarRow, isDanger, isDisabled / getIsDisabledCallback({row, rowIndex}), onClick(detail)}`; groups are `{divider: true}` entries

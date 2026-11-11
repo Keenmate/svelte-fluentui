@@ -74,10 +74,6 @@
 		activeId?: string
 		showActiveIndicator?: boolean
 		childContent?: Snippet
-		/** Legacy prop kept for API compat — the overflow dropdown was rarely used and is not re-implemented in the Svelte rewrite. Consumers who need an overflow menu should render their own dropdown next to `<Tabs>` or use `responsive="menu"`. */
-		overflow?: { label: string; onclick?: () => void }[]
-		moreButtonId?: string
-		styleMoreValues?: string
 		/**
 		 * How the tab list handles widths wider than the container.
 		 *  - `scroll` (default): tab strip scrolls horizontally (vertical: vertically). Scroll arrows appear at the ends when there's overflow.
@@ -117,9 +113,6 @@
 		activeId = $bindable(undefined),
 		showActiveIndicator = true,
 		childContent = undefined,
-		overflow = [],
-		moreButtonId: _moreButtonId = "more-button",
-		styleMoreValues: _styleMoreValues = "",
 		responsive = "scroll",
 		justify = false,
 		stripWidth = undefined,
@@ -705,16 +698,6 @@
 			document.removeEventListener("mousedown", onDocClick, true)
 			document.removeEventListener("keydown", onKey, true)
 			document.removeEventListener("scroll", onScroll, true)
-		}
-	})
-
-	// Warn once if legacy overflow prop is used — the feature was removed in the rewrite.
-	$effect(() => {
-		if (overflow.length > 0) {
-			console.warn(
-				"<Tabs overflow={...} /> is deprecated — the overflow dropdown was removed in the Svelte rewrite. " +
-				"Render your own dropdown next to <Tabs> if you need one."
-			)
 		}
 	})
 </script>
