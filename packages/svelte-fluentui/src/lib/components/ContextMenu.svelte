@@ -1,3 +1,11 @@
+<script lang="ts" module>
+	import type {ActionEventDetail} from "../action-items/index.js"
+
+	/** The surface context of a context menu: where it was opened. */
+	export type ContextMenuContext = {x: number; y: number}
+	export type ContextMenuActionDetail = ActionEventDetail<ContextMenuContext>
+</script>
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
@@ -5,11 +13,19 @@
 	import Icon from "./Icon.svelte"
 	import { portal } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
-	import type { MenuButtonItem } from "./MenuButton.svelte"
+	import {getMenuChildren, resolveMenuEntries, runAction, type MenuEntry, type MenuItem, type ResolvedMenuEntry} from "../action-items/index.js"
+
+	type Entry = MenuEntry<ContextMenuContext>
+	type Item = MenuItem<ContextMenuContext>
+	type Resolved = ResolvedMenuEntry<ContextMenuContext, string>
 
 	type Props = {
-		/** Menu items rendered when the children area is right-clicked. */
-		items: MenuButtonItem[]
+		/**
+		 * Menu entries: items (`{id, text, icon, isDisabled, isDanger, onClick, …}`), dividers
+		 * (`{divider: true}`), and items with `children` — a side submenu, or an inline
+		 * collapsible section with `isExpandable`.
+		 */
+		items: Entry[]
 		/** Suppress the context menu entirely. When true, right-clicks fall through to the browser's native menu as usual. */
 		disabled?: boolean
 		/**
@@ -28,6 +44,10 @@
 		children?: Snippet
 		/** Fires when the menu opens (with the pointer position) or closes. */
 		onOpenChange?: (ctx: {open: boolean; x?: number; y?: number}) => void
+		/** Fires after an item ran (its `onClick`, if any). */
+		onAction?: (detail: ContextMenuActionDetail) => void
+		/** Called before an item runs; return `false` (or a Promise resolving to `false`) to cancel. */
+		beforeActionCallback?: (detail: ContextMenuActionDetail) => unknown
 	}
 
 	let {
@@ -42,17 +62,21 @@
 		offsetMenuX = 8,
 		offsetMenuY = 0,
 		children = undefined,
-		onOpenChange = undefined
+		onOpenChange = undefined,
+		onAction = undefined,
+		beforeActionCallback = undefined
 	}: Props = $props()
 
 	let open = $state(false)
 	let menuEl: HTMLElement | undefined = $state()
 	let cursor = $state({ x: 0, y: 0 })
 
-	const visibleItems = $derived(items.filter(i => i.visible !== false))
+	const menuCtx = $derived<ContextMenuContext>({x: cursor.x, y: cursor.y})
+	const entries = $derived(resolveMenuEntries(items, menuCtx))
+	const host = {}
 
 	function onContextMenu(e: MouseEvent) {
-		if (disabled || visibleItems.length === 0) return
+		if (disabled || resolveMenuEntries(items, {x: e.clientX, y: e.clientY}).length === 0) return
 		e.preventDefault()
 		e.stopPropagation()
 		cursor = { x: e.clientX, y: e.clientY }
@@ -67,37 +91,45 @@
 		onOpenChange?.({open: false})
 	}
 
-	async function runItem(item: MenuButtonItem) {
-		if (item.disabled) return
-		closeMenu()
-		await item.onclick?.()
+	async function runItem(item: Item, action: string, event: MouseEvent) {
+		const detail: ContextMenuActionDetail = {
+			...menuCtx,
+			action,
+			id: item.id,
+			item,
+			source: "context-menu",
+			sourceEvent: event,
+			triggerElement: event.currentTarget as HTMLElement
+		}
+		if (item.shouldCloseOnClick !== false) closeMenu()
+		await runAction({host, detail, beforeActionCallback, emitAction: (d) => onAction?.(d)})
 	}
 
 	/*
-	 * Per-section expand state keyed by id (falls back to label). Sections
-	 * default to expanded unless `defaultExpanded: false` on the item. User
+	 * Per-section expand state keyed by id (falls back to text). Sections
+	 * default to expanded unless `isExpanded: false` on the item. User
 	 * toggles persist across opens/closes of the menu — that's usually what
 	 * people expect in sidebar-style menus.
 	 */
 	let expandedState = $state<Record<string, boolean>>({})
 
-	function itemKey(item: MenuButtonItem): string {
-		return item.id ?? item.label
+	function entryKey(entry: Resolved, index: number): string {
+		return entry.kind === "item" ? (entry.item.id ?? entry.resolved.text) : `divider-${index}`
 	}
 
-	function isExpanded(item: MenuButtonItem): boolean {
-		const key = itemKey(item)
+	function isExpanded(entry: Resolved & {kind: "item"}): boolean {
+		const key = entryKey(entry, 0)
 		if (expandedState[key] !== undefined) return expandedState[key]
-		return item.defaultExpanded !== false
+		return entry.item.isExpanded !== false
 	}
 
-	function toggleExpand(item: MenuButtonItem) {
-		const key = itemKey(item)
-		expandedState[key] = !isExpanded(item)
+	function toggleExpand(entry: Resolved & {kind: "item"}) {
+		const key = entryKey(entry, 0)
+		expandedState[key] = !isExpanded(entry)
 	}
 
 	/*
-	 * Submenu state. Items with `children` and without `expandable: true`
+	 * Submenu state. Items with `children` and without `isExpandable`
 	 * render as side-opening submenu triggers. Each open submenu is tracked
 	 * by the trigger item's key; the submenu body portals to <body> and
 	 * positions itself with Floating UI (placement: `right-start`, flips to
@@ -107,7 +139,7 @@
 	 * shut. Sibling submenus (same parent) auto-close when a new one opens.
 	 */
 	type SubmenuEntry = {
-		items: MenuButtonItem[]
+		entries: Resolved[]
 		triggerEl: HTMLElement
 		parentKey: string | null
 	}
@@ -141,17 +173,20 @@
 		}
 	}
 
-	function scheduleOpenSubmenu(item: MenuButtonItem, triggerEl: HTMLElement, parentKey: string | null) {
-		const key = itemKey(item)
+	function scheduleOpenSubmenu(entry: Resolved & {kind: "item"}, triggerEl: HTMLElement, parentKey: string | null) {
+		const key = entryKey(entry, 0)
 		cancelClose(key)
 		if (openSubmenus.has(key) || openTimers.has(key)) return
-		const t = window.setTimeout(() => {
+		const t = window.setTimeout(async () => {
+			openTimers.delete(key)
+			// `getChildrenCallback` may be async (lazy submenus).
+			const children = await getMenuChildren(entry.item, menuCtx)
+			if (!open) return
 			// Close sibling submenus (same parent) before opening this one.
 			for (const [k, v] of openSubmenus) {
 				if (v.parentKey === parentKey && k !== key) closeSubmenuTree(k)
 			}
-			openSubmenus.set(key, { items: item.children ?? [], triggerEl, parentKey })
-			openTimers.delete(key)
+			openSubmenus.set(key, { entries: resolveMenuEntries(children, menuCtx), triggerEl, parentKey })
 		}, HOVER_OPEN_DELAY) as unknown as number
 		openTimers.set(key, t)
 	}
@@ -362,88 +397,97 @@
 	{@render children?.()}
 </span>
 
-{#snippet renderItem(item: MenuButtonItem, depth: number, isFirst: boolean, parentKey: string | null)}
-	{#if item.visible !== false}
-		{#if item.dividerBefore && !isFirst}
-			<div class="fluent-context-menu-divider" role="separator"></div>
-		{/if}
-		{#if item.children && item.expandable}
-			<!-- Expandable section header — chevron rotates; children render
-			     inline below it when expanded. -->
-			<button
-				type="button"
-				class="fluent-context-menu-item fluent-context-menu-section-header"
-				class:expanded={isExpanded(item)}
-				style="padding-inline-start: {depth * 16 + 12}px;"
-				onclick={() => toggleExpand(item)}
-				aria-expanded={isExpanded(item)}
-			>
-				{#if item.icon}
-					<span class="fluent-context-menu-item-icon">
-						<Icon name={item.icon} size={16} />
-					</span>
-				{/if}
-				<span class="fluent-context-menu-item-label">{item.label}</span>
-				<svg class="fluent-context-menu-chevron" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
-					<path d="M3.3 5.7a1 1 0 0 1 1.4 0L8 9l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/>
-				</svg>
-			</button>
-			{#if isExpanded(item)}
-				{#each (item.children ?? []) as child, ci (itemKey(child))}
-					{@render renderItem(child, depth + 1, ci === 0, parentKey)}
-				{/each}
+{#snippet icon(r: Resolved & {kind: "item"})}
+	{#if r.resolved.icon}
+		<span class="fluent-context-menu-item-icon">
+			{#if typeof r.resolved.icon === "string"}
+				<Icon name={r.resolved.icon} size={16} />
+			{:else}
+				{@render r.resolved.icon()}
 			{/if}
-		{:else if item.children}
-			<!-- Submenu trigger — side-opening popover on hover/focus. -->
-			<!-- svelte-ignore a11y_mouse_events_have_key_events -->
-			<button
-				type="button"
-				class="fluent-context-menu-item fluent-context-menu-submenu-trigger"
-				class:active={openSubmenus.has(itemKey(item))}
-				style="padding-inline-start: {depth * 16 + 12}px;"
-				disabled={item.disabled || undefined}
-				aria-haspopup="menu"
-				aria-expanded={openSubmenus.has(itemKey(item))}
-				onmouseenter={(e) => scheduleOpenSubmenu(item, e.currentTarget, parentKey)}
-				onmouseleave={() => scheduleCloseSubmenu(itemKey(item))}
-				onfocus={(e) => scheduleOpenSubmenu(item, e.currentTarget, parentKey)}
-				onclick={(e) => scheduleOpenSubmenu(item, e.currentTarget, parentKey)}
-			>
-				{#if item.icon}
-					<span class="fluent-context-menu-item-icon">
-						<Icon name={item.icon} size={16} />
-					</span>
-				{/if}
-				<span class="fluent-context-menu-item-label">{item.label}</span>
-				<svg class="fluent-context-menu-submenu-arrow" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
-					<path d="M5.7 3.3a1 1 0 0 1 1.4 0l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 1 1-1.4-1.4L9 8 5.7 4.7a1 1 0 0 1 0-1.4z"/>
-				</svg>
-			</button>
-		{:else}
-			<!-- Leaf item -->
-			<button
-				type="button"
-				class="fluent-context-menu-item"
-				class:danger={item.danger}
-				style="padding-inline-start: {depth * 16 + 12}px;"
-				disabled={item.disabled || undefined}
-				onclick={() => runItem(item)}
-			>
-				{#if item.icon}
-					<span class="fluent-context-menu-item-icon">
-						<Icon name={item.icon} size={16} />
-					</span>
-				{/if}
-				<span class="fluent-context-menu-item-label">{item.label}</span>
-			</button>
-		{/if}
+		</span>
 	{/if}
 {/snippet}
 
-{#if open && visibleItems.length > 0}
+{#snippet renderEntry(entry: Resolved, index: number, depth: number, parentKey: string | null)}
+	{#if entry.kind === "divider"}
+		<div class="fluent-context-menu-divider" role="separator"></div>
+		{#if entry.text}
+			<div class="fluent-context-menu-group-label" style="padding-inline-start: {depth * 16 + 12}px;">{entry.text}</div>
+		{/if}
+	{:else if entry.hasChildren && entry.item.isExpandable}
+		<!-- Expandable section header — chevron rotates; children render
+		     inline below it when expanded. -->
+		<button
+			type="button"
+			class="fluent-context-menu-item fluent-context-menu-section-header {entry.resolved.cssClass}"
+			class:expanded={isExpanded(entry)}
+			style="padding-inline-start: {depth * 16 + 12}px;"
+			title={entry.resolved.tooltip || null}
+			disabled={entry.resolved.isDisabled || undefined}
+			onclick={() => toggleExpand(entry)}
+			aria-expanded={isExpanded(entry)}
+		>
+			{@render icon(entry)}
+			<span class="fluent-context-menu-item-label">{entry.resolved.text}</span>
+			<svg class="fluent-context-menu-chevron" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+				<path d="M3.3 5.7a1 1 0 0 1 1.4 0L8 9l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/>
+			</svg>
+		</button>
+		{#if isExpanded(entry)}
+			{#each resolveMenuEntries(entry.item.children ?? [], menuCtx) as child, ci (entryKey(child, ci))}
+				{@render renderEntry(child, ci, depth + 1, parentKey)}
+			{/each}
+		{/if}
+	{:else if entry.hasChildren}
+		<!-- Submenu trigger — side-opening popover on hover/focus. -->
+		<!-- svelte-ignore a11y_mouse_events_have_key_events -->
+		<button
+			type="button"
+			class="fluent-context-menu-item fluent-context-menu-submenu-trigger {entry.resolved.cssClass}"
+			class:active={openSubmenus.has(entryKey(entry, index))}
+			style="padding-inline-start: {depth * 16 + 12}px;"
+			title={entry.resolved.tooltip || null}
+			disabled={entry.resolved.isDisabled || undefined}
+			aria-haspopup="menu"
+			aria-expanded={openSubmenus.has(entryKey(entry, index))}
+			onmouseenter={(e) => scheduleOpenSubmenu(entry, e.currentTarget, parentKey)}
+			onmouseleave={() => scheduleCloseSubmenu(entryKey(entry, index))}
+			onfocus={(e) => scheduleOpenSubmenu(entry, e.currentTarget, parentKey)}
+			onclick={(e) => scheduleOpenSubmenu(entry, e.currentTarget, parentKey)}
+		>
+			{@render icon(entry)}
+			<span class="fluent-context-menu-item-label">{entry.resolved.text}</span>
+			<svg class="fluent-context-menu-submenu-arrow" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
+				<path d="M5.7 3.3a1 1 0 0 1 1.4 0l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 1 1-1.4-1.4L9 8 5.7 4.7a1 1 0 0 1 0-1.4z"/>
+			</svg>
+		</button>
+	{:else}
+		<!-- Leaf item -->
+		<button
+			type="button"
+			class="fluent-context-menu-item {entry.resolved.cssClass}"
+			class:danger={entry.resolved.isDanger}
+			style="padding-inline-start: {depth * 16 + 12}px;"
+			role={entry.resolved.isToggle ? "menuitemcheckbox" : "menuitem"}
+			aria-checked={entry.resolved.isToggle ? entry.resolved.isToggled : undefined}
+			title={entry.resolved.tooltip || null}
+			disabled={entry.resolved.isDisabled || undefined}
+			onclick={(event) => runItem(entry.item, entry.resolved.action, event)}
+		>
+			{@render icon(entry)}
+			<span class="fluent-context-menu-item-label">{entry.resolved.text}</span>
+			{#if entry.resolved.shortcut}
+				<span class="fluent-context-menu-shortcut">{entry.resolved.shortcut}</span>
+			{/if}
+		</button>
+	{/if}
+{/snippet}
+
+{#if open && entries.length > 0}
 	<div use:portal bind:this={menuEl} class="fluent-context-menu" role="menu">
-		{#each visibleItems as item, i (itemKey(item))}
-			{@render renderItem(item, 0, i === 0, null)}
+		{#each entries as entry, i (entryKey(entry, i))}
+			{@render renderEntry(entry, i, 0, null)}
 		{/each}
 	</div>
 {/if}
@@ -459,8 +503,8 @@
 		onmouseenter={() => cancelClose(key)}
 		onmouseleave={() => scheduleCloseSubmenu(key)}
 	>
-		{#each submenu.items as item, i (itemKey(item))}
-			{@render renderItem(item, 0, i === 0, key)}
+		{#each submenu.entries as entry, i (entryKey(entry, i))}
+			{@render renderEntry(entry, i, 0, key)}
 		{/each}
 	</div>
 {/each}
@@ -572,6 +616,21 @@
 		height: 1px;
 		background: var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
 		margin: 0.25rem 0;
+	}
+
+	.fluent-context-menu-group-label {
+		padding-block: 4px;
+		padding-inline-end: 12px;
+		color: var(--neutral-foreground-hint);
+		font-size: var(--type-ramp-minus-1-font-size);
+		font-weight: 600;
+	}
+
+	.fluent-context-menu-shortcut {
+		margin-inline-start: auto;
+		padding-inline-start: 16px;
+		color: var(--neutral-foreground-hint);
+		font-size: var(--type-ramp-minus-1-font-size);
 	}
 
 	.fluent-context-menu-item.danger {

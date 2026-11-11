@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **MenuButton, ContextMenu:** per-item `onclick()` only → item `onClick(detail)` + component `onAction(detail)` + `beforeActionCallback(detail)` (`false` cancels)
+- **MenuButton, ContextMenu items:** `MenuButtonItem` `{label, icon, disabled, visible, danger, dividerBefore, onclick(), children, expandable, defaultExpanded}` → `MenuEntry` `{text, icon, isDisabled, isVisible, isDanger, onClick(detail), children, isExpandable, isExpanded}`; dividers are their own `{divider: true}` entries; `MenuButtonItem` type removed
 - **Checkbox:** `withIntermediate`, `threeStateOrderUncheckToIntermediate`, `intermediateMessage` → `threeState`, `threeStateOrder` (`"checked-first"` or `"indeterminate-first"`), `indeterminateMessage`
 - **TimePicker:** `use24Hours`, `useAmPm` → `hourCycle` (`"h23"` or `"h12"`, Intl naming)
 - **AccordionItem:** `header` (string) + `heading` (snippet) → one `heading` that takes a string or a snippet
@@ -88,6 +90,11 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **Store types renamed: `Toast` → `ToastInstance`, `SiteSettings` → `SiteSettingsState`.** They were
   shadowed by the `Toast` / `SiteSettings` component exports and unreachable from the package root.
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
+
+### Added
+- **Action items** (`ActionItem`, `MenuItem`, `MenuDivider`, `MenuEntry`, `resolveMenuEntries`,
+  `runAction`, …) — one item model + `onAction` / `beforeActionCallback` for menus and toolbars
+  (port of web-components-core `/actions`). MenuButton and ContextMenu use it.
 
 ### Fixed
 - **Textarea — `bind:value` is two-way.** Typing never wrote back to the bound value (only

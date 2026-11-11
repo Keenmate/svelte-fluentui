@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {ContextMenu, Stack, Card, Grid, GridItem, QuickGrid, Slider} from "svelte-fluentui"
-	import type {MenuButtonItem} from "svelte-fluentui"
+	import type {MenuEntry} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
 	type Property = {
@@ -11,13 +11,15 @@
 	}
 
 	const properties: Property[] = [
-		{name: "items", type: "MenuButtonItem[]", default: "[]", description: "Menu entries rendered when the child area is right-clicked. Shares the same item shape as <MenuButton>"},
+		{name: "items", type: "MenuEntry[]", default: "[]", description: "Menu entries rendered when the child area is right-clicked: items, {divider: true} separators, and items with children (submenu, or an inline section with isExpandable). Same entry shape as <MenuButton>"},
 		{name: "disabled", type: "boolean", default: "false", description: "When true, right-clicks fall through to the browser's native context menu as usual"},
 		{name: "offsetMenuX", type: "number", default: "8", description: "Horizontal offset (pixels) pushing the menu further right of the cursor. Default 8px keeps the cursor off the first menu item after right-click"},
 		{name: "offsetMenuY", type: "number", default: "0", description: "Vertical offset (pixels) pushing the menu further below the cursor. Stacks on top of a small baseline gap"}
 	]
 
 	const callbacks: Property[] = [
+		{name: "onAction", type: "(detail: {x, y, action, id, item, source, sourceEvent}) => void", default: "undefined", description: "Fires after any item ran — one handler for the whole menu; x/y is where the menu opened"},
+		{name: "beforeActionCallback", type: "(detail) => unknown", default: "undefined", description: "Called before an item runs; return false (or resolve to false) to cancel"},
 		{name: "onOpenChange", type: "(ctx: {open: boolean; x?: number; y?: number}) => void", default: "undefined", description: "Fires when the menu opens (x/y = viewport-relative cursor position) or closes (click-outside, Escape, right-click elsewhere, or an item click)"}
 	]
 
@@ -43,77 +45,83 @@
 		lastAction = name
 	}
 
-	const fileItems: MenuButtonItem[] = [
-		{label: "Open", icon: "open", onclick: () => setAction("Open")},
-		{label: "Rename", icon: "rename", onclick: () => setAction("Rename")},
-		{label: "Duplicate", icon: "copy", onclick: () => setAction("Duplicate")},
-		{label: "Download", icon: "arrow_download", dividerBefore: true, onclick: () => setAction("Download")},
-		{label: "Share", icon: "share", onclick: () => setAction("Share")},
-		{label: "Delete", icon: "delete", danger: true, dividerBefore: true, onclick: () => setAction("Delete")}
+	const fileItems: MenuEntry[] = [
+		{text: "Open", icon: "open", onClick: () => setAction("Open")},
+		{text: "Rename", icon: "rename", onClick: () => setAction("Rename")},
+		{text: "Duplicate", icon: "copy", onClick: () => setAction("Duplicate")},
+		{divider: true},
+		{text: "Download", icon: "arrow_download", onClick: () => setAction("Download")},
+		{text: "Share", icon: "share", onClick: () => setAction("Share")},
+		{divider: true},
+		{text: "Delete", icon: "delete", isDanger: true, onClick: () => setAction("Delete")}
 	]
 
-	const conditionalItems = $derived<MenuButtonItem[]>([
-		{label: "Open", icon: "open", onclick: () => setAction("Open")},
-		{label: "Rename", icon: "rename", onclick: () => setAction("Rename")},
-		{label: "Delete", icon: "delete", danger: true, dividerBefore: true, disabled: blockDelete, onclick: () => setAction("Delete")}
+	const conditionalItems = $derived<MenuEntry[]>([
+		{text: "Open", icon: "open", onClick: () => setAction("Open")},
+		{text: "Rename", icon: "rename", onClick: () => setAction("Rename")},
+		{divider: true},
+		{text: "Delete", icon: "delete", isDanger: true, isDisabled: blockDelete, onClick: () => setAction("Delete")}
 	])
 
-	// Side-opening submenus — items with `children` (and no `expandable` flag)
+	// Side-opening submenus — items with `children` (and no `isExpandable` flag)
 	// render as submenu triggers that open a floating popover to the right.
-	const submenuItems: MenuButtonItem[] = [
-		{label: "New", icon: "add", children: [
-			{label: "Document", icon: "document", onclick: () => setAction("New / Document")},
-			{label: "Folder", icon: "folder", onclick: () => setAction("New / Folder")},
-			{label: "From template", icon: "document_copy", children: [
-				{label: "Meeting notes", onclick: () => setAction("New / Template / Meeting notes")},
-				{label: "Weekly report", onclick: () => setAction("New / Template / Weekly report")},
-				{label: "Empty", onclick: () => setAction("New / Template / Empty")}
+	const submenuItems: MenuEntry[] = [
+		{text: "New", icon: "add", children: [
+			{text: "Document", icon: "document", onClick: () => setAction("New / Document")},
+			{text: "Folder", icon: "folder", onClick: () => setAction("New / Folder")},
+			{text: "From template", icon: "document_copy", children: [
+				{text: "Meeting notes", onClick: () => setAction("New / Template / Meeting notes")},
+				{text: "Weekly report", onClick: () => setAction("New / Template / Weekly report")},
+				{text: "Empty", onClick: () => setAction("New / Template / Empty")}
 			]}
 		]},
-		{label: "Open", icon: "open", onclick: () => setAction("Open")},
-		{label: "Share", icon: "share", children: [
-			{label: "Copy link", icon: "link", onclick: () => setAction("Share / Copy link")},
-			{label: "Email", icon: "mail", onclick: () => setAction("Share / Email")},
-			{label: "Export", icon: "arrow_download", onclick: () => setAction("Share / Export")}
+		{text: "Open", icon: "open", onClick: () => setAction("Open")},
+		{text: "Share", icon: "share", children: [
+			{text: "Copy link", icon: "link", onClick: () => setAction("Share / Copy link")},
+			{text: "Email", icon: "mail", onClick: () => setAction("Share / Email")},
+			{text: "Export", icon: "arrow_download", onClick: () => setAction("Share / Export")}
 		]},
-		{label: "Delete", icon: "delete", danger: true, dividerBefore: true, onclick: () => setAction("Delete")}
+		{divider: true},
+		{text: "Delete", icon: "delete", isDanger: true, onClick: () => setAction("Delete")}
 	]
 
 	// Sidebar-style nested menu — two expandable sections ("Form & Inputs",
 	// "List") followed by ungrouped items with dividers.
-	const navItems: MenuButtonItem[] = [
+	const navItems: MenuEntry[] = [
 		{
 			id: "forms",
-			label: "Form & Inputs",
+			text: "Form & Inputs",
 			icon: "form",
-			expandable: true,
+			isExpandable: true,
 			children: [
-				{label: "Overview", icon: "form", onclick: () => setAction("Forms / Overview")},
-				{label: "Checkbox", icon: "checkbox_checked", onclick: () => setAction("Forms / Checkbox")},
-				{label: "Date & Time", icon: "calendar_ltr", onclick: () => setAction("Forms / Date & Time")},
-				{label: "InputFile", icon: "arrow_upload", onclick: () => setAction("Forms / InputFile")}
+				{text: "Overview", icon: "form", onClick: () => setAction("Forms / Overview")},
+				{text: "Checkbox", icon: "checkbox_checked", onClick: () => setAction("Forms / Checkbox")},
+				{text: "Date & Time", icon: "calendar_ltr", onClick: () => setAction("Forms / Date & Time")},
+				{text: "InputFile", icon: "arrow_upload", onClick: () => setAction("Forms / InputFile")}
 			]
 		},
 		{
 			id: "list",
-			label: "List",
+			text: "List",
 			icon: "list",
-			expandable: true,
+			isExpandable: true,
 			children: [
-				{label: "Autocomplete", icon: "edit", onclick: () => setAction("List / Autocomplete")},
-				{label: "Combobox", onclick: () => setAction("List / Combobox")},
-				{label: "Listbox", icon: "list", onclick: () => setAction("List / Listbox")},
-				{label: "Select", icon: "list", onclick: () => setAction("List / Select")},
-				{label: "Option", icon: "options", onclick: () => setAction("List / Option")}
+				{text: "Autocomplete", icon: "edit", onClick: () => setAction("List / Autocomplete")},
+				{text: "Combobox", onClick: () => setAction("List / Combobox")},
+				{text: "Listbox", icon: "list", onClick: () => setAction("List / Listbox")},
+				{text: "Select", icon: "list", onClick: () => setAction("List / Select")},
+				{text: "Option", icon: "options", onClick: () => setAction("List / Option")}
 			]
 		},
-		{label: "Number Field", icon: "number_symbol", dividerBefore: true, onclick: () => setAction("Number Field")},
-		{label: "Radio", icon: "radio_button", onclick: () => setAction("Radio")},
-		{label: "Radio Group", icon: "radio_button", onclick: () => setAction("Radio Group")},
-		{label: "Slider", icon: "options", dividerBefore: true, onclick: () => setAction("Slider")},
-		{label: "Switch", icon: "toggle_left", onclick: () => setAction("Switch")},
-		{label: "Text Area", icon: "document", onclick: () => setAction("Text Area")},
-		{label: "Text Field", icon: "text_t", onclick: () => setAction("Text Field")}
+		{divider: true},
+		{text: "Number Field", icon: "number_symbol", onClick: () => setAction("Number Field")},
+		{text: "Radio", icon: "radio_button", onClick: () => setAction("Radio")},
+		{text: "Radio Group", icon: "radio_button", onClick: () => setAction("Radio Group")},
+		{divider: true},
+		{text: "Slider", icon: "options", onClick: () => setAction("Slider")},
+		{text: "Switch", icon: "toggle_left", onClick: () => setAction("Switch")},
+		{text: "Text Area", icon: "document", onClick: () => setAction("Text Area")},
+		{text: "Text Field", icon: "text_t", onClick: () => setAction("Text Field")}
 	]
 
 	type ImageItem = {id: number; title: string; color: string}
@@ -124,12 +132,13 @@
 		{id: 4, title: "Desert", color: "#fdba74"}
 	])
 
-	function makeImageItems(img: ImageItem): MenuButtonItem[] {
+	function makeImageItems(img: ImageItem): MenuEntry[] {
 		return [
-			{label: `Preview "${img.title}"`, icon: "eye", onclick: () => setAction(`Preview ${img.title}`)},
-			{label: "Favorite", icon: "heart", onclick: () => setAction(`Favorite ${img.title}`)},
-			{label: "Share", icon: "share", onclick: () => setAction(`Share ${img.title}`)},
-			{label: "Delete", icon: "delete", danger: true, dividerBefore: true, onclick: () => {
+			{text: `Preview "${img.title}"`, icon: "eye", onClick: () => setAction(`Preview ${img.title}`)},
+			{text: "Favorite", icon: "heart", onClick: () => setAction(`Favorite ${img.title}`)},
+			{text: "Share", icon: "share", onClick: () => setAction(`Share ${img.title}`)},
+			{divider: true},
+			{text: "Delete", icon: "delete", isDanger: true, onClick: () => {
 				images = images.filter(i => i.id !== img.id)
 				setAction(`Deleted ${img.title}`)
 			}}
@@ -148,8 +157,8 @@
 
 	<p>
 		Right-click anywhere inside the wrapped children to open a floating menu at the
-		cursor. Shares the same <code>MenuButtonItem</code> shape as <code>&lt;MenuButton&gt;</code>
-		— icon, label, disabled, visible, danger, dividerBefore, onclick — and the same
+		cursor. Uses the same <code>MenuEntry</code> shape as <code>&lt;MenuButton&gt;</code>
+		— text, icon, isDisabled, isVisible, isDanger, onClick, divider entries — and the same
 		visual language as QuickGrid's built-in context menu.
 	</p>
 
@@ -193,7 +202,7 @@
 
 		<h3>Side-opening submenus</h3>
 		<p>
-			Pass <code>children</code> without <code>expandable</code> to render an
+			Pass <code>children</code> without <code>isExpandable</code> to render an
 			item as a submenu trigger — hover (or focus) opens a floating submenu
 			to the right. The submenu auto-flips to the left when there's no room on
 			the right and can be nested arbitrarily (the <em>New / From template</em>
@@ -212,7 +221,7 @@
 
 		<h3>Expandable sections</h3>
 		<p>
-			Pass <code>children</code> plus <code>expandable: true</code> on a menu item
+			Pass <code>children</code> plus <code>isExpandable: true</code> on a menu item
 			to render it as an inline section header. Clicking the chevron expands or
 			collapses the nested items in place — ideal for sidebar-style component
 			pickers or grouped action lists. Mix expandable sections with regular items

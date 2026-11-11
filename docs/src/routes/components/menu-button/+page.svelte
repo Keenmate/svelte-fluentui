@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {MenuButton, Stack, Card, Grid, GridItem, QuickGrid, Icon} from "svelte-fluentui"
-	import type {MenuButtonItem} from "svelte-fluentui"
+	import type {MenuEntry} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
 	type Property = {
@@ -11,7 +11,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "items", type: "MenuButtonItem[]", default: "[]", description: "Menu entries rendered as a dropdown when the button is clicked."},
+		{name: "items", type: "MenuEntry[]", default: "[]", description: "Menu entries rendered as a dropdown when the button is clicked: items and {divider: true} separators."},
 		{name: "appearance", type: "string", default: "undefined", description: "Passed through to <fluent-button>. Options: 'accent', 'lightweight', 'outline', 'stealth', 'neutral'."},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disables both the trigger button and opening the menu."},
 		{name: "class", type: "string", default: '""', description: "Extra class on the button element."},
@@ -21,17 +21,23 @@
 	]
 
 	const itemProps: Property[] = [
-		{name: "label", type: "string", default: "—", description: "Displayed text of the menu item."},
-		{name: "icon", type: "string", default: "undefined", description: "Fluent icon name (regular variant) rendered before the label."},
-		{name: "disabled", type: "boolean", default: "false", description: "Disables the item — the click is ignored and the item is rendered dimmed."},
-		{name: "visible", type: "boolean", default: "true", description: "When false, the item is skipped entirely (not rendered)."},
-		{name: "danger", type: "boolean", default: "false", description: "Paints the item in the destructive/error color. Useful for delete/remove actions."},
-		{name: "dividerBefore", type: "boolean", default: "false", description: "Renders a <fluent-divider> above this item. Ignored on the first item."},
-		{name: "onclick", type: "() => void | Promise<void>", default: "undefined", description: "Called when the item is clicked. The menu auto-closes after this resolves."}
+		{name: "id", type: "string", default: "undefined", description: "Identifies the item; reported back in onAction."},
+		{name: "text", type: "string", default: "—", description: "Displayed text of the menu item (or getTextCallback)."},
+		{name: "icon", type: "string | Snippet", default: "undefined", description: "Fluent icon name (regular variant) or a snippet, rendered before the text."},
+		{name: "isDisabled", type: "boolean", default: "false", description: "Disables the item — the click is ignored and the item is rendered dimmed (or getIsDisabledCallback)."},
+		{name: "isVisible", type: "boolean", default: "true", description: "When false, the item is skipped entirely (or getIsVisibleCallback)."},
+		{name: "isDanger", type: "boolean", default: "false", description: "Paints the item in the destructive color. Useful for delete/remove actions."},
+		{name: "isToggled", type: "boolean", default: "undefined", description: "Makes it a checkable item (menuitemcheckbox) showing this state."},
+		{name: "shortcut", type: "string", default: "undefined", description: "Key-chord hint shown at the end (display only)."},
+		{name: "shouldCloseOnClick", type: "boolean", default: "true", description: "Close the menu after the item runs."},
+		{name: "onClick", type: "(detail) => void | Promise<void>", default: "undefined", description: "Runs when the item is clicked (after beforeActionCallback). Awaited; the menu closes first."},
+		{name: "{divider: true, text?}", type: "MenuDivider", default: "—", description: "A separator entry; with text it is a group heading. Leading/trailing/double dividers are dropped."}
 	]
 
 	const callbacks: Property[] = [
-		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the menu opens or closes (click-outside, Escape, or an item click)."}
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the menu opens or closes (click-outside, Escape, or an item click)."},
+		{name: "onAction", type: "(detail: {action, id, item, source, sourceEvent}) => void", default: "undefined", description: "Fires after any item ran — one handler for the whole menu."},
+		{name: "beforeActionCallback", type: "(detail) => unknown", default: "undefined", description: "Called before an item runs; return false (or resolve to false) to cancel."}
 	]
 
 	const slots: Property[] = [
@@ -55,25 +61,28 @@
 		lastAction = name
 	}
 
-	const basicItems: MenuButtonItem[] = [
-		{label: "Edit", icon: "edit", onclick: () => setAction("Edit")},
-		{label: "Duplicate", icon: "copy", onclick: () => setAction("Duplicate")},
-		{label: "Share", icon: "share", onclick: () => setAction("Share")},
-		{label: "Delete", icon: "delete", danger: true, dividerBefore: true, onclick: () => setAction("Delete")}
+	const basicItems: MenuEntry[] = [
+		{text: "Edit", icon: "edit", onClick: () => setAction("Edit")},
+		{text: "Duplicate", icon: "copy", onClick: () => setAction("Duplicate")},
+		{text: "Share", icon: "share", onClick: () => setAction("Share")},
+		{divider: true},
+		{text: "Delete", icon: "delete", isDanger: true, onClick: () => setAction("Delete")}
 	]
 
-	const withDisabledItems: MenuButtonItem[] = [
-		{label: "Save", icon: "save", onclick: () => setAction("Save")},
-		{label: "Save As…", icon: "save_copy", disabled: true},
-		{label: "Export", icon: "arrow_download", onclick: () => setAction("Export")},
-		{label: "Archive (coming soon)", icon: "archive", disabled: true, dividerBefore: true}
+	const withDisabledItems: MenuEntry[] = [
+		{text: "Save", icon: "save", onClick: () => setAction("Save")},
+		{text: "Save As…", icon: "save_copy", isDisabled: true},
+		{text: "Export", icon: "arrow_download", onClick: () => setAction("Export")},
+		{divider: true},
+		{text: "Archive (coming soon)", icon: "archive", isDisabled: true}
 	]
 
 	let allowDelete = $state(false)
-	const conditionalItems = $derived<MenuButtonItem[]>([
-		{label: "View", icon: "eye", onclick: () => setAction("View")},
-		{label: "Download", icon: "arrow_download", onclick: () => setAction("Download")},
-		{label: "Delete", icon: "delete", danger: true, dividerBefore: true, visible: allowDelete, onclick: () => setAction("Delete")}
+	const conditionalItems = $derived<MenuEntry[]>([
+		{text: "View", icon: "eye", onClick: () => setAction("View")},
+		{text: "Download", icon: "arrow_download", onClick: () => setAction("Download")},
+		{divider: true},
+		{text: "Delete", icon: "delete", isDanger: true, isVisible: allowDelete, onClick: () => setAction("Delete")}
 	])
 
 	async function asyncAction() {
@@ -82,9 +91,9 @@
 		lastAction = "Finished async action"
 	}
 
-	const asyncItems: MenuButtonItem[] = [
-		{label: "Sync now", icon: "arrow_sync", onclick: asyncAction},
-		{label: "Publish", icon: "rocket", onclick: asyncAction}
+	const asyncItems: MenuEntry[] = [
+		{text: "Sync now", icon: "arrow_sync", onClick: asyncAction},
+		{text: "Publish", icon: "rocket", onClick: asyncAction}
 	]
 </script>
 
@@ -122,8 +131,8 @@
 		<h3>Basic usage</h3>
 		<p>
 			Pass an array of <code>items</code>. Click the button to open, click an
-			item to run its <code>onclick</code>; the menu auto-closes afterwards.
-			Use <code>danger</code> for destructive actions and <code>dividerBefore</code>
+			item to run its <code>onClick</code>; the menu auto-closes first.
+			Use <code>isDanger</code> for destructive actions and <code>{'{'}divider: true{'}'}</code> entries
 			to group them.
 		</p>
 		<div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
@@ -148,13 +157,13 @@
 		<h3>Disabled items</h3>
 		<p>
 			Individual items can be disabled — they render dimmed and their
-			<code>onclick</code> is ignored.
+			<code>onClick</code> is ignored.
 		</p>
 		<MenuButton items={withDisabledItems}>File</MenuButton>
 
 		<h3>Conditional visibility</h3>
 		<p>
-			Set <code>visible: false</code> on an item to omit it entirely — useful for
+			Set <code>isVisible: false</code> on an item to omit it entirely — useful for
 			permission-based menus. Toggle the checkbox below and reopen the menu to
 			see the Delete item appear.
 		</p>
@@ -170,7 +179,7 @@
 
 		<h3>Async item handler</h3>
 		<p>
-			<code>onclick</code> can return a promise. The menu closes immediately
+			<code>onClick</code> can return a promise. The menu closes immediately
 			but you can safely perform async work after.
 		</p>
 		<MenuButton items={asyncItems}>Run</MenuButton>
@@ -224,7 +233,7 @@
 	</Grid>
 
 	<Card>
-		<h2>MenuButtonItem</h2>
+		<h2>MenuEntry</h2>
 		<p>Shape of each entry in the <code>items</code> array.</p>
 		<QuickGrid items={itemProps} columns={propertyColumns} />
 	</Card>

@@ -5,37 +5,10 @@
 	registerFluentElements(fluentButton(), fluentMenu(), fluentMenuItem(), fluentDivider())
 
 	import type {Snippet} from "svelte"
+	import type {ActionEventDetail, MenuEntry} from "../action-items/index.js"
 
-	export type MenuButtonItem = {
-		/** Stable id used as an each-block key and to remember per-section expand state. Falls back to label when omitted. */
-		id?: string
-		/** Displayed text. */
-		label: string
-		/** Fluent icon name (regular variant) shown before the label. */
-		icon?: string
-		/** Disables the item. */
-		disabled?: boolean
-		/** When false, the item is skipped entirely. */
-		visible?: boolean
-		/** Paints the item in the destructive/error color. */
-		danger?: boolean
-		/** Render a divider above this item. */
-		dividerBefore?: boolean
-		/** Click handler — the menu closes automatically after `onclick` resolves. */
-		onclick?: () => void | Promise<void>
-		/**
-		 * Nested menu items. When present with `expandable: true`, the item renders
-		 * as an inline expandable section header (click the chevron to show/hide
-		 * the children in-place). When present without `expandable`, it renders
-		 * as a side-opening submenu trigger (planned — currently falls back to
-		 * expandable inline).
-		 */
-		children?: MenuButtonItem[]
-		/** When true + `children` present, renders an inline expandable section instead of a regular clickable item. */
-		expandable?: boolean
-		/** Initial expanded state for expandable sections. Default `true`. */
-		defaultExpanded?: boolean
-	}
+	/** MenuButton has no surface context of its own — `onAction` gets just the invocation fields. */
+	export type MenuButtonActionDetail = ActionEventDetail<object>
 </script>
 
 <script lang="ts">
@@ -44,10 +17,11 @@
 	import Icon from "./Icon.svelte"
 	import { portal } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
+	import { resolveMenuEntries, runAction } from "../action-items/index.js"
 
 	type Props = {
-		/** Menu items rendered as a dropdown when the button is clicked. */
-		items: MenuButtonItem[]
+		/** Menu entries: items (`{id, text, icon, isDisabled, isDanger, onClick, …}`) and dividers (`{divider: true}`). */
+		items: MenuEntry<object>[]
 		/** Button appearance (passed through to `<fluent-button>`). */
 		appearance?: string
 		/** Disables the trigger button entirely. */
@@ -71,6 +45,10 @@
 		end?: Snippet
 		/** Fires when the menu opens or closes. */
 		onOpenChange?: (ctx: {open: boolean}) => void
+		/** Fires after an item ran (its `onClick`, if any). */
+		onAction?: (detail: MenuButtonActionDetail) => void
+		/** Called before an item runs; return `false` (or a Promise resolving to `false`) to cancel. */
+		beforeActionCallback?: (detail: MenuButtonActionDetail) => unknown
 	}
 
 	let {
@@ -84,7 +62,9 @@
 		children = undefined,
 		start = undefined,
 		end = undefined,
-		onOpenChange = undefined
+		onOpenChange = undefined,
+		onAction = undefined,
+		beforeActionCallback = undefined
 	}: Props = $props()
 
 	/*
@@ -109,13 +89,18 @@
 		onOpenChange?.({open: false})
 	}
 
-	async function runItem(item: MenuButtonItem) {
-		if (item.disabled) return
-		closeMenu()
-		await item.onclick?.()
-	}
+	const host = {}
+	const entries = $derived(resolveMenuEntries(items, {}))
 
-	const visibleItems = $derived(items.filter(i => i.visible !== false))
+	async function runItem(item: MenuEntry<object> & {divider?: undefined}, action: string, event: MouseEvent) {
+		if (item.shouldCloseOnClick !== false) closeMenu()
+		await runAction({
+			host,
+			detail: {action, id: item.id, item, source: "menu", sourceEvent: event, triggerElement: event.currentTarget as HTMLElement},
+			beforeActionCallback,
+			emitAction: (detail) => onAction?.(detail)
+		})
+	}
 
 	/*
 	 * Floating UI positioning. `autoUpdate` re-runs `computePosition` on
@@ -209,32 +194,46 @@
 	</fluent-button>
 </span>
 
-{#if open && visibleItems.length > 0}
+{#if open && entries.length > 0}
 	<div
 		use:portal
 		bind:this={menuEl}
 		class="fluent-menu-button-menu context-menu"
 	>
 		<fluent-menu>
-			{#each visibleItems as item, i}
-				{#if item.dividerBefore && i > 0}
+			{#each entries as entry}
+				{#if entry.kind === "divider"}
 					<fluent-divider></fluent-divider>
-				{/if}
-				<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-				<fluent-menu-item
-					class={item.danger ? "danger" : ""}
-					role="menuitem"
-					tabindex="-1"
-					disabled={item.disabled || null}
-					onclick={() => runItem(item)}
-				>
-					{#if item.icon}
-						<span slot="start" class="fluent-menu-button-item-icon">
-							<Icon name={item.icon} size={16} />
-						</span>
+					{#if entry.text}
+						<div class="fluent-menu-button-group-label">{entry.text}</div>
 					{/if}
-					{item.label}
-				</fluent-menu-item>
+				{:else}
+					{@const r = entry.resolved}
+					<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+					<fluent-menu-item
+						class={[r.isDanger && "danger", r.cssClass].filter(Boolean).join(" ") || null}
+						role={r.isToggle ? "menuitemcheckbox" : "menuitem"}
+						aria-checked={r.isToggle ? String(r.isToggled) : null}
+						title={r.tooltip || null}
+						tabindex="-1"
+						disabled={r.isDisabled || null}
+						onclick={(event: MouseEvent) => runItem(entry.item, r.action, event)}
+					>
+						{#if r.icon}
+							<span slot="start" class="fluent-menu-button-item-icon">
+								{#if typeof r.icon === "string"}
+									<Icon name={r.icon} size={16} />
+								{:else}
+									{@render r.icon()}
+								{/if}
+							</span>
+						{/if}
+						{r.text}
+						{#if r.shortcut}
+							<span slot="end" class="fluent-menu-button-shortcut">{r.shortcut}</span>
+						{/if}
+					</fluent-menu-item>
+				{/if}
 			{/each}
 		</fluent-menu>
 	</div>
@@ -257,7 +256,19 @@
 	.fluent-menu-button-item-icon {
 		display: inline-flex;
 		align-items: center;
-		margin-right: 0.25rem;
+		margin-inline-end: 0.25rem;
+	}
+
+	.fluent-menu-button-shortcut {
+		color: var(--neutral-foreground-hint);
+		font-size: var(--type-ramp-minus-1-font-size);
+	}
+
+	.fluent-menu-button-group-label {
+		padding: 4px 12px;
+		color: var(--neutral-foreground-hint);
+		font-size: var(--type-ramp-minus-1-font-size);
+		font-weight: 600;
 	}
 
 	/*
