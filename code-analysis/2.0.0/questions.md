@@ -53,6 +53,9 @@ drop it from the script, or add a config?
 4 workers a random test occasionally misses its dropdown (passes on rerun, also flaky before my
 changes). Options: split the fixture into smaller routes, or run that file serially
 (`test.describe.configure({mode: "serial"})`). Not changed yet.
+Update: a different test fails each time and none reproduces alone (12/12 and 6/6 in isolation), which
+points at the dev server reloading pages under load rather than component bugs. Running the suite
+against `vite preview` (a build) instead of `npm run dev` would likely make it deterministic.
 
 ## Q7 — Pre-existing problems noticed (not fixed, outside Phase 1 scope)
 
