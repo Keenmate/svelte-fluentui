@@ -81,9 +81,9 @@ Order: popup layer (dismiss + Escape + floating + listbox nav) across Select, Co
 
 **Status 2026-11-11 (in progress):**
 - Events/callbacks per 05: done for every form, picker, surface, display, layout and nav component,
-  DataGrid, QuickGrid columns/editor/grid events. ActionItem model: MenuButton, ContextMenu, Dialog
-  actions done; **left:** QuickGrid row toolbar + context menu, CommandPalette commands, Toast actions,
-  TopNav items.
+  DataGrid, QuickGrid columns/editor/grid events. ActionItem model: **done everywhere** — MenuButton,
+  ContextMenu, Dialog actions, CommandPalette, Toast links, TopNav items, QuickGrid row toolbar +
+  context menu (`lib/action-items`, incl. `createLinkActivation` for vetoable links).
 - Renames done: `visible`→`open` (Dialog), `multi`→`multiple`, `selectedOptions`→`value`,
   `dismissable`→`dismissible`, `threeState`, `hourCycle`, AccordionItem `heading`, `start`/`end`
   snippets, kebab values (`2-digit`, `edit-start`, `move-up`), `maxFiles` dropped, stub components removed.

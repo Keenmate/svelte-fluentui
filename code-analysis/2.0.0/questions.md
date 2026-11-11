@@ -56,6 +56,8 @@ changes). Options: split the fixture into smaller routes, or run that file seria
 Update: a different test fails each time and none reproduces alone (12/12 and 6/6 in isolation), which
 points at the dev server reloading pages under load rather than component bugs. Running the suite
 against `vite preview` (a build) instead of `npm run dev` would likely make it deterministic.
+Update 2: after restarting the dev server, the full suite (79 tests) passed with no flakes — the
+long-running dev server (hundreds of HMR updates) seems to be the cause.
 
 ## Q7 — Pre-existing problems noticed (not fixed, outside Phase 1 scope)
 
