@@ -100,6 +100,23 @@
 			document.body.style.paddingRight = savedBodyPaddingRight
 		}
 	}
+
+	import type {ActionEventDetail, ActionItem} from "../action-items/index.js"
+
+	/**
+	 * A footer button: an action item (`text`, `icon`, `isDisabled`, `onClick`, …) plus the
+	 * button `appearance`. The dialog closes after it runs unless `shouldCloseOnClick` is
+	 * `false` (or `beforeCloseCallback` / `beforeActionCallback` vetoes).
+	 */
+	export type DialogAction = ActionItem<object> & {
+		appearance?: "accent" | "neutral" | "outline" | "stealth" | "lightweight"
+		/** Close the dialog after the action ran. Default `true`. */
+		shouldCloseOnClick?: boolean
+	}
+	export type DialogActionDetail = ActionEventDetail<object>
+
+	/** Why a close was requested — passed to `beforeCloseCallback`. */
+	export type DialogCloseReason = "escape" | "close-button" | "overlay" | "dismiss" | "action"
 </script>
 
 <script lang="ts">
@@ -108,17 +125,8 @@
 	import Button from "./Button.svelte"
 	import {portal} from "../actions/portal.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {resolveActionItem, runAction} from "../action-items/index.js"
 
-	export type DialogAction = {
-		label: string
-		appearance?: "accent" | "neutral" | "outline" | "stealth" | "lightweight"
-		disabled?: boolean
-		/** Return `false` to prevent the dialog from closing after the click. */
-		onClick?: () => boolean | void | Promise<boolean | void>
-	}
-
-	/** Why a close was requested — passed to `beforeCloseCallback`. */
-	export type DialogCloseReason = "escape" | "close-button" | "overlay" | "dismiss" | "action"
 
 	type Props = {
 		modal?: boolean
@@ -146,6 +154,10 @@
 		dismissButtonText?: Snippet
 		/** Fires when the dialog opens or closes. */
 		onOpenChange?: (ctx: {open: boolean}) => void
+		/** Fires after a footer action ran. */
+		onAction?: (detail: DialogActionDetail) => void
+		/** Called before a footer action runs; return `false` (or a Promise resolving to `false`) to cancel it. */
+		beforeActionCallback?: (detail: DialogActionDetail) => unknown
 		/**
 		 * Called before a user-initiated close (Escape, ×, overlay, Dismiss, an action).
 		 * Return `false` (or a Promise resolving to `false`) to keep the dialog open.
@@ -177,6 +189,8 @@
 		    actions = undefined,
 		    dismissButtonText = undefined,
 		    onOpenChange = undefined,
+		    onAction = undefined,
+		    beforeActionCallback = undefined,
 		    beforeCloseCallback = undefined,
 		    closeOnEscape = true,
 		    size = "medium",
@@ -304,12 +318,26 @@
 
 	onDestroy(() => popDialog(handle))
 
-	async function runAction(action: DialogAction) {
-		const result = await action.onClick?.()
-		if (result !== false) {
-			await requestClose("action")
-		}
+	const actionHost = {}
+	async function runFooterAction(action: DialogAction, fallbackId: string, event: MouseEvent) {
+		const ran = await runAction({
+			host: actionHost,
+			detail: {
+				action: action.action ?? "custom",
+				id: action.id ?? fallbackId,
+				item: action,
+				source: "dialog",
+				sourceEvent: event,
+				triggerElement: event.currentTarget as HTMLElement
+			},
+			beforeActionCallback,
+			emitAction: (detail) => onAction?.(detail)
+		})
+		if (ran && action.shouldCloseOnClick !== false) await requestClose("action")
 	}
+
+	const primary = $derived(primaryAction ? resolveActionItem(primaryAction, {}) : undefined)
+	const secondary = $derived(secondaryAction ? resolveActionItem(secondaryAction, {}) : undefined)
 
 	const hasFooterContent = $derived(
 		!!footer || !!actions || dismissible || !!primaryAction || !!secondaryAction
@@ -387,22 +415,24 @@
 							{/if}
 						</Button>
 					{/if}
-					{#if primaryAction}
+					{#if primaryAction && primary?.isVisible}
 						<Button
 							appearance={primaryAction.appearance ?? "accent"}
-							disabled={primaryAction.disabled}
-							onclick={() => runAction(primaryAction)}
+							disabled={primary.isDisabled}
+							title={primary.tooltip}
+							onclick={(event) => runFooterAction(primaryAction, "primary", event)}
 						>
-							{primaryAction.label}
+							{primary.text}
 						</Button>
 					{/if}
-					{#if secondaryAction}
+					{#if secondaryAction && secondary?.isVisible}
 						<Button
 							appearance={secondaryAction.appearance ?? "neutral"}
-							disabled={secondaryAction.disabled}
-							onclick={() => runAction(secondaryAction)}
+							disabled={secondary.isDisabled}
+							title={secondary.tooltip}
+							onclick={(event) => runFooterAction(secondaryAction, "secondary", event)}
 						>
-							{secondaryAction.label}
+							{secondary.text}
 						</Button>
 					{/if}
 				{/if}

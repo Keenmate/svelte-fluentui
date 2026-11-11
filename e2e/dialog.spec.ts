@@ -55,3 +55,13 @@ test("beforeCloseCallback can veto; onOpenChange fires on close", async ({page})
 	await expect(page.locator("#guarded-open")).toHaveText("false")
 	await expect(page.locator("#guard-log")).toHaveText("before:escape,before:close-button,open:false")
 })
+
+test("footer actions run onClick + onAction; shouldCloseOnClick false keeps it open", async ({page}) => {
+	await page.locator("#open-actions").click()
+	await page.locator("fluent-button", {hasText: "Apply"}).click()
+	await expect(page.locator("#action-log")).toHaveText("action:apply")
+	await expect(page.locator("#actions-open")).toHaveText("true")
+	await page.locator("fluent-button", {hasText: "Save"}).click()
+	await expect(page.locator("#action-log")).toHaveText("action:apply,click:save,action:save")
+	await expect(page.locator("#actions-open")).toHaveText("false")
+})

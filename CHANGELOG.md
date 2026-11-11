@@ -11,6 +11,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Dialog:** `primaryAction` / `secondaryAction`: `{label, disabled, onClick() → false keeps open}` → action items: `{text, icon, isDisabled, onClick(detail), appearance, shouldCloseOnClick}` + `onAction` / `beforeActionCallback` on Dialog
 - **MenuButton, ContextMenu:** per-item `onclick()` only → item `onClick(detail)` + component `onAction(detail)` + `beforeActionCallback(detail)` (`false` cancels)
 - **MenuButton, ContextMenu items:** `MenuButtonItem` `{label, icon, disabled, visible, danger, dividerBefore, onclick(), children, expandable, defaultExpanded}` → `MenuEntry` `{text, icon, isDisabled, isVisible, isDanger, onClick(detail), children, isExpandable, isExpanded}`; dividers are their own `{divider: true}` entries; `MenuButtonItem` type removed
 - **Checkbox:** `withIntermediate`, `threeStateOrderUncheckToIntermediate`, `intermediateMessage` → `threeState`, `threeStateOrder` (`"checked-first"` or `"indeterminate-first"`), `indeterminateMessage`

@@ -30,6 +30,7 @@
 		{name: "modal", type: "boolean", default: "undefined", description: "Modal behavior"},
 		{name: "open", type: "boolean", default: "undefined", description: "Whether the dialog is open (bindable)"},
 		{name: "preventClose", type: "boolean", default: "false", description: "Hide the close button and ignore Escape / overlay clicks"},
+		{name: "primaryAction / secondaryAction", type: "DialogAction", default: "undefined", description: "Footer buttons: {text, icon?, isDisabled?, onClick?, appearance?, shouldCloseOnClick? (default true)} — the dialog closes after the action ran"},
 		{name: "dismissible", type: "boolean", default: "false", description: "Show dismiss button"},
 		{name: "trapFocus", type: "boolean", default: "undefined", description: "Trap focus"},
 		{name: "size", type: '"small" | "medium" | "large" | "extra-large" | "full"', default: '"medium"', description: "Predefined dialog size"},
@@ -47,6 +48,8 @@
 
 	const callbacks: Property[] = [
 		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the dialog opens or closes"},
+		{name: "onAction", type: "(detail: {action, id, item, source, sourceEvent}) => void", default: "undefined", description: "Fires after a footer action (primaryAction / secondaryAction) ran"},
+		{name: "beforeActionCallback", type: "(detail) => unknown", default: "undefined", description: "Called before a footer action runs; return false (or resolve to false) to cancel it"},
 		{name: "beforeCloseCallback", type: "(ctx: {reason}) => unknown", default: "undefined", description: "Called before a user close (escape, close-button, overlay, dismiss, action); return false (or resolve to false) to keep it open"}
 	]
 

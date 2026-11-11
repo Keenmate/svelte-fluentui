@@ -9,6 +9,8 @@
 	let guardedOpen = $state(false)
 	let allowClose = $state(false)
 	let guardLog = $state<string[]>([])
+	let actionsOpen = $state(false)
+	let actionLog = $state<string[]>([])
 </script>
 
 <button id="outside-button">outside</button>
@@ -40,3 +42,13 @@
 </Dialog>
 <output id="guarded-open">{guardedOpen}</output>
 <output id="guard-log">{guardLog.join(",")}</output>
+
+<button id="open-actions" onclick={() => (actionsOpen = true)}>open actions</button>
+<Dialog bind:open={actionsOpen} title="Actions"
+	primaryAction={{id: "save", text: "Save", onClick: () => { actionLog.push("click:save") }}}
+	secondaryAction={{id: "apply", text: "Apply", shouldCloseOnClick: false}}
+	onAction={({id}) => actionLog.push(`action:${id}`)}>
+	body
+</Dialog>
+<output id="actions-open">{actionsOpen}</output>
+<output id="action-log">{actionLog.join(",")}</output>
