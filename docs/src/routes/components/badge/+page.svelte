@@ -12,7 +12,7 @@
 	const properties: Property[] = [
 		{name: "color", type: "string", default: "undefined", description: "Badge color"},
 		{name: "appearance", type: "string", default: '"lightweight"', description: "Visual appearance"},
-		{name: "size", type: '"xs" | "sm" | "medium" | "lg" | "xl"', default: '"medium"', description: "Size scale."},
+		{name: "size", type: '"extra-small" | "small" | "medium" | "large" | "extra-large"', default: '"medium"', description: "Size scale."},
 		{name: "circular", type: "boolean", default: "false", description: "Circular count-style shape (adds min-width)."},
 		{name: "pill", type: "boolean", default: "false", description: "Fully-rounded pill corners (no min-width)."},
 		{name: "icon", type: "Snippet", default: "undefined", description: "Icon slot rendered before the label."},
@@ -25,7 +25,7 @@
 
 	const labelProps: Property[] = [
 		{name: "color", type: '"primary" | "secondary" | "success" | "warning" | "danger" | "info"', default: '"primary"', description: "Semantic color."},
-		{name: "size", type: '"xs" | "sm" | "medium" | "lg" | "xl"', default: '"medium"', description: "Size scale (matches Badge)."},
+		{name: "size", type: '"extra-small" | "small" | "medium" | "large" | "extra-large"', default: '"medium"', description: "Size scale (matches Badge)."},
 		{name: "outline", type: "boolean", default: "false", description: "Transparent background; fills with the tint on hover."},
 		{name: "icon", type: "Snippet", default: "undefined", description: "Icon slot before the label text."}
 	]
@@ -225,13 +225,13 @@
 		</Stack>
 
 		<h3>Sizes</h3>
-		<p>Five sizes from <code>xs</code> to <code>xl</code> (default <code>medium</code>):</p>
+		<p>Five sizes from <code>extra-small</code> to <code>extra-large</code> (default <code>medium</code>):</p>
 		<Stack orientation="horizontal" gap="0.5rem" style="flex-wrap: wrap; align-items: center;">
-			<Badge color="brand" appearance="accent" size="xs">xs</Badge>
-			<Badge color="brand" appearance="accent" size="sm">sm</Badge>
+			<Badge color="brand" appearance="accent" size="extra-small">extra-small</Badge>
+			<Badge color="brand" appearance="accent" size="small">small</Badge>
 			<Badge color="brand" appearance="accent">medium</Badge>
-			<Badge color="brand" appearance="accent" size="lg">lg</Badge>
-			<Badge color="brand" appearance="accent" size="xl">xl</Badge>
+			<Badge color="brand" appearance="accent" size="large">large</Badge>
+			<Badge color="brand" appearance="accent" size="extra-large">extra-large</Badge>
 		</Stack>
 
 		<h3>Pill</h3>
@@ -249,7 +249,7 @@
 				{#snippet icon()}✓{/snippet}
 				Verified
 			</Badge>
-			<Badge color="warning" appearance="accent" size="sm">
+			<Badge color="warning" appearance="accent" size="small">
 				{#snippet icon()}⚠{/snippet}
 				Alert
 			</Badge>
@@ -310,11 +310,11 @@
 
 		<h3>Sizes</h3>
 		<Stack orientation="horizontal" gap="0.5rem" style="flex-wrap: wrap; align-items: center;">
-			<Label color="primary" size="xs">xs</Label>
-			<Label color="primary" size="sm">sm</Label>
+			<Label color="primary" size="extra-small">extra-small</Label>
+			<Label color="primary" size="small">small</Label>
 			<Label color="primary">medium</Label>
-			<Label color="primary" size="lg">lg</Label>
-			<Label color="primary" size="xl">xl</Label>
+			<Label color="primary" size="large">large</Label>
+			<Label color="primary" size="extra-large">extra-large</Label>
 		</Stack>
 	</Card>
 

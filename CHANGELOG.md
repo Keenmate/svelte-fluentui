@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Badge, Label (`size`):** `"xs"` / `"sm"` / `"lg"` / `"xl"` → `"extra-small"` / `"small"` / `"large"` / `"extra-large"` (`"medium"` unchanged)
+- **Badge, Label CSS classes:** `.badge-xs` … `.badge-xl`, `.fluent-label-xs` … `-xl` → `.badge-extra-small` … `.badge-extra-large`, `.fluent-label-extra-small` … `-extra-large`
+- **InputFile (`cardSize`):** `"minimal"` / `"compact"` (default) / `"big"` → `"small"` / `"medium"` (default) / `"large"`
+- **InputFile CSS classes:** `.drop-zone--minimal` / `--compact` / `--big` → `.drop-zone--small` / `--medium` / `--large`
 - **Toast (`ToastPosition`, `toast.*({position})`, `dismissAll(position)`):** `"top-right"` / `"top-left"` / `"bottom-right"` / `"bottom-left"` → `"top-end"` / `"top-start"` / `"bottom-end"` / `"bottom-start"` (default `"top-end"`; flip with `dir="rtl"`)
 - **ToastContainer CSS classes:** `.fluent-toast-container--top-right` etc. → `--top-end` / `--top-start` / `--bottom-end` / `--bottom-start`
 - **Tooltip:** `position` `"left"` / `"right"` → `"start"` / `"end"` (follow the anchor's text direction)

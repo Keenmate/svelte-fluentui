@@ -82,7 +82,7 @@
 
 		// Drag-expand: when an external file is dragged anywhere on the document
 		// (or on `expandOnDragTarget` if provided), an overlay covers the
-		// selector with a `big` layout that acts as a larger drop target.
+		// selector with a `large` layout that acts as a larger drop target.
 		// No layout shift — the overlay is rendered above content via portal.
 		expandOnDrag?: boolean
 		expandOnDragTarget?: HTMLElement | string
@@ -200,7 +200,7 @@
 		disabled = false,
 		selectorAppearance = "card",
 		listAppearance = "list",
-		cardSize = "compact",
+		cardSize = "medium",
 		chipsPosition = "bottom",
 		expandOnDrag = false,
 		expandOnDragTarget = undefined,
@@ -1528,7 +1528,7 @@
 				<div
 					bind:this={dragOverlayEl}
 					use:positionOverlay={overlayAnchor}
-					class="drop-zone drop-zone--big drag-overlay"
+					class="drop-zone drop-zone--large drag-overlay"
 					class:dragging={isDragging}
 					ondragenter={handleDragEnter}
 					ondragover={handleDragOver}

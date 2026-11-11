@@ -40,8 +40,8 @@
 		{name: "disabled", type: "boolean", default: "false", description: "Disable the component."},
 		{name: "selectorAppearance", type: "\"card\" | \"button\" | \"minimal\"", default: "\"card\"", description: "Visual variant of the file picker (drop-zone card, plain button, or compact icon)."},
 		{name: "listAppearance", type: "\"list\" | \"chips\" | \"popover\" | \"none\"", default: "\"list\"", description: "How the selected files are displayed: vertical rows, inline chips, anchored popover, or hidden."},
-		{name: "cardSize", type: "\"minimal\" | \"compact\" | \"big\"", default: "\"compact\"", description: "Card density when selectorAppearance=\"card\". minimal=single line, compact=horizontal row + wrapping hints, big=full vertical showcase."},
-		{name: "expandOnDrag", type: "boolean", default: "false", description: "When true, an overlay covers the selector (or `expandOnDragTarget`) with a `big` drop layout as soon as a file is dragged anywhere on the document. No layout shift — overlay is portalled above content."},
+		{name: "cardSize", type: "\"small\" | \"medium\" | \"large\"", default: "\"medium\"", description: "Card density when selectorAppearance=\"card\". small=single line, medium=horizontal row + wrapping hints, large=full vertical showcase."},
+		{name: "expandOnDrag", type: "boolean", default: "false", description: "When true, an overlay covers the selector (or `expandOnDragTarget`) with a `large` drop layout as soon as a file is dragged anywhere on the document. No layout shift — overlay is portalled above content."},
 		{name: "expandOnDragTarget", type: "HTMLElement | string", default: "undefined", description: "CSS selector or element ref the drag-expand overlay should cover. Defaults to the selector itself. Use to size the overlay to a parent form/section."},
 		{name: "maxFileSize", type: "number", default: "10485760", description: "Max bytes per file (default 10MB)."},
 		{name: "minFileSize", type: "number", default: "0", description: "Min bytes per file."},
@@ -165,7 +165,7 @@
 	const PLAYGROUND_DEFAULTS: PlaygroundConfig = {
 		selector: "card",
 		list: "list",
-		cardSize: "compact",
+		cardSize: "medium",
 		chipsPosition: "bottom",
 		expandOnDrag: false,
 		multiple: true,
@@ -177,7 +177,10 @@
 			const raw = window.localStorage.getItem(PLAYGROUND_STORAGE_KEY)
 			if (!raw) return PLAYGROUND_DEFAULTS
 			const parsed = JSON.parse(raw) as Partial<PlaygroundConfig>
-			return {...PLAYGROUND_DEFAULTS, ...parsed}
+			const merged = {...PLAYGROUND_DEFAULTS, ...parsed}
+			// Pre-2.0.0 saved configs may hold the old cardSize values (minimal/compact/big).
+			if (!["small", "medium", "large"].includes(merged.cardSize)) merged.cardSize = PLAYGROUND_DEFAULTS.cardSize
+			return merged
 		} catch {
 			return PLAYGROUND_DEFAULTS
 		}
@@ -427,9 +430,9 @@
 						</Select>
 						<Select label="cardSize" bind:value={playgroundCardSize} disabled={playgroundSelector !== "card"}>
 							{#snippet children()}
-								<Option value="minimal">minimal</Option>
-								<Option value="compact">compact</Option>
-								<Option value="big">big</Option>
+								<Option value="small">small</Option>
+								<Option value="medium">medium</Option>
+								<Option value="large">large</Option>
 							{/snippet}
 						</Select>
 						<Select label="chipsPosition" bind:value={playgroundChipsPosition} disabled={playgroundList !== "chips"}>

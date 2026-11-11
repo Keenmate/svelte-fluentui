@@ -85,8 +85,8 @@
 		display: inline-flex;
 	}
 
-	/* big — full-height vertical stack (original layout) */
-	.drop-zone--big {
+	/* large — full-height vertical stack (original layout) */
+	.drop-zone--large {
 		padding: 2rem;
 
 		.drop-zone-content {
@@ -107,8 +107,8 @@
 		}
 	}
 
-	/* compact — horizontal main row + wrapping hints row */
-	.drop-zone--compact {
+	/* medium — horizontal main row + wrapping hints row */
+	.drop-zone--medium {
 		padding: 1rem 1.25rem;
 
 		.drop-zone-content {
@@ -142,8 +142,8 @@
 		}
 	}
 
-	/* minimal — message + hints + button all inline on one wrapping row */
-	.drop-zone--minimal {
+	/* small — message + hints + button all inline on one wrapping row */
+	.drop-zone--small {
 		padding: 0.5rem 0.875rem;
 
 		.drop-zone-content {

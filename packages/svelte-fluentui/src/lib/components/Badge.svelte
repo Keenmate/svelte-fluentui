@@ -12,7 +12,7 @@
 
 	type BadgeColor = "brand" | "danger" | "important" | "informative" | "severe" | "subtle" | "success" | "warning" | (string & {})
 	type BadgeAppearance = "accent" | "lightweight" | "neutral" | "outline" | "tint" | (string & {})
-	type BadgeSize = "xs" | "sm" | "medium" | "lg" | "xl"
+	type BadgeSize = "extra-small" | "small" | "medium" | "large" | "extra-large"
 
 	type Props = {
 		color?: BadgeColor
@@ -143,27 +143,27 @@
 	}
 
 	/* Size scale */
-	.badge-xs {
+	.badge-extra-small {
 		font-size: var(--type-ramp-minus-2-font-size, 10px);
 		line-height: var(--type-ramp-minus-2-line-height, 14px);
 		padding: 0 4px;
 		min-height: 16px;
 	}
 
-	.badge-sm {
+	.badge-small {
 		font-size: var(--type-ramp-minus-1-font-size, 12px);
 		padding: 1px 6px;
 		min-height: 18px;
 	}
 
-	.badge-lg {
+	.badge-large {
 		font-size: var(--type-ramp-base-font-size, 14px);
 		line-height: var(--type-ramp-base-line-height, 20px);
 		padding: 3px 10px;
 		min-height: 24px;
 	}
 
-	.badge-xl {
+	.badge-extra-large {
 		font-size: var(--type-ramp-plus-1-font-size, 16px);
 		line-height: var(--type-ramp-plus-1-line-height, 22px);
 		padding: 4px 12px;

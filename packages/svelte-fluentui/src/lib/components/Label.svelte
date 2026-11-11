@@ -10,7 +10,7 @@
 	 */
 
 	type LabelColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info"
-	type LabelSize = "xs" | "sm" | "medium" | "lg" | "xl"
+	type LabelSize = "extra-small" | "small" | "medium" | "large" | "extra-large"
 
 	type Props = {
 		color?: LabelColor
@@ -77,22 +77,22 @@
 	}
 
 	/* Size scale (mirrors Badge) */
-	.fluent-label-xs {
+	.fluent-label-extra-small {
 		font-size: var(--type-ramp-minus-2-font-size, 10px);
 		padding: 1px 4px;
 	}
 
-	.fluent-label-sm {
+	.fluent-label-small {
 		font-size: var(--type-ramp-minus-1-font-size, 12px);
 		padding: 2px 6px;
 	}
 
-	.fluent-label-lg {
+	.fluent-label-large {
 		font-size: var(--type-ramp-base-font-size, 14px);
 		padding: 4px 10px;
 	}
 
-	.fluent-label-xl {
+	.fluent-label-extra-large {
 		font-size: var(--type-ramp-plus-1-font-size, 16px);
 		padding: 5px 12px;
 	}
