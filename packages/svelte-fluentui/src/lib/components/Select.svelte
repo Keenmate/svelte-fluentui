@@ -24,9 +24,10 @@
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 
-	type SelectChangeDetail = {
+	/** The option the user picked, as passed to `onChange`. */
+	type SelectChangeOption = {
 		value: string
-		selectedOption?: string
+		text: string
 		data?: Record<string, unknown>
 	}
 
@@ -67,7 +68,8 @@
 		labelTemplate?: Snippet
 		indicatorTemplate?: Snippet
 		children?: Snippet
-		onchange?: (detail: SelectChangeDetail) => void
+		/** Fires when the user changes the selection. `value` is the new bound value (array when `multiple`). */
+		onChange?: (ctx: {value: string | string[]; option?: SelectChangeOption}) => void
 	}
 
 	let {
@@ -95,7 +97,7 @@
 		labelTemplate = undefined,
 		indicatorTemplate = undefined,
 		children = undefined,
-		onchange = undefined
+		onChange = undefined
 	}: Props = $props()
 
 	// ---------- Selection state (shared with <Option> via context) ----------
@@ -262,13 +264,9 @@
 		const optEl = el ?? getOptionEls(multiple ? inlineListEl : listEl)
 			.find(o => optionValue(o) === val)
 
+		const before = [...selectionState.value]
 		ctx.toggle(val)
-
-		onchange?.({
-			value: multiple ? "" : (selectionState.value[0] ?? ""),
-			selectedOption: optEl?.textContent?.trim(),
-			data: optEl ? getOptionData(optEl) : undefined
-		})
+		emitChange(before, optEl)
 
 		if (!multiple) closeDropdown()
 	}
@@ -278,6 +276,24 @@
 	// listbox). We deliberately do NOT call ctx.toggle here — doing so would
 	// double-toggle in multi mode and cancel the user's click. We only handle
 	// the post-selection side effects: onchange + close-on-single.
+	// Option.svelte toggles the selection in its own (delegated) click handler,
+	// before handleListClick runs; capture the state first to detect a change.
+	let selectionBeforeClick: string[] = []
+	function snapshotSelection() {
+		selectionBeforeClick = [...selectionState.value]
+	}
+
+	function emitChange(before: string[], optEl: HTMLElement | undefined) {
+		const after = selectionState.value
+		if (after.length === before.length && after.every((v, i) => v === before[i])) return
+		onChange?.({
+			value: multiple ? [...after] : (after[0] ?? ""),
+			option: optEl
+				? {value: optionValue(optEl), text: optEl.textContent?.trim() ?? "", data: getOptionData(optEl)}
+				: undefined
+		})
+	}
+
 	function handleListClick(ev: MouseEvent) {
 		if (readonly) return
 		const target = ev.target as HTMLElement | null
@@ -289,11 +305,7 @@
 			return
 		}
 
-		onchange?.({
-			value: multiple ? "" : (selectionState.value[0] ?? ""),
-			selectedOption: optEl.textContent?.trim(),
-			data: getOptionData(optEl)
-		})
+		emitChange(selectionBeforeClick, optEl)
 
 		if (!multiple) closeDropdown()
 	}
@@ -555,6 +567,7 @@
 		class:readonly
 		style={(multiListStyle() ? multiListStyle() + "; " : "") + style}
 		{title}
+		onclickcapture={snapshotSelection}
 		onclick={handleListClick}
 	>
 		{@render children?.()}
@@ -624,6 +637,7 @@
 					dropdownWidth ? `width: ${dropdownWidth}` : "",
 					maxDropdownHeight ? `--select-listbox-max-height: ${maxDropdownHeight}` : ""
 				].filter(Boolean).join("; ") || undefined}
+				onclickcapture={snapshotSelection}
 				onclick={handleListClick}
 			>
 				{@render children?.()}

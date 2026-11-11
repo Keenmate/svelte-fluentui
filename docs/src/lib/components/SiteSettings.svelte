@@ -17,12 +17,12 @@
 
 	let localSettings = $derived($settings)
 
-	function handleThemeChange(detail: {value: string}) {
-		settings.setThemeMode(detail.value as ThemeMode)
+	function handleThemeChange({value}: {value: string | string[]}) {
+		settings.setThemeMode(value as ThemeMode)
 	}
 
-	function handleAccentColorChange(detail: {value: string}) {
-		settings.setAccentColor(detail.value)
+	function handleAccentColorChange({value}: {value: string | string[]}) {
+		settings.setAccentColor(value as string)
 	}
 
 	function handleNeutralColorChange(event: InputEvent) {
@@ -52,7 +52,7 @@
 				id="theme-select"
 				value={localSettings.themeMode}
 				style="width: 100%; margin-bottom: 1.5rem;"
-				onchange={handleThemeChange}
+				onChange={handleThemeChange}
 			>
 				<Option value="system">System</Option>
 				<Option value="light">Light</Option>
@@ -69,7 +69,7 @@
 				id="color-select"
 				value={localSettings.accentColor}
 				style="width: 100%; margin-bottom: 1.5rem;"
-				onchange={handleAccentColorChange}
+				onChange={handleAccentColorChange}
 			>
 				{#each Object.entries(accentColors) as [name, color]}
 					<Option value={name}>

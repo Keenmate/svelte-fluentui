@@ -1074,14 +1074,14 @@
 		<div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
 			<div style="display: flex; align-items: center; gap: 0.5rem;">
 				<label for="toolbar-align">Alignment:</label>
-				<Select id="toolbar-align" value={toolbarAlignment} onchange={({ value }) => toolbarAlignment = value as 'center' | 'top'}>
+				<Select id="toolbar-align" value={toolbarAlignment} onChange={({ value }) => toolbarAlignment = value as 'center' | 'top'}>
 					<Option value="center">Center (default)</Option>
 					<Option value="top">Top (first row aligned)</Option>
 				</Select>
 			</div>
 			<div style="display: flex; align-items: center; gap: 0.5rem;">
 				<label for="toolbar-trigger">Trigger:</label>
-				<Select id="toolbar-trigger" value={toolbarTriggerMode} onchange={({ value }) => toolbarTriggerMode = value as 'hover' | 'click' | 'button'}>
+				<Select id="toolbar-trigger" value={toolbarTriggerMode} onChange={({ value }) => toolbarTriggerMode = value as 'hover' | 'click' | 'button'}>
 					<Option value="hover">Hover (default)</Option>
 					<Option value="click">Click on row</Option>
 					<Option value="button">Button in first column</Option>

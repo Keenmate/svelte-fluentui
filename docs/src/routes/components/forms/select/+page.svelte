@@ -83,9 +83,9 @@
 	let selectDropdownWidthPx = $state(360);
 	let dropdownWidthLanguage = $state("");
 
-	function handleLanguageChange(detail: { value: string, data?: Record<string, unknown> }) {
-		selectedLanguageValue = detail.value;
-		selectedLanguage = detail.data as Language | undefined;
+	function handleLanguageChange({value, option}: { value: string | string[], option?: { data?: Record<string, unknown> } }) {
+		selectedLanguageValue = value as string;
+		selectedLanguage = option?.data as Language | undefined;
 	}
 
 	// Properties documentation
@@ -123,7 +123,7 @@
 	const optionProperties: Property[] = [
 		{name: "value", type: "string", default: "required", description: "Option value"},
 		{name: "class", type: "string", default: "undefined", description: "CSS class(es)"},
-		{name: "data", type: "Record<string, unknown>", default: "undefined", description: "Arbitrary data returned in onchange"},
+		{name: "data", type: "Record<string, unknown>", default: "undefined", description: "Arbitrary data, passed back as option.data in onChange"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the option"},
 		{name: "label", type: "string", default: "undefined", description: "Accessibility label"},
 		{name: "selected", type: "boolean", default: "undefined", description: "Pre-select this option"},
@@ -131,7 +131,7 @@
 	];
 
 	const callbacks: Property[] = [
-		{name: "onchange", type: "(detail: { value, selectedOption?, data? }) => void", default: "undefined", description: "Triggered when selection changes"}
+		{name: "onChange", type: "(ctx: { value: string | string[], option?: { value, text, data? } }) => void", default: "undefined", description: "Fires when the user changes the selection; value is an array when multiple"}
 	];
 
 	const slots: Property[] = [
@@ -528,7 +528,7 @@
 
 		<h3>Data binding</h3>
 		<p>Use <code>data</code> prop on Option to pass object data.</p>
-		<Select label="Language" value={selectedLanguageValue} onchange={handleLanguageChange}>
+		<Select label="Language" value={selectedLanguageValue} onChange={handleLanguageChange}>
 			{#snippet children()}
 				{#each languages as lang}
 					<Option value={String(lang.id)} data={lang}>{lang.name} ({lang.native})</Option>

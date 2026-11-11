@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Select:** `onchange({value, selectedOption, data})` (`value` was `""` when `multiple`) → `onChange({value, option})` — `value` is the new bound value (array when `multiple`), `option` is `{value, text, data}`; no longer fires when re-picking the selected option
+- **Combobox:** `onchange(value)` → `onChange({value})` (always an array)
+- **Combobox:** `onsearch(query)` → `onSearch({term})`
+- **Combobox:** `filter(query, option)` → `filterCallback({term, option})`
 - **Accordion:** `onchange(value)` → `onChange({value})`
 - **AccordionItem:** `onchange(ev, isExpanded)` → `onExpandedChange({expanded, sourceEvent})`
 - **Checkbox:** `onclick(ev, previousValue)` → `onChange({checked})` (`null` = indeterminate); `onclick` is now the native click event

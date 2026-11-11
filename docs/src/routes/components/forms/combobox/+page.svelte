@@ -109,17 +109,17 @@
 	let minSearchValue = $state<string[]>([])
 
 	// Callback handler example
-	function handleSelectionChange(value: string[]) {
+	function handleSelectionChange({value}: {value: string[]}) {
 		callbackMessage = `Selection changed to: ${value[0] || "None"}`
 	}
 
-	// --- Async search (onsearch) — parent owns the data ---
+	// --- Async search (onSearch) — parent owns the data ---
 	let asyncValue = $state<string[]>([])
 	let asyncOptions = $state<{ value: string; label: string }[]>([])
 	let asyncLoading = $state(false)
 	let asyncTimer: ReturnType<typeof setTimeout> | undefined
-	function searchNames(query: string) {
-		const q = query.trim().toLowerCase()
+	function searchNames({term}: {term: string}) {
+		const q = term.trim().toLowerCase()
 		if (asyncTimer) clearTimeout(asyncTimer)
 		if (!q) {
 			asyncLoading = false
@@ -153,8 +153,8 @@
 			.replace(/œ/g, "oe")
 			.replace(/ß/g, "ss")
 	}
-	function fuzzyFilter(query: string, option: { label: string }): boolean {
-		const q = fold(query).replace(/\s+/g, "")
+	function fuzzyFilter({term, option}: {term: string; option: { label: string }}): boolean {
+		const q = fold(term).replace(/\s+/g, "")
 		if (!q) return true
 		const label = fold(option.label)
 		let i = 0
@@ -176,7 +176,7 @@
 		{name: "id", type: "string", default: "Required", description: "Unique identifier"},
 		{name: "value", type: "string[]", default: "[]", description: "Selected value(s) (bindable)"},
 		{name: "options", type: "OptionItem[]", default: "undefined", description: "Array of option items"},
-		{name: "multiple", type: "boolean", default: "false", description: "Multi-select: selected values render as removable chips and the input stays a filter. value/onchange carry the full array."},
+		{name: "multiple", type: "boolean", default: "false", description: "Multi-select: selected values render as removable chips and the input stays a filter. value/onChange carry the full array."},
 		{name: "keepOpen", type: "boolean", default: "true", description: "Multi-select only: keep the dropdown open after each pick so several can be chosen in a row. Set false to close on each pick."},
 		{name: "tagsPosition", type: '"inline" | "above" | "below"', default: '"inline"', description: "Multi-select only: where the selected-value chips render — inside the control (inline), or as a wrapping row above/below it."},
 		{name: "label", type: "string", default: "undefined", description: "Label text displayed above the combobox"},
@@ -185,10 +185,10 @@
 		{name: "minSearchLength", type: "number", default: "undefined", description: "Keep dropdown closed until the typed text reaches this length. Useful with large/async option sets to avoid opening on a single character."},
 		{name: "noDataText", type: "string", default: '"No results found"', description: "Text shown inside the dropdown when the filter matches no options."},
 		{name: "noDataTemplate", type: "Snippet", default: "undefined", description: "Custom content shown when the filter matches no options; overrides noDataText."},
-		{name: "onsearch", type: "(query: string) => void", default: "undefined", description: "Debounced notification that the query changed. When set, update options with the results yourself; the component skips its own client-side filtering."},
-		{name: "searchDelay", type: "number", default: "250", description: "Debounce in ms before onsearch fires. Ignored without onsearch."},
-		{name: "filter", type: "(query, option) => boolean", default: "undefined", description: "Custom client-side matcher replacing the built-in substring match. Ignored when onsearch is set."},
-		{name: "loading", type: "boolean", default: "undefined", description: "Parent-controlled loading flag for async onsearch; shows loadingText instead of the empty-state message while true."},
+		{name: "onSearch", type: "(ctx: {term: string}) => void", default: "undefined", description: "Debounced notification that the search term changed. When set, update options with the results yourself; the component skips its own client-side filtering."},
+		{name: "searchDelay", type: "number", default: "250", description: "Debounce in ms before onSearch fires. Ignored without onSearch."},
+		{name: "filterCallback", type: "(ctx: {term, option}) => boolean", default: "undefined", description: "Custom client-side matcher replacing the built-in substring match. Ignored when onSearch is set."},
+		{name: "loading", type: "boolean", default: "undefined", description: "Parent-controlled loading flag for async onSearch; shows loadingText instead of the empty-state message while true."},
 		{name: "loadingText", type: "string", default: '"Searching…"', description: "Text shown while loading is true."},
 		{name: "position", type: '"above" | "below"', default: "undefined", description: "Dropdown position"},
 		{name: "appearance", type: '"outline" | "filled"', default: "outline", description: "Visual style"},
@@ -209,7 +209,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onchange", type: "(value: string[]) => void", default: "undefined", description: "Called when selection changes"}
+		{name: "onChange", type: "(ctx: {value: string[]}) => void", default: "undefined", description: "Fires when the user changes the selection"}
 	]
 
 	const slots: Property[] = [
@@ -476,9 +476,9 @@
 			</GridItem>
 		</Grid>
 
-		<h3>Server-side search (<code>onsearch</code>)</h3>
+		<h3>Server-side search (<code>onSearch</code>)</h3>
 		<p>
-			With <code>onsearch</code> the parent owns the data: the component fires a <strong>debounced</strong>
+			With <code>onSearch</code> the parent owns the data: the component fires a <strong>debounced</strong>
 			callback as you type, you fetch results and update <code>options</code>, and the component skips its
 			own client-side filtering (the server already filtered). Pair it with <code>minSearchLength</code> to
 			avoid firing on the first character and <code>loading</code> to show a "Searching…" state instead of the
@@ -493,7 +493,7 @@
 						id="async-search"
 						bind:value={asyncValue}
 						options={asyncOptions}
-						onsearch={searchNames}
+						onSearch={searchNames}
 						loading={asyncLoading}
 						minSearchLength={2}
 						placeholder="Search names…"
@@ -508,7 +508,7 @@
 		<p>
 			The <code>filter</code> prop replaces the built-in diacritic-insensitive substring match with your own
 			predicate — here a subsequence ("fuzzy") match, so typing <code>jg</code> matches "<em>J</em>osé
-			<em>G</em>arcía". It runs entirely client-side and is ignored when <code>onsearch</code> is set.
+			<em>G</em>arcía". It runs entirely client-side and is ignored when <code>onSearch</code> is set.
 		</p>
 		<Grid columns={2} gap="1rem">
 			<GridItem>
@@ -519,7 +519,7 @@
 						id="fuzzy"
 						bind:value={fuzzyValue}
 						options={namesWithDiacritics}
-						filter={fuzzyFilter}
+						filterCallback={fuzzyFilter}
 						autocomplete="list"
 						placeholder="Fuzzy search…"
 						width="300px"
@@ -622,12 +622,12 @@
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>With onchange callback</strong>
+					<strong>With onChange callback</strong>
 					<Combobox
 						id="callback"
 						bind:value={callbackValue}
 						options={songs}
-						onchange={() => handleSelectionChange(callbackValue)}
+						onChange={handleSelectionChange}
 					/>
 					<small>{callbackMessage || "Make a selection to see the callback"}</small>
 				</Stack>

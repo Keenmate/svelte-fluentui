@@ -74,7 +74,7 @@
 		dropdownWidth?: string
 		/** Multi-select: render selected values as removable chips inside the control
 		 * and keep the input as a filter (it never collapses to a single label).
-		 * `value`/`onchange` carry the full array in both modes. */
+		 * `value`/`onChange` carry the full array in both modes. */
 		multiple?: boolean
 		/** Multi-select only: keep the dropdown open after each pick so several can
 		 * be chosen in a row (default `true`). Set `false` to close on each pick. */
@@ -88,21 +88,22 @@
 		noDataText?: string
 		/** Custom content shown when the filter matches no options; overrides noDataText. */
 		noDataTemplate?: Snippet
-		/** Debounced notification that the query changed. When provided, the parent
+		/** Debounced notification that the search term changed. When provided, the parent
 		 * owns the data: update `options` with the results and the component skips
 		 * its own client-side filtering (the server/parent already filtered). */
-		onsearch?: (query: string) => void
-		/** Debounce (ms) before `onsearch` fires. Ignored without `onsearch`. */
+		onSearch?: (ctx: {term: string}) => void
+		/** Debounce (ms) before `onSearch` fires. Ignored without `onSearch`. */
 		searchDelay?: number
 		/** Custom client-side matcher, replacing the built-in diacritic-insensitive
-		 * substring match. Ignored when `onsearch` is set (filtering is server-side). */
-		filter?: ComboboxFilter
-		/** Parent-controlled loading flag (for async `onsearch`). While true the
+		 * substring match. Return `true` to keep the option. Ignored when `onSearch` is set. */
+		filterCallback?: ComboboxFilter
+		/** Parent-controlled loading flag (for async `onSearch`). While true the
 		 * dropdown shows `loadingText` instead of the empty-state message. */
 		loading?: boolean
 		/** Text shown while `loading` is true. */
 		loadingText?: string
-		onchange?: (value: SelectedValue) => void
+		/** Fires when the user changes the selection; `value` is always an array. */
+		onChange?: (ctx: {value: string[]}) => void
 	}
 
 	let {
@@ -137,12 +138,12 @@
 		minSearchLength = undefined,
 		noDataText = "No results found",
 		noDataTemplate = undefined,
-		onsearch = undefined,
+		onSearch = undefined,
 		searchDelay = 250,
-		filter = undefined,
+		filterCallback = undefined,
 		loading = undefined,
 		loadingText = "Searching…",
-		onchange = undefined
+		onChange = undefined
 	}: Props = $props()
 
 	// ---------- Selection state (shared with <Option> via context) ----------
@@ -231,9 +232,9 @@
 	// of the (async) option set, so we remember its label at pick time to keep the
 	// chip labelled after its <Option> leaves the DOM.
 	let labelCache = $state<Record<string, string>>({})
-	// Debounce timer for onsearch.
+	// Debounce timer for onSearch.
 	let searchTimer: ReturnType<typeof setTimeout> | undefined = undefined
-	// True from the moment a keystroke schedules an onsearch until the resulting
+	// True from the moment a keystroke schedules an onSearch until the resulting
 	// `options` update lands. Covers the debounce gap so the empty-state message
 	// doesn't flash before results arrive — even if the parent doesn't drive `loading`.
 	let searchPending = $state(false)
@@ -348,15 +349,15 @@
 	function applyFilter() {
 		if (!listEl) return
 		const q = norm(typed)
-		// In async mode (onsearch) the parent already filtered — show everything it
+		// In async mode (onSearch) the parent already filtered — show everything it
 		// gave us. Otherwise filter client-side, via a custom `filter` if provided.
-		const clientFilter = !onsearch && isFiltering && doListFilter && q.length > 0
+		const clientFilter = !onSearch && isFiltering && doListFilter && q.length > 0
 		let shown = 0
 		for (const el of getOptionEls(listEl)) {
 			let match = true
 			if (clientFilter) {
-				match = filter
-					? filter(typed, toFilterOption(el))
+				match = filterCallback
+					? filterCallback({term: typed, option: toFilterOption(el)})
 					: norm(optionText(el)).includes(q)
 			}
 			el.toggleAttribute("data-filtered-out", !match)
@@ -463,7 +464,7 @@
 
 	// ---------- Selection ----------
 	function emitChange() {
-		onchange?.(selectionState.value.length ? [...selectionState.value] : [])
+		onChange?.({value: [...selectionState.value]})
 	}
 
 	// Cache a value's label before its <Option> can leave the DOM (async churn).
@@ -530,10 +531,10 @@
 	// Debounced server-side search notification. The parent updates `options`
 	// with the results; the options-change effect below re-syncs the list.
 	function fireSearch(query: string) {
-		if (!onsearch) return
+		if (!onSearch) return
 		searchPending = true
 		if (searchTimer) clearTimeout(searchTimer)
-		searchTimer = setTimeout(() => onsearch?.(query), Math.max(0, searchDelay))
+		searchTimer = setTimeout(() => onSearch?.({term: query}), Math.max(0, searchDelay))
 	}
 
 	// Re-sync the list when async results arrive (the `options` prop changed
@@ -579,7 +580,7 @@
 			scrollHighlightedIntoView()
 			// Inline completion works off the local set; skip in async mode where
 			// results arrive after this tick.
-			if (doInline && !onsearch && !isDelete) applyInlineCompletion()
+			if (doInline && !onSearch && !isDelete) applyInlineCompletion()
 		})
 	}
 

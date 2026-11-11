@@ -500,7 +500,7 @@
 					>
 						<Select
 							bind:value={department}
-							onchange={() => (condTouched.department = true)}
+							onChange={() => (condTouched.department = true)}
 						>
 							{#snippet children()}
 								<Option value="">Select…</Option>
