@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Autocomplete (option objects):** `{value, text}` → `{value, label}` (the exported `OptionItem<T>`)
+- **OptionItem (exported type):** non-generic, `value: string` → generic `OptionItem<T = string>`
 - **AppBarItem (`active`):** `bind:active` allowed but never written → plain controlled prop: pass `active={…}`
 - **BadgeGroup (`showAll`):** hard override; the expand toggle kept its own state → bindable; the expand toggle writes `showAll`
 - **Tooltip (`visible`):** re-read every render (`undefined` = hover, `true`/`false` = forced) → mode fixed at mount; in hover mode the tooltip writes `bind:visible` back

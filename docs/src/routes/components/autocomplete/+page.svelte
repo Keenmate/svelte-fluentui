@@ -4,29 +4,29 @@
 	import { countries } from "$lib/demo-data/datasets"
 
 	const colors = [
-		{ value: "red", text: "Red" },
-		{ value: "blue", text: "Blue" },
-		{ value: "green", text: "Green" },
-		{ value: "yellow", text: "Yellow" },
-		{ value: "purple", text: "Purple" },
-		{ value: "orange", text: "Orange" },
-		{ value: "pink", text: "Pink" },
-		{ value: "brown", text: "Brown" },
-		{ value: "black", text: "Black" },
-		{ value: "white", text: "White" }
+		{ value: "red", label: "Red" },
+		{ value: "blue", label: "Blue" },
+		{ value: "green", label: "Green" },
+		{ value: "yellow", label: "Yellow" },
+		{ value: "purple", label: "Purple" },
+		{ value: "orange", label: "Orange" },
+		{ value: "pink", label: "Pink" },
+		{ value: "brown", label: "Brown" },
+		{ value: "black", label: "Black" },
+		{ value: "white", label: "White" }
 	]
 
 	const programmingLanguages = [
-		{ value: "js", text: "JavaScript" },
-		{ value: "ts", text: "TypeScript" },
-		{ value: "py", text: "Python" },
-		{ value: "java", text: "Java" },
-		{ value: "cs", text: "C#" },
-		{ value: "cpp", text: "C++" },
-		{ value: "go", text: "Go" },
-		{ value: "rust", text: "Rust" },
-		{ value: "swift", text: "Swift" },
-		{ value: "kotlin", text: "Kotlin" }
+		{ value: "js", label: "JavaScript" },
+		{ value: "ts", label: "TypeScript" },
+		{ value: "py", label: "Python" },
+		{ value: "java", label: "Java" },
+		{ value: "cs", label: "C#" },
+		{ value: "cpp", label: "C++" },
+		{ value: "go", label: "Go" },
+		{ value: "rust", label: "Rust" },
+		{ value: "swift", label: "Swift" },
+		{ value: "kotlin", label: "Kotlin" }
 	]
 
 	// Elixir and Erlang are intentionally NOT in programmingLanguages, so the
@@ -34,26 +34,26 @@
 	// two surface only when the user searches.
 	const searchOnlyLanguages = [
 		...programmingLanguages,
-		{ value: "elixir", text: "Elixir" },
-		{ value: "erlang", text: "Erlang" }
+		{ value: "elixir", label: "Elixir" },
+		{ value: "erlang", label: "Erlang" }
 	]
 
 	// People data with icons
 	const people = [
-		{ value: "1", text: "John Doe", email: "john.doe@example.com", icon: "Person" },
-		{ value: "2", text: "Jane Smith", email: "jane.smith@example.com", icon: "Person" },
-		{ value: "3", text: "Bob Johnson", email: "bob.johnson@example.com", icon: "Person" },
-		{ value: "4", text: "Alice Williams", email: "alice.williams@example.com", icon: "Person" },
-		{ value: "5", text: "Charlie Brown", email: "charlie.brown@example.com", icon: "Person" }
+		{ value: "1", label: "John Doe", email: "john.doe@example.com", icon: "Person" },
+		{ value: "2", label: "Jane Smith", email: "jane.smith@example.com", icon: "Person" },
+		{ value: "3", label: "Bob Johnson", email: "bob.johnson@example.com", icon: "Person" },
+		{ value: "4", label: "Alice Williams", email: "alice.williams@example.com", icon: "Person" },
+		{ value: "5", label: "Charlie Brown", email: "charlie.brown@example.com", icon: "Person" }
 	]
 
 	// Popular countries for initial options
 	const popularCountries = [
-		{ value: "us", text: "United States" },
-		{ value: "uk", text: "United Kingdom" },
-		{ value: "ca", text: "Canada" },
-		{ value: "de", text: "Germany" },
-		{ value: "fr", text: "France" }
+		{ value: "us", label: "United States" },
+		{ value: "uk", label: "United Kingdom" },
+		{ value: "ca", label: "Canada" },
+		{ value: "de", label: "Germany" },
+		{ value: "fr", label: "France" }
 	]
 
 	// State for examples
@@ -94,7 +94,7 @@
 	async function handleAsyncSearch({term: searchText}: {term: string}) {
 		await new Promise(resolve => setTimeout(resolve, 500))
 		return countries.filter(c =>
-			c.text.toLowerCase().includes(searchText.toLowerCase())
+			c.label.toLowerCase().includes(searchText.toLowerCase())
 		)
 	}
 
@@ -107,7 +107,7 @@
 		minSearchLengthCalls += 1
 		await new Promise(resolve => setTimeout(resolve, 300))
 		return countries.filter(c =>
-			c.text.toLowerCase().includes(searchText.toLowerCase())
+			c.label.toLowerCase().includes(searchText.toLowerCase())
 		)
 	}
 
@@ -117,14 +117,14 @@
 	async function handleLanguageSearch({term: searchText}: {term: string}) {
 		await new Promise(resolve => setTimeout(resolve, 300))
 		return searchOnlyLanguages.filter(l =>
-			l.text.toLowerCase().includes(searchText.toLowerCase())
+			l.label.toLowerCase().includes(searchText.toLowerCase())
 		)
 	}
 
 	async function handlePeopleSearch({term: searchText}: {term: string}) {
 		await new Promise(resolve => setTimeout(resolve, 400))
 		return people.filter(p =>
-			p.text.toLowerCase().includes(searchText.toLowerCase()) ||
+			p.label.toLowerCase().includes(searchText.toLowerCase()) ||
 			p.email.toLowerCase().includes(searchText.toLowerCase())
 		)
 	}
@@ -645,7 +645,7 @@
 							<div style="display: flex; align-items: center; gap: 0.5rem;">
 								<Icon name="person" size={16} />
 								<div>
-									<div>{option.text}</div>
+									<div>{option.label}</div>
 									<small style="color: var(--neutral-foreground-hint);">{(option as any).email}</small>
 								</div>
 							</div>
@@ -795,9 +795,9 @@
   import { Autocomplete } from "svelte-fluentui"
 
   const options = [
-    { value: "1", text: "Option 1" },
-    { value: "2", text: "Option 2" },
-    { value: "3", text: "Option 3" }
+    { value: "1", label: "Option 1" },
+    { value: "2", label: "Option 2" },
+    { value: "3", label: "Option 3" }
   ]
 
   let selected = $state${'<'}string[]>([])
@@ -817,7 +817,7 @@ ${'<'}Autocomplete
     const data = await response.json()
     return data.map(item => ({
       value: item.id,
-      text: item.name
+      label: item.name
     }))
   }
 
@@ -840,7 +840,7 @@ ${'<'}Autocomplete
   {#snippet optionTemplate(option)}
     <div style="display: flex; align-items: center; gap: 0.5rem;">
       <Icon name="person" size={16} />
-      <span>{option.text}</span>
+      <span>{option.label}</span>
     </div>
   {/snippet}
 </Autocomplete>`}</code></pre>
@@ -871,7 +871,7 @@ ${'<'}Autocomplete
 		<h2>OptionItem Type</h2>
 		<pre><code>{`type OptionItem<T = any> = {
   value: T          // Unique identifier
-  text: string      // Display text
+  label: string     // Display text
   disabled?: boolean // Optional disabled state
 }`}</code></pre>
 	</Card>

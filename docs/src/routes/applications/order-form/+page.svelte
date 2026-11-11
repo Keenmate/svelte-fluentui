@@ -38,11 +38,11 @@
 	let department = $state("")
 
 	const departments = [
-		{value: "eng", text: "Engineering"},
-		{value: "sales", text: "Sales"},
-		{value: "marketing", text: "Marketing"},
-		{value: "finance", text: "Finance"},
-		{value: "hr", text: "Human Resources"}
+		{value: "eng", label: "Engineering"},
+		{value: "sales", label: "Sales"},
+		{value: "marketing", label: "Marketing"},
+		{value: "finance", label: "Finance"},
+		{value: "hr", label: "Human Resources"}
 	]
 
 	// ===== Order type (cascading trigger) =====
@@ -57,10 +57,10 @@
 	let mobileAccessories = $state<string[]>([])
 
 	const mobileBrands = [
-		{value: "apple", text: "Apple"},
-		{value: "samsung", text: "Samsung"},
-		{value: "google", text: "Google Pixel"},
-		{value: "xiaomi", text: "Xiaomi"}
+		{value: "apple", label: "Apple"},
+		{value: "samsung", label: "Samsung"},
+		{value: "google", label: "Google Pixel"},
+		{value: "xiaomi", label: "Xiaomi"}
 	]
 
 	type ModelOption = {value: string; label: string}
@@ -74,11 +74,11 @@
 	const availableMobileModels = $derived(mobileModelsByBrand[mobileBrand] ?? [])
 
 	const mobileAccessoryOptions = [
-		{value: "case", text: "Protective case"},
-		{value: "screen-protector", text: "Screen protector"},
-		{value: "charger", text: "Fast charger"},
-		{value: "earbuds", text: "Wireless earbuds"},
-		{value: "dock", text: "Charging dock"}
+		{value: "case", label: "Protective case"},
+		{value: "screen-protector", label: "Screen protector"},
+		{value: "charger", label: "Fast charger"},
+		{value: "earbuds", label: "Wireless earbuds"},
+		{value: "dock", label: "Charging dock"}
 	]
 
 	// ===== Hardware branch =====
@@ -91,11 +91,11 @@
 	let printerFeatures = $state<string[]>([])
 
 	const printerFeatureOptions = [
-		{value: "scan", text: "Scan"},
-		{value: "copy", text: "Copy"},
-		{value: "fax", text: "Fax"},
-		{value: "ocr", text: "OCR"},
-		{value: "airprint", text: "AirPrint"}
+		{value: "scan", label: "Scan"},
+		{value: "copy", label: "Copy"},
+		{value: "fax", label: "Fax"},
+		{value: "ocr", label: "OCR"},
+		{value: "airprint", label: "AirPrint"}
 	]
 
 	// Computer
@@ -106,10 +106,10 @@
 	let computerBudget = $state("2000")
 
 	const osOptions = [
-		{value: "windows", text: "Windows 11"},
-		{value: "macos", text: "macOS"},
-		{value: "linux", text: "Linux (Ubuntu)"},
-		{value: "chromeos", text: "ChromeOS"}
+		{value: "windows", label: "Windows 11"},
+		{value: "macos", label: "macOS"},
+		{value: "linux", label: "Linux (Ubuntu)"},
+		{value: "chromeos", label: "ChromeOS"}
 	]
 
 	// Monitor
@@ -124,16 +124,16 @@
 	let preferredInstallTime = $state<string | null>(null)
 
 	const softwareOptions = [
-		{value: "office365", text: "Microsoft 365"},
-		{value: "adobe", text: "Adobe Creative Cloud"},
-		{value: "jetbrains", text: "JetBrains All Products"},
-		{value: "vscode", text: "Visual Studio Enterprise"},
-		{value: "slack", text: "Slack Business+"},
-		{value: "zoom", text: "Zoom Business"},
-		{value: "notion", text: "Notion Team"},
-		{value: "figma", text: "Figma Professional"},
-		{value: "github", text: "GitHub Enterprise"},
-		{value: "sentry", text: "Sentry Team"}
+		{value: "office365", label: "Microsoft 365"},
+		{value: "adobe", label: "Adobe Creative Cloud"},
+		{value: "jetbrains", label: "JetBrains All Products"},
+		{value: "vscode", label: "Visual Studio Enterprise"},
+		{value: "slack", label: "Slack Business+"},
+		{value: "zoom", label: "Zoom Business"},
+		{value: "notion", label: "Notion Team"},
+		{value: "figma", label: "Figma Professional"},
+		{value: "github", label: "GitHub Enterprise"},
+		{value: "sentry", label: "Sentry Team"}
 	]
 
 	// ===== Common =====
@@ -280,7 +280,7 @@
 						{#snippet children()}
 							<Option value="">Select…</Option>
 							{#each departments as d}
-								<Option value={d.value}>{d.text}</Option>
+								<Option value={d.value}>{d.label}</Option>
 							{/each}
 						{/snippet}
 					</Select>
@@ -318,7 +318,7 @@
 							{#snippet children()}
 								<Option value="">Select brand…</Option>
 								{#each mobileBrands as b}
-									<Option value={b.value}>{b.text}</Option>
+									<Option value={b.value}>{b.label}</Option>
 								{/each}
 							{/snippet}
 						</Select>
@@ -433,7 +433,7 @@
 							<Select label="Operating system" bind:value={computerOS}>
 								{#snippet children()}
 									{#each osOptions as os}
-										<Option value={os.value}>{os.text}</Option>
+										<Option value={os.value}>{os.label}</Option>
 									{/each}
 								{/snippet}
 							</Select>

@@ -13,13 +13,7 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Chip from "./Chip.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
-	import type {RestProps} from "../types/index.js"
-
-	type OptionItem<T = any> = {
-		value: T
-		text: string
-		disabled?: boolean
-	}
+	import type {OptionItem, RestProps} from "../types/index.js"
 
 	type OwnProps<T = any> = {
 		/** Selected option values (bindable). */
@@ -136,7 +130,7 @@
 
 	let searchText = $state("")
 	let isOpen = $state(false)
-	let filteredOptions = $state<OptionItem[]>([])
+	let filteredOptions = $state<OptionItem<any>[]>([])
 	// Value -> label cache. A selected option can come from an async `searchCallback`
 	// result set that isn't part of the local `options` prop; once selected, that
 	// result set churns and the option's text is lost, so a chip would fall back to
@@ -196,7 +190,7 @@
 			if (searchCallback) {
 				searchAbort?.abort()
 				const abort = (searchAbort = new AbortController())
-				let results: OptionItem[]
+				let results: OptionItem<any>[]
 				try {
 					results = await searchCallback({term: text, signal: abort.signal})
 				} catch (error) {
@@ -212,7 +206,7 @@
 				// Default filtering: contains (case insensitive)
 				// Filter out already selected options to avoid duplicates
 				const filtered = options.filter(opt =>
-					opt.text.toLowerCase().includes(text.toLowerCase()) &&
+					opt.label.toLowerCase().includes(text.toLowerCase()) &&
 					!isSelected(opt.value)
 				)
 				filteredOptions = filtered.slice(0, maxOptionsSearch)
@@ -280,7 +274,7 @@
 	}
 
 	// Handle option selection
-	function selectOption(option: OptionItem) {
+	function selectOption(option: OptionItem<any>) {
 		if (disabled || readonly || option.disabled) return
 
 		// Never add the same value twice in multi-select (would render a duplicate
@@ -294,7 +288,7 @@
 
 		// Remember this option's label before its (possibly async) source list
 		// churns, so the chip stays named even when it's not in the `options` prop.
-		labelCache = {...labelCache, [option.value]: option.text}
+		labelCache = {...labelCache, [option.value]: option.label}
 
 		// Single-select replaces the previous value; multi-select appends.
 		selectedOptions = effectiveMultiple
@@ -363,7 +357,7 @@
 	// that aren't in `options`), and only then fall back to the raw value.
 	function getOptionText(value: any): string {
 		const option = options.find(opt => opt.value === value)
-		if (option) return option.text
+		if (option) return option.label
 		if (labelCache[value] != null) return labelCache[value]
 		return String(value)
 	}
@@ -843,7 +837,7 @@
 								{#if optionTemplate}
 									{@render optionTemplate(option)}
 								{:else}
-									{option.text}
+									{option.label}
 								{/if}
 							</button>
 						{/each}

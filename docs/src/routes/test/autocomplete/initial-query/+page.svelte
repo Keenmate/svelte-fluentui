@@ -2,10 +2,10 @@
 	import {Autocomplete} from "svelte-fluentui"
 
 	const fruits = [
-		{value: "apple", text: "Apple"},
-		{value: "banana", text: "Banana"},
-		{value: "cherry", text: "Cherry"},
-		{value: "mango", text: "Mango"}
+		{value: "apple", label: "Apple"},
+		{value: "banana", label: "Banana"},
+		{value: "cherry", label: "Cherry"},
+		{value: "mango", label: "Mango"}
 	]
 
 	let selected = $state<string[]>([])

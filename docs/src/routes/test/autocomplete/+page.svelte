@@ -1,24 +1,24 @@
 <script lang="ts">
 	import {Autocomplete} from "svelte-fluentui"
 
-	type Fruit = {value: string; text: string; disabled?: boolean}
+	type Fruit = {value: string; label: string; disabled?: boolean}
 
 	const fruits: Fruit[] = [
-		{value: "apple", text: "Apple"},
-		{value: "apricot", text: "Apricot"},
-		{value: "banana", text: "Banana"},
-		{value: "blackberry", text: "Blackberry"},
-		{value: "blueberry", text: "Blueberry"},
-		{value: "cherry", text: "Cherry"},
-		{value: "coconut", text: "Coconut", disabled: true},
-		{value: "date", text: "Date"},
-		{value: "elderberry", text: "Elderberry"},
-		{value: "fig", text: "Fig"},
-		{value: "grape", text: "Grape"},
-		{value: "kiwi", text: "Kiwi"},
-		{value: "lemon", text: "Lemon"},
-		{value: "lime", text: "Lime"},
-		{value: "mango", text: "Mango"}
+		{value: "apple", label: "Apple"},
+		{value: "apricot", label: "Apricot"},
+		{value: "banana", label: "Banana"},
+		{value: "blackberry", label: "Blackberry"},
+		{value: "blueberry", label: "Blueberry"},
+		{value: "cherry", label: "Cherry"},
+		{value: "coconut", label: "Coconut", disabled: true},
+		{value: "date", label: "Date"},
+		{value: "elderberry", label: "Elderberry"},
+		{value: "fig", label: "Fig"},
+		{value: "grape", label: "Grape"},
+		{value: "kiwi", label: "Kiwi"},
+		{value: "lemon", label: "Lemon"},
+		{value: "lime", label: "Lime"},
+		{value: "mango", label: "Mango"}
 	]
 
 	let singleSelected = $state<string[]>([])
@@ -34,7 +34,7 @@
 		asyncCallCount++
 		await new Promise((r) => setTimeout(r, 50))
 		const q = text.toLowerCase()
-		return fruits.filter((f) => f.text.toLowerCase().includes(q))
+		return fruits.filter((f) => f.label.toLowerCase().includes(q))
 	}
 
 	// Out-of-order responses: a one-letter query answers slower than a longer one
@@ -44,14 +44,14 @@
 		signal.addEventListener("abort", () => abortedSearches++)
 		const slow = text.length === 1
 		await new Promise(r => setTimeout(r, slow ? 600 : 50))
-		return slow ? [{value: "stale", text: "Stale result"}] : [{value: "fresh", text: "Fresh result"}]
+		return slow ? [{value: "stale", label: "Stale result"}] : [{value: "fresh", label: "Fresh result"}]
 	}
 
 	// Slow async search for loading-indicator assertion
 	async function slowAsyncSearch({term: text}: {term: string}): Promise<Fruit[]> {
 		await new Promise((r) => setTimeout(r, 400))
 		const q = text.toLowerCase()
-		return fruits.filter((f) => f.text.toLowerCase().includes(q))
+		return fruits.filter((f) => f.label.toLowerCase().includes(q))
 	}
 
 	// Debounced async — tracks how many times the callback ran
@@ -59,7 +59,7 @@
 	async function debouncedSearch({term: text}: {term: string}): Promise<Fruit[]> {
 		debouncedCallCount++
 		const q = text.toLowerCase()
-		return fruits.filter((f) => f.text.toLowerCase().includes(q))
+		return fruits.filter((f) => f.label.toLowerCase().includes(q))
 	}
 
 	// Dismiss tracker
@@ -374,7 +374,7 @@
 			showInitialOptions
 		>
 			{#snippet optionTemplate(option)}
-				<span data-testid="custom-option">★ {option.text}</span>
+				<span data-testid="custom-option">★ {option.label}</span>
 			{/snippet}
 		</Autocomplete>
 	</div>

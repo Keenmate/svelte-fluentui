@@ -10,8 +10,9 @@ export type RestProps<Own> = Omit<HTMLAttributes<HTMLElement>, keyof Own>
 /** A native event handler as forwarded by a component (`oninput`, `onchange`, ...). */
 export type NativeEventHandler = (event: Event) => void
 
-export type OptionItem = {
-	value: string
+/** One selectable option (Combobox, Autocomplete, …). `T` is the value type. */
+export type OptionItem<T = string> = {
+	value: T
 	label: string
 	disabled?: boolean
 	/** Optional group heading. Options sharing a `group` are rendered together

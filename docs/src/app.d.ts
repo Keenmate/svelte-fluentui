@@ -1,3 +1,4 @@
+/// <reference path="../../packages/svelte-fluentui/src/lib/vite/fluentui-icons.d.ts" />
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {

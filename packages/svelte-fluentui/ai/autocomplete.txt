@@ -14,9 +14,9 @@ BASIC USAGE
   import { Autocomplete } from "svelte-fluentui"
 
   const options = [
-    { value: "js", text: "JavaScript" },
-    { value: "ts", text: "TypeScript" },
-    { value: "py", text: "Python" }
+    { value: "js", label: "JavaScript" },
+    { value: "ts", label: "TypeScript" },
+    { value: "py", label: "Python" }
   ]
 
   let selected = $state<string[]>([])
@@ -33,7 +33,7 @@ OPTION FORMAT
 -------------
 type OptionItem<T> = {
   value: T          # Unique value
-  text: string      # Display text
+  label: string     # Display text
   disabled?: boolean # Disable this option
 }
 
@@ -173,7 +173,7 @@ CUSTOM OPTION TEMPLATE
 {#snippet optionRenderer(option)}
   <div class="custom-option">
     <img src={option.icon} alt="" />
-    <span>{option.text}</span>
+    <span>{option.label}</span>
     <small>{option.description}</small>
   </div>
 {/snippet}
@@ -268,9 +268,9 @@ TAG INPUT:
 <script>
   let tags = $state<string[]>([])
   const predefinedTags = [
-    { value: "bug", text: "Bug" },
-    { value: "feature", text: "Feature" },
-    { value: "docs", text: "Documentation" }
+    { value: "bug", label: "Bug" },
+    { value: "feature", label: "Feature" },
+    { value: "docs", label: "Documentation" }
   ]
 </script>
 
@@ -291,7 +291,7 @@ USER PICKER:
     const users = await response.json()
     return users.map(u => ({
       value: u.id,
-      text: u.name
+      label: u.name
     }))
   }
 </script>
@@ -308,9 +308,9 @@ USER PICKER:
 COUNTRY SELECTOR:
 <script>
   const countries = [
-    { value: "us", text: "United States" },
-    { value: "uk", text: "United Kingdom" },
-    { value: "de", text: "Germany" }
+    { value: "us", label: "United States" },
+    { value: "uk", label: "United Kingdom" },
+    { value: "de", label: "Germany" }
     // ... more countries
   ]
   let selectedCountry = $state<string[]>([])

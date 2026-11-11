@@ -40,25 +40,25 @@
 	]
 
 	const categoryOptions = [
-		{value: "", text: "All categories"},
-		{value: "electronics", text: "Electronics"},
-		{value: "furniture", text: "Furniture"},
-		{value: "accessories", text: "Accessories"},
-		{value: "apparel", text: "Apparel"}
+		{value: "", label: "All categories"},
+		{value: "electronics", label: "Electronics"},
+		{value: "furniture", label: "Furniture"},
+		{value: "accessories", label: "Accessories"},
+		{value: "apparel", label: "Apparel"}
 	]
 
 	const tagOptions = [
-		{value: "audio", text: "Audio"},
-		{value: "wireless", text: "Wireless"},
-		{value: "premium", text: "Premium"},
-		{value: "office", text: "Office"},
-		{value: "ergonomic", text: "Ergonomic"},
-		{value: "wearable", text: "Wearable"},
-		{value: "fitness", text: "Fitness"},
-		{value: "outdoor", text: "Outdoor"},
-		{value: "eco", text: "Eco"},
-		{value: "lighting", text: "Lighting"},
-		{value: "travel", text: "Travel"}
+		{value: "audio", label: "Audio"},
+		{value: "wireless", label: "Wireless"},
+		{value: "premium", label: "Premium"},
+		{value: "office", label: "Office"},
+		{value: "ergonomic", label: "Ergonomic"},
+		{value: "wearable", label: "Wearable"},
+		{value: "fitness", label: "Fitness"},
+		{value: "outdoor", label: "Outdoor"},
+		{value: "eco", label: "Eco"},
+		{value: "lighting", label: "Lighting"},
+		{value: "travel", label: "Travel"}
 	]
 
 	let searchQuery = $state("")
@@ -124,7 +124,7 @@
 					<Select label="Category" bind:value={categoryValue}>
 						{#snippet children()}
 							{#each categoryOptions as opt}
-								<Option value={opt.value}>{opt.text}</Option>
+								<Option value={opt.value}>{opt.label}</Option>
 							{/each}
 						{/snippet}
 					</Select>

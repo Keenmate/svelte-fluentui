@@ -61,7 +61,7 @@ long-running dev server (hundreds of HMR updates) seems to be the cause.
 
 ## Q7 — Pre-existing problems noticed (not fixed, outside Phase 1 scope)
 
-- `docs` svelte-check: 25 type errors at baseline (layout, appbar demo, quickgrid demos, text-field
+- (Fixed 2026-11-11: docs svelte-check is at 0 errors.) `docs` svelte-check: 25 type errors at baseline (layout, appbar demo, quickgrid demos, text-field
   demo, order-form). Fix as part of the Phase 4 docs updates, or a separate cleanup commit?
 - `/components/tabs` logs "lock_16_regular.svg not found" — icon referenced by a dynamic name;
   needs `iconsInclude` in the docs Vite config or a static reference.
@@ -142,3 +142,27 @@ Add it for consistency? (Recommended: yes, cheap.)
 - Field `ValidationState` → `FieldValidationState` rename (plan §6).
 - ~24 physical `left`/`right` CSS properties remain in form component styles (DatePicker, Switch,
   OptionGroup, …) — Phase 5 logical-properties sweep.
+
+## Q18 — PositioningRegion `visible`: bindable?
+
+It never changes visibility itself (the consumer closes it), so `$bindable` would never be written —
+the same trap as AppBarItem `active` (now a plain prop). Left as a plain prop.
+
+## Q19 — AppBarItem `count`
+
+Declared but never rendered. Implement (a badge on the item) or remove?
+
+## Q20 — `id` / `title` used as persistence keys
+
+MultiSplitter `id` and NavGroup `title` double as localStorage keys, so a DOM `id`/`title` can't be
+passed through `...rest`. Rename the persistence role to `persistKey`?
+
+## Q21 — Tabs `childContent`
+
+Everything else uses `children`. Rename?
+
+## Q22 — Element-specific rest types
+
+`RestProps` is based on `HTMLAttributes<HTMLElement>`, so `target`/`download`/`rel` on link-like
+components (NavLink, Anchor, AppBarItem) aren't typed — AppBarItem got an explicit `target`. Add an
+anchor-flavoured `RestProps` variant in `types/index.ts`?

@@ -89,7 +89,8 @@
 	})
 
 	// Set FluentUI luminance and apply settings after components mount
-	onMount(async () => {
+	// Not async: Svelte ignores the cleanup returned from an async callback.
+	onMount(() => {
 		const siteSettings = $settings
 		let effectiveTheme = siteSettings.themeMode
 
@@ -98,17 +99,17 @@
 			effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
 		}
 
-		await tick()
+		tick().then(() => {
+			// Apply theme
+			document.documentElement.setAttribute("data-theme", effectiveTheme)
+			baseLayerLuminance.setValueFor(
+				document.documentElement,
+				effectiveTheme === "dark" ? StandardLuminance.DarkMode : StandardLuminance.LightMode
+			)
 
-		// Apply theme
-		document.documentElement.setAttribute("data-theme", effectiveTheme)
-		baseLayerLuminance.setValueFor(
-			document.documentElement,
-			effectiveTheme === "dark" ? StandardLuminance.DarkMode : StandardLuminance.LightMode
-		)
-
-		// Apply direction
-		document.documentElement.setAttribute("dir", siteSettings.direction)
+			// Apply direction
+			document.documentElement.setAttribute("dir", siteSettings.direction)
+		})
 
 		// Watch for system theme changes if mode is "system"
 		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
