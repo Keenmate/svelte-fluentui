@@ -82,7 +82,7 @@
 					<!--<div>-->
 					<!--	<Checkbox-->
 					<!--		bind:checked={checkboxWithIntermediateValue}-->
-					<!--		withIntermediate-->
+					<!--		threeState-->
 					<!--	>-->
 					<!--		Intermediate value-->
 					<!--	</Checkbox>-->

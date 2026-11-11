@@ -24,9 +24,8 @@
 		label?: string
 		labelTemplate?: Snippet
 		appearance?: string
-		use24Hours?: boolean
-		/** When set, forces AM/PM on (true) or off (false). Overrides `use24Hours`. Null/undefined = use `use24Hours`. */
-		useAmPm?: boolean | null
+		/** `"h23"` = 24-hour clock (default), `"h12"` = 12-hour clock with AM/PM. Same values as `Intl.DateTimeFormat`'s `hourCycle`. */
+		hourCycle?: "h12" | "h23"
 		showSeconds?: boolean
 		minuteStep?: number
 		hourStep?: number
@@ -66,8 +65,7 @@
 		label = undefined,
 		labelTemplate = undefined,
 		appearance = undefined,
-		use24Hours = true,
-		useAmPm = undefined,
+		hourCycle = "h23",
 		showSeconds = false,
 		minuteStep = 1,
 		hourStep = 1,
@@ -87,8 +85,7 @@
 		onOpenChange = undefined
 	}: Props = $props()
 
-	// Effective 24h mode: if `useAmPm` is set, it wins; otherwise fall back to `use24Hours`.
-	const effective24h = $derived(useAmPm == null ? use24Hours : !useAmPm)
+	const effective24h = $derived(hourCycle !== "h12")
 
 	let wrapperElement = $state<HTMLElement | undefined>(undefined)
 	let popupElement = $state<HTMLElement | undefined>(undefined)

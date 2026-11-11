@@ -18,7 +18,7 @@
 		{name: "autofocus", type: "boolean", default: "undefined", description: "Automatically focuses the input on mount."},
 		{name: "label", type: "string", default: "undefined", description: "Label text displayed above the time picker input."},
 		{name: "appearance", type: "string", default: "undefined", description: "Visual appearance of the underlying TextField (e.g. 'outline', 'filled-lighter')."},
-		{name: "use24Hours", type: "boolean", default: "true", description: "When true, uses 24-hour format. When false, uses 12-hour format with AM/PM selector."},
+		{name: "hourCycle", type: '"h12" | "h23"', default: '"h23"', description: "h23 = 24-hour clock, h12 = 12-hour clock with an AM/PM selector (same values as Intl.DateTimeFormat)"},
 		{name: "showSeconds", type: "boolean", default: "false", description: "When true, shows a seconds column in the time picker popup."},
 		{name: "minuteStep", type: "number", default: "1", description: "Step interval for the minutes column (e.g. 15 shows 00, 15, 30, 45)."},
 		{name: "hourStep", type: "number", default: "1", description: "Step interval for the hours column."},
@@ -30,7 +30,6 @@
 		{name: "autoClose", type: "boolean", default: "true", description: "When true, the popup closes when the user clicks OK."},
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the popup (matching FluentUI Blazor). Set false to require clicking the clock icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the popup."},
-		{name: "useAmPm", type: "boolean | null", default: "undefined", description: "When set, forces AM/PM on (true) or off (false). Overrides use24Hours."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names applied to the root element."},
 		{name: "style", type: "string", default: '""', description: "Inline styles applied to the root element."}
 	]
@@ -87,7 +86,7 @@
 				bind:value={basicTime}
 				label="Select time"
 				placeholder="Choose a time"
-				use24Hours={true}
+				hourCycle="h23"
 			/>
 			<p style="margin: 0;">Selected: {basicTime || 'None'}</p>
 		</Stack>
@@ -100,7 +99,7 @@
 				bind:value={time12Hour}
 				label="Select time"
 				placeholder="Choose a time"
-				use24Hours={false}
+				hourCycle="h12"
 			/>
 			<p style="margin: 0;">Selected: {time12Hour || 'None'}</p>
 		</Stack>
@@ -113,7 +112,7 @@
 				bind:value={timeWithSeconds}
 				label="Select time with seconds"
 				placeholder="Choose a time"
-				use24Hours={true}
+				hourCycle="h23"
 				showSeconds={true}
 			/>
 			<p style="margin: 0;">Selected: {timeWithSeconds || 'None'}</p>
@@ -127,7 +126,7 @@
 				bind:value={timeWithSteps}
 				label="Select time (15-min intervals)"
 				placeholder="Choose a time"
-				use24Hours={true}
+				hourCycle="h23"
 				minuteStep={15}
 				hourStep={2}
 			/>
@@ -146,7 +145,7 @@
 				bind:value={bookingTime}
 				label="Pick a free slot"
 				placeholder="HH:mm"
-				use24Hours={true}
+				hourCycle="h23"
 				minuteStep={15}
 				minTime="09:00"
 				maxTime="12:00"
@@ -162,20 +161,20 @@
 			<TimePicker
 				label="Normal"
 				placeholder="Select a time"
-				use24Hours={true}
+				hourCycle="h23"
 			/>
 
 			<TimePicker
 				label="Disabled"
 				placeholder="Select a time"
-				use24Hours={true}
+				hourCycle="h23"
 				disabled={true}
 			/>
 
 			<TimePicker
 				label="Readonly"
 				placeholder="Select a time"
-				use24Hours={true}
+				hourCycle="h23"
 				readonly={true}
 				bind:value={disabledTime}
 			/>
@@ -183,7 +182,7 @@
 			<TimePicker
 				label="Required"
 				placeholder="Select a time"
-				use24Hours={true}
+				hourCycle="h23"
 				required={true}
 			/>
 		</Stack>
@@ -195,13 +194,13 @@
 			<TimePicker
 				label="Filled (default)"
 				placeholder="Select a time"
-				use24Hours={true}
+				hourCycle="h23"
 			/>
 
 			<TimePicker
 				label="Outline"
 				placeholder="Select a time"
-				use24Hours={true}
+				hourCycle="h23"
 				appearance="outline"
 			/>
 		</Stack>

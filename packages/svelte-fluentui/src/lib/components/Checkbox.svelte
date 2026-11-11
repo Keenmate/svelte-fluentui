@@ -11,8 +11,10 @@
 
 	type Props = {
 		checked: boolean | null;
-		withIntermediate?: boolean;
-		threeStateOrderUncheckToIntermediate?: boolean;
+		/** Cycle through an indeterminate state (`checked = null`) as well. */
+		threeState?: boolean;
+		/** Click order in three-state mode: `"checked-first"` (unchecked → checked → indeterminate, default) or `"indeterminate-first"` (unchecked → indeterminate → checked, Blazor order). */
+		threeStateOrder?: "checked-first" | "indeterminate-first";
 		autofocus?: boolean;
 		children?: Snippet;
 		disabled?: boolean;
@@ -27,12 +29,12 @@
 		class?: string;
 		style?: string;
 		// Tri-state status messages, mirroring Switch's checkedMessage/
-		// uncheckedMessage. The intermediateMessage shows when checked is null
-		// (only reachable when withIntermediate is true). Each accepts either a
+		// uncheckedMessage. The indeterminateMessage shows when checked is null
+		// (only reachable when threeState is true). Each accepts either a
 		// plain string or a Snippet for richer content.
 		checkedMessage?: string | Snippet;
 		uncheckedMessage?: string | Snippet;
-		intermediateMessage?: string | Snippet;
+		indeterminateMessage?: string | Snippet;
 		/** Fires when the user changes the state; `null` is indeterminate. */
 		onChange?: (ctx: {checked: boolean | null}) => void
 		/** Native `click` event, forwarded untouched. */
@@ -41,8 +43,8 @@
 
 	let {
 		checked = $bindable(),
-		withIntermediate = undefined,
-		threeStateOrderUncheckToIntermediate = false,
+		threeState = false,
+		threeStateOrder = "checked-first",
 		autofocus = undefined,
 		disabled = undefined,
 		readonly = undefined,
@@ -58,7 +60,7 @@
 		children = undefined,
 		checkedMessage = undefined,
 		uncheckedMessage = undefined,
-		intermediateMessage = undefined,
+		indeterminateMessage = undefined,
 		onChange = undefined,
 		onclick = undefined
 	}: Props = $props()
@@ -77,7 +79,7 @@
 	const currentMessage = $derived(
 		checked === true ? checkedMessage
 			: checked === false ? uncheckedMessage
-			: intermediateMessage
+			: indeterminateMessage
 	)
 	const isCurrentMessageSnippet = $derived(typeof currentMessage === "function")
 
@@ -115,8 +117,8 @@
 
 		const previousValue = $state.snapshot(checked)
 
-		if (withIntermediate) {
-			if (threeStateOrderUncheckToIntermediate) {
+		if (threeState) {
+			if (threeStateOrder === "indeterminate-first") {
 				// Blazor order: false -> null (indeterminate) -> true -> false
 				if (previousValue === false) {
 					checked = null

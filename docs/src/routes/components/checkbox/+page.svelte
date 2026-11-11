@@ -84,8 +84,8 @@
 
 	const properties: Property[] = [
 		{name: "checked", type: "boolean | null", default: "undefined", description: "The checked state (bindable). null = indeterminate"},
-		{name: "withIntermediate", type: "boolean", default: "false", description: "Enable three-state mode (true/null/false cycling)"},
-		{name: "threeStateOrderUncheckToIntermediate", type: "boolean", default: "false", description: "Controls cycle order. false: Unchecked→Checked→Intermediate. true: Unchecked→Intermediate→Checked"},
+		{name: "threeState", type: "boolean", default: "false", description: "Enable three-state mode (true/null/false cycling)"},
+		{name: "threeStateOrder", type: '"checked-first" | "indeterminate-first"', default: '"checked-first"', description: "Cycle order. checked-first: Unchecked→Checked→Indeterminate. indeterminate-first: Unchecked→Indeterminate→Checked"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disable user interaction"},
 		{name: "readonly", type: "boolean", default: "false", description: "Read-only mode"},
 		{name: "required", type: "boolean", default: "false", description: "Required for form validation"},
@@ -97,7 +97,7 @@
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label (aria-label)"},
 		{name: "checkedMessage", type: "string | Snippet", default: "undefined", description: "Status text shown next to the checkbox when checked is true"},
 		{name: "uncheckedMessage", type: "string | Snippet", default: "undefined", description: "Status text shown next to the checkbox when checked is false"},
-		{name: "intermediateMessage", type: "string | Snippet", default: "undefined", description: "Status text shown next to the checkbox when checked is null (only reachable with withIntermediate)"},
+		{name: "indeterminateMessage", type: "string | Snippet", default: "undefined", description: "Status text shown next to the checkbox when checked is null (only reachable with threeState)"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"}
 	]
@@ -171,21 +171,21 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="1rem">
 					<div>
-						<Checkbox bind:checked={threeStateTrue} withIntermediate>
+						<Checkbox bind:checked={threeStateTrue} threeState>
 							ThreeState = true
 						</Checkbox>
 						<span class="value-display">Value = {threeStateTrue} - CheckState = {threeStateTrue === null ? 'null' : threeStateTrue}</span>
 					</div>
 
 					<div>
-						<Checkbox bind:checked={threeStateFalse} withIntermediate>
+						<Checkbox bind:checked={threeStateFalse} threeState>
 							ThreeState = false
 						</Checkbox>
 						<span class="value-display">Value = {threeStateFalse}</span>
 					</div>
 
 					<div>
-						<Checkbox bind:checked={threeStateIndeterminate} withIntermediate>
+						<Checkbox bind:checked={threeStateIndeterminate} threeState>
 							ShowIndeterminate = false
 						</Checkbox>
 						<span class="value-display">Value = {threeStateIndeterminate} - CheckState = {threeStateIndeterminate === null ? 'null (Indeterminate)' : threeStateIndeterminate}</span>
@@ -195,9 +195,9 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Alternative cycle order</strong>
-					<small>threeStateOrderUncheckToIntermediate = true</small>
+					<small>threeStateOrder = "indeterminate-first"</small>
 					<small>Order: Unchecked → Intermediate → Checked</small>
-					<Checkbox bind:checked={altOrderValue} withIntermediate threeStateOrderUncheckToIntermediate>
+					<Checkbox bind:checked={altOrderValue} threeState threeStateOrder="indeterminate-first">
 						Click to cycle
 					</Checkbox>
 					<span class="value-display">Value = {altOrderValue === null ? 'null (Indeterminate)' : altOrderValue}</span>
@@ -209,7 +209,7 @@
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<Checkbox checked={allChecked} withIntermediate onChange={handleAllClick}>
+					<Checkbox checked={allChecked} threeState onChange={handleAllClick}>
 						All ({allChecked === null ? 'Indeterminate' : allChecked ? 'True' : 'False'})
 					</Checkbox>
 					<div style="margin-left: 1.5rem;">
@@ -250,7 +250,7 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Disabled indeterminate</strong>
-					<Checkbox bind:checked={disabledIndeterminate} disabled withIntermediate>Indeterminate</Checkbox>
+					<Checkbox bind:checked={disabledIndeterminate} disabled threeState>Indeterminate</Checkbox>
 				</Stack>
 			</GridItem>
 		</Grid>
@@ -338,14 +338,14 @@
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Three-state</strong>
-					<small>Adds intermediateMessage for the indeterminate state. Click to cycle.</small>
+					<small>Adds indeterminateMessage for the indeterminate state. Click to cycle.</small>
 					<Checkbox
 						bind:checked={triStateMessageValue}
-						withIntermediate
+						threeState
 						label="Inherit from parent"
 						checkedMessage="Always allow"
 						uncheckedMessage="Never allow"
-						intermediateMessage="Inherit"
+						indeterminateMessage="Inherit"
 					/>
 					<small class="value-display">checked: {triStateMessageValue === null ? 'null (intermediate)' : triStateMessageValue}</small>
 				</Stack>

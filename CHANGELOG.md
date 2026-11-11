@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Checkbox:** `withIntermediate`, `threeStateOrderUncheckToIntermediate`, `intermediateMessage` → `threeState`, `threeStateOrder` (`"checked-first"` or `"indeterminate-first"`), `indeterminateMessage`
+- **TimePicker:** `use24Hours`, `useAmPm` → `hourCycle` (`"h23"` or `"h12"`, Intl naming)
 - **AccordionItem:** `header` (string) + `heading` (snippet) → one `heading` that takes a string or a snippet
 - **Anchor:** `iconStart` / `iconEnd` snippets → `start` / `end`
 - **Autocomplete:** `startIcon` / `endIcon` snippets → `start` / `end`
