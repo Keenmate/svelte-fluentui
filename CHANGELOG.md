@@ -11,6 +11,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Field (exported type):** `ValidationState` → `FieldValidationState`
 - **Checkbox (`checked`):** required, no default → optional, defaults to `false`
 - **Combobox (`currentValue`):** accepted but ignored → `bind:currentValue` read-only mirror of the input text
 - **Calendar:** unknown props collected, only `class` applied → `class`/`style` are real props; other attributes go to the root `<div>`

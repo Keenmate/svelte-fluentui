@@ -115,3 +115,30 @@ physical sides are sometimes intended (e.g. a fixed settings drawer); (b) drop `
 `"end"`.
 
 **Decided 2026-11-11: (b) start/end only, default `"end"`.** Done.
+
+## Q13 — NumberField `value` is a `string`, Slider's is a `number`
+
+Should NumberField become `number | null` (empty field = `null`)? Not changed.
+
+## Q14 — Where `...rest` lands on composite components
+
+Pickers, Select, Combobox, Autocomplete, QuickGrid and Field spread `...rest` on their root wrapper, so
+`aria-describedby`, `oninput`, … don't reach the inner input / trigger. Alternative: send rest to the
+focusable element (and chain any handler the component uses itself). Root wrapper for now.
+
+## Q15 — Combobox `height`
+
+Documented as accepted but a no-op. Remove in 2.0?
+
+## Q16 — Select / Combobox `onOpenChange`
+
+Both have a bindable `open` but no `onOpenChange` (DatePicker, TimePicker and Autocomplete have one).
+Add it for consistency? (Recommended: yes, cheap.)
+
+## Q17 — Leftovers noticed, not done yet
+
+- Autocomplete's local `OptionItem<T>` uses `text`; the exported `OptionItem` uses `label` (plan §6:
+  one generic `OptionItem<T>` with `label`).
+- Field `ValidationState` → `FieldValidationState` rename (plan §6).
+- ~24 physical `left`/`right` CSS properties remain in form component styles (DatePicker, Switch,
+  OptionGroup, …) — Phase 5 logical-properties sweep.

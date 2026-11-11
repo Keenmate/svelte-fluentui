@@ -2,7 +2,7 @@
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
 
-	export type ValidationState = "none" | "warning" | "error" | "success"
+	export type FieldValidationState = "none" | "warning" | "error" | "success"
 	export type FieldOrientation = "vertical" | "horizontal"
 
 	type OwnProps = {
@@ -10,7 +10,7 @@
 		labelTemplate?: Snippet | null | undefined
 		required?: boolean
 		hint?: string | null | undefined
-		validationState?: ValidationState
+		validationState?: FieldValidationState
 		validationMessage?: string | null | undefined
 		orientation?: FieldOrientation
 		/**

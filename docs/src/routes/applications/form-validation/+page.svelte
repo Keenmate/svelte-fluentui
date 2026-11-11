@@ -15,13 +15,13 @@
 		Icon,
 		Field,
 		ValidationSummary,
-		type ValidationState,
+		type FieldValidationState,
 		toast
 	} from "svelte-fluentui"
 	import {Meta} from "$lib/components"
 
-	// Map an error string (or null) to a ValidationState for <Field>
-	function stateOf(error: string | null | undefined): ValidationState {
+	// Map an error string (or null) to a FieldValidationState for <Field>
+	function stateOf(error: string | null | undefined): FieldValidationState {
 		return error ? "error" : "none"
 	}
 

@@ -114,7 +114,7 @@ export {default as Toast} from "./components/Toast.svelte"
 export type {ToastAction, ToastActionDetail} from "./components/Toast.svelte"
 export {default as ToastContainer} from "./components/ToastContainer.svelte"
 export {default as Field} from "./components/Field.svelte"
-export type {ValidationState, FieldOrientation} from "./components/Field.svelte"
+export type {FieldValidationState, FieldOrientation} from "./components/Field.svelte"
 export {default as ValidationSummary} from "./components/ValidationSummary.svelte"
 
 // Actions
