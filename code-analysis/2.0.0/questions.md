@@ -188,3 +188,15 @@ components (NavLink, Anchor, AppBarItem) aren't typed — AppBarItem got an expl
 anchor-flavoured `RestProps` variant in `types/index.ts`?
 
 **Decided 2026-11-12: add `AnchorRestProps`** (based on `HTMLAnchorAttributes`) for link components; AppBarItem drops its explicit `target`.
+
+## Q23 — One warning hue
+
+Alert and Toast use `#ffb900` for warning; the shared palette (`--fluent-color-warning*`, Field,
+Label) uses `#c87018`. Pick one (Fluent v9 uses a darker orange for warning text/foreground, a yellow
+for warning backgrounds). Once picked, the SCSS `$color-*` tokens can go.
+
+## Q24 — Accent-insensitive matching everywhere?
+
+Combobox matching ignores accents (`"cesky"` finds `"Český"`). Select type-ahead, Autocomplete and the
+QuickGrid cell editor still treat accents as significant — kept as is by the helpers refactor. Make
+them all accent-insensitive (one option flip each in `helpers/text.ts` callers)?

@@ -77,6 +77,13 @@ MenuSurface internals (Phase 3 work).
 
 Order: popup layer (dismiss + Escape + floating + listbox nav) across Select, Combobox, Autocomplete, DatePicker, TimePicker, MenuButton, ContextMenu, Tabs overflow, InputFile, QuickGrid, Panel, Dialog, Tooltip → attrs() in all wrappers → async search → selection context → menus (QuickGrid → ContextMenu) → field labels / pickers → a11y (`aria-activedescendant`, picker ARIA, QuickGrid `aria-sort`, clickable spans → buttons, Tooltip describedby/Escape, Calendar roving focus).
 
+Status 2026-11-13: dropdown helpers done — `helpers/dismiss.ts`, `listbox-nav.svelte.ts`,
+`option-dom.ts`, `text.ts`, `debounce.ts`, `async-search.svelte.ts`, used by Select, Combobox,
+Autocomplete, GridCellEditor. **Next:** DatePicker / TimePicker (`dismissOnOutside`, gains focus-out
+close), MenuButton / ContextMenu (`dismissOnOutside` + `ListNav` for menu arrows), Tabs overflow,
+InputFile, QuickGrid (context menu + 5 permanent document listeners), CommandPalette (`ListNav` +
+`text.ts`), Search (`debounce`); then attrs() in all wrappers, selection context, field labels, a11y.
+
 ## Phase 4 — Public API (BREAKING)
 
 **Status 2026-11-11 (in progress):**
@@ -107,6 +114,15 @@ Order: popup layer (dismiss + Escape + floating + listbox nav) across Select, Co
 ## Phase 5 — CSS
 
 Delete fc after moving live rules → dedupe compat → colour palette + dark variants in theme, drop per-component dark blocks → `--fluent-z-*` scale → shared primitives (field control, popup surface, required indicator, focus ring) → CSS var prefix/naming renames (BREAKING) → logical properties → remove demo/site CSS, reboot opt-in (BREAKING) → scope global-reaching rules → `prefers-reduced-motion`.
+
+Status 2026-11-13: logical properties done across components and SCSS (left physical:
+floating-ui coordinates, Tooltip arrow, `left: 50%` centring, Tabs scroll buttons/indicator — the Tabs
+JS scroll logic is physical and broken in RTL, needs a script fix); status colours on
+`--fluent-color-*` with a `-foreground` role + dark values. **Next:** Icon `colorMap` (`--error`,
+`--warning`, … from constructed-stylesheet) → palette; one warning hue (Q23) then drop SCSS `$color-*`;
+`--badge-fill-*` into the palette; delete `fluent-components.scss` after moving live Calendar /
+tab-close rules, dedupe compat; `--fluent-z-*` scale; QuickGrid non-error dark blocks; prefix renames,
+reboot opt-in, `prefers-reduced-motion`.
 
 ## Phase 6 — Splits & docs
 
