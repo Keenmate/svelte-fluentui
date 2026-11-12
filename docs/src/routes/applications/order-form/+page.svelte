@@ -51,7 +51,7 @@
 	// ===== Mobile branch =====
 	let mobileBrand = $state("")
 	let mobileModel = $state<string[]>([])
-	let mobileStorage = $state("128")
+	let mobileStorage = $state<number | null>(128)
 	let mobileColor = $state("black")
 	let mobileBYOSim = $state(false)
 	let mobileAccessories = $state<string[]>([])
@@ -101,9 +101,9 @@
 	// Computer
 	let computerFormFactor = $state("laptop")
 	let computerOS = $state("windows")
-	let computerRam = $state("16")
-	let computerStorage = $state("512")
-	let computerBudget = $state("2000")
+	let computerRam = $state<number | null>(16)
+	let computerStorage = $state<number | null>(512)
+	let computerBudget = $state<number | null>(2000)
 
 	const osOptions = [
 		{value: "windows", label: "Windows 11"},
@@ -113,10 +113,10 @@
 	]
 
 	// Monitor
-	let monitorSize = $state("27")
+	let monitorSize = $state<number | null>(27)
 	let monitorResolution = $state("1440p")
 	let monitorHDR = $state(false)
-	let monitorRefreshRate = $state("60")
+	let monitorRefreshRate = $state<number | null>(60)
 
 	// ===== Software branch =====
 	let softwareApps = $state<string[]>([])
@@ -197,7 +197,7 @@
 		orderType = ""
 		mobileBrand = ""
 		mobileModel = []
-		mobileStorage = "128"
+		mobileStorage = 128
 		mobileColor = "black"
 		mobileBYOSim = false
 		mobileAccessories = []
@@ -208,13 +208,13 @@
 		printerFeatures = []
 		computerFormFactor = "laptop"
 		computerOS = "windows"
-		computerRam = "16"
-		computerStorage = "512"
-		computerBudget = "2000"
-		monitorSize = "27"
+		computerRam = 16
+		computerStorage = 512
+		computerBudget = 2000
+		monitorSize = 27
 		monitorResolution = "1440p"
 		monitorHDR = false
-		monitorRefreshRate = "60"
+		monitorRefreshRate = 60
 		softwareApps = []
 		licenseStartDate = null
 		preferredInstallTime = null

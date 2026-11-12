@@ -13,7 +13,8 @@
 
 	type OwnProps = {
 		id?: string | null | undefined;
-		value?: string;
+		/** Numeric value; `null` when the field is empty. The underlying element's string value is converted at the boundary. */
+		value?: number | null;
 		placeholder?: string;
 		appearance?: "outline" | "filled";
 		disabled?: boolean;
@@ -43,7 +44,7 @@
 		end?: Snippet;
 
 		/** Fires when the user commits a value (blur / Enter / step buttons). The live value is `bind:value`. */
-		onChange?: (ctx: {value: string}) => void;
+		onChange?: (ctx: {value: number | null}) => void;
 		/** Native `input` event, forwarded untouched. */
 		oninput?: NativeEventHandler;
 		/** Native `change` event, forwarded untouched. */
@@ -55,7 +56,7 @@
 
 	let {
 		id = undefined,
-		value = $bindable<string>(),
+		value = $bindable<number | null | undefined>(),
 		placeholder,
 		appearance,
 		disabled,
@@ -146,14 +147,41 @@
 		element?.select();
 	}
 
+	// <fluent-number-field> keeps a sanitized string `value` ("" or a valid,
+	// min/max-clamped number) while the inner input keeps the raw typed text, so
+	// partial input like "-" or "1." maps to null / 1 without clobbering typing.
+	function parseValue(raw: string | null | undefined): number | null {
+		if (raw == null || raw.trim() === "") return null;
+		const n = Number(raw);
+		return Number.isFinite(n) ? n : null;
+	}
+
+	// True while pushing `value` into the element: FAST re-emits input/change on
+	// programmatic value sets, which must not echo back as user edits.
+	let syncing = false;
+
+	// Prop -> element (string at the boundary). Skipped when the element already
+	// represents the same number, so live typing is never overwritten.
+	$effect(() => {
+		const next = value ?? null;
+		if (!element) return;
+		if (parseValue(element.value) === next) return;
+		syncing = true;
+		try {
+			element.value = next == null ? "" : String(next);
+		} finally {
+			syncing = false;
+		}
+	});
+
 	function handleOnInput(event: Event) {
-		value = (event.target as HTMLInputElement).value;
+		if (!syncing) value = parseValue((event.target as HTMLInputElement).value);
 		oninput?.(event);
 	}
 
 	function handleOnChange(event: Event) {
 		onchange?.(event);
-		onChange?.({value: (event.target as HTMLInputElement).value});
+		if (!syncing) onChange?.({value: parseValue((event.target as HTMLInputElement).value)});
 	}
 
 	// Apply autocomplete attribute via shadow DOM
@@ -185,7 +213,6 @@
 		"hide-step": hideStep, name
 	})}
 	{...(ariaLabel || label ? { "aria-label": ariaLabel ?? label } : {})}
-	{...(value != null ? { value } : {})}
 	{...titleProps}
 	oninput={handleOnInput}
 	onchange={handleOnChange}

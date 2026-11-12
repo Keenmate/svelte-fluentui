@@ -20,7 +20,7 @@
 
 	// ===== Demo state =====
 	let demoText = $state("")
-	let demoNumber = $state("")
+	let demoNumber = $state<number | null>(null)
 	let demoTextarea = $state("")
 	let demoSelect = $state("")
 	let demoTerms = $state(false)

@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **NumberField (`value`):** `string` → `number` or `null` (empty field); partial input like "-" or "1." is kept
+- **NumberField (`onChange`):** `{value: string}` → `{value: number or null}`; not fired when `value` is set in code
 - **Autocomplete (option objects):** `{value, text}` → `{value, label}` (the exported `OptionItem<T>`)
 - **OptionItem (exported type):** non-generic, `value: string` → generic `OptionItem<T = string>`
 - **AppBarItem (`active`):** `bind:active` allowed but never written → plain controlled prop: pass `active={…}`
@@ -133,6 +135,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- Select / Combobox `onOpenChange`; Combobox `height` works.
 - Native attributes and events (`...rest`) on every component that renders an element.
 - `bind:expanded` (AccordionItem), `bind:showAll` (BadgeGroup), `bind:visible` (Tooltip); AppBarItem `target`.
 - QuickGrid model types exported from the package root (`QuickGridColumn`, `QuickGridEditorOptions`, …).

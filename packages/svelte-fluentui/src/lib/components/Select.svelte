@@ -71,6 +71,8 @@
 		children?: Snippet
 		/** Fires when the user changes the selection. `value` is the new bound value (array when `multiple`). */
 		onChange?: (ctx: {value: string | string[]; option?: SelectChangeOption}) => void
+		/** Single mode: fires on every open/close transition of the dropdown (user or programmatic). */
+		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
 	/** Other native attributes and events go to the root `<div>` (`display: contents`); `id`, `class`, `style` and `title` go to the trigger / inline listbox. */
@@ -102,6 +104,7 @@
 		indicatorTemplate = undefined,
 		children = undefined,
 		onChange = undefined,
+		onOpenChange = undefined,
 		...rest
 	}: Props = $props()
 
@@ -186,6 +189,15 @@
 		if (open !== undefined && isOpen !== untrack(() => open)) {
 			open = isOpen
 		}
+	})
+
+	// onOpenChange on every open/close transition (isOpen is set from many paths).
+	let lastOpen = false
+	$effect(() => {
+		const next = isOpen
+		if (next === lastOpen) return
+		lastOpen = next
+		untrack(() => onOpenChange?.({open: next}))
 	})
 
 	let triggerEl: HTMLButtonElement | undefined = $state()

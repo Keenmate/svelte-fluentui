@@ -64,7 +64,7 @@
 		ariaLabel?: string
 		title?: string
 		width?: string
-		/** Accepted for API compatibility (no-op — combobox is single-line). */
+		/** Explicit height of the control (inline style, e.g. "40px"). */
 		height?: string
 		/** Cap the dropdown listbox height (e.g. "300px", "50vh"). The listbox is
 		 * always also capped to the space available to the viewport edge; this
@@ -106,6 +106,8 @@
 		loadingText?: string
 		/** Fires when the user changes the selection; `value` is always an array. */
 		onChange?: (ctx: {value: string[]}) => void
+		/** Fires on every open/close transition of the dropdown (user or programmatic). */
+		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
 	/** Other native attributes and events go to the root `<div>` (`display: contents`); `id` goes to the input, `class`/`style`/`title` to the control. */
@@ -149,6 +151,7 @@
 		loading = undefined,
 		loadingText = "Searching…",
 		onChange = undefined,
+		onOpenChange = undefined,
 		...rest
 	}: Props = $props()
 
@@ -258,6 +261,15 @@
 	})
 	$effect(() => {
 		if (open !== undefined && isOpen !== untrack(() => open)) open = isOpen
+	})
+
+	// onOpenChange on every open/close transition (isOpen is set from many paths).
+	let lastOpen = false
+	$effect(() => {
+		const next = isOpen
+		if (next === lastOpen) return
+		lastOpen = next
+		untrack(() => onOpenChange?.({open: next}))
 	})
 
 	// ---------- Option DOM helpers ----------
@@ -727,6 +739,7 @@
 	const controlStyle = $derived(() => {
 		const parts: string[] = []
 		if (width) parts.push(`width: ${width}`)
+		if (height) parts.push(`height: ${height}`)
 		return (parts.join("; ") + (parts.length && style ? "; " : "") + style)
 	})
 

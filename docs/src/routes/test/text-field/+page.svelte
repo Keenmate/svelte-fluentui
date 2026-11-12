@@ -3,7 +3,7 @@
 
 	let text = $state("")
 	let log = $state<string[]>([])
-	let num = $state("")
+	let num = $state<number | null>(null)
 	let terms = $state<string[]>([])
 </script>
 
@@ -23,6 +23,9 @@
 
 <section id="nf">
 	<NumberField id="nf-input" bind:value={num} onChange={({value}) => log.push(`num:${value}`)} />
+	<output id="nf-value">{num === null ? "null" : `${typeof num}:${num}`}</output>
+	<button id="nf-set" type="button" onclick={() => (num = 7)}>set 7</button>
+	<button id="nf-clear" type="button" onclick={() => (num = null)}>clear</button>
 </section>
 
 <section id="search">

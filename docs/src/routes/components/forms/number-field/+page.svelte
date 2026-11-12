@@ -3,57 +3,57 @@
 	import {References, Meta} from "$lib/components";
 
 	// State for examples
-	let integerValue = $state<string>("");
-	let nullableValue = $state<string>("");
-	let positiveValue = $state<string>("");
+	let integerValue = $state<number | null>(null);
+	let nullableValue = $state<number | null>(null);
+	let positiveValue = $state<number | null>(null);
 
 	// Types examples
-	let shortValue = $state<string>("123");
-	let intValue = $state<string>("12345");
-	let longValue = $state<string>("123456789");
-	let floatValue = $state<string>("12.68");
-	let decimalValue = $state<string>("12345.6789");
+	let shortValue = $state<number | null>(123);
+	let intValue = $state<number | null>(12345);
+	let longValue = $state<number | null>(123456789);
+	let floatValue = $state<number | null>(12.68);
+	let decimalValue = $state<number | null>(12345.6789);
 
 	// Constraints examples
-	let constrainedShort = $state<string>("0");
-	let constrainedMinMax = $state<string>("10");
-	let constrainedOverride = $state<string>("10");
+	let constrainedShort = $state<number | null>(0);
+	let constrainedMinMax = $state<number | null>(10);
+	let constrainedOverride = $state<number | null>(10);
 
 	// Display examples
-	let fullWidthValue = $state<string>("");
-	let placeholderValue = $state<string>("");
-	let hideStepValue = $state<string>("42");
-	let requiredValue = $state<string>("");
-	let disabledValue = $state<string>("100");
-	let readonlyValue = $state<string>("200");
+	let fullWidthValue = $state<number | null>(null);
+	let placeholderValue = $state<number | null>(null);
+	let hideStepValue = $state<number | null>(42);
+	let requiredValue = $state<number | null>(null);
+	let disabledValue = $state<number | null>(100);
+	let readonlyValue = $state<number | null>(200);
 
 	// Icons examples
-	let startIconValue = $state<string>("");
-	let endIconValue = $state<string>("");
-	let bothIconsValue = $state<string>("");
+	let startIconValue = $state<number | null>(null);
+	let endIconValue = $state<number | null>(null);
+	let bothIconsValue = $state<number | null>(null);
 
 	// Focus examples
-	let autofocusValue = $state<string>("");
-	let focusAsyncValue = $state<string>("");
+	let autofocusValue = $state<number | null>(null);
+	let focusAsyncValue = $state<number | null>(null);
 	let focusAsyncRef: { focus: () => void };
 
 	// Filled appearance
-	let filledDefault = $state<string>("");
-	let filledPlaceholder = $state<string>("");
-	let filledRequired = $state<string>("");
-	let filledDisabled = $state<string>("50");
-	let filledReadonly = $state<string>("75");
+	let filledDefault = $state<number | null>(null);
+	let filledPlaceholder = $state<number | null>(null);
+	let filledRequired = $state<number | null>(null);
+	let filledDisabled = $state<number | null>(50);
+	let filledReadonly = $state<number | null>(75);
 
 	// Callback example
-	let callbackValue = $state<string>("");
+	let callbackValue = $state<number | null>(null);
 	let callbackMessage = $state<string>("");
 
 	function handleFocusAsync() {
 		focusAsyncRef?.focus();
 	}
 
-	function handleChange({value}: {value: string}) {
-		callbackMessage = `Value changed to: ${value || "(empty)"}`;
+	function handleChange({value}: {value: number | null}) {
+		callbackMessage = `Value changed to: ${value ?? "null (empty)"}`;
 	}
 
 	type Property = {
@@ -64,7 +64,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "value", type: "string", default: "undefined", description: "Value of the input (bindable)"},
+		{name: "value", type: "number | null", default: "undefined", description: "Numeric value (bindable); null when the field is empty. Partial input such as \"-\" or \"1.\" does not overwrite what is being typed"},
 		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder text"},
 		{name: "appearance", type: '"outline" | "filled"', default: "outline", description: "Visual appearance style"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the input"},
@@ -93,7 +93,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user commits a value (blur / Enter / step buttons)"},
+		{name: "onChange", type: "(ctx: {value: number | null}) => void", default: "undefined", description: "Fires when the user commits a value (blur / Enter / step buttons); null when empty"},
 		{name: "oninput, onchange, onfocus, onblur, onkeydown, …", type: "(event: Event) => void", default: "undefined", description: "Native events, forwarded untouched to fluent-number-field"}
 	]
 
@@ -353,6 +353,7 @@
 						onChange={handleChange}
 					/>
 					<small>{callbackMessage || "Change the value to see the callback"}</small>
+					<small>bound value: {callbackValue === null ? "null" : `${callbackValue} (${typeof callbackValue})`}</small>
 				</Stack>
 			</GridItem>
 		</Grid>

@@ -115,21 +115,21 @@
 	// ============================================================
 	// 2) Numeric range + custom rule (must be even)
 	// ============================================================
-	let age = $state("")
-	let quantity = $state("")
+	let age = $state<number | null>(null)
+	let quantity = $state<number | null>(null)
 	let numTouched = $state<Record<string, boolean>>({})
 
 	const ageError = $derived(
-		age === ""
+		age === null
 			? "Age is required"
-			: runValidators<number>(Number(age), numberRange(18, 120, "Age must be between 18 and 120"))
+			: runValidators<number>(age, numberRange(18, 120, "Age must be between 18 and 120"))
 	)
 	const quantityError = $derived(
-		quantity === ""
+		quantity === null
 			? "Quantity is required"
-			: Number(quantity) <= 0
+			: quantity <= 0
 				? "Quantity must be positive"
-				: Number(quantity) % 2 !== 0
+				: quantity % 2 !== 0
 					? "Quantity must be an even number"
 					: null
 	)
@@ -221,9 +221,9 @@
 		fullName: string
 		email: string
 		phone: string
-		age: string
+		age: number | null
 	}
-	let sm = $state<SummaryValues>({fullName: "", email: "", phone: "", age: ""})
+	let sm = $state<SummaryValues>({fullName: "", email: "", phone: "", age: null})
 	let smErrors = $state<Record<string, string>>({})
 	const smFieldLabels: Record<string, string> = {
 		fullName: "Full name",
@@ -239,8 +239,8 @@
 		else if (!emailRe.test(sm.email)) errs.email = "Enter a valid email"
 		if (!sm.phone.trim()) errs.phone = "Phone is required"
 		else if (!phoneRe.test(sm.phone)) errs.phone = "Enter a valid phone number"
-		if (!sm.age) errs.age = "Age is required"
-		else if (Number(sm.age) < 18) errs.age = "Must be 18 or older"
+		if (sm.age === null) errs.age = "Age is required"
+		else if (sm.age < 18) errs.age = "Must be 18 or older"
 		return errs
 	}
 
@@ -265,7 +265,7 @@
 		focusTarget?.focus?.()
 	}
 	function onSmReset() {
-		sm = {fullName: "", email: "", phone: "", age: ""}
+		sm = {fullName: "", email: "", phone: "", age: null}
 		smErrors = {}
 	}
 </script>

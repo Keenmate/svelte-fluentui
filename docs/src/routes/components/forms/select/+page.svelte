@@ -103,7 +103,7 @@
 		{name: "class", type: "string", default: '""', description: "CSS class(es)"},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the select"},
 		{name: "readonly", type: "boolean", default: "false", description: "Non-editable: the value shows but can't be changed (dropdown won't open, options can't be toggled). Unlike disabled, it stays focusable and un-dimmed."},
-		{name: "height", type: "string", default: "undefined", description: "Height (e.g., '200px')"},
+		{name: "height", type: "string", default: "undefined", description: "Multi mode: height of the inline listbox (e.g., '200px')"},
 		{name: "id", type: "string", default: "undefined", description: "Element ID"},
 		{name: "label", type: "string", default: "undefined", description: "Visible label"},
 		{name: "maxDropdownHeight", type: "string", default: "undefined (280px cap)", description: "Single mode: cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
@@ -132,6 +132,7 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: { value: string | string[], option?: { value, text, data? } }) => void", default: "undefined", description: "Fires when the user changes the selection; value is an array when multiple"},
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Single mode: fires on every open/close transition of the dropdown (user interaction or bind:open)"},
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (display: contents; id/class/style go to the trigger)"}
 	];
 

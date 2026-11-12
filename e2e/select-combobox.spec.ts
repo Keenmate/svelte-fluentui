@@ -52,3 +52,36 @@ test("Combobox: onSearch fires with {term}", async ({page}) => {
 	await input.fill("abc")
 	await expect(page.locator("#search-terms")).toContainText("abc")
 })
+
+test("Select: onOpenChange fires on user and programmatic open/close", async ({page}) => {
+	const log = page.locator("#sel-open-log")
+	await page.locator("#sel-open").click()
+	await expect(page.getByRole("option", {name: "Echo"})).toBeVisible()
+	await expect(log).toHaveText("true")
+	await page.keyboard.press("Escape")
+	await expect(log).toHaveText("true,false")
+	await page.locator("#sel-open-set").click()
+	await expect(log).toHaveText("true,false,true")
+	await page.locator("#sel-close-set").click()
+	await expect(log).toHaveText("true,false,true,false")
+})
+
+test("Combobox: onOpenChange fires on user and programmatic open/close", async ({page}) => {
+	const log = page.locator("#combo-open-log")
+	const input = page.locator("#combo-open-input")
+	await input.click()
+	await input.press("ArrowDown")
+	await expect(page.getByRole("option", {name: "Golf"})).toBeVisible()
+	await expect(log).toHaveText("true")
+	await input.press("Escape")
+	await expect(log).toHaveText("true,false")
+	await page.locator("#combo-open-set").click()
+	await expect(log).toHaveText("true,false,true")
+	await page.locator("#combo-close-set").click()
+	await expect(log).toHaveText("true,false,true,false")
+})
+
+test("Combobox: height is applied to the control", async ({page}) => {
+	const control = page.locator("#combo-open .combobox-control")
+	await expect(control).toHaveCSS("height", "48px")
+})

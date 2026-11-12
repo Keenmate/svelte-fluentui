@@ -201,7 +201,7 @@
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label (aria-label)"},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text"},
 		{name: "width", type: "string", default: "undefined", description: "Component width (e.g., '300px', '100%')"},
-		{name: "height", type: "string", default: "undefined", description: "Component height"},
+		{name: "height", type: "string", default: "undefined", description: "Height of the control (inline style, e.g. '40px'). The control never shrinks below its design-token min-height"},
 		{name: "currentValue", type: "string", default: "undefined", description: "Read-only bindable (bind:currentValue): the text currently in the input — the typed filter while searching, otherwise the selected option's label"},
 		{name: "maxDropdownHeight", type: "string", default: "undefined (280px cap)", description: "Cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
@@ -211,6 +211,7 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {value: string[]}) => void", default: "undefined", description: "Fires when the user changes the selection"},
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires on every open/close transition of the dropdown (user interaction or bind:open)"},
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (display: contents; id goes to the input)"}
 	]
 
