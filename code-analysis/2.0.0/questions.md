@@ -120,20 +120,28 @@ physical sides are sometimes intended (e.g. a fixed settings drawer); (b) drop `
 
 Should NumberField become `number | null` (empty field = `null`)? Not changed.
 
+**Decided 2026-11-12: `number | null`** (empty field = `null`).
+
 ## Q14 — Where `...rest` lands on composite components
 
 Pickers, Select, Combobox, Autocomplete, QuickGrid and Field spread `...rest` on their root wrapper, so
 `aria-describedby`, `oninput`, … don't reach the inner input / trigger. Alternative: send rest to the
 focusable element (and chain any handler the component uses itself). Root wrapper for now.
 
+**Decided 2026-11-12: outer wrapper** (current behaviour).
+
 ## Q15 — Combobox `height`
 
 Documented as accepted but a no-op. Remove in 2.0?
+
+**Decided 2026-11-12: implement** like Autocomplete / Select / NumberField / Search (inline-style shortcut on the control).
 
 ## Q16 — Select / Combobox `onOpenChange`
 
 Both have a bindable `open` but no `onOpenChange` (DatePicker, TimePicker and Autocomplete have one).
 Add it for consistency? (Recommended: yes, cheap.)
+
+**Decided 2026-11-12: add `onOpenChange({open})`** to Select and Combobox.
 
 ## Q17 — Leftovers noticed, not done yet
 
@@ -148,14 +156,20 @@ Add it for consistency? (Recommended: yes, cheap.)
 It never changes visibility itself (the consumer closes it), so `$bindable` would never be written —
 the same trap as AppBarItem `active` (now a plain prop). Left as a plain prop.
 
+**Decided 2026-11-12: keep a plain prop.** (Explain the reasoning to the user once the batch is done.)
+
 ## Q19 — AppBarItem `count`
 
 Declared but never rendered. Implement (a badge on the item) or remove?
+
+**Decided 2026-11-12: implement as a count badge** on the item.
 
 ## Q20 — `id` / `title` used as persistence keys
 
 MultiSplitter `id` and NavGroup `title` double as localStorage keys, so a DOM `id`/`title` can't be
 passed through `...rest`. Rename the persistence role to `persistKey`?
+
+**Decided 2026-11-12: add `persistKey`**; persistence only when it's set, `id` / `title` become plain attributes.
 
 ## Q21 — Tabs `childContent`
 
