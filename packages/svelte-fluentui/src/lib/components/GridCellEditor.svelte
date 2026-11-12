@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte'
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {ListNav} from "../helpers/listbox-nav.svelte.js"
+	import {AsyncSearch} from "../helpers/async-search.svelte.js"
+	import {containsText, startsWithText} from "../helpers/text.js"
 
 	import type {
 		QuickGridEditorType as EditorType,
@@ -61,13 +63,9 @@
 	// Dropdown state (shared by select/combobox/autocomplete)
 	let dropdownOpen = $state(false)
 	let dropdownOptions = $state<EditorOption[]>([])
-	let highlightedIndex = $state(-1)
 	let filterText = $state("")
-	let isSearching = $state(false)
 	let isUserFiltering = $state(false)  // True when user is actively typing to filter (vs displaying selected value)
 	let justSelected = $state(false)  // True briefly after selection to prevent dropdown reopening on refocus
-	let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
-	let searchAbortController: AbortController | null = null
 	let inputElement: HTMLInputElement | undefined = $state()
 	let dropdownElement: HTMLDivElement | undefined = $state()
 
@@ -116,11 +114,47 @@
 		if (!isUserFiltering || !filterText.trim()) {
 			return effectiveOptions
 		}
-		const searchLower = filterText.toLowerCase()
 		return effectiveOptions.filter(opt =>
-			getOptionLabel(opt).toLowerCase().includes(searchLower)
+			containsText(getOptionLabel(opt), filterText, {diacritics: true})
 		)
 	})
+
+	// Rows the keyboard cursor walks: the filtered list for combobox, else the dropdown list.
+	function navigableOptions(): EditorOption[] {
+		return type === "combobox" ? filteredOptions() : dropdownOptions
+	}
+
+	// Keyboard cursor; `-1` = none (for select with allowEmpty, the empty row).
+	const nav = new ListNav({
+		count: () => navigableOptions().length,
+		itemAt: () => dropdownElement?.querySelector(".cell-dropdown-option.highlighted")
+	})
+
+	// Autocomplete search: below minSearchLength the initial options, without
+	// `onSearch` a local filter, else the async `onSearch` (debounced, aborted
+	// when superseded or the dropdown closes; stale responses dropped).
+	const search = new AsyncSearch<EditorOption>({
+		delay: () => options.debounceMs ?? 300,
+		search: (query, signal) => {
+			const initialOpts = options.initialOptions || options.options || []
+			if (query.length < (options.minSearchLength ?? 1)) return initialOpts
+			if (!options.onSearch) {
+				return initialOpts.filter(opt => containsText(getOptionLabel(opt), query, {diacritics: true}))
+			}
+			return options.onSearch(query, signal)
+		},
+		onResults: results => {
+			dropdownOptions = results
+			nav.first()
+		},
+		onError: error => {
+			console.error("Autocomplete search failed:", error)
+			dropdownOptions = []
+			nav.reset()
+		}
+	})
+
+	$effect(() => () => search.cancel())
 
 	// Get display value for current selection (for select trigger)
 	function getCurrentDisplayValue(): string {
@@ -135,14 +169,14 @@
 	function openDropdown() {
 		if (dropdownOpen) return
 		dropdownOpen = true
-		highlightedIndex = -1
+		nav.reset()
 
 		if (type === "select" || type === "combobox") {
 			dropdownOptions = effectiveOptions
 			// Pre-select current value
 			const currentIdx = effectiveOptions.findIndex(opt => getOptionValue(opt) === internalValue)
 			if (currentIdx >= 0) {
-				highlightedIndex = currentIdx
+				nav.index = currentIdx
 				// For combobox, initialize filter text with current display value
 				if (type === "combobox" && !filterText) {
 					filterText = getOptionLabel(effectiveOptions[currentIdx])
@@ -165,16 +199,9 @@
 	// Close dropdown
 	function closeDropdown() {
 		dropdownOpen = false
-		highlightedIndex = -1
-		if (searchDebounceTimer) {
-			clearTimeout(searchDebounceTimer)
-			searchDebounceTimer = null
-		}
-		// Cancel any in-flight search
-		if (searchAbortController) {
-			searchAbortController.abort()
-			searchAbortController = null
-		}
+		nav.reset()
+		// Drop a pending debounce and abort any in-flight search
+		search.cancel()
 	}
 
 	// Select an option from dropdown
@@ -188,22 +215,9 @@
 		onCommit({value: newValue})
 	}
 
-	// Scroll highlighted option into view. Waits for the DOM update: called
-	// right after `highlightedIndex` changes, the `.highlighted` class is still
-	// on the previous row.
-	async function scrollHighlightedIntoView() {
-		await tick()
-		if (highlightedIndex < 0) return
-		const dropdown = dropdownElement
-		const highlighted = dropdown?.querySelector('.cell-dropdown-option.highlighted') as HTMLElement
-		if (highlighted && dropdown) {
-			highlighted.scrollIntoView({ block: 'nearest' })
-		}
-	}
-
 	// Handle keyboard navigation in dropdown
 	function handleDropdownKeyDown(e: KeyboardEvent) {
-		const opts = type === "combobox" ? filteredOptions() : dropdownOptions
+		const opts = navigableOptions()
 
 		switch (e.key) {
 			case "ArrowDown":
@@ -213,8 +227,7 @@
 				}
 				e.preventDefault()
 				e.stopPropagation() // Prevent grid from handling
-				highlightedIndex = Math.min(highlightedIndex + 1, opts.length - 1)
-				scrollHighlightedIntoView()
+				nav.move(1)
 				break
 			case "ArrowUp":
 				if (!dropdownOpen) {
@@ -223,8 +236,7 @@
 				}
 				e.preventDefault()
 				e.stopPropagation() // Prevent grid from handling
-				highlightedIndex = Math.max(highlightedIndex - 1, 0)
-				scrollHighlightedIntoView()
+				nav.move(-1)
 				break
 			case "Enter":
 				e.preventDefault()
@@ -232,8 +244,8 @@
 				if (!dropdownOpen) {
 					// Open dropdown when Enter pressed and dropdown is closed
 					openDropdown()
-				} else if (highlightedIndex >= 0 && highlightedIndex < opts.length) {
-					selectDropdownOption(opts[highlightedIndex])
+				} else if (opts[nav.index]) {
+					selectDropdownOption(opts[nav.index])
 				} else if (type === "autocomplete" && filterText.trim()) {
 					// Autocomplete can commit freeform text
 					internalValue = filterText.trim()
@@ -242,8 +254,8 @@
 				}
 				break
 			case "Tab":
-				if (dropdownOpen && highlightedIndex >= 0 && highlightedIndex < opts.length) {
-					selectDropdownOption(opts[highlightedIndex])
+				if (dropdownOpen && opts[nav.index]) {
+					selectDropdownOption(opts[nav.index])
 				}
 				// Let Tab propagate for navigation
 				break
@@ -270,19 +282,18 @@
 	function handleSelectTriggerKeyDown(e: KeyboardEvent) {
 		// Letter jumping for select
 		if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
-			const letter = e.key.toLowerCase()
-			const startIdx = highlightedIndex + 1
+			const startIdx = nav.index + 1
 			const opts = effectiveOptions
 
 			// Search from current position
 			for (let i = 0; i < opts.length; i++) {
 				const idx = (startIdx + i) % opts.length
-				if (getOptionLabel(opts[idx]).toLowerCase().startsWith(letter)) {
-					highlightedIndex = idx
+				if (startsWithText(getOptionLabel(opts[idx]), e.key, {diacritics: true})) {
+					// Open first: openDropdown() re-highlights the current value.
 					if (!dropdownOpen) {
 						openDropdown()
 					}
-					scrollHighlightedIntoView()
+					nav.set(idx)
 					break
 				}
 			}
@@ -301,7 +312,7 @@
 			openDropdown()
 		}
 		// Reset highlight when filtering
-		highlightedIndex = filteredOptions().length > 0 ? 0 : -1
+		nav.first()
 	}
 
 	function handleComboboxKeyDown(e: KeyboardEvent) {
@@ -319,59 +330,6 @@
 	}
 
 	// === AUTOCOMPLETE HANDLERS ===
-	async function performAutocompleteSearch(query: string) {
-		const minLength = options.minSearchLength ?? 1
-
-		if (query.length < minLength) {
-			dropdownOptions = options.initialOptions || options.options || []
-			highlightedIndex = dropdownOptions.length > 0 ? 0 : -1
-			return
-		}
-
-		if (!options.onSearch) {
-			// Filter local options if no async search
-			const searchLower = query.toLowerCase()
-			const initialOpts = options.initialOptions || options.options || []
-			dropdownOptions = initialOpts.filter(opt =>
-				getOptionLabel(opt).toLowerCase().includes(searchLower)
-			)
-			highlightedIndex = dropdownOptions.length > 0 ? 0 : -1
-			return
-		}
-
-		// Cancel any previous in-flight request
-		if (searchAbortController) {
-			searchAbortController.abort()
-		}
-
-		// Create new controller for this request
-		searchAbortController = new AbortController()
-		const signal = searchAbortController.signal
-
-		isSearching = true
-		try {
-			const results = await options.onSearch(query, signal)
-			// Only update if this request wasn't aborted
-			if (!signal.aborted) {
-				dropdownOptions = results
-				highlightedIndex = results.length > 0 ? 0 : -1
-			}
-		} catch (error: unknown) {
-			// Ignore abort errors - they're expected when canceling
-			if (error instanceof Error && error.name === 'AbortError') {
-				return
-			}
-			console.error("Autocomplete search failed:", error)
-			dropdownOptions = []
-			highlightedIndex = -1
-		} finally {
-			// Only clear searching state if this request wasn't aborted
-			if (!signal.aborted) {
-				isSearching = false
-			}
-		}
-	}
-
 	function handleAutocompleteInput(e: Event) {
 		const input = e.target as HTMLInputElement
 		filterText = input.value
@@ -380,18 +338,10 @@
 			// Open dropdown but don't show initial options when user is typing
 			dropdownOpen = true
 			dropdownOptions = [] // Start empty to avoid FOAC
-			highlightedIndex = -1
+			nav.reset()
 		}
 
-		// Debounced search
-		if (searchDebounceTimer) {
-			clearTimeout(searchDebounceTimer)
-		}
-
-		const debounceMs = options.debounceMs ?? 300
-		searchDebounceTimer = setTimeout(() => {
-			performAutocompleteSearch(filterText)
-		}, debounceMs)
+		search.schedule(filterText)
 	}
 
 	function handleAutocompleteKeyDown(e: KeyboardEvent) {
@@ -436,35 +386,27 @@
 		if (initialSearchQuery && initialSearchQuery.length > 0) {
 			if (type === "select") {
 				// Jump to option starting with the letter
-				const letter = initialSearchQuery.toLowerCase()
 				const idx = effectiveOptions.findIndex(opt =>
-					getOptionLabel(opt).toLowerCase().startsWith(letter)
+					startsWithText(getOptionLabel(opt), initialSearchQuery, {diacritics: true})
 				)
 				if (idx >= 0) {
-					highlightedIndex = idx
+					// Open first: openDropdown() re-highlights the current value.
 					openDropdown()
+					nav.set(idx)
 				}
 			} else if (type === "combobox") {
 				// Open and filter with typed text
 				filterText = initialSearchQuery
 				openDropdown()
-				highlightedIndex = filteredOptions().length > 0 ? 0 : -1
+				nav.first()
 			} else if (type === "autocomplete") {
 				// Open with empty options and start debounced search
 				// Don't show initial options when user started typing
 				filterText = initialSearchQuery
 				dropdownOpen = true
 				dropdownOptions = [] // Start empty - no flash of initial options
-				highlightedIndex = -1
-
-				// Debounced search
-				const debounceMs = options.debounceMs ?? 300
-				if (searchDebounceTimer) {
-					clearTimeout(searchDebounceTimer)
-				}
-				searchDebounceTimer = setTimeout(() => {
-					performAutocompleteSearch(initialSearchQuery)
-				}, debounceMs)
+				nav.reset()
+				search.schedule(initialSearchQuery)
 			}
 		}
 	})
@@ -690,7 +632,7 @@
 				onkeydown={handleAutocompleteKeyDown}
 				onfocus={handleAutocompleteFocus}
 			/>
-			{#if isSearching}
+			{#if search.loading}
 				<span class="cell-loading-indicator">...</span>
 			{/if}
 		</div>
@@ -709,9 +651,9 @@
 						<!-- svelte-ignore a11y_interactive_supports_focus -->
 						<div
 							class="cell-dropdown-option"
-							class:highlighted={index === highlightedIndex}
+							class:highlighted={index === nav.index}
 							role="option"
-							aria-selected={index === highlightedIndex}
+							aria-selected={index === nav.index}
 							onclick={() => selectDropdownOption(opt)}
 						>
 							{getOptionLabel(opt)}
@@ -727,9 +669,9 @@
 						<!-- svelte-ignore a11y_role_has_required_aria_props -->
 						<div
 							class="cell-dropdown-option"
-							class:highlighted={highlightedIndex === -1 && (internalValue === null || internalValue === undefined)}
+							class:highlighted={nav.index === -1 && (internalValue === null || internalValue === undefined)}
 							role="option"
-							aria-selected={highlightedIndex === -1 && (internalValue === null || internalValue === undefined)}
+							aria-selected={nav.index === -1 && (internalValue === null || internalValue === undefined)}
 							onclick={() => { internalValue = null; closeDropdown(); onCommit({value: null}); }}
 						>
 							{options.emptyLabel || "-- Select --"}
@@ -740,9 +682,9 @@
 						<!-- svelte-ignore a11y_interactive_supports_focus -->
 						<div
 							class="cell-dropdown-option"
-							class:highlighted={index === highlightedIndex}
+							class:highlighted={index === nav.index}
 							role="option"
-							aria-selected={index === highlightedIndex}
+							aria-selected={index === nav.index}
 							onclick={() => selectDropdownOption(opt)}
 						>
 							{getOptionLabel(opt)}
@@ -750,7 +692,7 @@
 					{/each}
 					{#if dropdownOptions.length === 0}
 						<div class="cell-dropdown-empty">
-							{isSearching ? "Searching..." : "No options"}
+							{search.loading ? "Searching..." : "No options"}
 						</div>
 					{/if}
 				{/if}

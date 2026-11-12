@@ -81,3 +81,21 @@
 	<button id="combo-close-set" type="button" onclick={() => (comboOpen = false)}>close</button>
 	<output id="combo-open-log">{comboOpenLog.join(",")}</output>
 </section>
+
+<!-- Keyboard navigation (helpers/listbox-nav): disabled rows are skipped, type-ahead,
+     diacritic-insensitive filtering. -->
+<section id="keys">
+	<Select id="sel-keys">
+		<Option value="a">Alpha</Option>
+		<Option value="b" disabled>Bravo</Option>
+		<Option value="c">Charlie</Option>
+		<Option value="d">Delta</Option>
+		<Option value="e" disabled>Echo</Option>
+	</Select>
+	<Combobox id="combo-keys">
+		<Option value="z1">Žluťoučký kůň</Option>
+		<Option value="z2">Zlatý</Option>
+		<Option value="z3" disabled>Zlobivý</Option>
+		<Option value="o1">Other</Option>
+	</Combobox>
+</section>

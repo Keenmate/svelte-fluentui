@@ -29,6 +29,20 @@
 	import OptionGroup from "./OptionGroup.svelte"
 	import type {OptionItem, RestProps, SelectedValue} from "../types/index.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {dismissOnOutside} from "../helpers/dismiss.js"
+	import {ListNav} from "../helpers/listbox-nav.svelte.js"
+	import {debounce} from "../helpers/debounce.js"
+	import {normalizeForSearch, startsWithText} from "../helpers/text.js"
+	import {
+		OPTION_SELECTOR,
+		getOptionEls,
+		optionValue,
+		optionLabel,
+		optionData,
+		findOption,
+		markHighlighted,
+		listPageSize
+	} from "../helpers/option-dom.js"
 	import type {
 		SelectedOptionSvelteContext,
 		ValueType,
@@ -228,7 +242,6 @@
 	let isOpen = $state(false)
 	let isFiltering = $state(false)
 	let typed = $state("")
-	let highlightedIndex = $state(-1)
 	// Count of currently displayed option rows (not filtered out); drives the
 	// empty-state message. Starts at -1 so the message never flashes before the
 	// first applyFilter() has run.
@@ -241,8 +254,6 @@
 	// of the (async) option set, so we remember its label at pick time to keep the
 	// chip labelled after its <Option> leaves the DOM.
 	let labelCache = $state<Record<string, string>>({})
-	// Debounce timer for onSearch.
-	let searchTimer: ReturnType<typeof setTimeout> | undefined = undefined
 	// True from the moment a keystroke schedules an onSearch until the resulting
 	// `options` update lands. Covers the debounce gap so the empty-state message
 	// doesn't flash before results arrive — even if the parent doesn't drive `loading`.
@@ -278,34 +289,11 @@
 		untrack(() => onOpenChange?.({open: next}))
 	})
 
-	// ---------- Option DOM helpers ----------
-	function getOptionEls(root: HTMLElement | undefined): HTMLElement[] {
-		if (!root) return []
-		return Array.from(root.querySelectorAll(".fluent-option")) as HTMLElement[]
-	}
-
-	// Option carries its value in `data-value` (see Option.svelte).
-	function optionValue(el: HTMLElement): string {
-		return el.dataset.value ?? el.getAttribute("value") ?? ""
-	}
-
-	function optionText(el: HTMLElement): string {
-		return el.dataset.optionLabel ?? el.textContent?.trim() ?? ""
-	}
-
-	function getOptionData(el: HTMLElement): Record<string, unknown> | undefined {
-		const raw = el.dataset.optionContext
-		if (!raw) return undefined
-		try { return JSON.parse(raw) } catch { return undefined }
-	}
-
+	// ---------- Option text ----------
 	function getOptionText(val: string): string {
 		if (!val) return ""
-		for (const root of [listEl, sourceEl]) {
-			if (!root) continue
-			const el = getOptionEls(root).find(o => optionValue(o) === val)
-			if (el) return optionText(el)
-		}
+		const el = findOption([listEl, sourceEl], val)
+		if (el) return optionLabel(el)
 		// Async fallback: the selected option may no longer be rendered (its query
 		// scrolled past). Use the label cached when it was chosen.
 		if (labelCache[val]) return labelCache[val]
@@ -321,15 +309,10 @@
 	function toFilterOption(el: HTMLElement): ComboboxFilterOption {
 		return {
 			value: optionValue(el),
-			label: optionText(el),
+			label: optionLabel(el),
 			disabled: el.hasAttribute("disabled"),
-			data: getOptionData(el)
+			data: optionData(el)
 		}
-	}
-
-	// Diacritic-insensitive, case-insensitive normalization for matching.
-	function norm(s: string): string {
-		return s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "")
 	}
 
 	// ---------- Display text (input value when not actively filtering) ----------
@@ -378,9 +361,21 @@
 		)
 	}
 
+	// Keyboard cursor over the displayed, enabled options.
+	const nav = new ListNav({
+		count: () => visibleOptionEls().length,
+		itemAt: i => visibleOptionEls()[i],
+		pageSize: () => listPageSize(listEl, visibleOptionEls())
+	})
+
+	// Highlights the option with `val`, else the first one.
+	function highlightValue(val: string) {
+		nav.set(Math.max(visibleOptionEls().findIndex(el => optionValue(el) === val), 0))
+	}
+
 	function applyFilter() {
 		if (!listEl) return
-		const q = norm(typed)
+		const q = normalizeForSearch(typed)
 		// In async mode (onSearch) the parent already filtered — show everything it
 		// gave us. Otherwise filter client-side, via a custom `filter` if provided.
 		const clientFilter = !onSearch && isFiltering && doListFilter && q.length > 0
@@ -390,7 +385,7 @@
 			if (clientFilter) {
 				match = filterCallback
 					? filterCallback({term: typed, option: toFilterOption(el)})
-					: norm(optionText(el)).includes(q)
+					: normalizeForSearch(optionLabel(el)).includes(q)
 			}
 			el.toggleAttribute("data-filtered-out", !match)
 			if (match) shown++ // displayed rows include disabled options (still visible)
@@ -398,61 +393,26 @@
 		displayedCount = shown
 	}
 
-	function highlightInitial() {
-		const vis = visibleOptionEls()
-		const i = vis.findIndex(el => optionValue(el) === selectedSingle)
-		highlightedIndex = i >= 0 ? i : (vis.length > 0 ? 0 : -1)
-		scrollHighlightedIntoView()
-	}
-
-	function moveHighlight(delta: number) {
-		const vis = visibleOptionEls()
-		if (vis.length === 0) { highlightedIndex = -1; return }
-		let next = highlightedIndex + delta
-		if (next < 0) next = 0
-		if (next >= vis.length) next = vis.length - 1
-		highlightedIndex = next
-		scrollHighlightedIntoView()
-	}
-
-	function scrollHighlightedIntoView() {
-		if (!listEl || highlightedIndex < 0) return
-		visibleOptionEls()[highlightedIndex]?.scrollIntoView({block: "nearest"})
-	}
-
-	// Number of option rows that fit in the listbox viewport — the step for
-	// PageUp/PageDown. Falls back to 10 before the list has measured.
-	function pageSize(): number {
-		const vis = visibleOptionEls()
-		if (!listEl || vis.length === 0) return 10
-		const rowH = vis[0].offsetHeight || 32
-		const perPage = Math.floor(listEl.clientHeight / rowH)
-		return Math.max(1, perPage - 1) // keep one row of context across the jump
-	}
-
-	// Reflect highlightedIndex onto the matching option so CSS can style the
-	// keyboard cursor distinctly from hover/selected.
+	// Reflect the cursor onto the matching option so CSS can style the keyboard
+	// cursor distinctly from hover/selected.
 	$effect(() => {
-		const _ = [highlightedIndex, isOpen, typed] // dep tracking
+		const _ = [nav.index, isOpen, typed] // dep tracking
 		if (!isOpen) return
-		const vis = visibleOptionEls()
-		getOptionEls(listEl).forEach(el => el.removeAttribute("data-highlighted"))
-		if (highlightedIndex >= 0) vis[highlightedIndex]?.setAttribute("data-highlighted", "")
+		markHighlighted(listEl, nav.index >= 0 ? visibleOptionEls()[nav.index] : undefined)
 	})
 
 	// Inline autocomplete: complete the input to the first matching option's
 	// text and select the appended remainder (so the next keystroke replaces it).
 	function applyInlineCompletion() {
 		if (!inputEl || !typed) return
-		const q = norm(typed)
-		const match = visibleOptionEls().find(el => norm(optionText(el)).startsWith(q))
-		if (!match) return
-		const full = optionText(match)
+		const visible = visibleOptionEls()
+		const idx = visible.findIndex(el => startsWithText(optionLabel(el), typed))
+		if (idx < 0) return
+		const full = optionLabel(visible[idx])
 		// Set canonical text (restores diacritics) and select the remainder.
 		inputEl.value = full
 		inputEl.setSelectionRange(typed.length, full.length)
-		const idx = visibleOptionEls().indexOf(match)
-		if (idx >= 0) { highlightedIndex = idx; scrollHighlightedIntoView() }
+		nav.set(idx)
 	}
 
 	// ---------- Open / close ----------
@@ -469,7 +429,7 @@
 		if (disabled || readonly) return
 		if (!meetsSearchThreshold()) return
 		isOpen = true
-		tick().then(() => { applyFilter(); highlightInitial() })
+		tick().then(() => { applyFilter(); highlightValue(selectedSingle) })
 	}
 
 	// Escape goes to the topmost open layer (helpers/layer-stack.ts), so inside a
@@ -481,7 +441,7 @@
 	function closeDropdown(refocus = true) {
 		if (!isOpen) return
 		isOpen = false
-		highlightedIndex = -1
+		nav.reset()
 		isFiltering = false
 		typed = ""
 		displayedCount = -1 // avoid a stale empty-state flash on next open
@@ -501,11 +461,9 @@
 
 	// Cache a value's label before its <Option> can leave the DOM (async churn).
 	function cacheLabel(val: string, el?: HTMLElement | null) {
-		const opt = el
-			?? getOptionEls(listEl).find(o => optionValue(o) === val)
-			?? getOptionEls(sourceEl).find(o => optionValue(o) === val)
+		const opt = el ?? findOption([listEl, sourceEl], val)
 		if (opt) {
-			const t = optionText(opt)
+			const t = optionLabel(opt)
 			selectedLabel = t
 			labelCache = {...labelCache, [val]: t}
 		}
@@ -520,13 +478,7 @@
 		if (multiple && keepOpen) {
 			// Re-show the full list (filter cleared) and re-anchor the highlight on
 			// the just-toggled row; keep focus in the input for continued typing.
-			tick().then(() => {
-				applyFilter()
-				const vis = visibleOptionEls()
-				const i = vis.findIndex(el => optionValue(el) === val)
-				highlightedIndex = i >= 0 ? i : (vis.length ? 0 : -1)
-				scrollHighlightedIntoView()
-			})
+			tick().then(() => { applyFilter(); highlightValue(val) })
 			inputEl?.focus()
 		} else {
 			closeDropdown()
@@ -543,7 +495,7 @@
 	// Click path: Option.svelte already called ctx.toggle by the time this
 	// bubble-phase handler runs. We only handle the side effects.
 	function handleListClick(ev: MouseEvent) {
-		const optEl = (ev.target as HTMLElement | null)?.closest(".fluent-option") as HTMLElement | null
+		const optEl = (ev.target as HTMLElement | null)?.closest(OPTION_SELECTOR) as HTMLElement | null
 		if (!optEl) return
 		if (optEl.hasAttribute("disabled")) { ev.preventDefault(); return }
 		const val = optionValue(optEl)
@@ -562,11 +514,11 @@
 
 	// Debounced server-side search notification. The parent updates `options`
 	// with the results; the options-change effect below re-syncs the list.
+	const debouncedSearch = debounce((term: string) => onSearch?.({term}), () => searchDelay)
 	function fireSearch(query: string) {
 		if (!onSearch) return
 		searchPending = true
-		if (searchTimer) clearTimeout(searchTimer)
-		searchTimer = setTimeout(() => onSearch?.({term: query}), Math.max(0, searchDelay))
+		debouncedSearch(query)
 	}
 
 	// Re-sync the list when async results arrive (the `options` prop changed
@@ -575,16 +527,11 @@
 		options // dependency
 		searchPending = false // results landed
 		if (!untrack(() => isOpen)) return
-		tick().then(() => {
-			applyFilter()
-			const vis = visibleOptionEls()
-			highlightedIndex = vis.length ? 0 : -1
-			scrollHighlightedIntoView()
-		})
+		tick().then(() => { applyFilter(); nav.first() })
 	})
 
 	// Cancel a pending debounce on unmount.
-	$effect(() => () => { if (searchTimer) clearTimeout(searchTimer) })
+	$effect(() => () => debouncedSearch.cancel())
 
 	// ---------- Input handlers ----------
 	function handleInput(ev: Event & {inputType?: string}) {
@@ -592,7 +539,7 @@
 		const el = ev.target as HTMLInputElement
 		isFiltering = true
 		typed = el.value
-		highlightedIndex = -1
+		nav.reset()
 
 		// Gate against large/async sets: below minSearchLength keep it closed and
 		// don't fire a search.
@@ -607,9 +554,7 @@
 		const isDelete = typeof ev.inputType === "string" && ev.inputType.startsWith("delete")
 		tick().then(() => {
 			applyFilter()
-			const vis = visibleOptionEls()
-			highlightedIndex = vis.length ? 0 : -1
-			scrollHighlightedIntoView()
+			nav.first()
 			// Inline completion works off the local set; skip in async mode where
 			// results arrive after this tick.
 			if (doInline && !onSearch && !isDelete) applyInlineCompletion()
@@ -623,52 +568,28 @@
 			removeValue(selectionState.value[selectionState.value.length - 1])
 			return
 		}
+		if (!isOpen) {
+			// Arrow / Page keys on a closed combobox open it (Home/End stay with the caret).
+			if (["ArrowDown", "ArrowUp", "PageDown", "PageUp"].includes(ev.key)) {
+				ev.preventDefault()
+				openDropdown()
+			}
+			return
+		}
+		if (nav.handleKey(ev)) return
 		switch (ev.key) {
-			case "ArrowDown":
-				ev.preventDefault()
-				if (!isOpen) openDropdown()
-				else moveHighlight(1)
-				break
-			case "ArrowUp":
-				ev.preventDefault()
-				if (!isOpen) openDropdown()
-				else moveHighlight(-1)
-				break
-			case "PageDown":
-				ev.preventDefault()
-				if (!isOpen) openDropdown()
-				else moveHighlight(pageSize())
-				break
-			case "PageUp":
-				ev.preventDefault()
-				if (!isOpen) openDropdown()
-				else moveHighlight(-pageSize())
-				break
-			case "Home":
-				if (isOpen && visibleOptionEls().length) {
-					ev.preventDefault()
-					highlightedIndex = 0
-					scrollHighlightedIntoView()
-				}
-				break
-			case "End":
-				if (isOpen) {
-					const n = visibleOptionEls().length
-					if (n) { ev.preventDefault(); highlightedIndex = n - 1; scrollHighlightedIntoView() }
-				}
-				break
 			case "Enter": {
-				if (!isOpen) break
 				ev.preventDefault()
-				const el = visibleOptionEls()[highlightedIndex]
+				const el = visibleOptionEls()[nav.index]
 				if (el) selectByValue(optionValue(el))
 				break
 			}
 			case "Escape":
-				if (isOpen) { ev.preventDefault(); closeDropdown() }
+				ev.preventDefault()
+				closeDropdown()
 				break
 			case "Tab":
-				if (isOpen) closeDropdown(false)
+				closeDropdown(false)
 				break
 		}
 	}
@@ -700,41 +621,12 @@
 	}
 
 	// ---------- Close on outside pointerdown / focus move ----------
+	// Focus moving outside (Tab-ing away, a modal dialog opening) closes too —
+	// otherwise the popover floats above the modal. No refocus: that would yank
+	// focus back out of whatever just opened.
 	$effect(() => {
 		if (!isOpen) return
-		// Shared test: does the event's path touch our control or portalled list?
-		function isInside(ev: Event): boolean {
-			const path = ev.composedPath()
-			return !!(controlEl && path.includes(controlEl)) || !!(listEl && path.includes(listEl))
-		}
-		function onDown(ev: PointerEvent) {
-			if (!isInside(ev)) closeDropdown(false)
-		}
-		// Focus moving outside (e.g. a modal dialog opening and trapping focus, or
-		// Tab-ing away) closes the popover too — otherwise it floats above the modal,
-		// since the popover z-layer sits above the modal layer by design. refocus=false
-		// so we don't yank focus back out of whatever just opened.
-		function onFocusIn(ev: FocusEvent) {
-			if (isInside(ev)) return
-			// Our listbox is portalled OUT of the control's DOM subtree (top layer),
-			// so a modal dialog's focus trap treats it as "outside" and yanks focus
-			// back to an element inside the dialog (e.g. its close button). That
-			// bounce would otherwise close the dropdown mid-click, before the option
-			// selection commits. If focus landed inside the SAME dialog that owns the
-			// control, keep the dropdown open — it's the trap fighting the portal, not
-			// the user leaving. Focus moving into a DIFFERENT dialog (or with no owning
-			// dialog at all) still closes, as intended.
-			const controlDialog = controlEl?.closest("fluent-dialog, [role='dialog']")
-			const target = ev.target as Node | null
-			if (controlDialog && target && controlDialog.contains(target)) return
-			closeDropdown(false)
-		}
-		document.addEventListener("pointerdown", onDown, true)
-		document.addEventListener("focusin", onFocusIn, true)
-		return () => {
-			document.removeEventListener("pointerdown", onDown, true)
-			document.removeEventListener("focusin", onFocusIn, true)
-		}
+		return dismissOnOutside(() => [controlEl, listEl], () => closeDropdown(false))
 	})
 
 	// ---------- Computed ----------

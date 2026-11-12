@@ -85,3 +85,41 @@ test("Combobox: height is applied to the control", async ({page}) => {
 	const control = page.locator("#combo-open .combobox-control")
 	await expect(control).toHaveCSS("height", "48px")
 })
+
+// helpers/listbox-nav + helpers/text (2.0.0 Phase 3)
+test("Select keyboard: arrows/Home/End skip disabled options; type-ahead jumps; Enter picks", async ({page}) => {
+	const trigger = page.locator("#sel-keys")
+	await trigger.focus()
+	await page.keyboard.press("ArrowDown") // opens on the first enabled option
+	const hl = page.locator(".select-listbox-popover .fluent-option[data-highlighted]")
+	await expect(hl).toHaveText("Alpha")
+	await page.keyboard.press("ArrowDown")
+	await expect(hl).toHaveText("Charlie") // Bravo is disabled
+	await page.keyboard.press("End")
+	await expect(hl).toHaveText("Delta") // Echo is disabled
+	await page.keyboard.press("Home")
+	await expect(hl).toHaveText("Alpha")
+	await page.keyboard.press("c")
+	await expect(hl).toHaveText("Charlie")
+	await page.keyboard.press("Enter")
+	await expect(page.locator(".select-listbox-popover")).toHaveCount(0)
+	await expect(trigger).toHaveText("Charlie")
+})
+
+test("Combobox keyboard: diacritic-insensitive filter; arrows walk visible, enabled options only", async ({page}) => {
+	const input = page.locator("#combo-keys")
+	await input.click()
+	await input.pressSequentially("zl")
+	const list = page.locator(".combobox-listbox")
+	await expect(list.locator(".fluent-option:not([data-filtered-out])")).toHaveCount(3)
+	const hl = list.locator(".fluent-option[data-highlighted]")
+	await expect(hl).toHaveText("Žluťoučký kůň")
+	await page.keyboard.press("End")
+	await expect(hl).toHaveText("Zlatý") // Zlobivý is disabled, Other filtered out
+	await page.keyboard.press("ArrowDown")
+	await expect(hl).toHaveText("Zlatý") // clamped at the end
+	await page.keyboard.press("Home")
+	await expect(hl).toHaveText("Žluťoučký kůň")
+	await page.keyboard.press("Enter")
+	await expect(input).toHaveValue("Žluťoučký kůň")
+})

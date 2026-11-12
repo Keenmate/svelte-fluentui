@@ -27,3 +27,13 @@ test("ArrowDown keeps the highlighted option visible", async ({page}) => {
 		)
 		.toBe(true)
 })
+
+test("typing a letter on a closed select editor opens it on the matching option", async ({page}) => {
+	await page.goto("/test/grid-cell-editor")
+	await page.locator("#grid-wrap td", {hasText: "apple"}).first().dblclick()
+	await expect(page.locator(".cell-select-trigger")).toBeFocused()
+	await page.keyboard.press("c")
+	const dropdown = page.locator(".cell-dropdown")
+	await expect(dropdown).toBeVisible()
+	await expect(dropdown.locator(".cell-dropdown-option.highlighted")).toHaveText("Cherry")
+})

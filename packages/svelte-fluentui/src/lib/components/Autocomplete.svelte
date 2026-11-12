@@ -13,6 +13,10 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Chip from "./Chip.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {dismissOnOutside} from "../helpers/dismiss.js"
+	import {ListNav} from "../helpers/listbox-nav.svelte.js"
+	import {AsyncSearch} from "../helpers/async-search.svelte.js"
+	import {containsText} from "../helpers/text.js"
 	import type {OptionItem, RestProps} from "../types/index.js"
 
 	type OwnProps<T = any> = {
@@ -71,7 +75,7 @@
 		class?: string
 		style?: string
 		initialSearchQuery?: string
-		/** Provides options for a search term (server-side search). `signal` aborts when a newer search starts or the component unmounts. */
+		/** Provides options for a search term (server-side search). `signal` aborts when a newer search starts, the query is cleared, the dropdown closes or the component unmounts. */
 		searchCallback?: (ctx: {term: string; signal: AbortSignal}) => Promise<OptionItem<T>[]> | OptionItem<T>[]
 		/** Fires when the user adds or removes a selection. */
 		onChange?: (ctx: {value: T[]}) => void
@@ -142,32 +146,33 @@
 	// the raw value id. We remember each picked option's text here so getOptionText
 	// can resolve chips regardless of which source they came from.
 	let labelCache = $state<Record<string, string>>({})
-	let highlightedIndex = $state(-1)
 	let containerElement = $state<HTMLElement | undefined>(undefined)
 	let inputElement = $state<HTMLInputElement | undefined>(undefined)
-	let isSearching = $state(false)
 	let isFocused = $state(false)
-	let debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined
 	let optionsListElement = $state<HTMLElement | undefined>(undefined)
-	// Bumped on every search (and on unmount) so a slow response that arrives
-	// after a newer search, or after the component is gone, is dropped.
-	let searchSeq = 0
 
-	// Aborts the in-flight searchCallback when a newer search starts or on unmount.
-	let searchAbort: AbortController | undefined
-
-	$effect(() => () => {
-		searchSeq++
-		searchAbort?.abort()
-		if (debounceTimer) clearTimeout(debounceTimer)
+	// Keyboard cursor over the rendered option rows.
+	const nav = new ListNav({
+		count: () => filteredOptions.length,
+		itemAt: i => optionsListElement?.querySelectorAll(".option-item")[i]
 	})
 
-	/** Inside this control or its own portalled options list (not another component's popup). */
-	function isInsideOwnSurface(target: Element): boolean {
-		if (containerElement?.contains(target)) return true
-		const surface = optionsListElement?.closest(".positioning-region") ?? optionsListElement
-		return !!surface?.contains(target)
-	}
+	// Debounced search (`immediateDelay`), local or via `searchCallback`. Aborts the
+	// in-flight request when a newer search starts, the search is cancelled (empty
+	// query, dropdown closed) or the component unmounts; stale responses are dropped.
+	const search = new AsyncSearch<OptionItem<any>>({
+		delay: () => immediateDelay,
+		search: (term, signal) => searchCallback
+			? searchCallback({term, signal})
+			: options.filter(opt => containsText(opt.label, term, {diacritics: true})),
+		onResults: results => showResults(results),
+		onError: error => {
+			console.error("[Autocomplete] searchCallback failed:", error)
+			showResults([])
+		}
+	})
+
+	$effect(() => () => search.cancel())
 
 	// Compute effective multi/single select mode
 	// If multiple is explicitly set, use it. Otherwise, infer from maxSelectionCount
@@ -185,56 +190,23 @@
 		}
 	})
 
-	// Perform the actual search
-	async function performSearch(text: string) {
-		const seq = ++searchSeq
-		// Show loading state (either from prop or internal state)
-		isSearching = true
+	// Show search results, excluding already-selected options so a picked value
+	// can't reappear in the list and be selected twice.
+	function showResults(results: OptionItem<any>[]) {
+		filteredOptions = results.filter(r => !isSelected(r.value)).slice(0, maxResultCount)
+		isOpen = filteredOptions.length > 0 || showOverlayOnEmptyResults
+	}
 
-		try {
-			if (searchCallback) {
-				searchAbort?.abort()
-				const abort = (searchAbort = new AbortController())
-				let results: OptionItem<any>[]
-				try {
-					results = await searchCallback({term: text, signal: abort.signal})
-				} catch (error) {
-					if (seq !== searchSeq || abort.signal.aborted) return
-					console.error("[Autocomplete] searchCallback failed:", error)
-					results = []
-				}
-				if (seq !== searchSeq) return
-				// Exclude already-selected options so a picked value can't reappear in
-				// the list and be selected twice — matching the client-side branch below.
-				filteredOptions = results.filter(r => !isSelected(r.value)).slice(0, maxResultCount)
-			} else {
-				// Default filtering: contains (case insensitive)
-				// Filter out already selected options to avoid duplicates
-				const filtered = options.filter(opt =>
-					opt.label.toLowerCase().includes(text.toLowerCase()) &&
-					!isSelected(opt.value)
-				)
-				filteredOptions = filtered.slice(0, maxResultCount)
-			}
-
-			isOpen = filteredOptions.length > 0 || showOverlayOnEmptyResults
-		} finally {
-			if (seq === searchSeq) isSearching = false
-		}
+	// Perform the actual search now (no debounce).
+	function performSearch(text: string) {
+		search.run(text)
 	}
 
 	// Filter options based on search text (with optional debounce)
 	function filterOptions(text: string) {
-		// Clear any pending debounce timer
-		if (debounceTimer) {
-			clearTimeout(debounceTimer)
-			debounceTimer = undefined
-		}
-
 		// Handle empty search text (no debounce needed)
 		if (!text || !text.trim()) {
-			searchSeq++ // drop any in-flight search for the previous text
-			isSearching = false
+			search.cancel() // drop any pending / in-flight search for the previous text
 			// Show initial options if enabled
 			if (showInitialOptions && options.length > 0) {
 				const limit = initialOptionsCount ?? maxResultCount
@@ -254,23 +226,14 @@
 		// Why: against large/async option sets, searching on a single character
 		// is wasteful (UX noise) or expensive (triggers consumer API calls).
 		if (minSearchLength && text.trim().length < minSearchLength) {
-			searchSeq++
+			search.cancel()
 			filteredOptions = []
 			isOpen = false
-			isSearching = false
 			return
 		}
 
-		// Apply debounce if immediateDelay is set
-		if (immediateDelay > 0) {
-			isSearching = true // Show loading immediately
-			debounceTimer = setTimeout(() => {
-				performSearch(text)
-			}, immediateDelay)
-		} else {
-			// No debounce, search immediately
-			performSearch(text)
-		}
+		// Debounced when immediateDelay > 0 (loading shows immediately), else now.
+		search.schedule(text)
 	}
 
 	// Check if an option is already selected
@@ -300,7 +263,7 @@
 			? [...selectedOptions, option.value]
 			: [option.value]
 		searchText = ""
-		highlightedIndex = -1
+		nav.reset()
 
 		// Multi-select honors keepOpen / max-cap; single-select always closes.
 		const stayOpen = effectiveMultiple && keepOpen &&
@@ -380,8 +343,10 @@
 		})
 	})
 
+	// Closing also drops a pending / in-flight search, so late results can't reopen it.
 	function closeDropdown() {
 		isOpen = false
+		search.cancel()
 	}
 
 	// Open the list using the same query-aware path as the dropdown toggle.
@@ -437,7 +402,7 @@
 		}
 		const available = options.filter(opt => !isSelected(opt.value))
 		filteredOptions = available.slice(0, maxResultCount)
-		highlightedIndex = filteredOptions.length > 0 ? 0 : -1
+		nav.set(0)
 		isOpen = filteredOptions.length > 0 || showOverlayOnEmptyResults
 	}
 
@@ -484,16 +449,16 @@
 		switch (event.key) {
 			case "ArrowDown":
 				event.preventDefault()
-				highlightedIndex = Math.min(highlightedIndex + 1, filteredOptions.length - 1)
+				nav.move(1)
 				break
 			case "ArrowUp":
 				event.preventDefault()
-				highlightedIndex = Math.max(highlightedIndex - 1, 0)
+				nav.move(-1)
 				break
 			case "Enter":
 				event.preventDefault()
-				if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
-					selectOption(filteredOptions[highlightedIndex])
+				if (filteredOptions[nav.index]) {
+					selectOption(filteredOptions[nav.index])
 				}
 				break
 			case "Escape":
@@ -504,9 +469,9 @@
 				break
 			case "Tab":
 				// Tab key behavior controlled by selectValueOnTab prop
-				if (selectValueOnTab && highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+				if (selectValueOnTab && filteredOptions[nav.index]) {
 					event.preventDefault()
-					selectOption(filteredOptions[highlightedIndex])
+					selectOption(filteredOptions[nav.index])
 				}
 				break
 		}
@@ -540,72 +505,17 @@
 		inputElement?.focus()
 	}
 
-	// Handle outside pointerdown. Uses `pointerdown` (capture) rather than a
-	// bubbling `click` so opening another control (Combobox/Autocomplete/Select)
-	// closes this one immediately, before focus moves — matching Combobox.
-	// Guarded to ignore presses inside our own control or the portalled options
-	// list, so clicking an option still selects it instead of just closing.
-	function handleOutsidePointerDown(event: PointerEvent) {
-		const target = event.target as Element | null
-		if (!target) return
-		if (isInsideOwnSurface(target)) return
-		closeDropdown()
-	}
-
-	// Close on outside focus move. Opening a modal dialog traps focus inside it
-	// (and Tab-ing away moves focus to another field); either way focus lands
-	// outside our control, so the dropdown must close — otherwise it floats above
-	// the modal, since the popover z-layer sits above the modal layer by design.
-	// Same in/out guards as the pointerdown handler (own control or portalled list).
-	function handleOutsideFocusIn(event: FocusEvent) {
-		const target = event.target as Element | null
-		if (!target) return
-		if (isInsideOwnSurface(target)) return
-		// The options list is portalled OUT of our control's DOM subtree (top layer),
-		// so a modal dialog's focus trap treats it as "outside" and yanks focus back
-		// to an element inside the dialog (e.g. its close button). That bounce would
-		// otherwise close the dropdown mid-click, before an option pick commits. If
-		// focus landed inside the SAME dialog that owns the control, keep it open —
-		// it's the trap fighting the portal, not the user leaving. Focus into a
-		// DIFFERENT dialog (or with no owning dialog) still closes, as intended.
-		const controlDialog = containerElement?.closest("fluent-dialog, [role='dialog']")
-		if (controlDialog && controlDialog.contains(target)) return
-		closeDropdown()
-	}
-
-	// Close dropdown on outside scroll. The options list itself is scrollable
-	// (max-height + overflow-y: auto) and is portaled out via PositioningRegion,
-	// so scrolling inside the listbox must not trigger this. Scrolling anywhere
-	// else on the page would otherwise leave the dropdown floating at its old
-	// anchor position, since PositioningRegion does not re-anchor on scroll.
-	function handleOutsideScroll(event: Event) {
-		const target = event.target as Node | null
-		if (!target) return
-		// Allow scroll inside our own control (input + inline chips) or our own
-		// portalled options list.
-		if (target instanceof Element && isInsideOwnSurface(target)) return
-		if (containerElement && containerElement.contains(target)) return
-		closeDropdown()
-	}
-
-	// Add outside-pointerdown and outside-scroll listeners
+	// Light dismiss: an outside press (capture, so opening another control closes
+	// this one first), focus moving out (Tab-ing away, a modal opening) or an outside
+	// scroll — the dropdown doesn't follow its anchor on scroll. Our own control and
+	// the portalled options list (its scroll container) count as inside.
 	$effect(() => {
-		if (isOpen) {
-			// `capture: true` so we see the press before it reaches (and opens)
-			// another control, and before focus changes.
-			document.addEventListener("pointerdown", handleOutsidePointerDown, true)
-			// `capture: true` because most page scroll containers don't bubble
-			// scroll events to document; capture phase reliably catches them.
-			window.addEventListener("scroll", handleOutsideScroll, true)
-			// `capture: true` so a focus trap (modal opening) is caught even if a
-			// handler in between stops propagation.
-			document.addEventListener("focusin", handleOutsideFocusIn, true)
-			return () => {
-				document.removeEventListener("pointerdown", handleOutsidePointerDown, true)
-				window.removeEventListener("scroll", handleOutsideScroll, true)
-				document.removeEventListener("focusin", handleOutsideFocusIn, true)
-			}
-		}
+		if (!isOpen) return
+		return dismissOnOutside(
+			() => [containerElement, optionsListElement?.closest(".positioning-region") ?? optionsListElement],
+			() => closeDropdown(),
+			{scroll: true}
+		)
 	})
 
 	// Check if max selections reached
@@ -619,7 +529,7 @@
 	let displayValue = $derived(hasSingleSelection ? getOptionText(selectedOptions[0]) : searchText)
 
 	// Computed loading state (external prop or internal state)
-	let showLoading = $derived(loading !== undefined ? loading : isSearching)
+	let showLoading = $derived(loading !== undefined ? loading : search.pending)
 
 	// Compute placeholder - hide when there are inline chips
 	let effectivePlaceholder = $derived(
@@ -639,7 +549,7 @@
 		}
 
 		searchText = target.value
-		highlightedIndex = -1
+		nav.reset()
 		filterOptions(searchText)
 	}
 
@@ -861,7 +771,7 @@
 							<button
 								type="button"
 								class="option-item"
-								class:highlighted={index === highlightedIndex}
+								class:highlighted={index === nav.index}
 								class:disabled={option.disabled}
 								onclick={() => selectOption(option)}
 								disabled={option.disabled}

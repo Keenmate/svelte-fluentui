@@ -577,3 +577,17 @@ test("async: a slower response for an older query is dropped", async ({page}) =>
 	// the superseded search was told to stop via its AbortSignal
 	await expect(page.locator("#stale-aborted")).not.toHaveAttribute("data-value", "0")
 })
+
+test("closing while a search is in flight: the late results don't reopen the dropdown", async ({page}) => {
+	const wrap = wrapById(page, "slow-async")
+	await inputOf(wrap).click()
+	await inputOf(wrap).pressSequentially("a")
+	await expect(optionByText(page, "Apple")).toBeVisible()
+	await inputOf(wrap).pressSequentially("p") // 400ms search in flight, old list still open
+	await expect(wrap.locator(".loading-indicator")).toBeVisible()
+	await page.keyboard.press("Escape")
+	await expect(optionsList(page)).toHaveCount(0)
+	await page.waitForTimeout(700)
+	await expect(optionsList(page)).toHaveCount(0)
+	await expect(wrap.locator(".loading-indicator")).toBeHidden()
+})

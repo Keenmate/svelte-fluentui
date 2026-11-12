@@ -23,6 +23,19 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {dismissOnOutside} from "../helpers/dismiss.js"
+	import {ListNav} from "../helpers/listbox-nav.svelte.js"
+	import {startsWithText} from "../helpers/text.js"
+	import {
+		OPTION_SELECTOR,
+		getOptionEls,
+		optionValue,
+		optionLabel,
+		optionData,
+		findOption,
+		markHighlighted,
+		listPageSize
+	} from "../helpers/option-dom.js"
 	import type {RestProps} from "../types/index.js"
 
 	/** The option the user picked, as passed to `onChange`. */
@@ -213,50 +226,31 @@
 	// the dropdown is closed, so getOptionText() can resolve the trigger's
 	// display text from `value` (the portalled listEl unmounts on close).
 	let sourceEl: HTMLDivElement | undefined = $state()
-	let highlightedIndex = $state(-1)
 	let typeAheadBuffer = ""
 	let typeAheadTimer: ReturnType<typeof setTimeout> | undefined
 
-	function getOptionEls(root: HTMLElement | undefined): HTMLElement[] {
-		if (!root) return []
-		return Array.from(root.querySelectorAll(".fluent-option")) as HTMLElement[]
-	}
 	function enabledOptionEls(root: HTMLElement | undefined): HTMLElement[] {
 		return getOptionEls(root).filter(el => !el.hasAttribute("disabled"))
 	}
 
-	// Option carries its value in `data-value` (see Option.svelte).
-	function optionValue(el: HTMLElement): string {
-		return el.dataset.value ?? el.getAttribute("value") ?? ""
-	}
+	// Keyboard cursor over the enabled options of the open dropdown.
+	const nav = new ListNav({
+		count: () => enabledOptionEls(listEl).length,
+		itemAt: i => enabledOptionEls(listEl)[i],
+		pageSize: () => listPageSize(listEl, enabledOptionEls(listEl))
+	})
 
 	function getOptionText(val: string): string {
-		const roots = multiple
-			? [inlineListEl]
-			: [listEl, sourceEl]
-		for (const root of roots) {
-			if (!root) continue
-			const all = getOptionEls(root)
-			const el = all.find(o => optionValue(o) === val)
-			if (el) return el.textContent?.trim() ?? ""
-		}
-		return ""
-	}
-
-	function getOptionData(el: HTMLElement): Record<string, unknown> | undefined {
-		const raw = el.dataset.optionContext
-		if (!raw) return undefined
-		try { return JSON.parse(raw) } catch { return undefined }
+		const el = findOption(multiple ? [inlineListEl] : [listEl, sourceEl], val)
+		return el ? optionLabel(el) : ""
 	}
 
 	function openDropdown() {
 		if (disabled || multiple || readonly) return
 		isOpen = true
 		tick().then(() => {
-			const opts = enabledOptionEls(listEl)
-			const i = opts.findIndex(el => optionValue(el) === selectedSingle)
-			highlightedIndex = i >= 0 ? i : (opts.length > 0 ? 0 : -1)
-			scrollHighlightedIntoView()
+			const i = enabledOptionEls(listEl).findIndex(el => optionValue(el) === selectedSingle)
+			nav.set(Math.max(i, 0))
 		})
 	}
 
@@ -269,7 +263,7 @@
 	function closeDropdown(refocus = true) {
 		if (!isOpen) return
 		isOpen = false
-		highlightedIndex = -1
+		nav.reset()
 		typeAheadBuffer = ""
 		if (refocus) triggerEl?.focus()
 	}
@@ -284,8 +278,7 @@
 	// mode-aware semantics), fires onchange, and closes in single mode.
 	function selectByValue(val: string, el?: HTMLElement) {
 		if (readonly) return
-		const optEl = el ?? getOptionEls(multiple ? inlineListEl : listEl)
-			.find(o => optionValue(o) === val)
+		const optEl = el ?? findOption([multiple ? inlineListEl : listEl], val)
 
 		const before = [...selectionState.value]
 		ctx.toggle(val)
@@ -312,7 +305,7 @@
 		onChange?.({
 			value: multiple ? [...after] : (after[0] ?? ""),
 			option: optEl
-				? {value: optionValue(optEl), text: optEl.textContent?.trim() ?? "", data: getOptionData(optEl)}
+				? {value: optionValue(optEl), text: optionLabel(optEl), data: optionData(optEl)}
 				: undefined
 		})
 	}
@@ -321,7 +314,7 @@
 		if (readonly) return
 		const target = ev.target as HTMLElement | null
 		if (!target) return
-		const optEl = target.closest(".fluent-option") as HTMLElement | null
+		const optEl = target.closest(OPTION_SELECTOR) as HTMLElement | null
 		if (!optEl) return
 		if (optEl.hasAttribute("disabled")) {
 			ev.preventDefault()
@@ -334,34 +327,6 @@
 	}
 
 	// ---------- Keyboard (single mode) ----------
-	function moveHighlight(delta: number) {
-		const opts = enabledOptionEls(listEl)
-		if (opts.length === 0) return
-		const cur = highlightedIndex
-		let next = cur + delta
-		if (next < 0) next = 0
-		if (next >= opts.length) next = opts.length - 1
-		highlightedIndex = next
-		scrollHighlightedIntoView()
-	}
-
-	function scrollHighlightedIntoView() {
-		if (!listEl || highlightedIndex < 0) return
-		const opts = enabledOptionEls(listEl)
-		const el = opts[highlightedIndex]
-		el?.scrollIntoView({block: "nearest"})
-	}
-
-	// Number of option rows that fit in the popover viewport — the step for
-	// PageUp/PageDown. Falls back to 10 before the list has measured.
-	function pageSize(): number {
-		const opts = enabledOptionEls(listEl)
-		if (!listEl || opts.length === 0) return 10
-		const rowH = opts[0].offsetHeight || 32
-		const perPage = Math.floor(listEl.clientHeight / rowH)
-		return Math.max(1, perPage - 1) // keep one row of context across the jump
-	}
-
 	function typeAheadJump(ch: string) {
 		clearTimeout(typeAheadTimer)
 		typeAheadBuffer += ch.toLowerCase()
@@ -369,8 +334,10 @@
 
 		const opts = enabledOptionEls(listEl)
 		if (opts.length === 0) return
-		const start = highlightedIndex >= 0 ? highlightedIndex : 0
+		const start = nav.index >= 0 ? nav.index : 0
 		const n = opts.length
+		const startsWith = (el: HTMLElement | undefined, needle: string) =>
+			!!el && startsWithText(optionLabel(el), needle, {diacritics: true})
 
 		// Mode picking:
 		// - "Repeat" (buffer="cc"|"ccc"): user is cycling — advance past current.
@@ -381,18 +348,15 @@
 		//   from the current position.
 		const isRepeat = typeAheadBuffer.length > 1
 			&& typeAheadBuffer.split("").every(c => c === typeAheadBuffer[0])
-		const isSingleRepress = typeAheadBuffer.length === 1
-			&& (opts[start]?.textContent?.trim().toLowerCase() ?? "").startsWith(typeAheadBuffer)
+		const isSingleRepress = typeAheadBuffer.length === 1 && startsWith(opts[start], typeAheadBuffer)
 		const advance = isRepeat || isSingleRepress
 		const needle = isRepeat ? typeAheadBuffer[0] : typeAheadBuffer
 		const startAt = advance ? (start + 1) % n : start
 
 		for (let i = 0; i < n; i++) {
 			const idx = (startAt + i) % n
-			const text = opts[idx].textContent?.trim().toLowerCase() ?? ""
-			if (text.startsWith(needle)) {
-				highlightedIndex = idx
-				scrollHighlightedIntoView()
+			if (startsWith(opts[idx], needle)) {
+				nav.set(idx)
 				return
 			}
 		}
@@ -422,28 +386,12 @@
 			return
 		}
 
+		if (nav.handleKey(ev)) return
 		switch (ev.key) {
-			case "ArrowDown": ev.preventDefault(); moveHighlight(1); break
-			case "ArrowUp":   ev.preventDefault(); moveHighlight(-1); break
-			case "PageDown":  ev.preventDefault(); moveHighlight(pageSize()); break
-			case "PageUp":    ev.preventDefault(); moveHighlight(-pageSize()); break
-			case "Home": {
-				ev.preventDefault()
-				const opts = enabledOptionEls(listEl)
-				if (opts.length) { highlightedIndex = 0; scrollHighlightedIntoView() }
-				break
-			}
-			case "End": {
-				ev.preventDefault()
-				const opts = enabledOptionEls(listEl)
-				if (opts.length) { highlightedIndex = opts.length - 1; scrollHighlightedIntoView() }
-				break
-			}
 			case "Enter":
 			case " ": {
 				ev.preventDefault()
-				const opts = enabledOptionEls(listEl)
-				const el = opts[highlightedIndex]
+				const el = enabledOptionEls(listEl)[nav.index]
 				if (el) selectByValue(optionValue(el), el)
 				break
 			}
@@ -458,56 +406,20 @@
 	}
 
 	// ---------- Visual highlight sync ----------
-	// Reflects highlightedIndex to a data-highlighted attribute on the corresponding
+	// Reflects the cursor to a data-highlighted attribute on the corresponding
 	// option element, so CSS can style the keyboard-cursor row distinctly from
 	// hover and selected states.
 	$effect(() => {
-		const _ = highlightedIndex // dep tracking
-		const opts = enabledOptionEls(listEl)
-		opts.forEach((el, i) => {
-			if (i === highlightedIndex) el.setAttribute("data-highlighted", "")
-			else el.removeAttribute("data-highlighted")
-		})
+		markHighlighted(listEl, enabledOptionEls(listEl)[nav.index])
 	})
 
 	// ---------- Close on outside pointerdown / focus move ----------
+	// Focus moving outside (Tab-ing away, a modal dialog opening) closes too —
+	// otherwise the popover floats above the modal. No refocus: that would yank
+	// focus back out of whatever just opened.
 	$effect(() => {
 		if (!isOpen) return
-		// Shared test: does the event's path touch our trigger or portalled list?
-		function isInside(ev: Event): boolean {
-			const path = ev.composedPath()
-			return !!(triggerEl && path.includes(triggerEl)) || !!(listEl && path.includes(listEl))
-		}
-		function onDown(ev: PointerEvent) {
-			if (!isInside(ev)) closeDropdown(false)
-		}
-		// Focus moving outside (e.g. a modal dialog opening and trapping focus, or
-		// Tab-ing away) closes the popover too — otherwise it floats above the modal,
-		// since the popover z-layer sits above the modal layer by design (so popovers
-		// opened INSIDE a dialog work). Don't refocus the trigger — that would yank
-		// focus back out of whatever just opened.
-		function onFocusIn(ev: FocusEvent) {
-			if (isInside(ev)) return
-			// Our listbox is portalled OUT of the trigger's DOM subtree (top layer),
-			// so a modal dialog's focus trap treats it as "outside" and yanks focus
-			// back to an element inside the dialog (e.g. its close button). That
-			// bounce would otherwise close the dropdown mid-click, before the option
-			// selection commits. If focus landed inside the SAME dialog that owns the
-			// trigger, keep the dropdown open — it's the trap fighting the portal, not
-			// the user leaving. Focus moving into a DIFFERENT dialog (or with no owning
-			// dialog at all) still closes, as intended.
-			const triggerDialog = triggerEl?.closest("fluent-dialog, [role='dialog']")
-			const target = ev.target as Node | null
-			if (triggerDialog && target && triggerDialog.contains(target)) return
-			closeDropdown(false)
-		}
-		// Use capture so we beat any handler that stops propagation.
-		document.addEventListener("pointerdown", onDown, true)
-		document.addEventListener("focusin", onFocusIn, true)
-		return () => {
-			document.removeEventListener("pointerdown", onDown, true)
-			document.removeEventListener("focusin", onFocusIn, true)
-		}
+		return dismissOnOutside(() => [triggerEl, listEl], () => closeDropdown(false))
 	})
 
 	// ---------- Multi-mode height calculation (maxVisibleOptionCount) ----------
@@ -523,9 +435,9 @@
 		}
 		queueMicrotask(() => {
 			if (!inlineListEl) return
-			const opts = inlineListEl.querySelectorAll(".fluent-option")
+			const opts = getOptionEls(inlineListEl)
 			if (opts.length === 0) return
-			const first = opts[0] as HTMLElement
+			const first = opts[0]
 			const rowH = parseInt(window.getComputedStyle(first).height) || first.offsetHeight || 32
 			const visible = Math.min(opts.length, maxVisibleOptionCount)
 			// + 8px for top/bottom padding of the listbox.
