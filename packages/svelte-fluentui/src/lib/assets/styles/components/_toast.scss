@@ -235,29 +235,29 @@
 
 // Success toast
 .fluent-toast--success {
-	border-inline-start: 4px solid $color-success;
+	border-inline-start: 4px solid var(--fluent-color-success-foreground, #{$color-success});
 
 	.fluent-toast__icon {
-		background-color: rgba($color-success, 0.1);
-		color: $color-success;
+		background-color: color-mix(in srgb, var(--fluent-color-success-foreground, #{$color-success}) 10%, transparent);
+		color: var(--fluent-color-success-foreground, #{$color-success});
 	}
 
 	.fluent-toast__progress {
-		color: $color-success;
+		color: var(--fluent-color-success-foreground, #{$color-success});
 	}
 }
 
 // Error toast
 .fluent-toast--error {
-	border-inline-start: 4px solid $color-error;
+	border-inline-start: 4px solid var(--fluent-color-danger-foreground, #{$color-error});
 
 	.fluent-toast__icon {
-		background-color: rgba($color-error, 0.1);
-		color: $color-error;
+		background-color: color-mix(in srgb, var(--fluent-color-danger-foreground, #{$color-error}) 10%, transparent);
+		color: var(--fluent-color-danger-foreground, #{$color-error});
 	}
 
 	.fluent-toast__progress {
-		color: $color-error;
+		color: var(--fluent-color-danger-foreground, #{$color-error});
 	}
 }
 
@@ -277,15 +277,15 @@
 
 // Info toast
 .fluent-toast--info {
-	border-inline-start: 4px solid $color-info;
+	border-inline-start: 4px solid var(--fluent-color-info-foreground, #{$color-info});
 
 	.fluent-toast__icon {
-		background-color: rgba($color-info, 0.1);
-		color: $color-info;
+		background-color: color-mix(in srgb, var(--fluent-color-info-foreground, #{$color-info}) 10%, transparent);
+		color: var(--fluent-color-info-foreground, #{$color-info});
 	}
 
 	.fluent-toast__progress {
-		color: $color-info;
+		color: var(--fluent-color-info-foreground, #{$color-info});
 	}
 }
 

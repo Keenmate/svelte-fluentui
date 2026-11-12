@@ -199,12 +199,11 @@
 	   direction: rtl clips the leading edge; text-align keeps glyph order LTR. */
 	.badge-ellipsis-start {
 		direction: rtl;
-		text-align: left;
+		text-align: end;
 	}
 
 	:global([dir="rtl"]) .badge-ellipsis-start {
 		direction: ltr;
-		text-align: right;
 	}
 
 	/* Appearance variants */

@@ -311,19 +311,12 @@
 		min-width: 160px;
 	}
 
+	/* Dark theme is handled by the palette tokens (re-declared under [data-theme="dark"]). */
 	.fluent-menu-button-menu :global(fluent-menu-item.danger) {
-		color: var(--error-foreground, #d13438);
+		color: var(--fluent-color-danger-foreground, #d13438);
 	}
 
 	.fluent-menu-button-menu :global(fluent-menu-item.danger:hover) {
-		background: var(--error-fill-hover, #fde7e9);
-	}
-
-	:global([data-theme="dark"]) .fluent-menu-button-menu :global(fluent-menu-item.danger) {
-		color: var(--error-foreground, #f87c86);
-	}
-
-	:global([data-theme="dark"]) .fluent-menu-button-menu :global(fluent-menu-item.danger:hover) {
-		background: var(--error-fill-hover, #442726);
+		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
 	}
 </style>

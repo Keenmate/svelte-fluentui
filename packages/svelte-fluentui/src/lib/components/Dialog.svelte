@@ -494,7 +494,7 @@
 	.dialog-close-floating {
 		position: absolute;
 		top: 0;
-		right: 0;
+		inset-inline-end: 0;
 		background: transparent;
 		border: none;
 		cursor: pointer;

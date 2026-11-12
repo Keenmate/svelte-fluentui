@@ -118,7 +118,7 @@
 	}
 
 	.primary-action {
-		margin-right: 1rem;
+		margin-inline-end: 1rem;
 	}
 </style>
 

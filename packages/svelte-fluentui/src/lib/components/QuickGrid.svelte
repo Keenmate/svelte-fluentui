@@ -2288,8 +2288,8 @@
 	}
 
 	.row-toolbar-btn.danger:hover {
-		background: var(--error-fill-hover, #fde7e9);
-		color: var(--error-foreground, #d13438);
+		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
+		color: var(--fluent-color-danger-foreground, #d13438);
 	}
 
 	.row-toolbar-label {
@@ -2313,11 +2313,6 @@
 
 	:global([data-theme="dark"]) .row-toolbar-btn:hover {
 		background: var(--neutral-fill-secondary-hover, #3a3a3a);
-	}
-
-	:global([data-theme="dark"]) .row-toolbar-btn.danger:hover {
-		background: var(--error-fill-hover, #442726);
-		color: var(--error-foreground, #f87c86);
 	}
 
 	/* Legacy class aliases for backwards compatibility */
@@ -2359,7 +2354,7 @@
 		font-weight: var(--font-weight-semibold, 600);
 		padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
 		border-bottom: 2px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		text-align: left;
+		text-align: start;
 		user-select: none;
 		position: relative;
 	}
@@ -2397,7 +2392,7 @@
 		color: var(--accent-fill-rest, #0078d4);
 		cursor: help;
 		opacity: 0.7;
-		margin-left: 2px;
+		margin-inline-start: 2px;
 	}
 
 	.header-info-icon:hover {
@@ -2433,23 +2428,14 @@
 
 	/* Invalid state — surfaced when a column's `filter` callback returned null on the
 	   probe row (i.e. user typed something syntactically incomplete like `>`). Themes
-	   that override `--error-foreground` / `--error-fill-rest` get the right red. */
+	   that override `--fluent-color-danger-foreground` get the right red (dark theme included). */
 	.filter-input.invalid {
-		border-color: var(--error-foreground, #d13438);
+		border-color: var(--fluent-color-danger-foreground, #d13438);
 	}
 
 	.filter-input.invalid:focus {
-		border-color: var(--error-foreground, #d13438);
-		box-shadow: 0 0 0 1px var(--error-foreground, #d13438);
-	}
-
-	:global([data-theme="dark"]) .filter-input.invalid {
-		border-color: var(--error-foreground, #f87c86);
-	}
-
-	:global([data-theme="dark"]) .filter-input.invalid:focus {
-		border-color: var(--error-foreground, #f87c86);
-		box-shadow: 0 0 0 1px var(--error-foreground, #f87c86);
+		border-color: var(--fluent-color-danger-foreground, #d13438);
+		box-shadow: 0 0 0 1px var(--fluent-color-danger-foreground, #d13438);
 	}
 
 	tbody tr {
@@ -2573,7 +2559,7 @@
 	.item-count {
 		font-size: 12px;
 		color: var(--neutral-foreground-hint, #707070);
-		margin-left: 4px;
+		margin-inline-start: 4px;
 	}
 
 	/* Dark mode support */
@@ -2726,25 +2712,25 @@
 
 	/* Validation error styles */
 	.validation-error {
-		background: var(--error-fill-rest, #fde7e9) !important;
+		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12)) !important;
 	}
 
 	.validation-error::after {
-		border-color: var(--error-stroke-rest, #d13438) !important;
+		border-color: var(--fluent-color-danger-foreground, #d13438) !important;
 		border-style: solid !important;
 	}
 
 	.validation-error-message {
 		font-size: 11px;
-		color: var(--error-foreground, #d13438);
+		color: var(--fluent-color-danger-foreground, #d13438);
 		margin-top: 2px;
 	}
 
 	/* Cell error indicator (shows when cell is invalid but not editing) */
 	.cell-error-indicator {
-		color: var(--error-foreground, #d13438);
+		color: var(--fluent-color-danger-foreground, #d13438);
 		font-size: 12px;
-		margin-left: 4px;
+		margin-inline-start: 4px;
 		cursor: help;
 	}
 
@@ -2788,18 +2774,6 @@
 
 	:global([data-theme="dark"]) .cell-edit-btn:hover {
 		background: var(--neutral-layer-3, #333333);
-	}
-
-	:global([data-theme="dark"]) .validation-error {
-		background: var(--error-fill-rest, #442726) !important;
-	}
-
-	:global([data-theme="dark"]) .validation-error-message {
-		color: var(--error-foreground, #f87c86);
-	}
-
-	:global([data-theme="dark"]) .cell-error-indicator {
-		color: var(--error-foreground, #f87c86);
 	}
 
 	/* Navigate mode styles. All cells are focusable so the focus indicator applies to
@@ -2896,18 +2870,10 @@
 	}
 
 	.context-menu fluent-menu-item.danger {
-		color: var(--error-foreground, #d13438);
+		color: var(--fluent-color-danger-foreground, #d13438);
 	}
 
 	.context-menu fluent-menu-item.danger:hover {
-		background: var(--error-fill-hover, #fde7e9);
-	}
-
-	:global([data-theme="dark"]) .context-menu fluent-menu-item.danger {
-		color: var(--error-foreground, #f87c86);
-	}
-
-	:global([data-theme="dark"]) .context-menu fluent-menu-item.danger:hover {
-		background: var(--error-fill-hover, #442726);
+		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
 	}
 </style>

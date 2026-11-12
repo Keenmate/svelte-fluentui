@@ -88,6 +88,6 @@
 	/* Indent a group's option rows so they visibly nest under the header and
 	 * read as distinct from any ungrouped (flush-left) options. */
 	.option-group :global(.fluent-option) {
-		padding-left: calc(var(--design-unit, 4) * 4 * 1px);
+		padding-inline-start: calc(var(--design-unit, 4) * 4 * 1px);
 	}
 </style>

@@ -11,6 +11,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- CSS: logical properties throughout (RTL mirrors correctly); undefined `--error-*` / `--success-*` variables replaced by the `--fluent-color-*` palette (error red is now `#d13438`).
 - **AppBarItem (`rel`):** explicit prop → native attribute through `...rest` (typed anchor attributes)
 - **Alert (`intent`):** `"danger"` (class `.fluent-alert--danger`) → `"error"` (class `.fluent-alert--error`), Microsoft Fluent naming
 - **Tabs:** `{#snippet childContent()}` around the `<Tab>`s → `children`: put `<Tab>`s directly between the tags
@@ -149,6 +150,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- `--fluent-color-{success,warning,danger,info}-foreground` tokens with dark-theme values.
 - Autocomplete bindable `open`; `onOpenChange` consistent across Select/Combobox/Autocomplete/DatePicker/TimePicker (real changes only, incl. `bind:open`).
 - AppBarItem `countLabel` and `--fluent-appbar-count-*` CSS variables; NavLinkItem `linkProps`.
 - AppBarItem `count` badge + `maxCount`; MultiSplitter / NavGroup `persistKey`.

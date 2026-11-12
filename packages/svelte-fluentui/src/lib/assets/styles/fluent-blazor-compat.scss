@@ -57,6 +57,12 @@
 //                                  outline text) — differs from the solid fill
 //                                  where the solid is too light (e.g. warning)
 //   --fluent-color-<name>-tint     faint fill for tinted labels
+//   --fluent-color-<name>-foreground  status text/stroke on the page surface
+//                                  (validation messages, required asterisks,
+//                                  invalid borders, danger menu items, Alert /
+//                                  Toast accents). success/warning/danger/info
+//                                  only; re-declared for [data-theme="dark"]
+//                                  below so it stays readable on dark layers.
 // FluentUI tokens back the neutral/brand roles so themes flow through; the
 // semantic hues (success/warning/danger/info) are hardcoded like the badge
 // colours above since FluentUI 2.6 ships no semantic palette.
@@ -79,24 +85,28 @@
 	--fluent-color-success-contrast: #ffffff;
 	--fluent-color-success-emphasis: #0e700e;
 	--fluent-color-success-tint: color-mix(in srgb, #107c10 12%, transparent);
+	--fluent-color-success-foreground: #107c10;
 
 	// warning (yellow — solid needs dark text, line colour is dark amber)
 	--fluent-color-warning: #fde300;
 	--fluent-color-warning-contrast: #242424;
 	--fluent-color-warning-emphasis: #8a6d00;
 	--fluent-color-warning-tint: color-mix(in srgb, #fde300 22%, transparent);
+	--fluent-color-warning-foreground: #c87018;
 
 	// danger (red)
 	--fluent-color-danger: #c50f1f;
 	--fluent-color-danger-contrast: #ffffff;
 	--fluent-color-danger-emphasis: #b10e1e;
 	--fluent-color-danger-tint: color-mix(in srgb, #c50f1f 12%, transparent);
+	--fluent-color-danger-foreground: #d13438;
 
 	// info (blue)
 	--fluent-color-info: #0a94d6;
 	--fluent-color-info-contrast: #ffffff;
 	--fluent-color-info-emphasis: #0a6a9a;
 	--fluent-color-info-tint: color-mix(in srgb, #0a94d6 12%, transparent);
+	--fluent-color-info-foreground: #0078d4;
 
 	// light
 	--fluent-color-light: var(--neutral-fill-secondary-rest, #f0f0f0);
@@ -109,6 +119,16 @@
 	--fluent-color-dark-contrast: var(--neutral-layer-1, #ffffff);
 	--fluent-color-dark-emphasis: var(--neutral-foreground-rest, #242424);
 	--fluent-color-dark-tint: color-mix(in srgb, var(--neutral-foreground-rest, #242424) 10%, transparent);
+}
+
+// Dark-theme status foregrounds (the light values above are too dark to read
+// on dark layers). Replaces the per-component `[data-theme="dark"]` error
+// overrides that ContextMenu / MenuButton / QuickGrid used to carry.
+[data-theme="dark"] {
+	--fluent-color-success-foreground: #54b054;
+	--fluent-color-warning-foreground: #faa06b;
+	--fluent-color-danger-foreground: #f87c86;
+	--fluent-color-info-foreground: #479ef5;
 }
 
 // =============================================================================
@@ -182,14 +202,8 @@ fluent-anchor[appearance="hypertext"]::part(end) {
 		background-color: var(--accent-fill-rest);
 		border-radius: calc(var(--control-corner-radius) * 1px);
 		top: 0;
-		left: calc(var(--design-unit) * 0.5px);
-		right: unset;
-	}
-
-	// RTL support for active indicator
-	[dir='rtl'] &[orientation="vertical"] .fluent-appbar-item:not([inpopover]) a.active::before {
-		right: calc(var(--design-unit) * 0.5px);
-		left: unset;
+		inset-inline-start: calc(var(--design-unit) * 0.5px);
+		inset-inline-end: unset;
 	}
 }
 
@@ -533,7 +547,7 @@ fluent-tab {
 	cursor: pointer;
 	max-width: 12px;
 	max-height: 12px;
-	margin-left: 6px;
+	margin-inline-start: 6px;
 
 	&:hover {
 		fill: var(--neutral-fill-strong-hover) !important;
@@ -576,7 +590,7 @@ fluent-tabs.large fluent-tab {
 // =============================================================================
 
 .validation-message {
-	color: var(--error);
+	color: var(--fluent-color-danger-foreground, #d13438);
 	font-size: var(--type-ramp-minus-1-font-size);
 	display: flex;
 	align-items: center;
@@ -706,8 +720,7 @@ fluent-anchored-region {
 			aspect-ratio: 1 / 1;
 			width: auto;
 			height: auto;
-			margin-left: auto;
-			margin-right: auto;
+			margin-inline: auto;
 		}
 	}
 

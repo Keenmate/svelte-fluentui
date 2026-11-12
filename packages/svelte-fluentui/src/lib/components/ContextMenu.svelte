@@ -643,19 +643,12 @@
 		font-size: var(--type-ramp-minus-1-font-size);
 	}
 
+	/* Dark theme is handled by the palette tokens (re-declared under [data-theme="dark"]). */
 	.fluent-context-menu-item.danger {
-		color: var(--error-foreground, #d13438);
+		color: var(--fluent-color-danger-foreground, #d13438);
 	}
 
 	.fluent-context-menu-item.danger:hover:not(:disabled) {
-		background: var(--error-fill-hover, #fde7e9);
-	}
-
-	:global([data-theme="dark"]) .fluent-context-menu-item.danger {
-		color: var(--error-foreground, #f87c86);
-	}
-
-	:global([data-theme="dark"]) .fluent-context-menu-item.danger:hover:not(:disabled) {
-		background: var(--error-fill-hover, #442726);
+		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
 	}
 </style>

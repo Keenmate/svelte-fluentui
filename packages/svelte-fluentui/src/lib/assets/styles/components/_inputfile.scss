@@ -173,7 +173,7 @@
 		}
 		.drop-zone-action {
 			order: 99;
-			margin-left: auto;
+			margin-inline-start: auto;
 		}
 		.upload-icon {
 			width: 18px;
@@ -234,7 +234,7 @@
 	.minimal-badge {
 		position: absolute;
 		top: -4px;
-		right: -4px;
+		inset-inline-end: -4px;
 		min-width: 1.1rem;
 		height: 1.1rem;
 		padding: 0 0.3rem;
@@ -257,11 +257,11 @@
 			color: var(--foreground-on-accent-rest, white);
 		}
 		&--completed {
-			background: var(--success-foreground-rest, #107c10);
+			background: var(--fluent-color-success, #107c10);
 			color: white;
 		}
 		&--error {
-			background: var(--error-foreground-rest, #c50f1f);
+			background: var(--fluent-color-danger, #c50f1f);
 			color: white;
 		}
 	}
@@ -452,25 +452,25 @@
 		overflow: hidden;
 
 		&.error {
-			border-color: var(--error-foreground-rest, #c50f1f);
-			color: var(--error-foreground-rest, #c50f1f);
+			border-color: var(--fluent-color-danger-foreground, #d13438);
+			color: var(--fluent-color-danger-foreground, #d13438);
 
 			.chip-remove {
-				border-left-color: var(--error-foreground-rest, #c50f1f);
+				border-inline-start-color: var(--fluent-color-danger-foreground, #d13438);
 			}
 		}
 		&.uploading {
 			border-color: var(--accent-fill-rest);
 
 			.chip-remove {
-				border-left-color: var(--accent-fill-rest);
+				border-inline-start-color: var(--accent-fill-rest);
 			}
 		}
 		&.completed {
-			border-color: var(--success-foreground-rest, #107c10);
+			border-color: var(--fluent-color-success-foreground, #107c10);
 
 			.chip-remove {
-				border-left-color: var(--success-foreground-rest, #107c10);
+				border-inline-start-color: var(--fluent-color-success-foreground, #107c10);
 			}
 		}
 	}
@@ -500,7 +500,7 @@
 		justify-content: center;
 		background: transparent;
 		border: none;
-		border-left: 1px solid var(--neutral-stroke-rest);
+		border-inline-start: 1px solid var(--neutral-stroke-rest);
 		cursor: pointer;
 		padding: 0 0.6rem;
 		min-width: 1.75rem;
@@ -543,7 +543,7 @@
 
 		&.scrollable {
 			overflow-y: auto;
-			padding-right: 0.25rem;
+			padding-inline-end: 0.25rem;
 		}
 	}
 	.show-more-toggle {
@@ -625,10 +625,10 @@
 			cursor: move;
 		}
 		&.error {
-			border-color: var(--error-foreground-rest, #c50f1f);
+			border-color: var(--fluent-color-danger-foreground, #d13438);
 		}
 		&.completed {
-			border-color: var(--success-foreground-rest, #107c10);
+			border-color: var(--fluent-color-success-foreground, #107c10);
 		}
 		&.dragging {
 			opacity: 0.5;
@@ -712,10 +712,10 @@
 		font-variant-numeric: tabular-nums;
 
 		&.success {
-			color: var(--success-foreground-rest, #107c10);
+			color: var(--fluent-color-success-foreground, #107c10);
 		}
 		&.error {
-			color: var(--error-foreground-rest, #c50f1f);
+			color: var(--fluent-color-danger-foreground, #d13438);
 		}
 	}
 

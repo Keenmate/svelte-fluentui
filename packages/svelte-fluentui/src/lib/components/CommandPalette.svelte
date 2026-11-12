@@ -636,7 +636,8 @@
 		color: var(--neutral-foreground-rest, #222);
 		font-family: inherit;
 		font-size: 0.7rem;
-		margin: 0 0.15rem 0 0;
+		margin-block: 0;
+		margin-inline: 0 0.15rem;
 		min-width: 1rem;
 		text-align: center;
 	}

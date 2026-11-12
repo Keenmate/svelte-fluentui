@@ -171,7 +171,7 @@
 		outline: none;
 		margin: calc(var(--design-unit, 4) * 3 * 1px) 0;
 		padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
-		text-align: left;
+		text-align: start;
 		color: inherit;
 		cursor: pointer;
 		font: inherit;
@@ -191,8 +191,8 @@
 	}
 
 	.fluent-accordion-item.expanded .fluent-accordion-item__button:focus-visible::before {
-		border-bottom-left-radius: 0;
-		border-bottom-right-radius: 0;
+		border-end-start-radius: 0;
+		border-end-end-radius: 0;
 	}
 
 	.fluent-accordion-item__end {
@@ -281,8 +281,8 @@
 		padding: calc(var(--design-unit, 4) * 2 * 1px);
 		border-top: calc(var(--stroke-width, 1) * 1px) solid var(--neutral-stroke-layer-rest, #e0e0e0);
 		background: var(--neutral-fill-layer-alt-rest, transparent);
-		border-bottom-left-radius: calc((var(--layer-corner-radius, 8) - var(--stroke-width, 1)) * 1px);
-		border-bottom-right-radius: calc((var(--layer-corner-radius, 8) - var(--stroke-width, 1)) * 1px);
+		border-end-start-radius: calc((var(--layer-corner-radius, 8) - var(--stroke-width, 1)) * 1px);
+		border-end-end-radius: calc((var(--layer-corner-radius, 8) - var(--stroke-width, 1)) * 1px);
 	}
 
 	.fluent-accordion-item.disabled .fluent-accordion-item__button {

@@ -44,8 +44,8 @@
 	}
 
 	&__required {
-		color: #c50f1f;
-		margin-left: 0.15rem;
+		color: var(--fluent-color-danger-foreground, #d13438);
+		margin-inline-start: 0.15rem;
 		font-weight: 700;
 	}
 
@@ -73,13 +73,13 @@
 	// ===== States =====
 
 	&[data-state="error"] {
-		--fluent-field-state-color: #c50f1f;
+		--fluent-field-state-color: var(--fluent-color-danger-foreground, #d13438);
 	}
 	&[data-state="warning"] {
-		--fluent-field-state-color: #c87018;
+		--fluent-field-state-color: var(--fluent-color-warning-foreground, #c87018);
 	}
 	&[data-state="success"] {
-		--fluent-field-state-color: #107c10;
+		--fluent-field-state-color: var(--fluent-color-success-foreground, #107c10);
 	}
 
 	// Paint the inner Fluent web component's border to match the field state.

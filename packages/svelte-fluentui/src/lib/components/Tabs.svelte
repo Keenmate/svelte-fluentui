@@ -980,7 +980,7 @@
 	.fluent-tabs-vertical .fluent-tabs-strip {
 		flex-direction: column;
 		align-items: stretch;
-		border-right: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
+		border-inline-end: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
 	}
 
 	/* Tablist — holds tab buttons and the active indicator. */
@@ -1039,7 +1039,7 @@
 	.fluent-tabs-shadow-tablist {
 		position: absolute;
 		top: -9999px;
-		left: -9999px;
+		inset-inline-start: -9999px;
 		visibility: hidden;
 		pointer-events: none;
 		display: flex;
@@ -1071,7 +1071,7 @@
 	 * `:not(.fluent-tab-shadow)` scopes the rule to the real button.
 	 */
 	.fluent-tabs-horizontal[data-responsive="menu"] .fluent-tabs-tablist > .fluent-tabs-more-btn:not(.fluent-tab-shadow) {
-		margin-left: auto;
+		margin-inline-start: auto;
 	}
 
 	.fluent-tabs-vertical[data-responsive="menu"] .fluent-tabs-tablist > .fluent-tabs-more-btn:not(.fluent-tab-shadow) {
@@ -1166,7 +1166,9 @@
 
 	.fluent-tabs-vertical .fluent-tab {
 		justify-content: flex-start;
-		border-radius: calc(var(--control-corner-radius, 4) * 1px) 0 0 calc(var(--control-corner-radius, 4) * 1px);
+		border-radius: 0;
+		border-start-start-radius: calc(var(--control-corner-radius, 4) * 1px);
+		border-end-start-radius: calc(var(--control-corner-radius, 4) * 1px);
 	}
 
 	.fluent-tab:hover:not(.disabled):not(:disabled) {
@@ -1210,7 +1212,7 @@
 		border-radius: var(--fluent-border-radius-md);
 		color: var(--neutral-foreground-hint);
 		cursor: pointer;
-		margin-left: 4px;
+		margin-inline-start: 4px;
 	}
 
 	.fluent-tab-close:hover {

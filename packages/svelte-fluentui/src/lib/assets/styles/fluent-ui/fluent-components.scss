@@ -436,16 +436,16 @@ td.grid-cell-placeholder:after {
 }
 
 .fluent-calendar .change-period {
-	float: right;
+	float: inline-end;
 	display: flex;
-	margin-right: -6px;
+	margin-inline-end: -6px;
 }
 
 .fluent-calendar .change-period > .previous,
 .fluent-calendar .change-period > .next {
 	width: var(--calendar-cell-size);
 	height: var(--calendar-cell-size);
-	margin-left: calc(2 * var(--calendar-gap));
+	margin-inline-start: calc(2 * var(--calendar-gap));
 	text-align: center;
 	cursor: pointer;
 }
@@ -558,19 +558,19 @@ td.grid-cell-placeholder:after {
 	width: 100%;
 	height: 100%;
 	position: absolute;
-	left: 0;
+	inset-inline-start: 0;
 	background: var(--accent-fill-rest);
 	opacity: var(--multi-select-opacity);
 }
 
 .fluent-calendar .day[data-multi-start="true"]::before {
-	border-top-left-radius: 50%;
-	border-bottom-left-radius: 50%;
+	border-start-start-radius: 50%;
+	border-end-start-radius: 50%;
 }
 
 .fluent-calendar .day[data-multi-end="true"]::before {
-	border-top-right-radius: 50%;
-	border-bottom-right-radius: 50%;
+	border-start-end-radius: 50%;
+	border-end-end-radius: 50%;
 }
 
 .fluent-calendar .day[data-multi-day-over="true"] {
@@ -632,16 +632,16 @@ td.grid-cell-placeholder:after {
 }
 
 .fluent-month .change-period {
-	float: right;
+	float: inline-end;
 	display: flex;
-	margin-right: -6px;
+	margin-inline-end: -6px;
 }
 
 .fluent-month .change-period > .previous,
 .fluent-month .change-period > .next {
 	width: var(--month-cell-size);
 	height: var(--month-cell-size);
-	margin-left: calc(2 * var(--month-gap));
+	margin-inline-start: calc(2 * var(--month-gap));
 	text-align: center;
 	cursor: pointer;
 }
@@ -704,7 +704,7 @@ td.grid-cell-placeholder:after {
 	height: calc(var(--stroke-width) * 1px);
 	background: currentcolor;
 	position: absolute;
-	left: 20%;
+	inset-inline-start: 20%;
 	top: 50%;
 	transform-origin: center center;
 	z-index: 1;
@@ -759,16 +759,16 @@ td.grid-cell-placeholder:after {
 }
 
 .fluent-year .change-period {
-	float: right;
+	float: inline-end;
 	display: flex;
-	margin-right: -6px;
+	margin-inline-end: -6px;
 }
 
 .fluent-year .change-period > .previous,
 .fluent-year .change-period > .next {
 	width: var(--year-cell-size);
 	height: var(--year-cell-size);
-	margin-left: calc(2 * var(--year-gap));
+	margin-inline-start: calc(2 * var(--year-gap));
 	text-align: center;
 	cursor: pointer;
 }
@@ -831,7 +831,7 @@ td.grid-cell-placeholder:after {
 	height: calc(var(--stroke-width) * 1px);
 	background: currentcolor;
 	position: absolute;
-	left: 20%;
+	inset-inline-start: 20%;
 	top: 50%;
 	transform-origin: center center;
 	z-index: 1;
@@ -2973,7 +2973,7 @@ fluent-tab[disabled="true"] {
 	cursor: pointer;
 	max-width: 12px;
 	max-height: 12px;
-	margin-left: 6px;
+	margin-inline-start: 6px;
 }
 
 .fluent-tab-close:hover {

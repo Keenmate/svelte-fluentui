@@ -105,16 +105,11 @@ a {
 }
 
 blockquote {
-	border-left: 5px solid var(--accent-fill-rest);
-	border-right: none;
+	border-inline-start: 5px solid var(--accent-fill-rest);
+	border-inline-end: none;
 	font-size: var(--type-ramp-base-font-size);
 	font-style: italic;
 	padding: 2px 15px;
-}
-
-[dir='rtl'] blockquote {
-	border-left: none;
-	border-right: 5px solid var(--accent-fill-rest);
 }
 
 abbr[title] {
@@ -133,7 +128,7 @@ address {
 
 ol,
 ul {
-	padding-left: 2rem;
+	padding-inline-start: 2rem;
 }
 
 ol,
@@ -156,7 +151,7 @@ dt {
 
 dd {
 	margin-bottom: 0.5rem;
-	margin-left: 0;
+	margin-inline-start: 0;
 }
 /*
 blockquote {
@@ -280,7 +275,7 @@ caption {
 	padding-top: 0.5rem;
 	padding-bottom: 0.5rem;
 	color: #6c757d;
-	text-align: left;
+	text-align: start;
 }
 
 th {
@@ -376,7 +371,7 @@ fieldset {
 }
 
 legend {
-	float: left;
+	float: inline-start;
 	width: 100%;
 	padding: 0;
 	margin-bottom: 0.5rem;

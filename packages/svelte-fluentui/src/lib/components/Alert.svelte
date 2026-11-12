@@ -102,21 +102,21 @@
 
 	/* Intent variants */
 	.fluent-alert--info {
-		border-inline-start-color: #0078d4;
+		border-inline-start-color: var(--fluent-color-info-foreground, #0078d4);
 	}
 
 	.fluent-alert--info .fluent-alert__icon {
-		background-color: rgba(0, 120, 212, 0.1);
-		color: #0078d4;
+		background-color: color-mix(in srgb, var(--fluent-color-info-foreground, #0078d4) 10%, transparent);
+		color: var(--fluent-color-info-foreground, #0078d4);
 	}
 
 	.fluent-alert--success {
-		border-inline-start-color: #107c10;
+		border-inline-start-color: var(--fluent-color-success-foreground, #107c10);
 	}
 
 	.fluent-alert--success .fluent-alert__icon {
-		background-color: rgba(16, 124, 16, 0.1);
-		color: #107c10;
+		background-color: color-mix(in srgb, var(--fluent-color-success-foreground, #107c10) 10%, transparent);
+		color: var(--fluent-color-success-foreground, #107c10);
 	}
 
 	.fluent-alert--warning {
@@ -129,12 +129,12 @@
 	}
 
 	.fluent-alert--error {
-		border-inline-start-color: #d13438;
+		border-inline-start-color: var(--fluent-color-danger-foreground, #d13438);
 	}
 
 	.fluent-alert--error .fluent-alert__icon {
-		background-color: rgba(209, 52, 56, 0.1);
-		color: #d13438;
+		background-color: color-mix(in srgb, var(--fluent-color-danger-foreground, #d13438) 10%, transparent);
+		color: var(--fluent-color-danger-foreground, #d13438);
 	}
 
 	/* Icon */

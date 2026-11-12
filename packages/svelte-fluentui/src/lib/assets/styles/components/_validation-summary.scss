@@ -6,8 +6,8 @@
 @use "../tokens" as *;
 
 .fluent-validation-summary {
-	background: rgba(197, 15, 31, 0.08);
-	border-left: 3px solid #c50f1f;
+	background: color-mix(in srgb, var(--fluent-color-danger-foreground, #d13438) 8%, transparent);
+	border-inline-start: 3px solid var(--fluent-color-danger-foreground, #d13438);
 	padding: 0.6rem 0.9rem;
 	border-radius: $border-radius-md;
 	color: var(--neutral-foreground-rest, #424242);
@@ -15,12 +15,12 @@
 	&__title {
 		font-weight: 600;
 		margin-bottom: 0.4rem;
-		color: #c50f1f;
+		color: var(--fluent-color-danger-foreground, #d13438);
 	}
 
 	&__list {
 		margin: 0;
-		padding-left: 1.1rem;
+		padding-inline-start: 1.1rem;
 		list-style: disc;
 	}
 
@@ -30,7 +30,7 @@
 	}
 
 	&__link {
-		color: #c50f1f;
+		color: var(--fluent-color-danger-foreground, #d13438);
 		text-decoration: underline;
 		cursor: pointer;
 	}

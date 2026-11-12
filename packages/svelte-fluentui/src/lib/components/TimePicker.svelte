@@ -552,8 +552,8 @@
 	}
 
 	.required-indicator {
-		color: var(--error-foreground-rest, #d13438);
-		margin-left: 0.25rem;
+		color: var(--fluent-color-danger-foreground, #d13438);
+		margin-inline-start: 0.25rem;
 	}
 
 	.timepicker-wrapper {
@@ -590,7 +590,7 @@
 	}
 
 	.clear-button {
-		margin-left: 0.25rem;
+		margin-inline-start: 0.25rem;
 	}
 
 	.time-picker-panel {
