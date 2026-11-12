@@ -211,39 +211,37 @@
 		>
 			<div class="dialog-body-fill">
 				<Tabs class={`scroll-demo-tabs${containScroll ? " contained" : ""}`} activeId="expression">
-					{#snippet childContent()}
-						<Tab id="expression" label="Expression">
-							{#snippet content()}
-								<div class="expr-form">
-									<label class="field-label" for="default-value">Default value</label>
-									<TextField id="default-value" placeholder="Static value or field reference" />
+					<Tab id="expression" label="Expression">
+						{#snippet content()}
+							<div class="expr-form">
+								<label class="field-label" for="default-value">Default value</label>
+								<TextField id="default-value" placeholder="Static value or field reference" />
 
-									<div class="override-head">Override — Expression</div>
-									<textarea
-										class="expr-textarea"
-										placeholder="Expression — use &#123;&#123;field&#125;&#125; for interpolation"
-									></textarea>
+								<div class="override-head">Override — Expression</div>
+								<textarea
+									class="expr-textarea"
+									placeholder="Expression — use &#123;&#123;field&#125;&#125; for interpolation"
+								></textarea>
 
-									<p class="hint">
-										This textarea is the field that grew out of the dialog in the original report.
-										With the fix off, the panel doesn't scroll and the whole form spills past the
-										dialog bounds.
-									</p>
-									{#each Array(8) as _, i}
-										<TextField placeholder={`Extra rule field ${i + 1}`} />
-									{/each}
-								</div>
-							{/snippet}
-						</Tab>
-						<Tab id="condition" label="Condition">
-							{#snippet content()}
-								<div class="expr-form">
-									<p>Condition builder goes here.</p>
-									<TextField placeholder="when ..." />
-								</div>
-							{/snippet}
-						</Tab>
-					{/snippet}
+								<p class="hint">
+									This textarea is the field that grew out of the dialog in the original report.
+									With the fix off, the panel doesn't scroll and the whole form spills past the
+									dialog bounds.
+								</p>
+								{#each Array(8) as _, i}
+									<TextField placeholder={`Extra rule field ${i + 1}`} />
+								{/each}
+							</div>
+						{/snippet}
+					</Tab>
+					<Tab id="condition" label="Condition">
+						{#snippet content()}
+							<div class="expr-form">
+								<p>Condition builder goes here.</p>
+								<TextField placeholder="when ..." />
+							</div>
+						{/snippet}
+					</Tab>
 				</Tabs>
 			</div>
 

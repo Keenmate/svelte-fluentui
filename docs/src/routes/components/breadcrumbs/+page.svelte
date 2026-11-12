@@ -18,7 +18,7 @@
 
 	const properties: Property[] = [
 		{name: "href", type: "string", default: "undefined", description: "BreadcrumbItem: link target; without it the item renders as plain text (the current page)"},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes (class, style, id, aria-*, data-*) go to fluent-breadcrumb / fluent-breadcrumb-item"}
+		{name: "...rest", type: "HTMLAttributes / HTMLAnchorAttributes", default: "-", description: "Other native attributes (class, style, id, aria-*, data-*) go to fluent-breadcrumb / fluent-breadcrumb-item. BreadcrumbItem also accepts anchor attributes (target, rel, download, …), applied to its inner a when href is set"}
 	]
 
 	const callbacks: Property[] = [

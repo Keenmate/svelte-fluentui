@@ -4,7 +4,7 @@
 	import PositioningRegion from "../PositioningRegion.svelte"
 	import ContentRegion from "../ContentRegion.svelte"
 	import NavIcon from "./NavIcon.svelte"
-	import type {RestProps} from "../../types/index.js"
+	import type {AnchorRestProps} from "../../types/index.js"
 
 	type OwnProps = {
 		href?: string
@@ -22,7 +22,7 @@
 	}
 
 	/** Other native attributes and events (`id`, `aria-current`, `download`, …) go to the root `<a>` (or `<div>` without `href`). */
-	type Props = OwnProps & RestProps<OwnProps>
+	type Props = OwnProps & AnchorRestProps<OwnProps>
 
 	let {
 		    href      = undefined,

@@ -3,8 +3,10 @@ TABS COMPONENT
 
 OVERVIEW
 --------
-Tab navigation with panels.
-Uses fluent-tabs/fluent-tab web components with custom enhancements.
+Tab navigation with panels. Custom Svelte implementation (plain <button role="tab">
++ role="tabpanel" divs, NOT fluent-tabs/fluent-tab). <Tab> renders no DOM itself; it
+registers with the parent <Tabs>, which renders the tablist + panels.
+<Tab> elements go directly between the <Tabs> tags (the `children` snippet).
 Supports horizontal and vertical orientation.
 
 
@@ -15,25 +17,23 @@ BASIC USAGE
 </script>
 
 <Tabs>
-  {#snippet childContent()}
-    <Tab id="tab1" label="Overview">
-      {#snippet content()}
-        <p>Overview content here</p>
-      {/snippet}
-    </Tab>
+  <Tab id="tab1" label="Overview">
+    {#snippet content()}
+      <p>Overview content here</p>
+    {/snippet}
+  </Tab>
 
-    <Tab id="tab2" label="Details">
-      {#snippet content()}
-        <p>Details content here</p>
-      {/snippet}
-    </Tab>
+  <Tab id="tab2" label="Details">
+    {#snippet content()}
+      <p>Details content here</p>
+    {/snippet}
+  </Tab>
 
-    <Tab id="tab3" label="Settings">
-      {#snippet content()}
-        <p>Settings content here</p>
-      {/snippet}
-    </Tab>
-  {/snippet}
+  <Tab id="tab3" label="Settings">
+    {#snippet content()}
+      <p>Settings content here</p>
+    {/snippet}
+  </Tab>
 </Tabs>
 
 
@@ -43,53 +43,59 @@ id?: string
 class?: string
 style?: string
 orientation?: "horizontal" | "vertical"  # Tab direction (default: "horizontal")
-activeId?: string                        # Initially active tab ID
+activeId?: string                        # Active tab ID (bindable)
 showActiveIndicator?: boolean            # Show active indicator (default: true)
-overflow?: { label: string, onclick?: () => void }[]  # Overflow menu items
-moreButtonId?: string
-styleMoreValues?: string
+responsive?: "scroll" | "wrap" | "menu"  # Overflow handling (default: "scroll")
+justify?: boolean                        # Stretch tabs to fill the strip
+stripWidth?: string                      # CSS length, mostly for vertical
+stripHeight?: string                     # CSS length
+swipe?: boolean                          # Swipe to navigate (default: true)
+children?: Snippet                       # The <Tab> elements (1.x: childContent)
+...rest                                  # Native attributes/events go to the root <div>
 
 CALLBACKS:
-ontabchange?: (detail: TabChangeDetail) => void
+onActiveIdChange?: (ctx: { activeId: string, oldActiveId: string | undefined, tab: TabInfo }) => void
 
 
 TAB PROPS
 ---------
-id?: string                    # Required for active tab tracking
+id: string                     # Required, unique
 label?: string                 # Tab label text
 disabled?: boolean
 ariaLabel?: string
 visible?: boolean              # Show/hide tab (default: true)
-icon?: SlotType               # Icon snippet
-header?: SlotType             # Custom header (replaces label)
-content?: SlotType            # Tab panel content
-childContent?: SlotType       # Alternative content slot
-labelEditable?: boolean       # Enable inline label editing (default: false)
-showClose?: boolean           # Show close button (default: false)
-data?: Record<string, unknown> # Custom data passed to ontabchange
+icon?: Snippet                 # Icon snippet
+header?: Snippet               # Custom header (replaces icon + label)
+content?: Snippet              # Tab panel content
+children?: Snippet             # Panel content between the tags, rendered after `content` (1.x: childContent)
+labelEditable?: boolean        # Enable inline label editing (default: false)
+showClose?: boolean            # Show close button (default: false)
+data?: Record<string, unknown> # Passed back as tab.data in Tabs events/callbacks
+class?: string
+style?: string
 
 CALLBACKS:
-oncloseclick?: () => void
+beforeLeaveCallback?: (ctx: { tab, newTab }) => unknown  # return false to veto leaving the active tab; may be async
+beforeCloseCallback?: (ctx: { tab }) => unknown          # return false to veto the close; may be async
+onTabClose?: (ctx: { tab: TabInfo }) => void
 
 
 TAB CHANGE EVENT
 ----------------
 <script>
-  function handleTabChange(detail) {
-    console.log("Active tab:", detail.tabId)
-    console.log("Tab data:", detail.data)
+  function handleTabChange({ activeId, oldActiveId, tab }) {
+    console.log("Active tab:", activeId)
+    console.log("Tab data:", tab.data)
   }
 </script>
 
-<Tabs ontabchange={handleTabChange}>
-  {#snippet childContent()}
-    <Tab id="tab1" label="Tab 1" data={{ section: "overview" }}>
-      {#snippet content()}Content 1{/snippet}
-    </Tab>
-    <Tab id="tab2" label="Tab 2" data={{ section: "details" }}>
-      {#snippet content()}Content 2{/snippet}
-    </Tab>
-  {/snippet}
+<Tabs onActiveIdChange={handleTabChange}>
+  <Tab id="tab1" label="Tab 1" data={{ section: "overview" }}>
+    {#snippet content()}Content 1{/snippet}
+  </Tab>
+  <Tab id="tab2" label="Tab 2" data={{ section: "details" }}>
+    {#snippet content()}Content 2{/snippet}
+  </Tab>
 </Tabs>
 
 
@@ -99,15 +105,13 @@ SET ACTIVE TAB
   let activeTab = $state("tab1")
 </script>
 
-<Tabs activeId={activeTab}>
-  {#snippet childContent()}
-    <Tab id="tab1" label="First">
-      {#snippet content()}First content{/snippet}
-    </Tab>
-    <Tab id="tab2" label="Second">
-      {#snippet content()}Second content{/snippet}
-    </Tab>
-  {/snippet}
+<Tabs bind:activeId={activeTab}>
+  <Tab id="tab1" label="First">
+    {#snippet content()}First content{/snippet}
+  </Tab>
+  <Tab id="tab2" label="Second">
+    {#snippet content()}Second content{/snippet}
+  </Tab>
 </Tabs>
 
 <button onclick={() => activeTab = "tab2"}>Go to Second</button>
@@ -156,20 +160,18 @@ CLOSABLE TABS
 </script>
 
 <Tabs>
-  {#snippet childContent()}
-    {#each tabs as tab}
-      <Tab
-        id={tab.id}
-        label={tab.label}
-        showClose
-        oncloseclick={() => closeTab(tab.id)}
-      >
-        {#snippet content()}
-          Content for {tab.label}
-        {/snippet}
-      </Tab>
-    {/each}
-  {/snippet}
+  {#each tabs as tab}
+    <Tab
+      id={tab.id}
+      label={tab.label}
+      showClose
+      onTabClose={() => closeTab(tab.id)}
+    >
+      {#snippet content()}
+        Content for {tab.label}
+      {/snippet}
+    </Tab>
+  {/each}
 </Tabs>
 
 
@@ -196,17 +198,15 @@ DISABLED TAB
 VERTICAL TABS
 -------------
 <Tabs orientation="vertical">
-  {#snippet childContent()}
-    <Tab id="profile" label="Profile">
-      {#snippet content()}Profile settings{/snippet}
-    </Tab>
-    <Tab id="security" label="Security">
-      {#snippet content()}Security settings{/snippet}
-    </Tab>
-    <Tab id="notifications" label="Notifications">
-      {#snippet content()}Notification settings{/snippet}
-    </Tab>
-  {/snippet}
+  <Tab id="profile" label="Profile">
+    {#snippet content()}Profile settings{/snippet}
+  </Tab>
+  <Tab id="security" label="Security">
+    {#snippet content()}Security settings{/snippet}
+  </Tab>
+  <Tab id="notifications" label="Notifications">
+    {#snippet content()}Notification settings{/snippet}
+  </Tab>
 </Tabs>
 
 
@@ -227,15 +227,13 @@ DYNAMIC TABS
 <button onclick={addTab}>Add Tab</button>
 
 <Tabs>
-  {#snippet childContent()}
-    {#each tabs as tab}
-      <Tab id={tab.id} label={tab.label}>
-        {#snippet content()}
-          Content for {tab.label}
-        {/snippet}
-      </Tab>
-    {/each}
-  {/snippet}
+  {#each tabs as tab}
+    <Tab id={tab.id} label={tab.label}>
+      {#snippet content()}
+        Content for {tab.label}
+      {/snippet}
+    </Tab>
+  {/each}
 </Tabs>
 
 
@@ -246,55 +244,44 @@ CONDITIONAL TAB VISIBILITY
 </script>
 
 <Tabs>
-  {#snippet childContent()}
-    <Tab id="basic" label="Basic">
-      {#snippet content()}Basic options{/snippet}
-    </Tab>
+  <Tab id="basic" label="Basic">
+    {#snippet content()}Basic options{/snippet}
+  </Tab>
 
-    <Tab id="advanced" label="Advanced" visible={showAdvanced}>
-      {#snippet content()}Advanced options{/snippet}
-    </Tab>
-  {/snippet}
+  <Tab id="advanced" label="Advanced" visible={showAdvanced}>
+    {#snippet content()}Advanced options{/snippet}
+  </Tab>
 </Tabs>
 
 
-OVERFLOW MENU
--------------
-For many tabs, use overflow prop to show excess tabs in a menu:
-
-<Tabs
-  overflow={[
-    { label: "Extra 1", onclick: () => activateTab("extra1") },
-    { label: "Extra 2", onclick: () => activateTab("extra2") }
-  ]}
->
-  {#snippet childContent()}
-    <Tab id="main" label="Main">
-      {#snippet content()}Main content{/snippet}
-    </Tab>
-  {/snippet}
+OVERFLOW
+--------
+<Tabs responsive="menu">   <!-- or "scroll" (default) / "wrap" -->
+  <Tab id="main" label="Main">
+    {#snippet content()}Main content{/snippet}
+  </Tab>
+  ...
 </Tabs>
 
-Shows a "+N" badge that opens a dropdown menu.
+"menu" collapses tabs that don't fit into a trailing overflow button + menu.
+
+
+CHILDREN INSTEAD OF content
+---------------------------
+<Tab id="notes" label="Notes">
+  <p>Panel content can go straight between the Tab tags.</p>
+</Tab>
 
 
 STYLING
 -------
-Tabs use fluent-tabs web component.
+Plain DOM (no shadow parts). Main classes:
+- .fluent-tabs / .fluent-tabs-strip / .fluent-tabs-tablist - container, strip, tablist
+- .fluent-tab / .fluent-tab-label / .fluent-tab-icon / .fluent-tab-close - tab button parts
+- .fluent-tabs-active-indicator - animated active indicator
+- .fluent-tabs-panels / .fluent-tab-panel - panel container and panels
 
-CSS Classes:
-- .tab-wrapper - Tab element wrapper
-- .editable-label - Editable label container
-- .fluent-tab-close - Close button
-
-Override with ::part() selectors:
-fluent-tabs::part(tablist) {
-  border-bottom: 2px solid var(--neutral-stroke-rest);
-}
-
-fluent-tab::part(control) {
-  padding: 1rem 1.5rem;
-}
+Target them with :global(...) from a parent component's styles.
 
 
 COMMON PATTERNS
@@ -302,40 +289,36 @@ COMMON PATTERNS
 
 SETTINGS PAGE:
 <Tabs orientation="vertical">
-  {#snippet childContent()}
-    <Tab id="general" label="General">
-      {#snippet icon()}<Icon name="Settings" />{/snippet}
-      {#snippet content()}<GeneralSettings />{/snippet}
-    </Tab>
-    <Tab id="account" label="Account">
-      {#snippet icon()}<Icon name="Person" />{/snippet}
-      {#snippet content()}<AccountSettings />{/snippet}
-    </Tab>
-    <Tab id="privacy" label="Privacy">
-      {#snippet icon()}<Icon name="Shield" />{/snippet}
-      {#snippet content()}<PrivacySettings />{/snippet}
-    </Tab>
-  {/snippet}
+  <Tab id="general" label="General">
+    {#snippet icon()}<Icon name="Settings" />{/snippet}
+    {#snippet content()}<GeneralSettings />{/snippet}
+  </Tab>
+  <Tab id="account" label="Account">
+    {#snippet icon()}<Icon name="Person" />{/snippet}
+    {#snippet content()}<AccountSettings />{/snippet}
+  </Tab>
+  <Tab id="privacy" label="Privacy">
+    {#snippet icon()}<Icon name="Shield" />{/snippet}
+    {#snippet content()}<PrivacySettings />{/snippet}
+  </Tab>
 </Tabs>
 
 
 DOCUMENT TABS:
 <Tabs>
-  {#snippet childContent()}
-    {#each openDocuments as doc}
-      <Tab
-        id={doc.id}
-        label={doc.name}
-        showClose
-        oncloseclick={() => closeDocument(doc.id)}
-        data={{ documentId: doc.id }}
-      >
-        {#snippet content()}
-          <DocumentEditor document={doc} />
-        {/snippet}
-      </Tab>
-    {/each}
-  {/snippet}
+  {#each openDocuments as doc}
+    <Tab
+      id={doc.id}
+      label={doc.name}
+      showClose
+      onTabClose={() => closeDocument(doc.id)}
+      data={{ documentId: doc.id }}
+    >
+      {#snippet content()}
+        <DocumentEditor document={doc} />
+      {/snippet}
+    </Tab>
+  {/each}
 </Tabs>
 
 
@@ -343,13 +326,13 @@ COMMON ISSUES
 -------------
 
 Issue: Tab content not showing
-Solution: Use {#snippet content()} inside Tab component
+Solution: Put content between the <Tab> tags or use {#snippet content()}
 
 Issue: Active tab not tracked
 Solution: Add unique id prop to each Tab
 
 Issue: Tab change not firing
-Solution: Check ontabchange callback on Tabs component
+Solution: Use onActiveIdChange on Tabs (or bind:activeId)
 
 Issue: Vertical tabs not working
 Solution: Set orientation="vertical" on Tabs

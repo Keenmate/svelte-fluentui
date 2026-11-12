@@ -32,7 +32,7 @@
 	]
 
 	const tabsSlots: Property[] = [
-		{name: "childContent", type: "Snippet", default: "undefined", description: "Slot containing the child <Tab> elements"}
+		{name: "children", type: "Snippet", default: "undefined", description: "The child <Tab> elements, placed directly between the <Tabs> tags (1.x: childContent)"}
 	]
 
 	const tabProperties: Property[] = [
@@ -58,7 +58,7 @@
 		{name: "icon", type: "Snippet", default: "undefined", description: "Optional icon slot rendered before the label"},
 		{name: "header", type: "Snippet", default: "undefined", description: "Fully custom header content (replaces the icon + label default)"},
 		{name: "content", type: "Snippet", default: "undefined", description: "Tab panel content"},
-		{name: "childContent", type: "Snippet", default: "undefined", description: "Alternative content slot, rendered after `content`"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Panel content placed directly between the <Tab> tags, rendered after `content` (1.x: childContent)"}
 	]
 
 	const propertyColumns = [
@@ -124,70 +124,66 @@
 		<h3>Basic tab layout</h3>
 		<p>Minimal tabs — labels only.</p>
 		<Tabs>
-			{#snippet childContent()}
-				<Tab id="tab1" label="First tab">
-					{#snippet content()}
-						<p>Example text for tab 1</p>
-					{/snippet}
-				</Tab>
-				<Tab id="tab2" label="Second tab">
-					{#snippet content()}
-						<p>Example text for tab 2</p>
-					{/snippet}
-				</Tab>
-				<Tab id="tab3" label="Third tab">
-					{#snippet content()}
-						<p>Example text for tab 3</p>
-					{/snippet}
-				</Tab>
-			{/snippet}
+			<Tab id="tab1" label="First tab">
+				{#snippet content()}
+					<p>Example text for tab 1</p>
+				{/snippet}
+			</Tab>
+			<Tab id="tab2" label="Second tab">
+				{#snippet content()}
+					<p>Example text for tab 2</p>
+				{/snippet}
+			</Tab>
+			<Tab id="tab3" label="Third tab">
+				{#snippet content()}
+					<p>Example text for tab 3</p>
+				{/snippet}
+			</Tab>
 		</Tabs>
 
 		<h3>Tabs with icons</h3>
 		<p>Pass an <code>icon</code> snippet to each <code>&lt;Tab&gt;</code>.</p>
 		<Tabs activeId="home-tab">
-			{#snippet childContent()}
-				<Tab id="home-tab" label="Home">
-					{#snippet icon()}
-						<Icon name="home" size={16} />
-					{/snippet}
-					{#snippet content()}
-						<p>Landing page content.</p>
-					{/snippet}
-				</Tab>
-				<Tab id="profile-tab" label="Profile">
-					{#snippet icon()}
-						<Icon name="person" size={16} />
-					{/snippet}
-					{#snippet content()}
-						<p>Profile details and avatar.</p>
-					{/snippet}
-				</Tab>
-				<Tab id="inbox-tab" label="Inbox">
-					{#snippet icon()}
-						<Icon name="mail" size={16} />
-					{/snippet}
-					{#snippet content()}
-						<p>Unread messages and notifications.</p>
-					{/snippet}
-				</Tab>
-				<Tab id="calendar-tab" label="Calendar">
-					{#snippet icon()}
-						<Icon name="calendar" size={16} />
-					{/snippet}
-					{#snippet content()}
-						<p>Upcoming events and reminders.</p>
-					{/snippet}
-				</Tab>
-				<Tab id="settings-tab" label="Settings">
-					{#snippet icon()}
-						<Icon name="settings" size={16} />
-					{/snippet}
-					{#snippet content()}
-						<p>Preferences and integrations.</p>
-					{/snippet}
-				</Tab>
-			{/snippet}
+			<Tab id="home-tab" label="Home">
+				{#snippet icon()}
+					<Icon name="home" size={16} />
+				{/snippet}
+				{#snippet content()}
+					<p>Landing page content.</p>
+				{/snippet}
+			</Tab>
+			<Tab id="profile-tab" label="Profile">
+				{#snippet icon()}
+					<Icon name="person" size={16} />
+				{/snippet}
+				{#snippet content()}
+					<p>Profile details and avatar.</p>
+				{/snippet}
+			</Tab>
+			<Tab id="inbox-tab" label="Inbox">
+				{#snippet icon()}
+					<Icon name="mail" size={16} />
+				{/snippet}
+				{#snippet content()}
+					<p>Unread messages and notifications.</p>
+				{/snippet}
+			</Tab>
+			<Tab id="calendar-tab" label="Calendar">
+				{#snippet icon()}
+					<Icon name="calendar" size={16} />
+				{/snippet}
+				{#snippet content()}
+					<p>Upcoming events and reminders.</p>
+				{/snippet}
+			</Tab>
+			<Tab id="settings-tab" label="Settings">
+				{#snippet icon()}
+					<Icon name="settings" size={16} />
+				{/snippet}
+				{#snippet content()}
+					<p>Preferences and integrations.</p>
+				{/snippet}
+			</Tab>
 		</Tabs>
 
 		<h3>Custom header with badge</h3>
@@ -196,24 +192,22 @@
 			we put an icon, a label, and a status badge together on the "Inbox" tab.
 		</p>
 		<Tabs activeId="overview2">
-			{#snippet childContent()}
-				<Tab id="overview2" label="Overview">
-					{#snippet icon()}<Icon name="home" size={16} />{/snippet}
-					{#snippet content()}<p>Overview page</p>{/snippet}
-				</Tab>
-				<Tab id="inbox2">
-					{#snippet header()}
-						<Icon name="mail" size={16} />
-						<span>Inbox</span>
-						<Badge appearance="accent">3</Badge>
-					{/snippet}
-					{#snippet content()}<p>You have 3 unread messages.</p>{/snippet}
-				</Tab>
-				<Tab id="archive2" label="Archive">
-					{#snippet icon()}<Icon name="folder" size={16} />{/snippet}
-					{#snippet content()}<p>Archived items.</p>{/snippet}
-				</Tab>
-			{/snippet}
+			<Tab id="overview2" label="Overview">
+				{#snippet icon()}<Icon name="home" size={16} />{/snippet}
+				{#snippet content()}<p>Overview page</p>{/snippet}
+			</Tab>
+			<Tab id="inbox2">
+				{#snippet header()}
+					<Icon name="mail" size={16} />
+					<span>Inbox</span>
+					<Badge appearance="accent">3</Badge>
+				{/snippet}
+				{#snippet content()}<p>You have 3 unread messages.</p>{/snippet}
+			</Tab>
+			<Tab id="archive2" label="Archive">
+				{#snippet icon()}<Icon name="folder" size={16} />{/snippet}
+				{#snippet content()}<p>Archived items.</p>{/snippet}
+			</Tab>
 		</Tabs>
 
 		<h3>Justified tabs</h3>
@@ -223,24 +217,22 @@
 			section navigation.
 		</p>
 		<Tabs justify activeId="summary">
-			{#snippet childContent()}
-				<Tab id="summary" label="Summary">
-					{#snippet icon()}<Icon name="document" size={16} />{/snippet}
-					{#snippet content()}<p>High-level summary</p>{/snippet}
-				</Tab>
-				<Tab id="details" label="Details">
-					{#snippet icon()}<Icon name="info" size={16} />{/snippet}
-					{#snippet content()}<p>Detailed breakdown</p>{/snippet}
-				</Tab>
-				<Tab id="history" label="History">
-					{#snippet icon()}<Icon name="history" size={16} />{/snippet}
-					{#snippet content()}<p>Activity log</p>{/snippet}
-				</Tab>
-				<Tab id="sharing" label="Sharing">
-					{#snippet icon()}<Icon name="share" size={16} />{/snippet}
-					{#snippet content()}<p>Share and permissions</p>{/snippet}
-				</Tab>
-			{/snippet}
+			<Tab id="summary" label="Summary">
+				{#snippet icon()}<Icon name="document" size={16} />{/snippet}
+				{#snippet content()}<p>High-level summary</p>{/snippet}
+			</Tab>
+			<Tab id="details" label="Details">
+				{#snippet icon()}<Icon name="info" size={16} />{/snippet}
+				{#snippet content()}<p>Detailed breakdown</p>{/snippet}
+			</Tab>
+			<Tab id="history" label="History">
+				{#snippet icon()}<Icon name="history" size={16} />{/snippet}
+				{#snippet content()}<p>Activity log</p>{/snippet}
+			</Tab>
+			<Tab id="sharing" label="Sharing">
+				{#snippet icon()}<Icon name="share" size={16} />{/snippet}
+				{#snippet content()}<p>Share and permissions</p>{/snippet}
+			</Tab>
 		</Tabs>
 
 		<h3>Responsive modes</h3>
@@ -254,15 +246,13 @@
 				<p><strong><code>responsive="scroll"</code> (default)</strong> — horizontal scrollbar appears when tabs don't fit.</p>
 				<div style="max-width: 420px; border: 1px dashed var(--neutral-stroke-rest); padding: 0.5rem;">
 					<Tabs responsive="scroll" activeId="s1">
-						{#snippet childContent()}
-							<Tab id="s1" label="Basic info" />
-							<Tab id="s2" label="Languages" />
-							<Tab id="s3" label="Additional attributes" />
-							<Tab id="s4" label="Values" />
-							<Tab id="s5" label="Maintenance" />
-							<Tab id="s6" label="Audit trail" />
-							<Tab id="s7" label="Integrations" />
-						{/snippet}
+						<Tab id="s1" label="Basic info" />
+						<Tab id="s2" label="Languages" />
+						<Tab id="s3" label="Additional attributes" />
+						<Tab id="s4" label="Values" />
+						<Tab id="s5" label="Maintenance" />
+						<Tab id="s6" label="Audit trail" />
+						<Tab id="s7" label="Integrations" />
 					</Tabs>
 				</div>
 			</div>
@@ -271,15 +261,13 @@
 				<p><strong><code>responsive="wrap"</code></strong> — tabs flow onto multiple rows.</p>
 				<div style="max-width: 420px; border: 1px dashed var(--neutral-stroke-rest); padding: 0.5rem;">
 					<Tabs responsive="wrap" activeId="w1">
-						{#snippet childContent()}
-							<Tab id="w1" label="Basic info" />
-							<Tab id="w2" label="Languages" />
-							<Tab id="w3" label="Additional attributes" />
-							<Tab id="w4" label="Values" />
-							<Tab id="w5" label="Maintenance" />
-							<Tab id="w6" label="Audit trail" />
-							<Tab id="w7" label="Integrations" />
-						{/snippet}
+						<Tab id="w1" label="Basic info" />
+						<Tab id="w2" label="Languages" />
+						<Tab id="w3" label="Additional attributes" />
+						<Tab id="w4" label="Values" />
+						<Tab id="w5" label="Maintenance" />
+						<Tab id="w6" label="Audit trail" />
+						<Tab id="w7" label="Integrations" />
 					</Tabs>
 				</div>
 			</div>
@@ -288,15 +276,13 @@
 				<p><strong><code>responsive="menu"</code></strong> — tabs that don't fit collapse into a <code>⋯</code> button at the end. Clicking it opens a menu of hidden tabs; selecting one swaps it into the strip in place of the last visible tab.</p>
 				<div style="max-width: 420px; border: 1px dashed var(--neutral-stroke-rest); padding: 0.5rem;">
 					<Tabs responsive="menu" activeId="m1">
-						{#snippet childContent()}
-							<Tab id="m1" label="Basic info" />
-							<Tab id="m2" label="Language & Countries" />
-							<Tab id="m3" label="Additional attributes" />
-							<Tab id="m4" label="Values" />
-							<Tab id="m5" label="Maintenance" />
-							<Tab id="m6" label="Audit trail" />
-							<Tab id="m7" label="Integrations" />
-						{/snippet}
+						<Tab id="m1" label="Basic info" />
+						<Tab id="m2" label="Language & Countries" />
+						<Tab id="m3" label="Additional attributes" />
+						<Tab id="m4" label="Values" />
+						<Tab id="m5" label="Maintenance" />
+						<Tab id="m6" label="Audit trail" />
+						<Tab id="m7" label="Integrations" />
 					</Tabs>
 				</div>
 			</div>
@@ -325,24 +311,22 @@
 
 		<div style="display: flex; min-height: 180px;">
 			<Tabs orientation="vertical" activeId="v1" stripWidth={`${verticalStripWidth}px`}>
-				{#snippet childContent()}
-					<Tab id="v1" label="General">
-						{#snippet icon()}<Icon name="settings" size={16} />{/snippet}
-						{#snippet content()}<p>General settings</p>{/snippet}
-					</Tab>
-					<Tab id="v2" label="Appearance & Theme Customization">
-						{#snippet icon()}<Icon name="color" size={16} />{/snippet}
-						{#snippet content()}<p>Theme, accent color, density</p>{/snippet}
-					</Tab>
-					<Tab id="v3" label="Notifications">
-						{#snippet icon()}<Icon name="alert" size={16} />{/snippet}
-						{#snippet content()}<p>Notification preferences</p>{/snippet}
-					</Tab>
-					<Tab id="v4" label="Security, Privacy & Data Sharing">
-						{#snippet icon()}<Icon name="shield" size={16} />{/snippet}
-						{#snippet content()}<p>Password, 2FA, sessions</p>{/snippet}
-					</Tab>
-				{/snippet}
+				<Tab id="v1" label="General">
+					{#snippet icon()}<Icon name="settings" size={16} />{/snippet}
+					{#snippet content()}<p>General settings</p>{/snippet}
+				</Tab>
+				<Tab id="v2" label="Appearance & Theme Customization">
+					{#snippet icon()}<Icon name="color" size={16} />{/snippet}
+					{#snippet content()}<p>Theme, accent color, density</p>{/snippet}
+				</Tab>
+				<Tab id="v3" label="Notifications">
+					{#snippet icon()}<Icon name="alert" size={16} />{/snippet}
+					{#snippet content()}<p>Notification preferences</p>{/snippet}
+				</Tab>
+				<Tab id="v4" label="Security, Privacy & Data Sharing">
+					{#snippet icon()}<Icon name="shield" size={16} />{/snippet}
+					{#snippet content()}<p>Password, 2FA, sessions</p>{/snippet}
+				</Tab>
 			</Tabs>
 		</div>
 
@@ -356,20 +340,18 @@
 		</p>
 		{#if closableTabs.length > 0}
 			<Tabs activeId={closableTabs[0].id}>
-				{#snippet childContent()}
-					{#each closableTabs as t (t.id)}
-						<Tab
-							id={t.id}
-							label={t.label}
-							showClose
-							beforeCloseCallback={t.label === "Notes.txt" ? undefined : () => confirm(`Close ${t.label}?`)}
-							onTabClose={() => closeTab(t.id)}
-						>
-							{#snippet icon()}<Icon name={t.icon} size={16} />{/snippet}
-							{#snippet content()}<p>Content of {t.label}</p>{/snippet}
-						</Tab>
-					{/each}
-				{/snippet}
+				{#each closableTabs as t (t.id)}
+					<Tab
+						id={t.id}
+						label={t.label}
+						showClose
+						beforeCloseCallback={t.label === "Notes.txt" ? undefined : () => confirm(`Close ${t.label}?`)}
+						onTabClose={() => closeTab(t.id)}
+					>
+						{#snippet icon()}<Icon name={t.icon} size={16} />{/snippet}
+						{#snippet content()}<p>Content of {t.label}</p>{/snippet}
+					</Tab>
+				{/each}
 			</Tabs>
 		{:else}
 			<p><em>No tabs left. Refresh the page to reset.</em></p>
@@ -378,20 +360,18 @@
 		<h3>Disabled tab</h3>
 		<p>Disabled tabs are greyed out and cannot be activated.</p>
 		<Tabs activeId="d1">
-			{#snippet childContent()}
-				<Tab id="d1" label="Active">
-					{#snippet icon()}<Icon name="checkmark" size={16} />{/snippet}
-					{#snippet content()}<p>This tab is enabled.</p>{/snippet}
-				</Tab>
-				<Tab id="d2" label="Disabled" disabled>
-					{#snippet icon()}<Icon name="lock" size={16} />{/snippet}
-					{#snippet content()}<p>This tab is disabled.</p>{/snippet}
-				</Tab>
-				<Tab id="d3" label="Also active">
-					{#snippet icon()}<Icon name="star" size={16} />{/snippet}
-					{#snippet content()}<p>This tab is enabled.</p>{/snippet}
-				</Tab>
-			{/snippet}
+			<Tab id="d1" label="Active">
+				{#snippet icon()}<Icon name="checkmark" size={16} />{/snippet}
+				{#snippet content()}<p>This tab is enabled.</p>{/snippet}
+			</Tab>
+			<Tab id="d2" label="Disabled" disabled>
+				{#snippet icon()}<Icon name="lock" size={16} />{/snippet}
+				{#snippet content()}<p>This tab is disabled.</p>{/snippet}
+			</Tab>
+			<Tab id="d3" label="Also active">
+				{#snippet icon()}<Icon name="star" size={16} />{/snippet}
+				{#snippet content()}<p>This tab is enabled.</p>{/snippet}
+			</Tab>
 		</Tabs>
 
 		<h3>Editable labels</h3>
@@ -400,20 +380,18 @@
 			the label to edit, press <kbd>Enter</kbd> or click away to commit.
 		</p>
 		<Tabs activeId="e1">
-			{#snippet childContent()}
-				<Tab id="e1" label="Untitled 1" labelEditable>
-					{#snippet icon()}<Icon name="edit" size={16} />{/snippet}
-					{#snippet content()}<p>Editable tab</p>{/snippet}
-				</Tab>
-				<Tab id="e2" label="Untitled 2" labelEditable>
-					{#snippet icon()}<Icon name="edit" size={16} />{/snippet}
-					{#snippet content()}<p>Another editable tab</p>{/snippet}
-				</Tab>
-				<Tab id="e3" label="Fixed name">
-					{#snippet icon()}<Icon name="lock" size={16} />{/snippet}
-					{#snippet content()}<p>Not editable.</p>{/snippet}
-				</Tab>
-			{/snippet}
+			<Tab id="e1" label="Untitled 1" labelEditable>
+				{#snippet icon()}<Icon name="edit" size={16} />{/snippet}
+				{#snippet content()}<p>Editable tab</p>{/snippet}
+			</Tab>
+			<Tab id="e2" label="Untitled 2" labelEditable>
+				{#snippet icon()}<Icon name="edit" size={16} />{/snippet}
+				{#snippet content()}<p>Another editable tab</p>{/snippet}
+			</Tab>
+			<Tab id="e3" label="Fixed name">
+				{#snippet icon()}<Icon name="lock" size={16} />{/snippet}
+				{#snippet content()}<p>Not editable.</p>{/snippet}
+			</Tab>
 		</Tabs>
 
 		<h3>Controlled activeId with <code>onActiveIdChange</code> + tab data</h3>
@@ -422,20 +400,18 @@
 			<code>onActiveIdChange</code>. Current active: <strong>{activeId}</strong>.
 		</p>
 		<Tabs {activeId} onActiveIdChange={handleTabChange}>
-			{#snippet childContent()}
-				<Tab id="overview" label="Overview" data={{section: "overview", index: 0}}>
-					{#snippet icon()}<Icon name="home" size={16} />{/snippet}
-					{#snippet content()}<p>Overview panel.</p>{/snippet}
-				</Tab>
-				<Tab id="members" label="Members" data={{section: "members", index: 1}}>
-					{#snippet icon()}<Icon name="people" size={16} />{/snippet}
-					{#snippet content()}<p>Members panel.</p>{/snippet}
-				</Tab>
-				<Tab id="activity" label="Activity" data={{section: "activity", index: 2}}>
-					{#snippet icon()}<Icon name="history" size={16} />{/snippet}
-					{#snippet content()}<p>Activity panel.</p>{/snippet}
-				</Tab>
-			{/snippet}
+			<Tab id="overview" label="Overview" data={{section: "overview", index: 0}}>
+				{#snippet icon()}<Icon name="home" size={16} />{/snippet}
+				{#snippet content()}<p>Overview panel.</p>{/snippet}
+			</Tab>
+			<Tab id="members" label="Members" data={{section: "members", index: 1}}>
+				{#snippet icon()}<Icon name="people" size={16} />{/snippet}
+				{#snippet content()}<p>Members panel.</p>{/snippet}
+			</Tab>
+			<Tab id="activity" label="Activity" data={{section: "activity", index: 2}}>
+				{#snippet icon()}<Icon name="history" size={16} />{/snippet}
+				{#snippet content()}<p>Activity panel.</p>{/snippet}
+			</Tab>
 		</Tabs>
 		{#if lastSelected}
 			<p style="margin-top: 1rem;">
@@ -452,22 +428,20 @@
 			another tab — you'll be asked to confirm.
 		</p>
 		<Tabs bind:activeId={guardActiveId}>
-			{#snippet childContent()}
-				<Tab id="edit" label="Edit" beforeLeaveCallback={confirmLeaveIfDirty}>
-					{#snippet content()}
-						<Stack orientation="vertical" gap="0.5rem">
-							<p>This tab blocks leaving while the field below is non-empty.</p>
-							<TextField bind:value={draft} placeholder="Type something…" />
-						</Stack>
-					{/snippet}
-				</Tab>
-				<Tab id="preview" label="Preview">
-					{#snippet content()}<p>Preview panel — free to switch to once the field is empty (or you confirm).</p>{/snippet}
-				</Tab>
-				<Tab id="settings" label="Settings">
-					{#snippet content()}<p>Settings panel</p>{/snippet}
-				</Tab>
-			{/snippet}
+			<Tab id="edit" label="Edit" beforeLeaveCallback={confirmLeaveIfDirty}>
+				{#snippet content()}
+					<Stack orientation="vertical" gap="0.5rem">
+						<p>This tab blocks leaving while the field below is non-empty.</p>
+						<TextField bind:value={draft} placeholder="Type something…" />
+					</Stack>
+				{/snippet}
+			</Tab>
+			<Tab id="preview" label="Preview">
+				{#snippet content()}<p>Preview panel — free to switch to once the field is empty (or you confirm).</p>{/snippet}
+			</Tab>
+			<Tab id="settings" label="Settings">
+				{#snippet content()}<p>Settings panel</p>{/snippet}
+			</Tab>
 		</Tabs>
 	</Card>
 

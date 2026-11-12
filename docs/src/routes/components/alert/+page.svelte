@@ -10,7 +10,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "intent", type: "'info' | 'success' | 'warning' | 'danger'", default: "'info'", description: "The intent/severity level of the alert"},
+		{name: "intent", type: "'info' | 'success' | 'warning' | 'error'", default: "'info'", description: "The intent/severity level of the alert"},
 		{name: "title", type: "string", default: "undefined", description: "The header/title text"},
 		{name: "dismissible", type: "boolean", default: "false", description: "Whether the alert can be dismissed"},
 		{name: "class", type: "string", default: "undefined", description: "Custom CSS classes"},
@@ -77,7 +77,7 @@
 				Please review your input before continuing.
 			</Alert>
 
-			<Alert intent="danger" title="Error">
+			<Alert intent="error" title="Error">
 				An error occurred while processing your request.
 			</Alert>
 		</Stack>

@@ -8,7 +8,7 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import type {RestProps} from "../types/index.js"
+	import type {AnchorRestProps} from "../types/index.js"
 	import useActions from "../actions/use-actions.js"
 
 	type OwnProps = {
@@ -34,7 +34,7 @@
 	}
 
 	/** Other native attributes and events (`onkeydown`, `aria-*`, `title`, …) go to `<fluent-anchor>`. */
-	type Props = OwnProps & RestProps<OwnProps>
+	type Props = OwnProps & AnchorRestProps<OwnProps>
 
 	let element: HTMLElement
 

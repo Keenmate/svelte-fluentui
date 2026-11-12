@@ -3,7 +3,7 @@
 	import type {RestProps} from "../types/index.js"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 
-	type Intent = 'info' | 'success' | 'warning' | 'danger'
+	type Intent = 'info' | 'success' | 'warning' | 'error'
 
 	type OwnProps = {
 		intent?: Intent
@@ -50,7 +50,7 @@
 		info: 'ℹ',
 		success: '✓',
 		warning: '⚠',
-		danger: '✕'
+		error: '✕'
 	}
 </script>
 
@@ -96,13 +96,13 @@
 		background-color: var(--neutral-layer-1, #ffffff);
 		border: 1px solid var(--neutral-stroke-1, #e0e0e0);
 		border-radius: var(--fluent-border-radius-md);
-		border-left-width: 4px;
+		border-inline-start-width: 4px;
 		position: relative;
 	}
 
 	/* Intent variants */
 	.fluent-alert--info {
-		border-left-color: #0078d4;
+		border-inline-start-color: #0078d4;
 	}
 
 	.fluent-alert--info .fluent-alert__icon {
@@ -111,7 +111,7 @@
 	}
 
 	.fluent-alert--success {
-		border-left-color: #107c10;
+		border-inline-start-color: #107c10;
 	}
 
 	.fluent-alert--success .fluent-alert__icon {
@@ -120,7 +120,7 @@
 	}
 
 	.fluent-alert--warning {
-		border-left-color: #ffb900;
+		border-inline-start-color: #ffb900;
 	}
 
 	.fluent-alert--warning .fluent-alert__icon {
@@ -128,11 +128,11 @@
 		color: #ffb900;
 	}
 
-	.fluent-alert--danger {
-		border-left-color: #d13438;
+	.fluent-alert--error {
+		border-inline-start-color: #d13438;
 	}
 
-	.fluent-alert--danger .fluent-alert__icon {
+	.fluent-alert--error .fluent-alert__icon {
 		background-color: rgba(209, 52, 56, 0.1);
 		color: #d13438;
 	}

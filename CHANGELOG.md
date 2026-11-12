@@ -11,6 +11,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Alert (`intent`):** `"danger"` (class `.fluent-alert--danger`) → `"error"` (class `.fluent-alert--error`), Microsoft Fluent naming
+- **Tabs:** `{#snippet childContent()}` around the `<Tab>`s → `children`: put `<Tab>`s directly between the tags
+- **Tab:** `childContent` snippet → `children`: panel content between the `<Tab>` tags
+- **AppBarItem:** explicit `target` prop → `target` passes through `...rest` (typed anchor attributes)
 - **Autocomplete:** `maxSelectedOptions` / `maxOptionsSearch` → `maxSelectionCount` / `maxResultCount`
 - **CommandPalette:** `maxResults` → `maxResultCount`
 - **BadgeGroup:** `limit` → `maxVisibleBadgeCount`

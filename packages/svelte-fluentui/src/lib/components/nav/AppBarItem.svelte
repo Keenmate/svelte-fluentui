@@ -1,13 +1,12 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import type {RestProps} from "../../types/index.js"
+	import type {AnchorRestProps} from "../../types/index.js"
 	import Stack from "../layout/Stack.svelte"
 	import {StackHorizontalAlign, StackOrientation, StackVerticalAlign} from "../../fluent-ui/constants/stack.js"
 
 	type OwnProps = {
 		href?: string
 		rel?: string
-		target?: string
 		/** Counter shown as a small badge on the icon (e.g. unread items). Hidden when 0 / undefined. */
 		count?: number
 		/** Largest value displayed verbatim; above it the badge reads "<maxCount>+". The full count is still announced to screen readers. */
@@ -21,13 +20,12 @@
 		class?: string
 	}
 
-	/** Other native attributes and events (`target`, `title`, `aria-current`, `onkeydown`, …) go to the inner `<a>`. */
-	type Props = OwnProps & RestProps<OwnProps>
+	/** Other native attributes and events (`target`, `download`, `title`, `aria-current`, `onkeydown`, …) go to the inner `<a>`. */
+	type Props = OwnProps & AnchorRestProps<OwnProps>
 
 	let {
 		    href     = undefined,
 		    rel      = undefined,
-		    target   = undefined,
 		    count    = undefined,
 		    maxCount = 99,
 		    active   = undefined,
@@ -50,7 +48,6 @@
 			{...rest}
 			{href}
 			{rel}
-			{target}
 			class:active
 			{onclick}
 		>

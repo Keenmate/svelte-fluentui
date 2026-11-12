@@ -8,7 +8,7 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import type {RestProps} from "../types/index.js"
+	import type {AnchorRestProps} from "../types/index.js"
 
 	type OwnProps = {
 		href?: string
@@ -16,8 +16,8 @@
 		children?: Snippet
 	}
 
-	/** Other native attributes and events (`onclick`, `class`, `aria-current`, …) go to `<fluent-breadcrumb-item>`. */
-	type Props = OwnProps & RestProps<OwnProps>
+	/** Other native attributes and events (`onclick`, `class`, `aria-current`, and anchor attributes such as `target`, `rel`, `download`, …) go to `<fluent-breadcrumb-item>`, which applies the anchor ones to its inner `<a>`. */
+	type Props = OwnProps & AnchorRestProps<OwnProps>
 
 	let {
 		href = undefined,

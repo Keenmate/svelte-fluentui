@@ -28,12 +28,11 @@
 	const appBarItemProperties: Property[] = [
 		{name: "href", type: "string", default: "undefined", description: "URL — renders the item as a link"},
 		{name: "rel", type: "string", default: "undefined", description: "Link rel attribute"},
-		{name: "target", type: "string", default: "undefined", description: "Link target attribute (e.g. _blank)"},
 		{name: "count", type: "number", default: "undefined", description: "Counter badge on the icon (accent fill, top end corner). Hidden when 0 or undefined. The full count is appended to the link's accessible name as visually hidden text."},
 		{name: "maxCount", type: "number", default: "99", description: "Largest count shown verbatim; above it the badge reads e.g. \"99+\"."},
 		{name: "active", type: "boolean", default: "undefined", description: "Marks the item as active (controlled by the app, e.g. from the current route)"},
 		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the inner a"}
+		{name: "...rest", type: "HTMLAnchorAttributes", default: "-", description: "Other native and anchor attributes (target, download, hreflang, title, aria-*, data-*, …) and DOM events (lowercase onclick, onkeydown, …) are forwarded untouched to the inner a"}
 	]
 
 	const appBarItemCallbacks: Property[] = [

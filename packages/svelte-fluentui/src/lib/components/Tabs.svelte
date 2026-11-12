@@ -17,7 +17,7 @@
 		icon?: Snippet
 		header?: Snippet
 		content?: Snippet
-		childContent?: Snippet
+		children?: Snippet
 		disabled?: boolean
 		ariaLabel?: string
 		labelEditable?: boolean
@@ -75,7 +75,8 @@
 		orientation?: "horizontal" | "vertical"
 		activeId?: string
 		showActiveIndicator?: boolean
-		childContent?: Snippet
+		/** The `<Tab>` elements, placed directly between the `<Tabs>` tags. */
+		children?: Snippet
 		/**
 		 * How the tab list handles widths wider than the container.
 		 *  - `scroll` (default): tab strip scrolls horizontally (vertical: vertically). Scroll arrows appear at the ends when there's overflow.
@@ -117,7 +118,7 @@
 		orientation = "horizontal",
 		activeId = $bindable(undefined),
 		showActiveIndicator = true,
-		childContent = undefined,
+		children = undefined,
 		responsive = "scroll",
 		justify = false,
 		stripWidth = undefined,
@@ -714,7 +715,7 @@
  inline stray markup inside the snippet.
 -->
 <div hidden aria-hidden="true">
-	{@render childContent?.()}
+	{@render children?.()}
 </div>
 
 <div
@@ -939,7 +940,7 @@
 				hidden={tab.id !== activeId}
 			>
 				{@render tab.content?.()}
-				{@render tab.childContent?.()}
+				{@render tab.children?.()}
 			</div>
 		{/each}
 	</div>

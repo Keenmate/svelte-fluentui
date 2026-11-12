@@ -13,8 +13,10 @@
 		label?: string
 		icon?: Snippet
 		header?: Snippet
+		/** Panel content. */
 		content?: Snippet
-		childContent?: Snippet
+		/** Panel content placed directly between the `<Tab>` tags; rendered after `content`. */
+		children?: Snippet
 		labelEditable?: boolean
 		showClose?: boolean
 		visible?: boolean
@@ -45,7 +47,7 @@
 		icon = undefined,
 		header = undefined,
 		content = undefined,
-		childContent = undefined,
+		children = undefined,
 		labelEditable = false,
 		showClose = false,
 		visible = true,
@@ -86,7 +88,7 @@
 			icon,
 			header,
 			content,
-			childContent,
+			children,
 			disabled,
 			ariaLabel,
 			labelEditable,

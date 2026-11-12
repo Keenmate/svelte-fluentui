@@ -140,6 +140,7 @@ USAGE:
 BREADCRUMBITEM PROPS:
 href?: string               # Link URL (last item typically has no href)
 class?: string
+...rest                     # Native + anchor attributes (target, rel, download, ...); anchor ones apply to the inner <a>
 children: SlotType          # Item text
 
 

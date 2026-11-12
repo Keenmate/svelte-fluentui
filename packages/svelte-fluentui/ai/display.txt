@@ -250,36 +250,39 @@ USAGE:
   import { Alert } from "svelte-fluentui"
 </script>
 
-<Alert variant="success">Operation completed successfully!</Alert>
+<Alert intent="success">Operation completed successfully!</Alert>
 
 PROPS:
-variant?: "info" | "success" | "warning" | "error"
+intent?: "info" | "success" | "warning" | "error"   # default "info" (1.x "danger" -> "error")
+title?: string              # Header text
 dismissible?: boolean       # Show dismiss button
-ondismiss?: () => void
+onDismiss?: (ctx: { sourceEvent: MouseEvent }) => void
 class?: string
 style?: string
-children: SlotType
+icon?: Snippet              # Overrides the default intent icon
+children?: Snippet
+...rest                     # Native attributes/events go to the root <div>
 
 
 ALERT EXAMPLES:
 
 INFO:
-<Alert variant="info">
+<Alert intent="info">
   Please review the changes before saving.
 </Alert>
 
 SUCCESS:
-<Alert variant="success">
+<Alert intent="success">
   Your profile has been updated.
 </Alert>
 
 WARNING:
-<Alert variant="warning">
+<Alert intent="warning">
   Your session will expire in 5 minutes.
 </Alert>
 
 ERROR:
-<Alert variant="error">
+<Alert intent="error">
   Failed to save changes. Please try again.
 </Alert>
 
@@ -289,7 +292,7 @@ DISMISSIBLE:
 </script>
 
 {#if showAlert}
-  <Alert variant="info" dismissible ondismiss={() => showAlert = false}>
+  <Alert intent="info" dismissible onDismiss={() => showAlert = false}>
     This message can be dismissed.
   </Alert>
 {/if}

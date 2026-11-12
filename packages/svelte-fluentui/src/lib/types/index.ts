@@ -1,4 +1,4 @@
-import type {HTMLAttributes} from "svelte/elements"
+import type {HTMLAnchorAttributes, HTMLAttributes} from "svelte/elements"
 
 /**
  * Native attributes and DOM events a component forwards to its root element via
@@ -6,6 +6,14 @@ import type {HTMLAttributes} from "svelte/elements"
  * are real browser events and receive the native `Event` untouched.
  */
 export type RestProps<Own> = Omit<HTMLAttributes<HTMLElement>, keyof Own>
+
+/**
+ * `RestProps` for link-like components whose `...rest` lands on (or is forwarded
+ * to) an anchor: adds the anchor attributes (`target`, `rel`, `download`,
+ * `hreflang`, `referrerpolicy`, …) on top of the global ones, minus the
+ * component's own props.
+ */
+export type AnchorRestProps<Own> = Omit<HTMLAnchorAttributes, keyof Own>
 
 /** A native event handler as forwarded by a component (`oninput`, `onchange`, ...). */
 export type NativeEventHandler = (event: Event) => void
