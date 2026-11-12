@@ -64,7 +64,7 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {value: Date | null}) => void", default: "undefined", description: "Fires when the user picks, types or clears a date (null when cleared)."},
-		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the calendar popup opens or closes."},
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires on every open/close after mount (user interaction or bind:open); not on initial render, even when open starts true."},
 		{name: "onPickerMonthChange", type: "(ctx: {pickerMonth: Date}) => void", default: "undefined", description: "Fires when the user navigates to a different month/year inside the popup."},
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (id and title go to the input)"}
 	]

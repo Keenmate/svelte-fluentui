@@ -106,7 +106,7 @@
 		loadingText?: string
 		/** Fires when the user changes the selection; `value` is always an array. */
 		onChange?: (ctx: {value: string[]}) => void
-		/** Fires on every open/close transition of the dropdown (user or programmatic). */
+		/** Fires on every open/close transition of the dropdown after mount (user or `bind:open`); not on initial render. */
 		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
@@ -263,10 +263,16 @@
 		if (open !== undefined && isOpen !== untrack(() => open)) open = isOpen
 	})
 
-	// onOpenChange on every open/close transition (isOpen is set from many paths).
-	let lastOpen = false
+	// onOpenChange on every real open/close transition after mount (isOpen is set
+	// from many paths: user interaction or a programmatic `bind:open` change). The
+	// first run only records the initial state, so `open={true}` on mount is silent.
+	let lastOpen: boolean | undefined = undefined
 	$effect(() => {
 		const next = isOpen
+		if (lastOpen === undefined) {
+			lastOpen = next
+			return
+		}
 		if (next === lastOpen) return
 		lastOpen = next
 		untrack(() => onOpenChange?.({open: next}))

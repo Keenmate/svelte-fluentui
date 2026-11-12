@@ -8,6 +8,7 @@
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import {untrack} from "svelte"
 	import TextField from "./TextField.svelte"
 	import Calendar from "./Calendar.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
@@ -65,7 +66,7 @@
 		day?: Snippet<[day: CalendarDay]>
 		/** Fires when the user picks, types or clears a date. */
 		onChange?: (ctx: {value: Date | null}) => void
-		/** Fires when the calendar popup opens or closes. */
+		/** Fires on every open/close of the calendar popup after mount (user or `bind:open`); not on initial render. */
 		onOpenChange?: (ctx: {open: boolean}) => void
 		/** Fires when the user navigates months/years inside the calendar popup. */
 		onPickerMonthChange?: (ctx: {pickerMonth: Date}) => void
@@ -118,8 +119,21 @@
 	function setOpen(next: boolean) {
 		if (open === next) return
 		open = next
-		onOpenChange?.({open: next})
 	}
+	// onOpenChange on every real open/close transition after mount (user action or a
+	// programmatic `bind:open` change). The first run only records the initial state,
+	// so `open={true}` on mount is silent.
+	let lastOpen: boolean | undefined = undefined
+	$effect(() => {
+		const next = open
+		if (lastOpen === undefined) {
+			lastOpen = next
+			return
+		}
+		if (next === lastOpen) return
+		lastOpen = next
+		untrack(() => onOpenChange?.({open: next}))
+	})
 	let wrapperElement = $state<HTMLElement | undefined>(undefined)
 	let popupElement = $state<HTMLElement | undefined>(undefined)
 

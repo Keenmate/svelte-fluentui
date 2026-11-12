@@ -75,7 +75,11 @@
 		searchCallback?: (ctx: {term: string; signal: AbortSignal}) => Promise<OptionItem<T>[]> | OptionItem<T>[]
 		/** Fires when the user adds or removes a selection. */
 		onChange?: (ctx: {value: T[]}) => void
-		/** Fires when the options dropdown opens or closes. */
+		/** Whether the options dropdown is open (bindable). Setting it to `true`
+		 * opens the list the same way the dropdown toggle does; `false` closes it. */
+		open?: boolean
+		/** Fires on every open/close transition of the dropdown after mount (user
+		 * interaction or `bind:open`); not on initial render. */
 		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
@@ -124,6 +128,7 @@
 		initialSearchQuery = "",
 		searchCallback = undefined,
 		onChange = undefined,
+		open = $bindable(undefined),
 		onOpenChange = undefined,
 		...rest
 	}: Props = $props()
@@ -379,10 +384,43 @@
 		isOpen = false
 	}
 
-	// onOpenChange on every open/close transition (isOpen is set from many paths).
-	let lastOpen = false
+	// Open the list using the same query-aware path as the dropdown toggle.
+	function openDropdown() {
+		if (searchText.trim()) {
+			filterOptions(searchText)
+		} else if (showInitialOptions && options.length > 0) {
+			filterOptions("")
+		} else {
+			showAllOptions()
+		}
+	}
+
+	// Allow external control via `open` prop (binds both ways).
+	$effect(() => {
+		if (open === undefined || open === untrack(() => isOpen)) return
+		const next = open
+		untrack(() => {
+			if (next) {
+				if (!disabled && !readonly) openDropdown()
+			} else {
+				closeDropdown()
+			}
+		})
+	})
+	$effect(() => {
+		if (open !== undefined && isOpen !== untrack(() => open)) open = isOpen
+	})
+
+	// onOpenChange on every real open/close transition after mount (isOpen is set
+	// from many paths: user interaction or a programmatic `bind:open` change). The
+	// first run only records the initial state, so `open={true}` on mount is silent.
+	let lastOpen: boolean | undefined = undefined
 	$effect(() => {
 		const open = isOpen
+		if (lastOpen === undefined) {
+			lastOpen = open
+			return
+		}
 		if (open === lastOpen) return
 		lastOpen = open
 		untrack(() => onOpenChange?.({open}))
@@ -421,13 +459,7 @@
 			closeDropdown()
 		} else {
 			inputElement?.focus()
-			if (searchText.trim()) {
-				filterOptions(searchText)
-			} else if (showInitialOptions && options.length > 0) {
-				filterOptions("")
-			} else {
-				showAllOptions()
-			}
+			openDropdown()
 		}
 	}
 

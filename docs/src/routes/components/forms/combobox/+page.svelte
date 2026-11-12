@@ -211,7 +211,7 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {value: string[]}) => void", default: "undefined", description: "Fires when the user changes the selection"},
-		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires on every open/close transition of the dropdown (user interaction or bind:open)"},
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires on every open/close after mount (user interaction or bind:open); not on initial render, even when open starts true."},
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (display: contents; id goes to the input)"}
 	]
 

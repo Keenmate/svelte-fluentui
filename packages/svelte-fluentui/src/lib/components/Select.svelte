@@ -71,7 +71,7 @@
 		children?: Snippet
 		/** Fires when the user changes the selection. `value` is the new bound value (array when `multiple`). */
 		onChange?: (ctx: {value: string | string[]; option?: SelectChangeOption}) => void
-		/** Single mode: fires on every open/close transition of the dropdown (user or programmatic). */
+		/** Single mode: fires on every open/close transition of the dropdown after mount (user or `bind:open`); not on initial render. */
 		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
@@ -191,10 +191,16 @@
 		}
 	})
 
-	// onOpenChange on every open/close transition (isOpen is set from many paths).
-	let lastOpen = false
+	// onOpenChange on every real open/close transition after mount (isOpen is set
+	// from many paths: user interaction or a programmatic `bind:open` change). The
+	// first run only records the initial state, so `open={true}` on mount is silent.
+	let lastOpen: boolean | undefined = undefined
 	$effect(() => {
 		const next = isOpen
+		if (lastOpen === undefined) {
+			lastOpen = next
+			return
+		}
 		if (next === lastOpen) return
 		lastOpen = next
 		untrack(() => onOpenChange?.({open: next}))

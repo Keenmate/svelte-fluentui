@@ -182,7 +182,8 @@
 	const callbacks: Property[] = [
 		{name: "searchCallback", type: "(ctx: {term: string, signal: AbortSignal}) => Promise<OptionItem[]> | OptionItem[]", default: "undefined", description: "Called when the user types. Return matching options (sync or async); signal aborts when a newer search starts. If omitted, a case-insensitive contains filter is used."},
 		{name: "onChange", type: "(ctx: {value: T[]}) => void", default: "undefined", description: "Fires when the user adds or removes a selection."},
-		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the dropdown opens or closes."},
+		{name: "open", type: "boolean", default: "undefined", description: "Bindable open state of the dropdown. Setting true opens the list (same as the dropdown toggle); false closes it."},
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires on every open/close after mount (user interaction or bind:open); not on initial render, even when open starts true."},
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div>"}
 	]
 

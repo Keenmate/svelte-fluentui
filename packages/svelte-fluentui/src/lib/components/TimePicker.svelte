@@ -8,6 +8,7 @@
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import {untrack} from "svelte"
 	import TextField from "./TextField.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Button from "./Button.svelte"
@@ -51,7 +52,7 @@
 		style?: string
 		/** Fires when the user picks or clears a time. */
 		onChange?: (ctx: {value: string | null}) => void
-		/** Fires when the clock popup opens or closes. */
+		/** Fires on every open/close of the clock popup after mount (user or `bind:open`); not on initial render. */
 		onOpenChange?: (ctx: {open: boolean}) => void
 	}
 
@@ -98,8 +99,21 @@
 	function setOpen(next: boolean) {
 		if (open === next) return
 		open = next
-		onOpenChange?.({open: next})
 	}
+	// onOpenChange on every real open/close transition after mount (user action or a
+	// programmatic `bind:open` change). The first run only records the initial state,
+	// so `open={true}` on mount is silent.
+	let lastOpen: boolean | undefined = undefined
+	$effect(() => {
+		const next = open
+		if (lastOpen === undefined) {
+			lastOpen = next
+			return
+		}
+		if (next === lastOpen) return
+		lastOpen = next
+		untrack(() => onOpenChange?.({open: next}))
+	})
 
 	// Parse min/max time into total minutes for easy comparison.
 	function toTotalSeconds(s?: string): number | null {

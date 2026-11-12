@@ -149,6 +149,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- Autocomplete bindable `open`; `onOpenChange` consistent across Select/Combobox/Autocomplete/DatePicker/TimePicker (real changes only, incl. `bind:open`).
 - AppBarItem `countLabel` and `--fluent-appbar-count-*` CSS variables; NavLinkItem `linkProps`.
 - AppBarItem `count` badge + `maxCount`; MultiSplitter / NavGroup `persistKey`.
 - Select / Combobox `onOpenChange`; Combobox `height` works.

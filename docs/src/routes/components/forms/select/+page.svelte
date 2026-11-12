@@ -132,7 +132,7 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: { value: string | string[], option?: { value, text, data? } }) => void", default: "undefined", description: "Fires when the user changes the selection; value is an array when multiple"},
-		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Single mode: fires on every open/close transition of the dropdown (user interaction or bind:open)"},
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Single mode: fires on every open/close after mount (user interaction or bind:open); not on initial render, even when open starts true."},
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (display: contents; id/class/style go to the trigger)"}
 	];
 
@@ -448,6 +448,61 @@
 							<Option value="2">Option 2</Option>
 						{/snippet}
 					</Select>
+				</Stack>
+			</GridItem>
+		</Grid>
+
+		<h3 id="height">Height</h3>
+		<p>
+			Current behaviour: <code>height</code> only applies in multi mode, where it sets the height of the
+			inline listbox (overriding the auto-calculated height). In single mode it is not applied, so the
+			trigger keeps its standard control height. To limit the single-mode dropdown, use
+			<code>maxDropdownHeight</code> (below).
+		</p>
+		<Grid columns={3} gap="1rem">
+			<GridItem>
+				<Stack orientation="vertical" gap="0.5rem">
+					<strong>Multiple, <code>height="160px"</code></strong>
+					<Select label="Items" multiple height="160px">
+						{#snippet children()}
+							<Option value="apple">Apple</Option>
+							<Option value="grape">Grape</Option>
+							<Option value="strawberry">Strawberry</Option>
+							<Option value="cherry">Cherry</Option>
+							<Option value="banana">Banana</Option>
+							<Option value="watermelon">Watermelon</Option>
+							<Option value="persimmon">Persimmon</Option>
+						{/snippet}
+					</Select>
+				</Stack>
+			</GridItem>
+			<GridItem>
+				<Stack orientation="vertical" gap="0.5rem">
+					<strong>Multiple, no <code>height</code></strong>
+					<Select label="Items" multiple>
+						{#snippet children()}
+							<Option value="apple">Apple</Option>
+							<Option value="grape">Grape</Option>
+							<Option value="strawberry">Strawberry</Option>
+							<Option value="cherry">Cherry</Option>
+							<Option value="banana">Banana</Option>
+							<Option value="watermelon">Watermelon</Option>
+							<Option value="persimmon">Persimmon</Option>
+						{/snippet}
+					</Select>
+				</Stack>
+			</GridItem>
+			<GridItem>
+				<Stack orientation="vertical" gap="0.5rem">
+					<strong>Single, <code>height="48px"</code></strong>
+					<Select label="Fruit" height="48px">
+						{#snippet children()}
+							<Option value="apple">Apple</Option>
+							<Option value="grape">Grape</Option>
+							<Option value="strawberry">Strawberry</Option>
+						{/snippet}
+					</Select>
+					<small>The trigger renders at the standard control height; <code>height</code> has no effect here.</small>
 				</Stack>
 			</GridItem>
 		</Grid>
