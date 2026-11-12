@@ -101,12 +101,17 @@
 		justify-content: center;
 	}
 
-	/* Counter badge pinned to the icon's top end corner (flips in RTL).
+	/* Counter badge on the icon's top end corner (flips in RTL). Anchored by its
+	   start edge, so it overlaps the corner by a fixed amount and longer counts
+	   ("99+") grow outward instead of covering the icon — as in Teams / Outlook.
 	   Restyle via the component-scoped --fluent-appbar-count-* variables. */
 	.fluent-appbar-item-count {
 		position: absolute;
 		inset-block-start: var(--fluent-appbar-count-offset-block, -6px);
-		inset-inline-end: var(--fluent-appbar-count-offset-inline, -10px);
+		inset-inline-start: calc(100% - var(--fluent-appbar-count-overlap, 8px));
+		/* Numbers read the same in RTL: keep "99+" from turning into "+99". */
+		direction: ltr;
+		unicode-bidi: isolate;
 		z-index: 1;
 		box-sizing: border-box;
 		min-inline-size: var(--fluent-appbar-count-size, 16px);

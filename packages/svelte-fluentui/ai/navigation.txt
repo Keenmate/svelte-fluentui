@@ -177,7 +177,7 @@ COUNT BADGE CSS VARIABLES (set on AppBar, an item class, or any ancestor):
 --fluent-appbar-count-padding-inline # 4px
 --fluent-appbar-count-radius         # 9999px (pill)
 --fluent-appbar-count-offset-block   # -6px (from the icon's top edge)
---fluent-appbar-count-offset-inline  # -10px (from the icon's end edge, RTL-aware)
+--fluent-appbar-count-overlap        # 8px (how far the badge reaches over the icon's end edge; grows outward, RTL-aware)
 
 .danger-count {
   --fluent-appbar-count-background: var(--fluent-color-danger);

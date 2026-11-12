@@ -54,7 +54,7 @@
 		{name: "--fluent-appbar-count-padding-inline", type: "length", default: "4px", description: "Inline padding (matters for multi-digit counts)"},
 		{name: "--fluent-appbar-count-radius", type: "length", default: "9999px", description: "Badge corner radius (pill by default)"},
 		{name: "--fluent-appbar-count-offset-block", type: "length", default: "-6px", description: "Offset from the icon's top edge (inset-block-start)"},
-		{name: "--fluent-appbar-count-offset-inline", type: "length", default: "-10px", description: "Offset from the icon's end edge (inset-inline-end, flips in RTL)"}
+		{name: "--fluent-appbar-count-overlap", type: "length", default: "8px", description: "How far the badge reaches over the icon's end edge; longer counts grow outward (flips in RTL)"}
 	]
 
 	const unreadLabel = (count: number) => `${count} unread`
