@@ -811,8 +811,8 @@
 	}
 
 	.required-indicator {
-		color: var(--error-foreground-rest, #d13438);
-		margin-left: 0.25rem;
+		color: var(--fluent-color-danger-foreground, #d13438);
+		margin-inline-start: 0.25rem;
 	}
 
 	.autocomplete-container {
@@ -976,7 +976,7 @@
 		flex-shrink: 0;
 		display: flex;
 		align-items: center;
-		padding-right: 4px;
+		padding-inline-end: 4px;
 		color: var(--neutral-foreground-hint, #707070);
 	}
 
@@ -1022,21 +1022,21 @@
 	   centered in a control-height box, so flush ≈ 16px glyph inset). */
 	.autocomplete-input-container:not(.inline-mode) .input-end {
 		position: absolute;
-		right: 0;
+		inset-inline-end: 0;
 		top: 50%;
 		transform: translateY(-50%);
 	}
 
 	.autocomplete-input-container:not(.inline-mode) .input-start {
 		position: absolute;
-		left: 8px;
+		inset-inline-start: 8px;
 		top: 50%;
 		transform: translateY(-50%);
 	}
 
 	/* Non-inline mode: pad the input so its text doesn't sit underneath the icons */
 	.autocomplete-input-container:not(.inline-mode):has(.input-start) .autocomplete-native-input {
-		padding-left: 32px;
+		padding-inline-start: 32px;
 	}
 
 	/* The end slot is a control-height square pinned to the inline-end; reserve
@@ -1142,7 +1142,7 @@
 		background: transparent;
 		border: none;
 		padding: 0.5rem 0.75rem;
-		text-align: left;
+		text-align: start;
 		cursor: pointer;
 		border-radius: var(--fluent-border-radius-md);
 		color: var(--neutral-foreground-rest, #242424);

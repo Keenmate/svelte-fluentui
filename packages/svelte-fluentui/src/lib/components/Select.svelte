@@ -597,8 +597,8 @@
 	}
 
 	.required-indicator {
-		color: var(--error-foreground-rest, #d13438);
-		margin-left: 0.25rem;
+		color: var(--fluent-color-danger-foreground, #d13438);
+		margin-inline-start: 0.25rem;
 	}
 
 	/* ===== Trigger button (single mode) ===== */
@@ -618,7 +618,7 @@
 		line-height: var(--type-ramp-base-line-height, 20px);
 		color: var(--neutral-foreground-rest, #242424);
 		cursor: pointer;
-		text-align: left;
+		text-align: start;
 		transition: border-color 0.1s ease, background 0.1s ease, box-shadow 0.1s ease;
 		min-width: 200px;
 	}

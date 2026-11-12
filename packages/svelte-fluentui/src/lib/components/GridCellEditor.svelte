@@ -770,7 +770,7 @@
 	.cell-select-arrow {
 		font-size: 10px;
 		opacity: 0.6;
-		margin-left: 4px;
+		margin-inline-start: 4px;
 		flex-shrink: 0;
 	}
 
@@ -787,7 +787,7 @@
 		width: 100%;
 		height: 100%;
 		padding: 0;
-		padding-right: 16px;
+		padding-inline-end: 16px;
 		margin: 0;
 		border: none;
 		border-radius: 0;
@@ -804,7 +804,7 @@
 
 	.cell-combobox-wrapper .cell-select-arrow {
 		position: absolute;
-		right: 0;
+		inset-inline-end: 0;
 	}
 
 	/* Autocomplete wrapper */
@@ -820,7 +820,7 @@
 		width: 100%;
 		height: 100%;
 		padding: 0;
-		padding-right: 20px;
+		padding-inline-end: 20px;
 		margin: 0;
 		border: none;
 		border-radius: 0;
@@ -842,7 +842,7 @@
 
 	.cell-loading-indicator {
 		position: absolute;
-		right: 4px;
+		inset-inline-end: 4px;
 		font-size: 10px;
 		color: var(--neutral-foreground-hint, #707070);
 		animation: pulse 1s infinite;
@@ -868,7 +868,7 @@
 		padding: 6px 12px;
 		border: none;
 		background: transparent;
-		text-align: left;
+		text-align: start;
 		cursor: pointer;
 		color: var(--neutral-foreground-rest, #242424);
 		font: inherit;
