@@ -6,7 +6,7 @@ import {test, expect, type Page} from "@playwright/test"
  * or programmatic `bind:open` — and never on initial render, even when `open`
  * starts `true`.
  * Fixture: docs/src/routes/test/open-change/+page.svelte (?c=<component>&open=1);
- * the component mounts on the #oc-mount click.
+ * the component mounts on the #oc-mount click (or at load with &eager=1).
  */
 
 async function load(page: Page, c: string, open = false) {
@@ -89,4 +89,32 @@ for (const {c, userOpen, popup} of cases) {
 			await expect(log).toHaveText("true,false,true,false")
 		})
 	})
+}
+
+// A Select / Combobox that starts open stays open — on a full page load and
+// when reached by client-side navigation (SvelteKit's focus handling must not
+// read as the user leaving the control).
+for (const {c, popup} of cases.filter(x => x.c === "select" || x.c === "combobox")) {
+	for (const via of ["full load", "client navigation"] as const) {
+		test(`${c}: open at page load stays open (${via})`, async ({page}) => {
+			const url = `/test/open-change?c=${c}&open=1&eager=1`
+			if (via === "full load") {
+				await page.goto(url)
+			} else {
+				await page.goto("/test/open-change")
+				await page.evaluate(href => {
+					const a = document.createElement("a")
+					a.href = href
+					document.body.append(a)
+					a.click()
+				}, url)
+				await page.waitForURL(/eager=1/)
+			}
+			await expect(popup(page)).toBeVisible()
+			await page.waitForTimeout(500)
+			await expect(popup(page)).toBeVisible()
+			await expect(page.locator("#oc-open")).toHaveText("true")
+			await expect(page.locator("#oc-log")).toHaveText("")
+		})
+	}
 }

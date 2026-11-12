@@ -5,12 +5,13 @@
 
 	// One component per load (?c=select|combobox|autocomplete|datepicker|timepicker),
 	// optionally starting open (?open=1), so popups never overlap between cases.
-	// The component mounts on the #oc-mount click, after SvelteKit's initial
-	// navigation focus reset (which would otherwise close a popup open at load).
+	// The component mounts on the #oc-mount click, so each test controls when it
+	// appears; ?eager=1 mounts it at load.
 	const c = untrack(() => page.url.searchParams.get("c") ?? "select")
 	let open = $state(untrack(() => page.url.searchParams.get("open") === "1"))
 	let log = $state<boolean[]>([])
-	let mounted = $state(false)
+	// ?eager=1 mounts at load instead (page loaded with the popup already open).
+	let mounted = $state(untrack(() => page.url.searchParams.get("eager") === "1"))
 	const onOpenChange = ({open}: {open: boolean}) => { log.push(open) }
 
 	const fruits = [
