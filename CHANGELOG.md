@@ -11,6 +11,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **MultiSplitter (`id`):** also the localStorage key (layout always saved) → plain DOM id; saving is opt-in via `persistKey` (same key format: `persistKey="<old id>"` keeps saved layouts)
+- **NavGroup (`title`):** also the saved-expanded-state key, not rendered → native `title` attribute; saving is opt-in via `persistKey` (`persistKey="<old title>"` keeps saved state)
 - **NumberField (`value`):** `string` → `number` or `null` (empty field); partial input like "-" or "1." is kept
 - **NumberField (`onChange`):** `{value: string}` → `{value: number or null}`; not fired when `value` is set in code
 - **Autocomplete (option objects):** `{value, text}` → `{value, label}` (the exported `OptionItem<T>`)
@@ -135,6 +137,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- AppBarItem `count` badge + `maxCount`; MultiSplitter / NavGroup `persistKey`.
 - Select / Combobox `onOpenChange`; Combobox `height` works.
 - Native attributes and events (`...rest`) on every component that renders an element.
 - `bind:expanded` (AccordionItem), `bind:showAll` (BadgeGroup), `bind:visible` (Tooltip); AppBarItem `target`.

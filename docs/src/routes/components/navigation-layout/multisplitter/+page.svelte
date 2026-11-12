@@ -25,7 +25,8 @@
 
 	const multiSplitterProperties: Property[] = [
 		{name: "orientation", type: '"horizontal" | "vertical"', default: '"horizontal"', description: "Layout direction. Horizontal arranges panes side-by-side with vertical gutters; vertical stacks them with horizontal gutters."},
-		{name: "id", type: "string", default: "undefined", description: "Enables localStorage persistence under \"fluent-multi-splitter:<id>\". Saves sizes, last-expanded sizes, and minimized state."},
+		{name: "persistKey", type: "string", default: "undefined", description: "Opt-in localStorage persistence under \"fluent-multi-splitter:<persistKey>\". Saves sizes, last-expanded sizes, and minimized state. Omit to disable persistence. 2.0: replaces the implicit persistence via id; set persistKey to your old id value to keep previously saved layouts."},
+		{name: "id", type: "string", default: "undefined", description: "DOM id of the root div. Plain attribute since 2.0 (no longer a persistence key)."},
 		{name: "step", type: "number", default: "10", description: "Keyboard arrow-key step in px when a gutter is focused."},
 		{name: "railSize", type: "number", default: "40", description: "Width (or height in vertical mode) in px that a minimized pane collapses to."},
 		{name: "minimizeThreshold", type: "number", default: "0.40", description: "Drag-to-rail snap threshold as ratio of the drag-start (or max-reached) size. Floored at railSize × 1.5."},
@@ -34,7 +35,7 @@
 		{name: "debug", type: "boolean", default: "false", description: "Logs drag and minimize transitions to console (development aid)."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names on the root element."},
 		{name: "style", type: "string", default: '""', description: "Inline styles on the root element."},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div (id is the persistence key, not a DOM id)"}
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
 	]
 
 	const multiSplitterCallbacks: Property[] = [
@@ -133,10 +134,11 @@
 		<p>
 			First and last panes have <code>minimize</code>. Try dragging a gutter past the snap threshold, or click a rail to
 			restore. <code>&lt;Card&gt;</code> auto-adapts when railed — first child becomes a rotated title, the rest hides.
-			Layout persists under <code>id="demo-three"</code> in localStorage. Pane content sets the height; expand a card to
+			Layout persists under <code>persistKey="demo-three"</code> in localStorage (persistence is opt-in; without
+			<code>persistKey</code> nothing is saved, and <code>id</code> is just the DOM id). Pane content sets the height; expand a card to
 			see the whole splitter grow.
 		</p>
-		<MultiSplitter id="demo-three" orientation="horizontal">
+		<MultiSplitter persistKey="demo-three" orientation="horizontal">
 			<MultiSplitterPane size="240px" min="180px" max="360px" minimize>
 				<Card>
 					<h4 class="card-heading">{@render folderIcon()} File tree</h4>
@@ -188,7 +190,7 @@
 
 		<h3>Fixed-area splitter (IDE-style)</h3>
 		<p>Pass <code>height</code> to lock the splitter to a viewport area. Useful for nested splitters where the outer drives a known frame and inner splitters fill it.</p>
-		<MultiSplitter orientation="horizontal" height="500px" id="ide-outer" debug>
+		<MultiSplitter orientation="horizontal" height="500px" persistKey="ide-outer" debug>
 			<MultiSplitterPane size="240px" min="180px" minimize>
 				<Card>
 					<h4 class="card-heading">{@render folderIcon()} Explorer</h4>
@@ -200,7 +202,7 @@
 				</Card>
 			</MultiSplitterPane>
 			<MultiSplitterPane>
-				<MultiSplitter orientation="vertical" height="100%" id="ide-inner" debug>
+				<MultiSplitter orientation="vertical" height="100%" persistKey="ide-inner" debug>
 					<MultiSplitterPane min="100px" minimize>
 						<Card>
 							<h4 class="card-heading">{@render codeIcon()} Editor</h4>

@@ -517,7 +517,7 @@
 				</NavLinkItem>
 			{:else if navItem.items}
 				<!-- Group with sub-items -->
-				<NavGroup title={navItem.title}>
+				<NavGroup persistKey={navItem.title}>
 					{#snippet linkIcon()}
 						<Icon name={navItem.icon} size={16} />
 					{/snippet}

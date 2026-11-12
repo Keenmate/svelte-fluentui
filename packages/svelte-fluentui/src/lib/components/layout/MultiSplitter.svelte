@@ -34,8 +34,11 @@
 	type OwnProps = {
 		children?: Snippet
 		orientation?: Orientation
-		/** localStorage persistence key — saves under "fluent-multi-splitter:<id>". */
+		/** DOM `id` of the root element. Plain attribute — no longer drives persistence (use `persistKey`). */
 		id?: string
+		/** Opt-in localStorage persistence of pane sizes / minimized state. Saved under
+		 * "fluent-multi-splitter:<persistKey>" (the same key 1.x derived from `id`). Omit to disable persistence. */
+		persistKey?: string
 		/** Keyboard step in px when a gutter is focused. */
 		step?: number
 		/** Rail width in px when a pane is minimized. */
@@ -56,14 +59,14 @@
 		onPaneExpand?: (ctx: MultiSplitterToggleDetail) => void
 	}
 
-	/** Other native attributes and events (`role`, `aria-*`, `data-*`, …) go to the root `<div>`.
-	 * Note: `id` is the persistence key, not a DOM id. */
+	/** Other native attributes and events (`role`, `aria-*`, `data-*`, …) go to the root `<div>`. */
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		children = undefined,
 		orientation = "horizontal",
-		id: persistId = undefined,
+		id = undefined,
+		persistKey = undefined,
 		step = 10,
 		railSize = 40,
 		minimizeThreshold = 0.40,
@@ -114,7 +117,7 @@
 
 	function log(...args: unknown[]) {
 		if (!debug) return
-		console.log("[multi-splitter:" + (persistId || "anon") + "]", ...args)
+		console.log("[multi-splitter:" + (persistKey || id || "anon") + "]", ...args)
 	}
 
 	function parseSize(raw: string | undefined, totalPx: number): number | null {
@@ -134,9 +137,9 @@
 	}
 
 	function readStorage(): {sizes?: number[]; lasts?: number[]; minimized?: boolean[]} | null {
-		if (!persistId) return null
+		if (!persistKey) return null
 		try {
-			const raw = localStorage.getItem(STORAGE_PREFIX + persistId)
+			const raw = localStorage.getItem(STORAGE_PREFIX + persistKey)
 			if (!raw) return null
 			const parsed = JSON.parse(raw)
 			if (typeof parsed !== "object" || parsed === null || parsed.v !== 2) return null
@@ -145,11 +148,11 @@
 	}
 
 	function writeStorage() {
-		if (!persistId) return
+		if (!persistKey) return
 		const sizes = panes.map(h => internals.get(h)!.size)
 		const lasts = panes.map(h => internals.get(h)!.lastNonZero)
 		const minimized = panes.map(h => h.state.isMin)
-		try { localStorage.setItem(STORAGE_PREFIX + persistId, JSON.stringify({v: 2, sizes, lasts, minimized})) }
+		try { localStorage.setItem(STORAGE_PREFIX + persistKey, JSON.stringify({v: 2, sizes, lasts, minimized})) }
 		catch { /* quota/privacy mode */ }
 	}
 
@@ -1042,6 +1045,7 @@
 
 <div
 	{...rest}
+	{id}
 	bind:this={rootEl}
 	class="fluent-multi-splitter fluent-multi-splitter--{orientation} {className}"
 	style={computedStyle}

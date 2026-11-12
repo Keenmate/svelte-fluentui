@@ -28,7 +28,8 @@
 	]
 
 	const navGroupProperties: Property[] = [
-		{name: "title", type: "string", default: "undefined", description: "Unique identifier used to persist expanded state in localStorage"},
+		{name: "persistKey", type: "string", default: "undefined", description: "Opt-in persistence of the expanded state in localStorage (map under \"svelte-fluentui-nav-state\", keyed by persistKey). Omit to disable persistence. 2.0: replaces the implicit persistence via title; set persistKey to your old title value to keep previously saved state."},
+		{name: "title", type: "string", default: "undefined", description: "Native tooltip attribute on the outer NavItem div. Plain attribute since 2.0 (no longer a persistence key)."},
 		{name: "expanded", type: "boolean", default: "false", description: "Expanded state (bindable)"},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the group and all its children"},
 		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
@@ -114,6 +115,7 @@
 		<div class="examples-container">
 			<div class="example-item">
 				<h3>Regular nav menu</h3>
+				<p>"Item 6" sets <code>persistKey</code>, so its expanded state survives a reload; the other groups reset.</p>
 
 				<NavMenu width="250px">
 					<NavLinkItem href="https://microsoft.com" rel="noreferer noorigin" target="_blank">
@@ -144,6 +146,7 @@
 					</NavLinkItem>
 					<NavGroup
 						expanded
+						persistKey="docs-navigation-item-6"
 					>
 						{#snippet linkText()}
 							Item 6 Item 6 Item 6 Item 6 Item 6

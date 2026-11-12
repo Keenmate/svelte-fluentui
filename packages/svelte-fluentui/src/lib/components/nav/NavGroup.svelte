@@ -9,7 +9,10 @@
 	import type {RestProps} from "../../types/index.js"
 
 	type OwnProps = {
-		title?: string // Unique identifier for persistence
+		/** Opt-in persistence of the expanded state in localStorage (shared map under
+		 * "svelte-fluentui-nav-state", keyed by `persistKey` — the same key 1.x derived from `title`).
+		 * Omit to disable persistence. */
+		persistKey?: string
 		expanded?: boolean
 		disabled?: boolean
 		linkIcon?: Snippet
@@ -18,11 +21,11 @@
 		class?: string
 	}
 
-	/** Other native attributes and events (`id`, `aria-label`, …) go to the outer NavItem `<div role="menuitem">`. */
+	/** Other native attributes and events (`id`, `title`, `aria-label`, …) go to the outer NavItem `<div role="menuitem">`. */
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		    title = undefined,
+		    persistKey = undefined,
 		    expanded = $bindable(false),
 		    disabled = undefined,
 		    linkIcon = undefined,
@@ -41,11 +44,11 @@
 		className
 	))
 
-	// Load expanded state from localStorage on mount
+	// Load the persisted expanded state on mount (only with persistKey)
 	onMount(() => {
-		if (title) {
+		if (persistKey) {
 			navigationStore.subscribe(state => {
-				const storedExpanded = state[title]
+				const storedExpanded = state[persistKey]
 				if (storedExpanded !== undefined) {
 					expanded = storedExpanded
 				}
@@ -57,8 +60,8 @@
 		expanded = !expanded
 
 		// Persist to localStorage
-		if (title) {
-			navigationStore.setGroupExpanded(title, expanded)
+		if (persistKey) {
+			navigationStore.setGroupExpanded(persistKey, expanded)
 		}
 	}
 </script>

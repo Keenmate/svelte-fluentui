@@ -29,7 +29,8 @@
 		{name: "href", type: "string", default: "undefined", description: "URL — renders the item as a link"},
 		{name: "rel", type: "string", default: "undefined", description: "Link rel attribute"},
 		{name: "target", type: "string", default: "undefined", description: "Link target attribute (e.g. _blank)"},
-		{name: "count", type: "number", default: "undefined", description: "Optional counter badge"},
+		{name: "count", type: "number", default: "undefined", description: "Counter badge on the icon (accent fill, top end corner). Hidden when 0 or undefined. The full count is appended to the link's accessible name as visually hidden text."},
+		{name: "maxCount", type: "number", default: "99", description: "Largest count shown verbatim; above it the badge reads e.g. \"99+\"."},
 		{name: "active", type: "boolean", default: "undefined", description: "Marks the item as active (controlled by the app, e.g. from the current route)"},
 		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the inner a"}
@@ -81,6 +82,7 @@
 		<div class="examples-container">
 			<div class="example-item">
 				<h3>Regular AppBar</h3>
+				<p>"Item 2" and "Item 4" show the <code>count</code> badge (250 is capped to "99+" by <code>maxCount</code>).</p>
 
 				<Stack verticalAlign="start" horizontalAlign="start">
 					<AppBar>
@@ -91,10 +93,10 @@
 						<AppBarItem href="/" icon={commonItemIcon}>
 							Home
 						</AppBarItem>
-						<AppBarItem onclick={onAppBarItemClicked} icon={commonItemIcon}>
+						<AppBarItem onclick={onAppBarItemClicked} icon={commonItemIcon} count={3}>
 							Item 2
 						</AppBarItem>
-						<AppBarItem href="https://microsoft.com" icon={commonItemIcon}>
+						<AppBarItem href="https://microsoft.com" icon={commonItemIcon} count={250}>
 							Item 4
 						</AppBarItem>
 						<AppBarItem icon={commonItemIcon}>
