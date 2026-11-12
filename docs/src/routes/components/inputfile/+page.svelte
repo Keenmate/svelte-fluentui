@@ -47,7 +47,7 @@
 		{name: "minFileSize", type: "number", default: "0", description: "Min bytes per file."},
 		{name: "totalMaxSize", type: "number", default: "0", description: "Max combined bytes across all accepted files. 0 disables. Files that would push the running total over the cap are rejected per rejectionMode."},
 		{name: "maxFileCount", type: "number", default: "10", description: "Max number of files. Extras are rejected per rejectionMode."},
-		{name: "minFiles", type: "number", default: "0", description: "Field-level minimum. Surfaces via onValidityChange."},
+		{name: "minFileCount", type: "number", default: "0", description: "Field-level minimum. Surfaces via onValidityChange."},
 		{name: "customValidator", type: "(file) => string | null | Promise<...>", default: "undefined", description: "Custom per-file validator. Return error message or null."},
 		{name: "rejectionMode", type: "\"list\" | \"callback\" | \"silent\"", default: "\"list\"", description: "How invalid files are surfaced."},
 		{name: "dedupe", type: "\"name\" | \"name-size\" | \"hash\" | false", default: "false", description: "Reject duplicates by chosen key. Hash uses SHA-1."},
@@ -61,7 +61,7 @@
 		{name: "allowFolderDrop", type: "boolean", default: "false", description: "Recursively traverse dropped folders."},
 		{name: "allowReorder", type: "boolean", default: "false", description: "Drag-to-reorder file rows."},
 		{name: "labels", type: "Partial<InputFileLabels>", default: "undefined", description: "Override any built-in string for i18n."},
-		{name: "formatLimits", type: "(info) => string | null", default: "undefined", description: "Compose the limits hint shown under Browse. Receives {minFileSize, maxFileSize, totalMaxSize, maxFileCount, minFiles, multiple} (maxFileSize is per file). Replaces ALL size/count lines; the Accepted-types line is unaffected. Return null/empty to keep the default per-limit lines."},
+		{name: "formatLimits", type: "(info) => string | null", default: "undefined", description: "Compose the limits hint shown under Browse. Receives {minFileSize, maxFileSize, totalMaxSize, maxFileCount, minFileCount, multiple} (maxFileSize is per file). Replaces ALL size/count lines; the Accepted-types line is unaffected. Return null/empty to keep the default per-limit lines."},
 		{name: "id / aria-label / aria-describedby / aria-labelledby", type: "string", default: "undefined", description: "Standard a11y plumbing. Pair id with <Field id=\"\"> for label-for."},
 		{name: "class", type: "string", default: "\"\"", description: "Additional CSS classes."},
 		{name: "style", type: "string", default: "\"\"", description: "Inline styles."}
@@ -72,7 +72,7 @@
 		{name: "onFileUpload", type: "(ctx: {file, fileIndex}) => void", default: "undefined", description: "A file finished uploading."},
 		{name: "onFileError", type: "(ctx: {file, error}) => void", default: "undefined", description: "A file was rejected (validation, duplicate, limits) or its upload failed."},
 		{name: "onUploadComplete", type: "(ctx: {files}) => void", default: "undefined", description: "An upload run ended with nothing pending or uploading."},
-		{name: "onValidityChange", type: "(ctx: {isValid, reasons}) => void", default: "undefined", description: "Field-level validity changed (minFiles, maxFileCount, file errors)."},
+		{name: "onValidityChange", type: "(ctx: {isValid, reasons}) => void", default: "undefined", description: "Field-level validity changed (minFileCount, maxFileCount, file errors)."},
 		{name: "onChange", type: "(ctx: {items}) => void", default: "undefined", description: "The file list changed (add, remove, status/progress)."},
 		{name: "onFileRemove", type: "(ctx: {file}) => void", default: "undefined", description: "Fires per file on removal (removeAt / removeById / clear / × button). Receives the removed file with final status and metadata — use it to send server-side cleanup like DELETE /api/files/:guid."}
 	]
@@ -371,7 +371,7 @@
 		minSize: (s) => `Min velikost: ${s}`,
 		totalMaxSize: (s) => `Celková max velikost: ${s}`,
 		maxFilesHint: (n) => `Max souborů: ${n}`,
-		minFilesHint: (n) => `Min souborů: ${n}`
+		minFileCountHint: (n) => `Min souborů: ${n}`
 	}
 
 	function submitForm() {
@@ -508,7 +508,7 @@
 					<InputFile
 						bind:items={validationItems}
 						multiple
-						minFiles={1}
+						minFileCount={1}
 						maxFileCount={3}
 						dedupe="name-size"
 						customValidator={customValidator}
@@ -699,17 +699,17 @@
 					multiple
 					maxFileSize={5 * 1024 * 1024}
 					maxFileCount={3}
-					minFiles={1}
+					minFileCount={1}
 					totalMaxSize={10 * 1024 * 1024}
 					formatLimits={({
 						maxFileCount,
-						minFiles,
+						minFileCount,
 						maxFileSize,
 						totalMaxSize,
 						currentCount,
 						currentTotalSize
 					}) =>
-						`${currentCount}/${maxFileCount} files (min ${minFiles}), ${formatInputFileSize(maxFileSize)} each, ${formatInputFileSize(currentTotalSize)} / ${formatInputFileSize(totalMaxSize)} total`}
+						`${currentCount}/${maxFileCount} files (min ${minFileCount}), ${formatInputFileSize(maxFileSize)} each, ${formatInputFileSize(currentTotalSize)} / ${formatInputFileSize(totalMaxSize)} total`}
 					uploadCallback={simulateUpload}
 				/>
 				<small>
@@ -722,18 +722,18 @@
 
 		<GridItem xs={12} md={6} xl={6}>
 			<Card>
-				<h3>14. Long file list — maxVisible + listMaxHeight</h3>
+				<h3>14. Long file list — maxVisibleFileCount + listMaxHeight</h3>
 				<small>xl=6 (50%) — 34 seeded files, collapses to 6 visible, list scrolls to 18rem when expanded</small>
 				<InputFile
 					bind:items={bigBatchItems}
 					initialItems={initialBigBatch}
 					multiple
-					maxVisible={6}
+					maxVisibleFileCount={6}
 					listMaxHeight="18rem"
 					uploadCallback={simulateUpload}
 				/>
 				<small>
-					Without these props you'd render 34 rows ≈ 2400px tall. With <code>maxVisible=6</code>
+					Without these props you'd render 34 rows ≈ 2400px tall. With <code>maxVisibleFileCount=6</code>
 					the list shows 6 + a "Show 28 more" toggle; once expanded, <code>listMaxHeight</code>
 					scopes the scroll to one panel.
 				</small>

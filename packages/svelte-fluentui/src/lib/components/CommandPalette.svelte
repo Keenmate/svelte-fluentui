@@ -15,10 +15,10 @@
 		open?: boolean
 		/** Input placeholder. */
 		placeholder?: string
-		/** Items shown on the idle screen (no query yet), grouped by `group`. Defaults to the first `maxResults` of `items`. */
+		/** Items shown on the idle screen (no query yet), grouped by `group`. Defaults to the first `maxResultCount` of `items`. */
 		homeItems?: CommandPaletteItem[]
 		/** Max results rendered for a query. */
-		maxResults?: number
+		maxResultCount?: number
 		/**
 		 * Global keyboard shortcut that toggles the palette, e.g. "mod+k"
 		 * (mod = ⌘ on Mac, Ctrl elsewhere). Set `enableShortcut={false}` to
@@ -53,7 +53,7 @@
 		open = $bindable(false),
 		placeholder = "Search…",
 		homeItems = undefined,
-		maxResults = 50,
+		maxResultCount = 50,
 		shortcut = "mod+k",
 		enableShortcut = true,
 		closeOnSelect = true,
@@ -115,19 +115,19 @@
 	const results = $derived.by(() => {
 		const q = trimmedQuery
 		if (!q) return []
-		if (filterCallback) return filterCallback({items, term: q}).slice(0, maxResults)
+		if (filterCallback) return filterCallback({items, term: q}).slice(0, maxResultCount)
 		const needle = q.toLowerCase()
 		return items
 			.map((it) => ({it, s: score(it, needle)}))
 			.filter((r) => r.s > 0)
 			.sort((a, b) => b.s - a.s)
-			.slice(0, maxResults)
+			.slice(0, maxResultCount)
 			.map((r) => r.it)
 	})
 
 	// Idle screen: grouped sections preserving first-appearance order.
 	const homeSections = $derived.by(() => {
-		const source = (homeItems ?? items).slice(0, maxResults)
+		const source = (homeItems ?? items).slice(0, maxResultCount)
 		const order: string[] = []
 		const byGroup = new Map<string, CommandPaletteItem[]>()
 		for (const it of source) {

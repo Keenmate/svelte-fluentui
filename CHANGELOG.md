@@ -11,6 +11,13 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **Autocomplete:** `maxSelectedOptions` / `maxOptionsSearch` → `maxSelectionCount` / `maxResultCount`
+- **CommandPalette:** `maxResults` → `maxResultCount`
+- **BadgeGroup:** `limit` → `maxVisibleBadgeCount`
+- **Calendar:** `maxSelectableDays` → `maxSelectedDayCount`
+- **InputFile:** `minFiles` / `maxVisible` → `minFileCount` / `maxVisibleFileCount`
+- **InputFile (labels, `formatLimits` info):** `minFilesHint` / `minFiles` → `minFileCountHint` / `minFileCount`
+- **Select:** `maxVisibleOptions` → `maxVisibleOptionCount`
 - **MultiSplitter (`id`):** also the localStorage key (layout always saved) → plain DOM id; saving is opt-in via `persistKey` (same key format: `persistKey="<old id>"` keeps saved layouts)
 - **NavGroup (`title`):** also the saved-expanded-state key, not rendered → native `title` attribute; saving is opt-in via `persistKey` (`persistKey="<old title>"` keeps saved state)
 - **NumberField (`value`):** `string` → `number` or `null` (empty field); partial input like "-" or "1." is kept
@@ -105,7 +112,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **Autocomplete:** `onoptionssearch(searchText)` → options → `searchCallback({term, signal})` → options (`signal` aborts when a newer search starts)
 - **Autocomplete:** `ondismissed()` → `onOpenChange({open})` (fires on open and close)
 - **Calendar:** `onDateSelected(value)` + `onDatesSelected(values)` → one `onChange({value})` (`Date` in single mode, `Date[]` in multiple/range); `value` and `selectedDates` are now bindable and updated by the calendar
-- **Calendar:** `onSelectionError(error)`, code `max_selectable_days_exceeded` → `onSelectionReject(ctx)`, code `max-selectable-days-exceeded`
+- **Calendar:** `onSelectionError(error)`, code `max_selectable_days_exceeded` → `onSelectionReject(ctx)`, code `max-selected-day-count-exceeded`
 - **Calendar:** `onPickerMonthChange(month)`, `onDayHover(date)` → `onPickerMonthChange({pickerMonth})`, `onDayHover({date})`
 - **Calendar:** `disabledDateFunc(date)`, `selectableDates(date)`, `highlightDates(date)`, `selectDates(date)` → `getIsDateDisabledCallback({date})`, `getIsDateSelectableCallback({date})`, `getDatesToHighlightCallback({date})`, `getDatesToSelectCallback({date})`
 - **DatePicker:** `onValueChange(value)`, `onOpenChange(open)`, `onPickerMonthChange(month)` → `onChange({value})`, `onOpenChange({open})`, `onPickerMonthChange({pickerMonth})`

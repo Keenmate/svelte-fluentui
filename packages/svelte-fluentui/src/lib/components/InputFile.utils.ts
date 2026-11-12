@@ -67,7 +67,7 @@ export const DEFAULT_LABELS: InputFileLabels = {
 		remaining != null ? `Total max size: ${s} · ${remaining} left` : `Total max size: ${s}`,
 	maxFilesHint: (max, remaining) =>
 		remaining != null ? `Max files: ${max} · ${remaining} more` : `Max files: ${max}`,
-	minFilesHint: (n) => `Min files: ${n}`,
+	minFileCountHint: (n) => `Min files: ${n}`,
 	clearAll: "Clear all",
 	uploadAll: "Upload all",
 	addMore: "+ Add more",

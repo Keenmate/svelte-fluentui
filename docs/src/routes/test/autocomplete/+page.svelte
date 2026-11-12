@@ -90,13 +90,13 @@
 <p>Targeted by <code>e2e/autocomplete.spec.ts</code>.</p>
 
 <div class="fixture">
-	<div class="fixture-label">single — maxSelectedOptions=1, replaces value on each pick</div>
+	<div class="fixture-label">single — maxSelectionCount=1, replaces value on each pick</div>
 	<div id="single-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="single"
 			options={fruits}
 			bind:value={singleSelected}
-			maxSelectedOptions={1}
+			maxSelectionCount={1}
 			placeholder="Pick one"
 		/>
 	</div>
@@ -150,7 +150,7 @@
 			id="max"
 			options={fruits}
 			bind:value={maxSelected}
-			maxSelectedOptions={3}
+			maxSelectionCount={3}
 			placeholder="Max 3"
 		/>
 	</div>
@@ -322,13 +322,13 @@
 </div>
 
 <div class="fixture">
-	<div class="fixture-label">maxOptionsSearch=2 — at most 2 options listed</div>
+	<div class="fixture-label">maxResultCount=2 — at most 2 options listed</div>
 	<div id="limited-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="limited"
 			options={fruits}
 			bind:value={limitedSel}
-			maxOptionsSearch={2}
+			maxResultCount={2}
 		/>
 	</div>
 </div>

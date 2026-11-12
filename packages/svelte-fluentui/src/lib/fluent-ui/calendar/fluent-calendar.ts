@@ -4,7 +4,7 @@ import type {CalendarExtended} from "./fluent-calendar-extended.js"
 export type CalendarView = "days" | "months" | "years"
 export type CalendarSelectMode = "single" | "multiple" | "range"
 
-export type CalendarSelectionErrorCode = "max-selectable-days-exceeded"
+export type CalendarSelectionErrorCode = "max-selected-day-count-exceeded"
 
 export type CalendarSelectionError = {
 	code: CalendarSelectionErrorCode

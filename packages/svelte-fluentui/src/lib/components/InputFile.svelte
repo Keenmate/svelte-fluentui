@@ -96,7 +96,7 @@
 		minFileSize?: number
 		totalMaxSize?: number
 		maxFileCount?: number
-		minFiles?: number
+		minFileCount?: number
 		customValidator?: InputFileValidator
 		rejectionMode?: InputFileRejectionMode
 		dedupe?: InputFileDedupeMode
@@ -114,7 +114,7 @@
 		pasteFromClipboard?: boolean
 		allowFolderDrop?: boolean
 		allowReorder?: boolean
-		maxVisible?: number
+		maxVisibleFileCount?: number
 		listMaxHeight?: string | number
 
 		// i18n
@@ -129,7 +129,7 @@
 			maxFileSize: number
 			totalMaxSize: number
 			maxFileCount: number
-			minFiles: number
+			minFileCount: number
 			multiple: boolean
 			// Current state of the picker — non-zero whenever items exist (errored
 			// items excluded from the size sum, matching the addFiles accept logic).
@@ -210,7 +210,7 @@
 		minFileSize = 0,
 		totalMaxSize = 0,
 		maxFileCount = 10,
-		minFiles = 0,
+		minFileCount = 0,
 		customValidator = undefined,
 		rejectionMode = "list",
 		dedupe = false,
@@ -223,7 +223,7 @@
 		pasteFromClipboard = true,
 		allowFolderDrop = false,
 		allowReorder = false,
-		maxVisible = undefined,
+		maxVisibleFileCount = undefined,
 		listMaxHeight = undefined,
 		labels: labelsProp = undefined,
 		formatLimits = undefined,
@@ -287,7 +287,7 @@
 			maxFileSize,
 			totalMaxSize,
 			maxFileCount,
-			minFiles,
+			minFileCount,
 			multiple,
 			currentCount: items.length,
 			currentTotalSize
@@ -318,7 +318,7 @@
 					items.length > 0 ? Math.max(0, maxFileCount - items.length) : undefined
 				))
 			}
-			if (minFiles > 0) parts.push(labels.minFilesHint(minFiles))
+			if (minFileCount > 0) parts.push(labels.minFileCountHint(minFileCount))
 		}
 		return parts
 	})
@@ -431,7 +431,7 @@
 	})
 
 	const visibleItems = $derived(
-		maxVisible == null || showAllList ? items : items.slice(0, maxVisible)
+		maxVisibleFileCount == null || showAllList ? items : items.slice(0, maxVisibleFileCount)
 	)
 	const hiddenCount = $derived(items.length - visibleItems.length)
 	const listMaxHeightCss = $derived(
@@ -522,7 +522,7 @@
 
 	const validityReasons = $derived.by(() => {
 		const reasons: string[] = []
-		if (minFiles && items.length < minFiles) reasons.push(labels.tooFewFiles(minFiles))
+		if (minFileCount && items.length < minFileCount) reasons.push(labels.tooFewFiles(minFileCount))
 		if (maxFileCount && items.length > maxFileCount)
 			reasons.push(labels.tooManyFiles(maxFileCount))
 		if (items.some((i) => i.status === "error")) reasons.push(labels.error)
@@ -1193,7 +1193,7 @@
 			>
 				+{hiddenCount}
 			</button>
-		{:else if showAllList && maxVisible != null && items.length > maxVisible}
+		{:else if showAllList && maxVisibleFileCount != null && items.length > maxVisibleFileCount}
 			<button
 				type="button"
 				class="chip chip-more"
@@ -1479,7 +1479,7 @@
 					>
 						{labels.showMore(hiddenCount)}
 					</button>
-				{:else if showAllList && maxVisible != null && items.length > maxVisible}
+				{:else if showAllList && maxVisibleFileCount != null && items.length > maxVisibleFileCount}
 					<button
 						type="button"
 						class="show-more-toggle"

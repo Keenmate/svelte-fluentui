@@ -3,7 +3,7 @@ import {test, expect, type Page, type Locator} from "@playwright/test"
 /**
  * Covers Autocomplete behavior: chip selection, search/filter, multi vs single,
  * backspace-removes-last-chip, initial options, async searchCallback,
- * maxSelectedOptions cap, minSearchLength gate, and disabled options.
+ * maxSelectionCount cap, minSearchLength gate, and disabled options.
  *
  * Fixture: docs/src/routes/test/autocomplete/+page.svelte
  *
@@ -59,7 +59,7 @@ test.beforeEach(async ({page}) => {
 })
 
 // =============================================================================
-// single mode (maxSelectedOptions=1)
+// single mode (maxSelectionCount=1)
 // =============================================================================
 
 test.describe("single mode", () => {
@@ -153,10 +153,10 @@ test("initial options: focus shows top N before typing", async ({page}) => {
 })
 
 // =============================================================================
-// maxSelectedOptions cap
+// maxSelectionCount cap
 // =============================================================================
 
-test("maxSelectedOptions: fourth selection is rejected", async ({page}) => {
+test("maxSelectionCount: fourth selection is rejected", async ({page}) => {
 	const wrap = await open(page, "max")
 
 	for (const text of ["Apple", "Banana", "Cherry"]) {
@@ -168,7 +168,7 @@ test("maxSelectedOptions: fourth selection is rejected", async ({page}) => {
 
 	// Attempt a fourth — the cap should close the dropdown after the 3rd pick,
 	// so typing reopens it. The component guards selectOption() against exceeding
-	// maxSelectedOptions, so the click is a no-op even if the option renders.
+	// maxSelectionCount, so the click is a no-op even if the option renders.
 	await inputOf(wrap).fill("date")
 	const dateOption = optionByText(page, "Date")
 	if (await dateOption.count() > 0) {
@@ -332,10 +332,10 @@ test("selectValueOnTab=false: Tab does NOT pick the highlighted option", async (
 })
 
 // =============================================================================
-// maxOptionsSearch
+// maxResultCount
 // =============================================================================
 
-test("maxOptionsSearch=2: at most 2 options rendered even if more match", async ({page}) => {
+test("maxResultCount=2: at most 2 options rendered even if more match", async ({page}) => {
 	const wrap = await open(page, "limited")
 
 	// Many fruits contain 'a' — apple, apricot, banana, blackberry, blueberry,
@@ -490,7 +490,7 @@ test.describe("keyboard", () => {
 
 		await inputOf(wrap).press("Control+ ")
 		await expect(optionsList(page)).toBeVisible()
-		// maxOptionsSearch default is 9
+		// maxResultCount default is 9
 		await expect(optionItems(page)).toHaveCount(9)
 	})
 })
@@ -499,7 +499,7 @@ test.describe("keyboard", () => {
 // max-message + onOpenChange({open: false}) + outside-click
 // =============================================================================
 
-test("max-message: renders when maxSelectedOptions cap is reached (multi mode)", async ({page}) => {
+test("max-message: renders when maxSelectionCount cap is reached (multi mode)", async ({page}) => {
 	const wrap = await open(page, "max")
 
 	for (const text of ["Apple", "Banana", "Cherry"]) {

@@ -48,8 +48,8 @@
 		/** Click selection: given the clicked day, returns the dates to select. In multiple mode, the result is unioned with existing `selectedDates` (or removed wholesale if the clicked day was already selected). In range mode, the result replaces the range. Defaults to `[date]`. */
 		getDatesToSelectCallback?: (ctx: {date: Date}) => Date[]
 		/** Upper bound for the number of dates that can be selected in multiple mode. When exceeded, `onSelectionReject` fires and the selection is not modified. */
-		maxSelectableDays?: number
-		/** Fires when an attempted selection is rejected (exceeds `maxSelectableDays`). The selection is left untouched. */
+		maxSelectedDayCount?: number
+		/** Fires when an attempted selection is rejected (exceeds `maxSelectedDayCount`). The selection is left untouched. */
 		onSelectionReject?: (ctx: CalendarSelectionError) => void
 		/** Fires when the user changes the selection: a `Date` in single mode (also bound to `value`), a `Date[]` in multiple/range mode (also bound to `selectedDates`). */
 		onChange?: (ctx: {value: Date | Date[]}) => void
@@ -86,7 +86,7 @@
 		    getIsDateSelectableCallback     = undefined,
 		    getDatesToHighlightCallback     = undefined,
 		    getDatesToSelectCallback        = undefined,
-		    maxSelectableDays               = undefined,
+		    maxSelectedDayCount               = undefined,
 		    onSelectionReject               = undefined,
 		    onChange                        = undefined,
 		    onPickerMonthChange             = undefined,
@@ -189,11 +189,11 @@
 
 	function fireMaxExceeded(attempted: Date[]) {
 		onSelectionReject?.({
-			code:      "max-selectable-days-exceeded",
-			message:   `You can select a maximum of ${maxSelectableDays} day${maxSelectableDays === 1 ? "" : "s"}. Delete a day to select a new one.`,
+			code:      "max-selected-day-count-exceeded",
+			message:   `You can select a maximum of ${maxSelectedDayCount} day${maxSelectedDayCount === 1 ? "" : "s"}. Delete a day to select a new one.`,
 			attempted,
 			current:   selectedDates,
-			max:       maxSelectableDays as number
+			max:       maxSelectedDayCount as number
 		})
 		_selectedDatesMouseOver = []
 	}
@@ -296,7 +296,7 @@
 					newSelectedDates = dedupeDates([...selectedDates, ...group])
 				}
 
-				if (!isRemoving && maxSelectableDays !== undefined && newSelectedDates.length > maxSelectableDays) {
+				if (!isRemoving && maxSelectedDayCount !== undefined && newSelectedDates.length > maxSelectedDayCount) {
 					fireMaxExceeded(group)
 					return
 				}
@@ -312,7 +312,7 @@
 				// callers control skip/jump-over behavior for disabled days.
 				if (getDatesToSelectCallback) {
 					const group = getDatesToSelectCallback({date: value_})
-					if (maxSelectableDays !== undefined && group.length > maxSelectableDays) {
+					if (maxSelectedDayCount !== undefined && group.length > maxSelectedDayCount) {
 						fireMaxExceeded(group)
 						return
 					}
@@ -351,7 +351,7 @@
 					? _rangeSelector.getAllDates()
 					: (_rangeSelector.start ? [_rangeSelector.start] : [])
 
-				if (maxSelectableDays !== undefined && newSelectedDates.length > maxSelectableDays) {
+				if (maxSelectedDayCount !== undefined && newSelectedDates.length > maxSelectedDayCount) {
 					fireMaxExceeded(newSelectedDates)
 					_rangeSelector.clear()
 					return

@@ -50,9 +50,9 @@ autofocus?: boolean
 label?: string                     # Field label
 labelTemplate?: Snippet            # Custom label template
 appearance?: string                # "outline" | "filled"
-multiple?: boolean                 # Multi-select mode (inferred from maxSelectedOptions)
-maxSelectedOptions?: number        # Maximum selections allowed
-maxOptionsSearch?: number          # Max options to show (default: 9)
+multiple?: boolean                 # Multi-select mode (inferred from maxSelectionCount)
+maxSelectionCount?: number        # Maximum selections allowed
+maxResultCount?: number          # Max options to show (default: 9)
 showOverlayOnEmptyResults?: boolean # Show dropdown when no matches (default: true)
 showInitialOptions?: boolean       # Show options before typing (default: false)
 initialOptionsCount?: number       # How many initial options to show
@@ -84,11 +84,11 @@ ondismissed?: () => void
 SINGLE VS MULTI-SELECT
 ----------------------
 
-SINGLE SELECT (maxSelectedOptions=1):
+SINGLE SELECT (maxSelectionCount=1):
 <Autocomplete
   {options}
   bind:selectedOptions={selected}
-  maxSelectedOptions={1}
+  maxSelectionCount={1}
   placeholder="Select one..."
 />
 
@@ -104,7 +104,7 @@ EXPLICIT MULTI-SELECT:
   {options}
   bind:selectedOptions={selected}
   multiple={true}
-  maxSelectedOptions={5}
+  maxSelectionCount={5}
 />
 
 
@@ -223,7 +223,7 @@ KEEP OPEN AFTER SELECTION
   {options}
   bind:selectedOptions={selected}
   keepOpen
-  maxSelectedOptions={5}
+  maxSelectionCount={5}
 />
 
 
@@ -301,7 +301,7 @@ USER PICKER:
   onoptionssearch={searchUsers}
   placeholder="Add team members..."
   immediateDelay={300}
-  maxSelectedOptions={10}
+  maxSelectionCount={10}
 />
 
 
@@ -319,7 +319,7 @@ COUNTRY SELECTOR:
 <Autocomplete
   options={countries}
   bind:selectedOptions={selectedCountry}
-  maxSelectedOptions={1}
+  maxSelectionCount={1}
   placeholder="Select country..."
   showInitialOptions
   initialOptionsCount={10}
@@ -349,7 +349,7 @@ FORM INTEGRATION:
     options={departmentOptions}
     bind:selectedOptions={formData.department}
     label="Department"
-    maxSelectedOptions={1}
+    maxSelectionCount={1}
   />
 </Stack>
 
@@ -397,4 +397,4 @@ Issue: Backspace deleting tags unexpectedly
 Solution: This is intended behavior in multi-select when input is empty
 
 Issue: Single-select not working
-Solution: Set maxSelectedOptions={1} or multiple={false}
+Solution: Set maxSelectionCount={1} or multiple={false}

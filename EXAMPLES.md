@@ -204,13 +204,11 @@ Runnable snippets for common `svelte-fluentui` patterns. For the full component 
 
 <!-- Default: tabs scroll horizontally when too wide -->
 <Tabs activeId="overview">
-  {#snippet childContent()}
-    <Tab id="overview" label="Overview" />
-    <Tab id="members" label="Members" />
-    <Tab id="activity" label="Activity" />
-    <Tab id="integrations" label="Integrations" />
-    <Tab id="settings" label="Settings" />
-  {/snippet}
+  <Tab id="overview" label="Overview" />
+  <Tab id="members" label="Members" />
+  <Tab id="activity" label="Activity" />
+  <Tab id="integrations" label="Integrations" />
+  <Tab id="settings" label="Settings" />
 </Tabs>
 
 <!-- Wrap onto multiple rows instead of scrolling -->
@@ -239,7 +237,7 @@ Runnable snippets for common `svelte-fluentui` patterns. For the full component 
   options={options}
   label="Select multiple"
   placeholder="Type to search..."
-  maxSelectedOptions={5}
+  maxSelectionCount={5}
 />
 ```
 

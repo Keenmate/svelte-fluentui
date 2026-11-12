@@ -157,12 +157,12 @@
 		{name: "appearance", type: "string", default: "undefined", description: "Visual style (filled, outline)"},
 		{name: "autocomplete", type: "string", default: "undefined", description: "Browser autocomplete behavior"},
 		{name: "multiple", type: "boolean", default: "undefined", description: "Explicitly enable multi-select mode"},
-		{name: "maxSelectedOptions", type: "number", default: "undefined", description: "Max selections allowed (1 = single-select)"},
-		{name: "maxOptionsSearch", type: "number", default: "9", description: "Max options shown in dropdown"},
+		{name: "maxSelectionCount", type: "number", default: "undefined", description: "Max selections allowed (1 = single-select)"},
+		{name: "maxResultCount", type: "number", default: "9", description: "Max options shown in dropdown"},
 		{name: "minSearchLength", type: "number", default: "undefined", description: "Minimum typed characters before search runs. Below the threshold, searchCallback is NOT called and the dropdown stays closed."},
 		{name: "showOverlayOnEmptyResults", type: "boolean", default: "true", description: "Show dropdown on no results"},
 		{name: "showInitialOptions", type: "boolean", default: "false", description: "Show options on focus when empty"},
-		{name: "initialOptionsCount", type: "number", default: "maxOptionsSearch", description: "Initial options count limit"},
+		{name: "initialOptionsCount", type: "number", default: "maxResultCount", description: "Initial options count limit"},
 		{name: "keepOpen", type: "boolean", default: "true", description: "Multi-select only: keep the dropdown open after each pick so several can be chosen in a row. Set false to close on each selection (single-select always closes)."},
 		{name: "selectValueOnTab", type: "boolean", default: "true", description: "Select highlighted option on Tab key"},
 		{name: "tagsPosition", type: '"inline" | "top" | "bottom"', default: '"inline"', description: "Position of selected tags: inside input (inline), above input, or below input"},
@@ -252,11 +252,11 @@
 			</GridItem>
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>Single-select (maxSelectedOptions=1)</strong>
+					<strong>Single-select (maxSelectionCount=1)</strong>
 					<Autocomplete
 						bind:value={singleSelectValue}
 						options={colors}
-						maxSelectedOptions={1}
+						maxSelectionCount={1}
 						label="Select a color"
 						placeholder="Choose one..."
 					/>
@@ -331,7 +331,7 @@
 		</Grid>
 
 		<h3>Many Items</h3>
-		<p>Use <code>maxOptionsSearch</code> to control the dropdown display and limit results.</p>
+		<p>Use <code>maxResultCount</code> to control the dropdown display and limit results.</p>
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
@@ -339,7 +339,7 @@
 					<Autocomplete
 						bind:value={asyncValue}
 						searchCallback={handleAsyncSearch}
-						maxOptionsSearch={5}
+						maxResultCount={5}
 						label="Search countries"
 						placeholder="Type to search..."
 					/>
@@ -352,7 +352,7 @@
 					<Autocomplete
 						bind:value={maxSelectValue}
 						options={colors}
-						maxSelectedOptions={3}
+						maxSelectionCount={3}
 						label="Select up to 3 colors"
 					/>
 					<small>Selected ({maxSelectValue.length}/3): {maxSelectValue.join(", ") || "None"}</small>
@@ -554,7 +554,7 @@
 						options={countries}
 						showInitialOptions={true}
 						initialOptionsCount={30}
-						maxOptionsSearch={30}
+						maxResultCount={30}
 						maxDropdownHeight={`${acMaxHeightPx}px`}
 						width="300px"
 						label="Search countries"
@@ -580,7 +580,7 @@
 						options={countries}
 						showInitialOptions={true}
 						initialOptionsCount={30}
-						maxOptionsSearch={30}
+						maxResultCount={30}
 						dropdownWidth={`${acDropdownWidthPx}px`}
 						width="220px"
 						label="Search countries"

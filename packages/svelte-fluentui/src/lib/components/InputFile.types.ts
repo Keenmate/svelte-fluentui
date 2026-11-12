@@ -80,7 +80,7 @@ export type InputFileLabels = {
 	// freely to change the separator/order).
 	totalMaxSize: (size: string, remaining?: string) => string
 	maxFilesHint: (max: number, remaining?: number) => string
-	minFilesHint: (n: number) => string
+	minFileCountHint: (n: number) => string
 	clearAll: string
 	uploadAll: string
 	addMore: string

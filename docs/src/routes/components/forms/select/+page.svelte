@@ -108,7 +108,7 @@
 		{name: "label", type: "string", default: "undefined", description: "Visible label"},
 		{name: "maxDropdownHeight", type: "string", default: "undefined (280px cap)", description: "Single mode: cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Single mode: width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
-		{name: "maxVisibleOptions", type: "number", default: "undefined", description: "Limits visible options in multiple select, enables scrolling"},
+		{name: "maxVisibleOptionCount", type: "number", default: "undefined", description: "Limits visible options in multiple select, enables scrolling"},
 		{name: "multiple", type: "boolean", default: "false", description: "Allow multiple selections"},
 		{name: "name", type: "string", default: "undefined", description: "Form field name"},
 		{name: "open", type: "boolean", default: "undefined", description: "Controls dropdown open state"},
@@ -183,9 +183,9 @@
 			{/snippet}
 		</Select>
 
-		<h3>Multiple with maxVisibleOptions</h3>
-		<p>Use <code>maxVisibleOptions={4}</code> to limit visible items and enable scrolling.</p>
-		<Select label="Items" multiple maxVisibleOptions={4}>
+		<h3>Multiple with maxVisibleOptionCount</h3>
+		<p>Use <code>maxVisibleOptionCount={4}</code> to limit visible items and enable scrolling.</p>
+		<Select label="Items" multiple maxVisibleOptionCount={4}>
 			{#snippet children()}
 				<Option value="apple">Apple</Option>
 				<Option value="grape">Grape</Option>
@@ -457,7 +457,7 @@
 			In single-select mode, use <code>maxDropdownHeight</code> to cap the dropdown listbox height (e.g.
 			<code>"240px"</code>, <code>"50vh"</code>). The listbox is always <em>also</em> capped to the space
 			available to the viewport edge, so this acts as an upper bound — whichever is smaller wins. Drag the
-			slider to change it live, then open the dropdown. (Multi mode uses <code>maxVisibleOptions</code> instead.)
+			slider to change it live, then open the dropdown. (Multi mode uses <code>maxVisibleOptionCount</code> instead.)
 		</p>
 		<Grid columns={2} gap="1rem">
 			<GridItem>

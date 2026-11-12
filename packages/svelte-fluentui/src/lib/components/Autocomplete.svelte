@@ -28,8 +28,8 @@
 		labelTemplate?: Snippet
 		appearance?: string
 		autocomplete?: string
-		maxSelectedOptions?: number
-		maxOptionsSearch?: number
+		maxSelectionCount?: number
+		maxResultCount?: number
 		minSearchLength?: number
 		showOverlayOnEmptyResults?: boolean
 		showInitialOptions?: boolean
@@ -94,8 +94,8 @@
 		labelTemplate = undefined,
 		appearance = undefined,
 		autocomplete = undefined,
-		maxSelectedOptions = undefined,
-		maxOptionsSearch = 9,
+		maxSelectionCount = undefined,
+		maxResultCount = 9,
 		minSearchLength = undefined,
 		showOverlayOnEmptyResults = true,
 		showInitialOptions = false,
@@ -165,9 +165,9 @@
 	}
 
 	// Compute effective multi/single select mode
-	// If multiple is explicitly set, use it. Otherwise, infer from maxSelectedOptions
+	// If multiple is explicitly set, use it. Otherwise, infer from maxSelectionCount
 	let effectiveMultiple = $derived(
-		multiple !== undefined ? multiple : (maxSelectedOptions === undefined || maxSelectedOptions !== 1)
+		multiple !== undefined ? multiple : (maxSelectionCount === undefined || maxSelectionCount !== 1)
 	)
 
 	// Handle initial search query (used when typing to start editing in grid)
@@ -201,7 +201,7 @@
 				if (seq !== searchSeq) return
 				// Exclude already-selected options so a picked value can't reappear in
 				// the list and be selected twice — matching the client-side branch below.
-				filteredOptions = results.filter(r => !isSelected(r.value)).slice(0, maxOptionsSearch)
+				filteredOptions = results.filter(r => !isSelected(r.value)).slice(0, maxResultCount)
 			} else {
 				// Default filtering: contains (case insensitive)
 				// Filter out already selected options to avoid duplicates
@@ -209,7 +209,7 @@
 					opt.label.toLowerCase().includes(text.toLowerCase()) &&
 					!isSelected(opt.value)
 				)
-				filteredOptions = filtered.slice(0, maxOptionsSearch)
+				filteredOptions = filtered.slice(0, maxResultCount)
 			}
 
 			isOpen = filteredOptions.length > 0 || showOverlayOnEmptyResults
@@ -232,7 +232,7 @@
 			isSearching = false
 			// Show initial options if enabled
 			if (showInitialOptions && options.length > 0) {
-				const limit = initialOptionsCount ?? maxOptionsSearch
+				const limit = initialOptionsCount ?? maxResultCount
 				const filtered = options.filter(opt => !isSelected(opt.value))
 				filteredOptions = filtered.slice(0, limit)
 				isOpen = filteredOptions.length > 0
@@ -282,7 +282,7 @@
 		// for any path that surfaces an already-picked value.
 		if (effectiveMultiple && isSelected(option.value)) return
 
-		if (effectiveMultiple && maxSelectedOptions && selectedOptions.length >= maxSelectedOptions) {
+		if (effectiveMultiple && maxSelectionCount && selectedOptions.length >= maxSelectionCount) {
 			return
 		}
 
@@ -299,7 +299,7 @@
 
 		// Multi-select honors keepOpen / max-cap; single-select always closes.
 		const stayOpen = effectiveMultiple && keepOpen &&
-			!(maxSelectedOptions && selectedOptions.length >= maxSelectedOptions)
+			!(maxSelectionCount && selectedOptions.length >= maxSelectionCount)
 
 		if (stayOpen) {
 			// Keep the dropdown open, but refresh the list so it shows the REMAINING
@@ -398,7 +398,7 @@
 			return
 		}
 		const available = options.filter(opt => !isSelected(opt.value))
-		filteredOptions = available.slice(0, maxOptionsSearch)
+		filteredOptions = available.slice(0, maxResultCount)
 		highlightedIndex = filteredOptions.length > 0 ? 0 : -1
 		isOpen = filteredOptions.length > 0 || showOverlayOnEmptyResults
 	}
@@ -577,7 +577,7 @@
 	})
 
 	// Check if max selections reached
-	let isMaxReached = $derived(maxSelectedOptions !== undefined && selectedOptions.length >= maxSelectedOptions)
+	let isMaxReached = $derived(maxSelectionCount !== undefined && selectedOptions.length >= maxSelectionCount)
 
 	// Single-select mode detection (uses effectiveMultiple for explicit control)
 	let isSingleSelect = $derived(!effectiveMultiple)
@@ -856,7 +856,7 @@
 		<!-- Max selections message - Don't show for single-select -->
 		{#if isMaxReached && !isSingleSelect}
 			<div class="max-message">
-				Maximum {maxSelectedOptions} selection{maxSelectedOptions !== 1 ? 's' : ''} reached
+				Maximum {maxSelectionCount} selection{maxSelectionCount !== 1 ? 's' : ''} reached
 			</div>
 		{/if}
 	</div>

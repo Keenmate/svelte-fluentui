@@ -65,7 +65,7 @@
 		 * width instead (and stops matching), so the list can be wider or narrower. */
 		dropdownWidth?: string
 		/** Multi mode: cap visible option rows, enables internal scroll. */
-		maxVisibleOptions?: number
+		maxVisibleOptionCount?: number
 		labelTemplate?: Snippet
 		indicatorTemplate?: Snippet
 		children?: Snippet
@@ -99,7 +99,7 @@
 		height = undefined,
 		maxDropdownHeight = undefined,
 		dropdownWidth = undefined,
-		maxVisibleOptions = undefined,
+		maxVisibleOptionCount = undefined,
 		labelTemplate = undefined,
 		indicatorTemplate = undefined,
 		children = undefined,
@@ -504,14 +504,14 @@
 		}
 	})
 
-	// ---------- Multi-mode height calculation (maxVisibleOptions) ----------
+	// ---------- Multi-mode height calculation (maxVisibleOptionCount) ----------
 	let multiCalcHeight: string | undefined = $state()
 	$effect(() => {
 		if (!multiple || !inlineListEl || height) {
 			multiCalcHeight = undefined
 			return
 		}
-		if (maxVisibleOptions === undefined) {
+		if (maxVisibleOptionCount === undefined) {
 			multiCalcHeight = undefined
 			return
 		}
@@ -521,7 +521,7 @@
 			if (opts.length === 0) return
 			const first = opts[0] as HTMLElement
 			const rowH = parseInt(window.getComputedStyle(first).height) || first.offsetHeight || 32
-			const visible = Math.min(opts.length, maxVisibleOptions)
+			const visible = Math.min(opts.length, maxVisibleOptionCount)
 			// + 8px for top/bottom padding of the listbox.
 			multiCalcHeight = `${visible * rowH + 8}px`
 		})

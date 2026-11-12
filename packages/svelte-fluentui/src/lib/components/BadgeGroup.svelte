@@ -7,7 +7,7 @@
 	 * configurable per instance and an optional built-in expand/collapse toggle.
 	 *
 	 * Two modes:
-	 * - **Static** (default): hides children past `limit` but always keeps the
+	 * - **Static** (default): hides children past `maxVisibleBadgeCount` but always keeps the
 	 *   LAST child shown — the conventional "+N more" tail you add yourself.
 	 * - **Expandable** (`expandable`): the group renders its OWN clickable
 	 *   "+N more" / "Show less" toggle after the badges (don't add a manual
@@ -21,8 +21,8 @@
 
 	type OwnProps = {
 		/** Max badges shown before the overflow is hidden. */
-		limit?: number
-		/** Reveal all children, ignoring `limit`. Bindable; the expandable toggle writes it. */
+		maxVisibleBadgeCount?: number
+		/** Reveal all children, ignoring `maxVisibleBadgeCount`. Bindable; the expandable toggle writes it. */
 		showAll?: boolean
 		/** Render a built-in clickable "+N more" / "Show less" toggle. */
 		expandable?: boolean
@@ -41,7 +41,7 @@
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		limit = 5,
+		maxVisibleBadgeCount = 5,
 		showAll = $bindable(false),
 		expandable = false,
 		moreLabel = (n: number) => `+${n} more`,
@@ -72,12 +72,12 @@
 		kids.forEach((el, i) => {
 			let hide: boolean
 			if (revealed) hide = false
-			else if (expandable) hide = i >= limit
+			else if (expandable) hide = i >= maxVisibleBadgeCount
 			// static mode: keep the last child (the manual "+N more" tail) visible
-			else hide = i >= limit && i !== lastIndex
+			else hide = i >= maxVisibleBadgeCount && i !== lastIndex
 			el.style.display = hide ? "none" : ""
 		})
-		hiddenCount = Math.max(0, total - limit)
+		hiddenCount = Math.max(0, total - maxVisibleBadgeCount)
 	}
 
 	function toggle() {
@@ -86,7 +86,7 @@
 
 	$effect(() => {
 		// re-run when any of these change
-		void limit
+		void maxVisibleBadgeCount
 		void showAll
 		void expandable
 		applyLimit()

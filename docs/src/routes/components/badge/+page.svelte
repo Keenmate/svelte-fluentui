@@ -48,8 +48,8 @@
 	]
 
 	const groupProps: Property[] = [
-		{name: "limit", type: "number", default: "5", description: "Max badges shown before overflow is hidden."},
-		{name: "showAll", type: "boolean", default: "false", description: "Reveal all children, ignoring limit. Bindable: in expandable mode the built-in toggle writes it, so bind:showAll tracks the expanded state."},
+		{name: "maxVisibleBadgeCount", type: "number", default: "5", description: "Max badges shown before overflow is hidden."},
+		{name: "showAll", type: "boolean", default: "false", description: "Reveal all children, ignoring maxVisibleBadgeCount. Bindable: in expandable mode the built-in toggle writes it, so bind:showAll tracks the expanded state."},
 		{name: "expandable", type: "boolean", default: "false", description: "Render a built-in clickable +N more / Show less toggle (don't supply a manual tail)."},
 		{name: "moreLabel", type: "(hiddenCount: number) => string", default: "n => `+${n} more`", description: "Label for the collapsed toggle."},
 		{name: "lessLabel", type: "string", default: '"Show less"', description: "Label for the expanded toggle."},
@@ -373,7 +373,7 @@
 	<Card>
 		<h2>BadgeGroup</h2>
 		<p>
-			Flex-wraps child badges and hides any past <code>limit</code>. In <strong>expandable</strong> mode the
+			Flex-wraps child badges and hides any past <code>maxVisibleBadgeCount</code>. In <strong>expandable</strong> mode the
 			group renders its own clickable <code>+N more</code> / <code>Show less</code> toggle; in the default
 			static mode it keeps the <strong>last</strong> child visible so you can supply your own "+N more" tail.
 			Hidden badges stay in the DOM. Set <code>showAll</code> to reveal everything.
@@ -385,7 +385,7 @@
 			<code>Show less</code> to collapse. The toggle writes <code>showAll</code>, so <code>bind:showAll</code>
 			tracks it (currently <code data-testid="badge-group-show-all">{groupShowAll}</code>).
 		</p>
-		<BadgeGroup limit={5} expandable bind:showAll={groupShowAll}>
+		<BadgeGroup maxVisibleBadgeCount={5} expandable bind:showAll={groupShowAll}>
 			<Badge color="brand" appearance="accent">React</Badge>
 			<Badge color="informative">TypeScript</Badge>
 			<Badge color="success">Node.js</Badge>
@@ -400,7 +400,7 @@
 
 		<h3>Static tail (you supply "+N more")</h3>
 		<p>Default mode: overflow is hidden but the last child stays visible as a non-interactive tail.</p>
-		<BadgeGroup limit={5}>
+		<BadgeGroup maxVisibleBadgeCount={5}>
 			<Badge color="brand" appearance="accent">React</Badge>
 			<Badge color="informative">TypeScript</Badge>
 			<Badge color="success">Node.js</Badge>

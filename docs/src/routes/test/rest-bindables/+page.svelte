@@ -31,7 +31,7 @@
 </section>
 
 <section id="group">
-	<BadgeGroup limit={2} expandable bind:showAll>
+	<BadgeGroup maxVisibleBadgeCount={2} expandable bind:showAll>
 		<Badge>A</Badge>
 		<Badge>B</Badge>
 		<Badge>C</Badge>

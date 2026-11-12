@@ -104,14 +104,14 @@
 		{name: "disabled", type: "boolean", default: "false", description: "Blocks interaction AND visually de-emphasizes the whole calendar (reduced opacity, not-allowed cursor on interactive cells). ARIA: sets aria-disabled on the host."},
 		{name: "getDatesToHighlightCallback", type: "(ctx: {date: Date}) => Date[]", default: "undefined", description: "Hover preview — returns the dates to highlight when the cursor is over a day"},
 		{name: "getDatesToSelectCallback", type: "(ctx: {date: Date}) => Date[]", default: "undefined", description: "Click selection — returns the dates to select on click. Multiple mode unions with existing; range mode replaces"},
-		{name: "maxSelectableDays", type: "number", default: "undefined", description: "Upper bound on selected dates (multiple/range). Exceeding fires onSelectionReject and leaves the selection untouched"}
+		{name: "maxSelectedDayCount", type: "number", default: "undefined", description: "Upper bound on selected dates (multiple/range). Exceeding fires onSelectionReject and leaves the selection untouched"}
 	]
 
 	const actions: Property[] = []
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {value: Date | Date[]}) => void", default: "undefined", description: "Fires when the user changes the selection: Date in single mode, Date[] in multiple/range mode"},
-		{name: "onSelectionReject", type: "(ctx: CalendarSelectionError) => void", default: "undefined", description: "Fires when an attempted selection would exceed maxSelectableDays"},
+		{name: "onSelectionReject", type: "(ctx: CalendarSelectionError) => void", default: "undefined", description: "Fires when an attempted selection would exceed maxSelectedDayCount"},
 		{name: "onPickerMonthChange", type: "(ctx: {pickerMonth: Date}) => void", default: "undefined", description: "Fires when the user navigates months/years"},
 		{name: "onDayHover", type: "(ctx: {date: Date | null}) => void", default: "undefined", description: "Fires when the cursor enters a day cell (date) or leaves the day grid (null)"},
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div>"}
@@ -252,7 +252,7 @@
 			<h3>Multiple (max 5 days)</h3>
 			{#if maxFiveAlertShown && maxFiveError}
 				<Alert
-					intent="danger"
+					intent="error"
 					dismissible
 					onDismiss={() => maxFiveAlertShown = false}
 					style="margin-bottom: 0.5rem;"
@@ -264,7 +264,7 @@
 				bind:pickerMonth
 				selectedDates={maxFiveValues}
 				selectMode="multiple"
-				maxSelectableDays={5}
+				maxSelectedDayCount={5}
 				getIsDateDisabledCallback={getIsDateDisabled}
 				onChange={({value}) => maxFiveValues = value as Date[]}
 				onSelectionReject={handleMaxFiveError}
