@@ -11,6 +11,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- **AppBarItem (`rel`):** explicit prop → native attribute through `...rest` (typed anchor attributes)
 - **Alert (`intent`):** `"danger"` (class `.fluent-alert--danger`) → `"error"` (class `.fluent-alert--error`), Microsoft Fluent naming
 - **Tabs:** `{#snippet childContent()}` around the `<Tab>`s → `children`: put `<Tab>`s directly between the tags
 - **Tab:** `childContent` snippet → `children`: panel content between the `<Tab>` tags
@@ -148,6 +149,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- AppBarItem `countLabel` and `--fluent-appbar-count-*` CSS variables; NavLinkItem `linkProps`.
 - AppBarItem `count` badge + `maxCount`; MultiSplitter / NavGroup `persistKey`.
 - Select / Combobox `onOpenChange`; Combobox `height` works.
 - Native attributes and events (`...rest`) on every component that renders an element.

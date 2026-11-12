@@ -20,8 +20,8 @@ USAGE:
 
 <NavMenu bind:collapsed collapsible width="250px">
   <NavGroup title="Main">
-    <NavLinkItem href="/" icon="Home">Home</NavLinkItem>
-    <NavLinkItem href="/dashboard" icon="Chart">Dashboard</NavLinkItem>
+    <NavLinkItem href="/">Home</NavLinkItem>
+    <NavLinkItem href="/dashboard">Dashboard</NavLinkItem>
   </NavGroup>
 </NavMenu>
 
@@ -54,19 +54,41 @@ NAVLINKITEM
 ==============================================================================
 Navigation link with icon support.
 
+Structure: outer <div role="menuitem"> (NavItem) wrapping the link (NavLink:
+an <a> when href is set, otherwise a <div>).
+
 USAGE:
-<NavLinkItem href="/dashboard" icon="Chart" active>
+<NavLinkItem href="/dashboard" title="Dashboard">
+  {#snippet icon()}<Icon name="data_bar_vertical" />{/snippet}
   Dashboard
 </NavLinkItem>
 
+<!-- Anchor attributes for the inner <a> go through linkProps -->
+<NavLinkItem href="/files/report.csv" linkProps={{ download: "report.csv" }}>
+  Download report
+</NavLinkItem>
+<NavLinkItem href="https://github.com" linkProps={{ target: "_blank", rel: "noopener noreferrer" }}>
+  GitHub
+</NavLinkItem>
+
 PROPS:
-href?: string               # Link URL
-icon?: string               # Icon name
-active?: boolean            # Active/selected state
+href?: string               # Link URL (renders an <a>)
+rel?: string                # Applied only when href is set
+target?: string
+title?: string              # Tooltip (useful in collapsed mode)
 disabled?: boolean
-onclick?: (e: MouseEvent) => void
-class?: string
-children: SlotType          # Link text
+group?: boolean             # Style as a group header
+linkProps?: HTMLAnchorAttributes  # Spread on the inner link element (download, hreflang,
+                            # referrerpolicy, aria-current, data-*, onkeydown, ...);
+                            # top-level href/rel/target/title win over the same keys
+linkAction?: (node: HTMLElement) => void  # Svelte action on the inner link element
+onclick?: (ev: MouseEvent) => void        # Native click, forwarded untouched
+...rest                     # class, style, data-*, aria-*, ... -> OUTER div role="menuitem"
+
+SNIPPETS:
+children                    # Link text
+icon                        # Icon before the text
+afterText                   # Content after the text (e.g. a Badge)
 
 
 ==============================================================================
@@ -75,50 +97,92 @@ NAVITEM
 Generic navigation item (non-link).
 
 USAGE:
-<NavItem icon="Settings" onclick={openSettings}>
+<NavItem onclick={openSettings}>
   Settings
 </NavItem>
 
 PROPS:
-icon?: string
-onclick?: (e: MouseEvent) => void
+disabled?: boolean
+group?: boolean
+onclick?: (ev: MouseEvent) => void
 class?: string
-children: SlotType
+...rest                     # -> root <div role="menuitem">
+children: Snippet
 
 
 ==============================================================================
-APPBAR
+APPBAR / APPBARITEM
 ==============================================================================
-Application header bar.
+Persistent bar of icon-and-label items for top-level navigation (inspired by
+FluentUI Blazor AppBar). Vertical by default (a rail), or horizontal.
+Not a header with start/end areas - it only lays out AppBarItem children.
 
 USAGE:
 <script>
-  import { AppBar } from "svelte-fluentui"
+  import { AppBar, AppBarItem, ResourcesIcon } from "svelte-fluentui"
+  import { AppBarOrientation } from "svelte-fluentui/constants"
+  let unread = $state(3)
 </script>
 
-<AppBar>
-  {#snippet start()}
-    <Button appearance="stealth" onclick={toggleMenu}>
-      <Icon name="Navigation" />
-    </Button>
-    <h1>App Name</h1>
-  {/snippet}
+{#snippet homeIcon()}
+  <!-- part="icon-rest" / part="icon-active" swap on hover / active -->
+  <ResourcesIcon aria-hidden="true" part="icon-rest" />
+  <ResourcesIcon aria-hidden="true" part="icon-active" active />
+{/snippet}
 
-  {#snippet end()}
-    <Button appearance="stealth">
-      <Icon name="Settings" />
-    </Button>
-  {/snippet}
+<AppBar>                                   <!-- or orientation={AppBarOrientation.Horizontal} -->
+  <AppBarItem href="/" icon={homeIcon} active={path === "/"}>Home</AppBarItem>
+  <AppBarItem href="/inbox" icon={homeIcon} count={unread}
+              countLabel={(count) => `${count} unread`}>Inbox</AppBarItem>
+  <AppBarItem href="https://example.com" target="_blank" rel="noopener noreferrer"
+              icon={homeIcon}>External</AppBarItem>
+  <AppBarItem onclick={openPanel} icon={homeIcon}>Panel</AppBarItem>
 </AppBar>
 
-SLOTS:
-start: SlotType             # Left side content
-end: SlotType               # Right side content
-children: SlotType          # Center content
-
-PROPS:
+APPBAR PROPS:
+orientation?: "vertical" | "horizontal"   # AppBarOrientation enum (default vertical)
 class?: string
-style?: string
+...rest                     # Native attributes/events -> root <nav> (aria-label, id, ...)
+children: Snippet           # AppBarItem components
+
+APPBARITEM PROPS:
+href?: string               # Link URL
+count?: number              # Badge on the icon; hidden when 0 / undefined
+maxCount?: number           # Default 99; above it the badge reads "99+"
+countLabel?: (count: number) => string   # Accessible-name wording (localisation);
+                            # gets the full uncapped count; default: bare number
+active?: boolean            # Highlights the current item (app-controlled)
+onclick?: (ev: MouseEvent) => void       # Native click, forwarded untouched
+class?: string              # On the outer .fluent-appbar-item wrapper
+...rest                     # HTMLAnchorAttributes -> inner <a> (target, rel, download,
+                            # title, aria-label, aria-current, data-*, onkeydown, ...)
+
+APPBARITEM SNIPPETS:
+icon                        # Icon above the label
+children                    # Label
+
+COUNT ACCESSIBILITY:
+The badge is aria-hidden; the full count (worded by countLabel) is appended to
+the link's accessible name as visually hidden text: "Inbox, 3 unread".
+A consumer aria-label gets it appended too: aria-label="Mailbox" ->
+"Mailbox, 3 unread". aria-labelledby gets the hidden count text's id appended.
+
+COUNT BADGE CSS VARIABLES (set on AppBar, an item class, or any ancestor):
+--fluent-appbar-count-background     # default var(--accent-fill-rest)
+--fluent-appbar-count-color          # default var(--foreground-on-accent-rest)
+--fluent-appbar-count-ring-color     # 1px ring, default var(--neutral-layer-1)
+--fluent-appbar-count-size           # height / min width / line height, 16px
+--fluent-appbar-count-font-size      # 10px
+--fluent-appbar-count-font-weight    # 600
+--fluent-appbar-count-padding-inline # 4px
+--fluent-appbar-count-radius         # 9999px (pill)
+--fluent-appbar-count-offset-block   # -6px (from the icon's top edge)
+--fluent-appbar-count-offset-inline  # -10px (from the icon's end edge, RTL-aware)
+
+.danger-count {
+  --fluent-appbar-count-background: var(--fluent-color-danger);
+  --fluent-appbar-count-color: var(--fluent-color-danger-contrast);
+}
 
 
 ==============================================================================
@@ -151,16 +215,16 @@ EXAMPLES
 SIDEBAR WITH GROUPS:
 <NavMenu width="240px">
   <NavGroup title="Main">
-    <NavLinkItem href="/" icon="Home">Home</NavLinkItem>
-    <NavLinkItem href="/inbox" icon="Mail">
+    <NavLinkItem href="/">Home</NavLinkItem>
+    <NavLinkItem href="/inbox">
       Inbox
       <Badge>12</Badge>
     </NavLinkItem>
   </NavGroup>
 
   <NavGroup title="Admin">
-    <NavLinkItem href="/users" icon="People">Users</NavLinkItem>
-    <NavLinkItem href="/settings" icon="Settings">Settings</NavLinkItem>
+    <NavLinkItem href="/users">Users</NavLinkItem>
+    <NavLinkItem href="/settings">Settings</NavLinkItem>
   </NavGroup>
 </NavMenu>
 
@@ -175,8 +239,8 @@ COLLAPSIBLE SIDEBAR:
   collapsible
   width="250px"
 >
-  <NavLinkItem href="/" icon="Home">Home</NavLinkItem>
-  <NavLinkItem href="/dashboard" icon="Chart">Dashboard</NavLinkItem>
+  <NavLinkItem href="/">Home</NavLinkItem>
+  <NavLinkItem href="/dashboard">Dashboard</NavLinkItem>
 </NavMenu>
 
 When collapsed, only icons are visible (40px width).
@@ -188,67 +252,31 @@ ACTIVE LINK:
 </script>
 
 <NavMenu>
+  <!-- NavLinkItem has no active prop; mark the current page on the inner <a> -->
   <NavLinkItem
     href="/dashboard"
-    icon="Chart"
-    active={$page.url.pathname === "/dashboard"}
+    linkProps={{ "aria-current": $page.url.pathname === "/dashboard" ? "page" : undefined }}
   >
     Dashboard
   </NavLinkItem>
 </NavMenu>
 
 
-APP HEADER:
-<AppBar>
-  {#snippet start()}
-    <Button appearance="stealth" onclick={() => menuOpen = !menuOpen}>
-      <Icon name="Navigation" />
-    </Button>
-    <img src="/logo.svg" alt="Logo" style="height: 32px" />
-    <span class="app-title">My Application</span>
-  {/snippet}
-
-  {#snippet end()}
-    <Search bind:value={searchQuery} placeholder="Search..." />
-    <Button appearance="stealth">
-      <Icon name="Ringer" />
-    </Button>
-    <Button appearance="stealth">
-      <Icon name="Person" />
-    </Button>
-  {/snippet}
-</AppBar>
-
-
-FULL PAGE LAYOUT:
-<Layout orientation="vertical" style="min-height: 100vh">
-  <AppBar>
-    {#snippet start()}
-      <Button onclick={() => collapsed = !collapsed}>
-        <Icon name="Navigation" />
-      </Button>
-      <h1>App Name</h1>
-    {/snippet}
+APP RAIL + SIDEBAR LAYOUT:
+<Layout orientation="horizontal" style="min-height: 100vh">
+  <AppBar aria-label="Main">
+    <AppBarItem href="/" icon={homeIcon} active={path === "/"}>Home</AppBarItem>
+    <AppBarItem href="/inbox" icon={mailIcon} count={unread}>Inbox</AppBarItem>
   </AppBar>
 
-  <BodyContent>
-    <Grid spacing={0}>
-      <GridItem xs={collapsed ? 1 : 3} lg={collapsed ? 1 : 2}>
-        <NavMenu bind:collapsed collapsible width="100%">
-          <NavGroup title="Menu">
-            <NavLinkItem href="/" icon="Home">Home</NavLinkItem>
-            <NavLinkItem href="/about" icon="Info">About</NavLinkItem>
-          </NavGroup>
-        </NavMenu>
-      </GridItem>
+  <NavMenu bind:collapsed collapsible width="240px">
+    <NavGroup title="Menu">
+      <NavLinkItem href="/">Home</NavLinkItem>
+      <NavLinkItem href="/about">About</NavLinkItem>
+    </NavGroup>
+  </NavMenu>
 
-      <GridItem xs={collapsed ? 11 : 9} lg={collapsed ? 11 : 10}>
-        <main>
-          <!-- Page content -->
-        </main>
-      </GridItem>
-    </Grid>
-  </BodyContent>
+  <main><!-- Page content --></main>
 </Layout>
 
 
@@ -292,7 +320,9 @@ CSS Classes:
 - .fluent-nav-group - Group container
 - .fluent-nav-link-item - Link item
 - .fluent-nav-link-item.active - Active link
-- .fluent-app-bar - App bar container
+- .fluent-appbar - App bar container (.vertical / .horizontal)
+- .fluent-appbar-item - App bar item wrapper (inner a.active when active)
+- .fluent-appbar-item-count - Count badge
 
 
 ==============================================================================

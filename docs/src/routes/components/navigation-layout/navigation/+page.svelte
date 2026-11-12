@@ -51,8 +51,20 @@
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text (useful in collapsed mode)"},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the item"},
 		{name: "group", type: "boolean", default: "undefined", description: "Style the item as a group header"},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the outer NavItem div"}
+		{name: "linkProps", type: "HTMLAnchorAttributes", default: "undefined", description: "Attributes and events spread on the inner link element (the a, or a div without href): download, hreflang, referrerpolicy, aria-current, data-*, onkeydown, … Top-level href / rel / target / title win over the same keys here."},
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (class, style, lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the outer NavItem div role=menuitem; use linkProps for the inner link"}
 	]
+
+	const linkPropsCode = [
+		`<NavLinkItem href={csvDataUrl} linkProps={{download: "sample.csv"}}>`,
+		`  Download sample.csv`,
+		`</NavLinkItem>`,
+		`<NavLinkItem href="https://github.com" linkProps={{target: "_blank", rel: "noopener noreferrer"}}>`,
+		`  GitHub (new tab)`,
+		`</NavLinkItem>`
+	].join("\n")
+
+	const csvDataUrl = "data:text/csv;charset=utf-8," + encodeURIComponent("name,value\nalpha,1\nbeta,2\n")
 
 	const navLinkItemCallbacks: Property[] = [
 		{name: "onclick", type: "(ev: MouseEvent) => void", default: "undefined", description: "Native click event, forwarded untouched"},
@@ -118,7 +130,7 @@
 				<p>"Item 6" sets <code>persistKey</code>, so its expanded state survives a reload; the other groups reset.</p>
 
 				<NavMenu width="250px">
-					<NavLinkItem href="https://microsoft.com" rel="noreferer noorigin" target="_blank">
+					<NavLinkItem href="https://microsoft.com" rel="noopener noreferrer" target="_blank">
 						Microsoft
 					</NavLinkItem>
 
@@ -260,6 +272,28 @@
 		</div>
 	</Card>
 
+	<Card>
+		<h2 id="link-attributes">Link attributes (linkProps)</h2>
+		<p>
+			NavLinkItem renders an outer <code>div role="menuitem"</code> around the actual link. <code>...rest</code>
+			(<code>class</code>, <code>style</code>, <code>data-*</code>, …) stays on that outer element; anchor attributes
+			such as <code>download</code>, <code>hreflang</code> or <code>referrerpolicy</code> go through
+			<code>linkProps</code>, which is spread on the inner <code>a</code>. <code>href</code>, <code>rel</code>,
+			<code>target</code> and <code>title</code> are also available as top-level props and win when both are given.
+		</p>
+		<div style="max-inline-size: 320px">
+			<NavMenu>
+				<NavLinkItem href={csvDataUrl} linkProps={{download: "sample.csv"}}>
+					Download sample.csv
+				</NavLinkItem>
+				<NavLinkItem href="https://github.com" linkProps={{target: "_blank", rel: "noopener noreferrer"}}>
+					GitHub (new tab)
+				</NavLinkItem>
+			</NavMenu>
+		</div>
+		<pre class="code">{linkPropsCode}</pre>
+	</Card>
+
 	<Grid spacing={3}>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
@@ -357,5 +391,13 @@
 
 	.example-item {
 		flex: 1;
+	}
+
+	.code {
+		padding: 0.75rem;
+		overflow-x: auto;
+		background: var(--neutral-layer-2);
+		border-radius: 4px;
+		font-size: 12px;
 	}
 </style>
