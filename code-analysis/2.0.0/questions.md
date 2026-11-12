@@ -79,6 +79,8 @@ The 05 table doesn't list every function prop. Where the return value is used I 
 - `maxSelectableDays` left as is for now; rulebook D-NC-22 would make it `maxSelectedDayCount` —
   will do it with the other limit renames (`maxSelectedOptions` → `maxSelectionCount`) unless you object.
 
+**Decided 2026-11-12: apply D-NC-22 to all limits:** `maxSelectionCount`, `maxResultCount` (Autocomplete `maxOptionsSearch`, CommandPalette `maxResults`), `maxVisibleBadgeCount` (BadgeGroup `limit`), `maxSelectedDayCount`, `minFileCount`, `maxVisibleFileCount`, `maxVisibleOptionCount`.
+
 ## Q9 — Dialog `preventClose`: kept (the 05 mapping said drop it)
 
 `beforeCloseCallback({reason})` now replaces `onbeforeclose` (veto with `false`, async OK). The table also
@@ -105,6 +107,8 @@ Fluent UI itself uses `error` (Fluent v9 `MessageBar intent`, `Field validationS
 Alert already uses `danger`; Toast (`variant: "error"` + `toast.error()`) and Field
 (`validationState: "error"`) don't. Not changed yet — which wins for 2.0: the rulebook (`danger`
 everywhere, `toast.danger()`?) or Fluent naming (`error`, and Alert moves back to `error`)?
+
+**Decided 2026-11-12: `error` (Microsoft Fluent).** Alert `danger` → `error`; Toast / Field unchanged. Recorded as an exception in BlissFramework D-NC-23.
 
 ## Q12 — Panel `side`: keep `"left"` / `"right"`?
 
@@ -175,8 +179,12 @@ passed through `...rest`. Rename the persistence role to `persistKey`?
 
 Everything else uses `children`. Rename?
 
+**Decided 2026-11-12: rename to `children`.**
+
 ## Q22 — Element-specific rest types
 
 `RestProps` is based on `HTMLAttributes<HTMLElement>`, so `target`/`download`/`rel` on link-like
 components (NavLink, Anchor, AppBarItem) aren't typed — AppBarItem got an explicit `target`. Add an
 anchor-flavoured `RestProps` variant in `types/index.ts`?
+
+**Decided 2026-11-12: add `AnchorRestProps`** (based on `HTMLAnchorAttributes`) for link components; AppBarItem drops its explicit `target`.
