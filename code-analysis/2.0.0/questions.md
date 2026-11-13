@@ -234,3 +234,7 @@ hard-coded `#ffb900`). Badge/Label/CompositeBadge yellow fill (`--fluent-color-w
 **Q-QG-1 decided 2026-11-13:** `onRowChange` provides the row's full current state (`draftRow`, invalid
 values included) plus `invalidFields` (`{field, error, value}[]`) and `isRowValid`; consumer decides
 what to store. Details in `06-quickgrid-plan.md`.
+
+**Q-QG-2 decided 2026-11-13:** port web-grid's sort/paging model (`sortMode`, `bind:sort`, `paginationMode`,
+`bind:currentPage`/`pageSize`, `totalItems`, `beforePageChangeCallback`, `onDataRequest`). **Q-QG-3 decided:**
+`rowIndex` → `viewIndex` + `itemIndex` + `rowKey`. Details in `06-quickgrid-plan.md`.

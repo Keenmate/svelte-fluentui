@@ -163,11 +163,13 @@ Space with `trueValue`; axe scan; no listeners after unmount.
   `draftRow` is built per event from the current item + the per-cell overrides (Phase 2), so
   consumer-side changes to other fields always show through. Typical consumer:
   `if (isRowValid) save(draftRow)` or save `draftRow` minus `invalidFields`.
-- **Q-QG-2** Controlled sort/page/filters: bindable props (`bind:sort`, `bind:page`, `bind:filters`) +
-  `onSortChange` / `onPageChange` events, and a `serverSide` flag that skips the internal pipeline?
-- **Q-QG-3** Breaking: event contexts gain `rowKey` + `itemIndex`; should `rowIndex` keep meaning the
-  view position (documented) or be renamed `viewIndex`? Recommendation: rename to `viewIndex`, add
-  `itemIndex` — 2.0.0 is the moment.
+- ~~**Q-QG-2**~~ **Decided 2026-11-13 (user): port web-grid's model** (`C:/Git/KM/web-grid/packages/web-grid/src/types.ts` `SortMode`, `SortState`, `DataRequestDetail`; `grid.ts` `sort`, `paginationMode`, `currentPage`, `totalItems`, `beforePageChangeCallback`):
+  `sortMode: "none" | "single" | "multiple"` (replaces the `sortable` boolean), `bind:sort` (`{column, direction}[]`),
+  `paginationMode: "client" | "server"`, `bind:currentPage`, `bind:pageSize`, `pageSizes`, `totalItems`,
+  `beforePageChangeCallback(ctx)`, and one `onDataRequest({sort, page, pageSize, trigger, mode, skip})`
+  (`trigger`: `sort | page | page-size | filter | init | load-more`) next to `onFiltersChange`. Phase 4.
+- ~~**Q-QG-3**~~ **Decided 2026-11-13 (user):** `rowIndex` → `viewIndex` (position in the displayed
+  list), plus `itemIndex` (index in `items`, −1 if not found) and `rowKey` in every row context. Phase 1.
 
 ## Suggested order
 
