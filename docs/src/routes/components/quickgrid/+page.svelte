@@ -19,6 +19,7 @@
 		{name: "striped", type: "boolean", default: "true", description: "Alternate row background colors"},
 		{name: "hoverable", type: "boolean", default: "true", description: "Highlight rows on mouse hover"},
 		{name: "fillerColumn", type: "boolean", default: "false", description: "Append an empty trailing column that absorbs leftover horizontal space, so preceding columns keep their defined widths instead of stretching to justify"},
+		{name: "idMember", type: "keyof T", default: "undefined", description: "Field that uniquely identifies a row; becomes rowKey in every row context and keys drafts, invalid cells, the edited / focused cell and the row toolbar. Without it rows are identified by object, so state resets for rows you replace with new objects (items.map). In events, write back with itemIndex (index in items), not viewIndex (position on screen)"},
 		{name: "editable", type: "boolean", default: "false", description: "Enable inline cell editing"},
 		{name: "editTrigger", type: '"click" | "dblclick" | "button" | "always" | "navigate"', default: '"dblclick"', description: "How to trigger cell editing"},
 		{name: "dropdownShowOnFocus", type: "boolean", default: "true", description: "Auto-show dropdown editor when cell is focused (navigate mode)"},
@@ -34,13 +35,13 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onRowChange", type: "(ctx: QuickGridRowChangeDetail<T>) => void", default: "undefined", description: "Fired when a cell value is committed during inline editing. Detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
-		{name: "onEditStart", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Fired when a cell enters edit mode"},
-		{name: "onEditCancel", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Fired when editing is cancelled (e.g. Escape key)"},
-		{name: "onValidationError", type: "(ctx: { row, rowIndex, field, column, error }) => void", default: "undefined", description: "Fired when a commit is blocked by a validation error"},
-		{name: "onAction", type: "(detail: QuickGridActionDetail<T>) => void", default: "undefined", description: "Fired after a row-toolbar or context-menu item ran (detail.source says which). Context includes row, rowIndex and, from the context menu, the cell"},
+		{name: "onRowChange", type: "(ctx: QuickGridRowChangeDetail<T>) => void", default: "undefined", description: "Fired when a cell value is committed during inline editing. Detail includes row, draftRow, viewIndex, itemIndex, rowKey, field, oldValue, newValue, isValid, validationError"},
+		{name: "onEditStart", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column }) => void", default: "undefined", description: "Fired when a cell enters edit mode"},
+		{name: "onEditCancel", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column }) => void", default: "undefined", description: "Fired when editing is cancelled (e.g. Escape key)"},
+		{name: "onValidationError", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column, error }) => void", default: "undefined", description: "Fired when a commit is blocked by a validation error"},
+		{name: "onAction", type: "(detail: QuickGridActionDetail<T>) => void", default: "undefined", description: "Fired after a row-toolbar or context-menu item ran (detail.source says which). Context includes row, viewIndex, itemIndex, rowKey and, from the context menu, the cell"},
 		{name: "beforeActionCallback", type: "(detail: QuickGridActionDetail<T>) => unknown", default: "undefined", description: "Called before a row-toolbar or context-menu item runs; return false (or a Promise resolving to false) to cancel"},
-		{name: "onContextMenuOpen", type: "(ctx: QuickGridContextMenuContext<T>) => void", default: "undefined", description: "Fired when the context menu is opened. Receives row, rowIndex, columnIndex, column, cellValue"},
+		{name: "onContextMenuOpen", type: "(ctx: QuickGridContextMenuContext<T>) => void", default: "undefined", description: "Fired when the context menu is opened. Receives row, viewIndex, itemIndex, rowKey, columnIndex, column, cellValue"},
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (.quickgrid-container)"}
 	]
 

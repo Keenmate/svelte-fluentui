@@ -15,6 +15,16 @@
 	let alwaysLog = $state<string[]>([])
 	let teamInvalid = $state<QuickGridCellValidationState[]>([])
 
+	// Row identity (no idMember): event indices must point into `items`, not the view.
+	const nameColumn = {field: "name", title: "Name", editable: true, editor: "text" as const, sortable: true,
+		beforeCommitCallback: ({value}: {value: unknown}) => String(value).length < 2 ? "Too short" : null}
+	let pagedRows = $state([{name: "Alpha"}, {name: "Bravo"}, {name: "Charlie"}, {name: "Delta"}])
+	let pagedLog = $state<string[]>([])
+	let sortedRows = $state([{name: "Zed"}, {name: "Amy"}, {name: "Kim"}])
+	let sortedLog = $state<string[]>([])
+	let bumpRows = $state([{id: 1, name: "Apple", bumps: 0}, {id: 2, name: "Banana", bumps: 0}])
+	let bumpLog = $state<string[]>([])
+
 	const columns = [
 		{field: "name", title: "Name", editable: true, editor: "text" as const,
 			beforeCommitCallback: ({value}: {value: unknown}) => String(value).length < 2 ? "Too short" : null},
@@ -40,12 +50,12 @@
 			{divider: true},
 			{id: "never", text: "Never", isVisible: false}
 		]}
-		onAction={({source, action, id, rowIndex}) => log.push(`${source}:${action}:${id ?? "-"}@${rowIndex}`)} />
+		onAction={({source, action, id, viewIndex, itemIndex, rowKey}) => log.push(`${source}:${action}:${id ?? "-"}@${viewIndex}/${itemIndex}/${rowKey}`)} />
 </div>
 
 <div id="grid-wrap">
 	<QuickGrid {items} {columns} idMember="id" editable editTrigger="dblclick" filterable
-		onEditStart={({field, rowIndex}) => log.push(`start:${field}@${rowIndex}`)}
+		onEditStart={({field, viewIndex, itemIndex, rowKey}) => log.push(`start:${field}@${viewIndex}/${itemIndex}/${rowKey}`)}
 		onRowChange={({newValue, isValid}) => log.push(`change:${newValue}:${isValid}`)}
 		onValidationError={({error}) => log.push(`error:${error}`)} />
 </div>
@@ -57,10 +67,10 @@
 				editorOptions: {options: [{value: "web", label: "Web"}, {value: "api", label: "API"}]}},
 			{field: "component", title: "Component", getDisplayValueCallback: ({value}: {value: string | null}) => value ?? "none"}
 		]}
-		onRowChange={({rowIndex, field, oldValue, newValue, draftRow, isValid}) => {
+		onRowChange={({itemIndex, field, oldValue, newValue, draftRow, isValid}) => {
 			teamLog.push(`${field}:${oldValue}->${newValue}`)
 			if (!isValid) return
-			teamRows[rowIndex] = {...draftRow, component: field === "team" ? null : draftRow.component}
+			teamRows[itemIndex] = {...draftRow, component: field === "team" ? null : draftRow.component}
 		}} />
 	<output id="team-log">{teamLog.join(" | ")}</output>
 </div>
@@ -69,8 +79,42 @@
 <div id="always-wrap">
 	<QuickGrid items={alwaysRows} idMember="id" editable editTrigger="always"
 		columns={[{field: "name", title: "Name", editable: true, editor: "text" as const}]}
-		onRowChange={({rowIndex, draftRow, newValue}) => { alwaysLog.push(String(newValue)); alwaysRows[rowIndex] = {...draftRow} }} />
+		onRowChange={({itemIndex, draftRow, newValue}) => { alwaysLog.push(String(newValue)); alwaysRows[itemIndex] = {...draftRow} }} />
 	<output id="always-log">{alwaysLog.join(" | ")}</output>
+</div>
+
+<!-- Pageable grid without idMember: write-back via itemIndex; drafts must not leak across pages. -->
+<div id="paged-wrap">
+	<QuickGrid items={pagedRows} columns={[nameColumn]} pageable pageSize={2} editable editTrigger="dblclick"
+		onRowChange={({itemIndex, viewIndex, rowKey, draftRow, isValid}) => {
+			pagedLog.push(`${itemIndex}/${viewIndex}/${rowKey ? "key" : "nokey"}`)
+			if (isValid) pagedRows[itemIndex] = {...draftRow}
+		}} />
+	<output id="paged-log">{pagedLog.join(" | ")}</output>
+</div>
+
+<!-- Sortable grid without idMember: itemIndex survives sorting (row toolbar + context menu too). -->
+<div id="sorted-wrap">
+	<QuickGrid items={sortedRows} columns={[nameColumn]} sortable editable editTrigger="dblclick"
+		contextMenu={[{id: "pick", text: "Pick"}]}
+		onAction={({viewIndex, itemIndex}) => sortedLog.push(`action:${itemIndex}/${viewIndex}`)}
+		onRowChange={({itemIndex, viewIndex, draftRow, isValid}) => {
+			sortedLog.push(`change:${itemIndex}/${viewIndex}`)
+			if (isValid) sortedRows[itemIndex] = {...draftRow}
+		}} />
+	<output id="sorted-log">{sortedLog.join(" | ")}</output>
+</div>
+
+<!-- Row toolbar while the consumer replaces items immutably. -->
+<div id="bump-wrap">
+	<QuickGrid items={bumpRows} idMember="id" showRowToolbar
+		columns={[{field: "name", title: "Name"}, {field: "bumps", title: "Bumps"}]}
+		rowToolbar={[{id: "bump", text: "Bump", icon: "add", onClick: ({row, itemIndex}) => {
+			const id = (row as {id: number}).id
+			bumpLog.push(`${(row as {name: string}).name}@${itemIndex}`)
+			bumpRows = bumpRows.map((r) => r.id === id ? {...r, bumps: r.bumps + 1} : r)
+		}}]} />
+	<output id="bump-log">{bumpLog.join(" | ")}</output>
 </div>
 
 <output id="log">{log.join(" | ")}</output>

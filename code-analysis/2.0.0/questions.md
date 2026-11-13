@@ -238,3 +238,17 @@ what to store. Details in `06-quickgrid-plan.md`.
 **Q-QG-2 decided 2026-11-13:** port web-grid's sort/paging model (`sortMode`, `bind:sort`, `paginationMode`,
 `bind:currentPage`/`pageSize`, `totalItems`, `beforePageChangeCallback`, `onDataRequest`). **Q-QG-3 decided:**
 `rowIndex` → `viewIndex` + `itemIndex` + `rowKey`. Details in `06-quickgrid-plan.md`.
+
+## Open for 2026-11-14 (QuickGrid)
+
+**Q-QG-4 — editable grids without `idMember`.** After Phase 1 a row without `idMember` is identified by
+its object. Consumers that update immutably (`items = items.map(...)`, `items[i] = {...draftRow}`)
+create a new object, so that row loses its pending invalid values, invalid markers and an open
+toolbar — exactly the pattern the docs use. Options: (a) keep the console warning and document
+"editable grids need `idMember`"; (b) make `idMember` required when `editable` (type-level / dev error);
+(c) default `idMember` to `"id"` when rows have an `id` field. Recommendation: (c) + (a) — most data has
+`id`, and the warning still covers the rest.
+
+**Q-QG-5 — next step.** Phase 2 (editing state machine: edit token, per-cell draft overrides,
+`invalidFields` / `isRowValid` per Q-QG-1, validation on every commit path) is next per the plan. Go?
+Also: fix the clipped advanced row toolbar on the editable docs page now (small, pre-existing) or in Phase 5?

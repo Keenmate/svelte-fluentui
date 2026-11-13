@@ -1,4 +1,4 @@
-import {test, expect} from "@playwright/test"
+import {test, expect, type Locator} from "@playwright/test"
 
 /**
  * QuickGrid (2.0.0): getDisplayValueCallback, filterCallback({term, row, column}),
@@ -25,7 +25,7 @@ test("filterCallback filters rows; null leaves the filter off", async ({page}) =
 
 test("editing fires onEditStart, beforeCommitCallback errors fire onValidationError", async ({page}) => {
 	await page.locator("#grid-wrap td", {hasText: "Apple"}).dblclick()
-	await expect(page.locator("#log")).toContainText("start:name@0")
+	await expect(page.locator("#log")).toContainText("start:name@0/0/1")
 	await page.keyboard.press("Control+A")
 	await page.keyboard.type("A")
 	await page.keyboard.press("Enter")
@@ -40,10 +40,10 @@ test("row toolbar: custom item runs onClick then onAction; built-ins report thei
 	await expect(toolbar.locator(".row-toolbar-btn")).toHaveCount(2)
 	await expect(toolbar.locator(".row-toolbar-divider")).toHaveCount(1)
 	await toolbar.getByRole("button", {name: "Star"}).click()
-	await expect(page.locator("#log")).toContainText("star:Banana | row-toolbar:custom:star@1")
+	await expect(page.locator("#log")).toContainText("star:Banana | row-toolbar:custom:star@1/1/2")
 	await row.hover()
 	await page.locator(".row-toolbar").getByRole("button", {name: "Delete row"}).click()
-	await expect(page.locator("#log")).toContainText("row-toolbar:delete:-@1")
+	await expect(page.locator("#log")).toContainText("row-toolbar:delete:-@1/1/2")
 })
 
 test("context menu: dynamic text, hidden items and trailing divider dropped, onAction gets the cell", async ({page}) => {
@@ -52,7 +52,7 @@ test("context menu: dynamic text, hidden items and trailing divider dropped, onA
 	await expect(menu.locator("fluent-menu-item")).toHaveCount(1)
 	await expect(menu.locator("fluent-divider")).toHaveCount(0)
 	await menu.locator("fluent-menu-item", {hasText: "Copy Name"}).click()
-	await expect(page.locator("#log")).toContainText("copy:Cherry | context-menu:custom:copy@2")
+	await expect(page.locator("#log")).toContainText("copy:Cherry | context-menu:custom:copy@2/2/3")
 })
 
 test("a dropdown pick fires onRowChange once; the consumer's change to another field shows", async ({page}) => {
@@ -76,4 +76,61 @@ test("editTrigger always: the same cell commits again after its first edit", asy
 	await input.fill("Ali")
 	await page.locator("#always-wrap tbody tr").nth(1).locator("input").focus()
 	await expect(page.locator("#always-log")).toHaveText("Alicia | Ali")
+})
+
+// ---- Row identity: viewIndex (displayed position) vs itemIndex (position in `items`) ----
+
+async function editCell(wrap: Locator, cellText: string, text: string) {
+	await wrap.locator("td", {hasText: cellText}).dblclick()
+	await expect(wrap.locator("td.editing input")).toBeFocused()
+	await wrap.page().keyboard.press("Control+A")
+	await wrap.page().keyboard.type(text)
+	await wrap.page().keyboard.press("Enter")
+}
+
+test("pageable, no idMember: editing a page-2 row reports its itemIndex and writes back to that row", async ({page}) => {
+	const wrap = page.locator("#paged-wrap")
+	await wrap.getByRole("button", {name: "Next"}).click()
+	await editCell(wrap, "Charlie", "Carl")
+	await expect(page.locator("#paged-log")).toHaveText("2/0/key")
+	await expect(wrap.locator("tbody tr").first()).toHaveText("Carl")
+	await wrap.getByRole("button", {name: "Previous"}).click()
+	await expect(wrap.locator("tbody tr").first()).toHaveText("Alpha")
+})
+
+test("sorted, no idMember: itemIndex points at the edited item, not its sorted position", async ({page}) => {
+	const wrap = page.locator("#sorted-wrap")
+	await wrap.locator("th.column-header", {hasText: "Name"}).click()
+	await expect(wrap.locator("tbody tr").first()).toHaveText("Amy")
+	await editCell(wrap, "Zed", "Zoe")
+	await expect(page.locator("#sorted-log")).toHaveText("change:0/2")
+	await expect(wrap.locator("tbody td")).toHaveText(["Amy", "Kim", "Zoe"])
+	await wrap.locator("td", {hasText: "Kim"}).click({button: "right"})
+	await page.locator(".context-menu fluent-menu-item", {hasText: "Pick"}).click()
+	await expect(page.locator("#sorted-log")).toHaveText("change:0/2 | action:2/1")
+})
+
+test("no idMember: an invalid draft on page 1 does not show on page 2", async ({page}) => {
+	const wrap = page.locator("#paged-wrap")
+	await editCell(wrap, "Alpha", "A")
+	await expect(wrap.locator("tbody td.validation-error")).toHaveCount(1)
+	await wrap.getByRole("button", {name: "Next"}).click()
+	await expect(wrap.locator("tbody tr").first()).toHaveText("Charlie")
+	await expect(wrap.locator("tbody td.validation-error")).toHaveCount(0)
+	await wrap.getByRole("button", {name: "Previous"}).click()
+	await expect(wrap.locator("tbody td.validation-error")).toHaveCount(1)
+})
+
+test("row toolbar keeps working when the consumer replaces items immutably", async ({page}) => {
+	const wrap = page.locator("#bump-wrap")
+	// Scroll first: a scroll closes the toolbar, and hover's own scroll could land after mouseenter.
+	await wrap.scrollIntoViewIfNeeded()
+	await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+	await wrap.locator("tbody tr", {hasText: "Banana"}).hover()
+	const bump = page.locator(".row-toolbar").getByRole("button", {name: "Bump"})
+	await bump.click()
+	await expect(wrap.locator("tbody tr", {hasText: "Banana"})).toContainText("1")
+	await bump.click()
+	await expect(page.locator("#bump-log")).toHaveText("Banana@1 | Banana@1")
+	await expect(wrap.locator("tbody tr", {hasText: "Banana"})).toContainText("2")
 })

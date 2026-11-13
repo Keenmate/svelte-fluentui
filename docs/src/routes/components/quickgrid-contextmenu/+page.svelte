@@ -23,8 +23,8 @@
 	]
 
 	const callbacks: PropertyRow[] = [
-		{name: "onContextMenuOpen", type: "(ctx: QuickGridContextMenuContext<T>) => void", default: "—", description: "Fires when the context menu opens. Receives row, rowIndex, columnIndex, column and cellValue"},
-		{name: "onAction", type: "(detail: QuickGridActionDetail<T>) => void", default: "—", description: "Fires after a menu item ran: {action, id, item, source: \"context-menu\", row, rowIndex, column, columnIndex, cellValue}"}
+		{name: "onContextMenuOpen", type: "(ctx: QuickGridContextMenuContext<T>) => void", default: "—", description: "Fires when the context menu opens. Receives row, viewIndex, itemIndex, rowKey, columnIndex, column and cellValue"},
+		{name: "onAction", type: "(detail: QuickGridActionDetail<T>) => void", default: "—", description: "Fires after a menu item ran: {action, id, item, source: \"context-menu\", row, viewIndex, itemIndex, rowKey, column, columnIndex, cellValue}"}
 	]
 
 	const slots: PropertyRow[] = [
@@ -70,7 +70,9 @@
 
 	const contextMenuContext: ContextMenuContextRow[] = [
 		{name: "row", type: "T", description: "The full data object for the right-clicked row"},
-		{name: "rowIndex", type: "number", description: "Zero-based index of the row in the currently displayed items"},
+		{name: "viewIndex", type: "number", description: "Position of the row in the displayed list (after filter, sort, tree collapse and paging) — not an index into items"},
+		{name: "itemIndex", type: "number", description: "Index of the row in items (−1 if it is no longer there) — use this to update your data"},
+		{name: "rowKey", type: "string", description: "Stable row key: idMember, else treePathMember, else a key generated per row object"},
 		{name: "columnIndex", type: "number", description: "Zero-based index of the clicked column"},
 		{name: "column", type: "QuickGridColumn<T>", description: "The column definition object for the clicked cell"},
 		{name: "cellValue", type: "unknown", description: "The raw value of the clicked cell"}
@@ -209,7 +211,7 @@
 			icon: 'document_copy',
 			onClick: (ctx: any) => {
 				const newProduct = {...ctx.row, id: Math.max(...products.map(p => p.id)) + 1}
-				products = [...products.slice(0, ctx.rowIndex + 1), newProduct, ...products.slice(ctx.rowIndex + 1)]
+				products = [...products.slice(0, ctx.itemIndex + 1), newProduct, ...products.slice(ctx.itemIndex + 1)]
 				showMessage(`Duplicated: ${ctx.row.name}`)
 			}
 		},
@@ -218,8 +220,8 @@
 			getTextCallback: (ctx: any) => ctx.row.active ? 'Deactivate' : 'Activate',
 			icon: 'arrow_sync',
 			onClick: (ctx: any) => {
-				products[ctx.rowIndex].active = !products[ctx.rowIndex].active
-				showMessage(`${ctx.row.name} is now ${products[ctx.rowIndex].active ? 'active' : 'inactive'}`)
+				products[ctx.itemIndex].active = !products[ctx.itemIndex].active
+				showMessage(`${ctx.row.name} is now ${products[ctx.itemIndex].active ? 'active' : 'inactive'}`)
 			}
 		},
 		{
@@ -228,8 +230,8 @@
 			icon: 'box',
 			getIsVisibleCallback: (ctx: any) => ctx.row.stock < 20,
 			onClick: (ctx: any) => {
-				products[ctx.rowIndex].stock += 10
-				showMessage(`${ctx.row.name} stock increased to ${products[ctx.rowIndex].stock}`)
+				products[ctx.itemIndex].stock += 10
+				showMessage(`${ctx.row.name} stock increased to ${products[ctx.itemIndex].stock}`)
 			}
 		},
 		{divider: true},
@@ -240,7 +242,7 @@
 			isDanger: true,
 			getIsDisabledCallback: (ctx: any) => ctx.row.active,
 			onClick: (ctx: any) => {
-				products = products.filter((_, i) => i !== ctx.rowIndex)
+				products = products.filter((_, i) => i !== ctx.itemIndex)
 				showMessage(`Deleted: ${ctx.row.name}`)
 			}
 		}
@@ -248,7 +250,7 @@
 
 	function handleRowChange(detail: any) {
 		if (detail.isValid) {
-			products[detail.rowIndex] = {...products[detail.rowIndex], [detail.field]: detail.newValue}
+			products[detail.itemIndex] = {...products[detail.itemIndex], [detail.field]: detail.newValue}
 		}
 	}
 
@@ -372,7 +374,7 @@
       isDanger: true,
       getIsDisabledCallback: (ctx) => ctx.row.isProtected,
       getIsVisibleCallback: (ctx) => ctx.row.canDelete,
-      onClick: (ctx) => deleteRow(ctx.rowIndex)
+      onClick: (ctx) => deleteRow(ctx.itemIndex)
     }
   ]}
 />`}</code></pre>

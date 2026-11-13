@@ -56,12 +56,13 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **exports:** `AnchorButton` (alias of `Anchor`) → removed — use `Anchor`
 - **Icon:** `primaryFill` → removed — use `color` / `customColor`
 - **Tabs:** `overflow`, `moreButtonId`, `styleMoreValues` (no effect since the rewrite) → removed — use `responsive="menu"`
-- **QuickGrid:** `ontoolbarclick(detail)` + deprecated `onrowaction(detail)` → one `onAction(detail)` (`source` is `row-toolbar` or `context-menu`; `action`, `id`, `row`, `rowIndex`, plus the cell for the menu) + `beforeActionCallback`
+- **QuickGrid:** `ontoolbarclick(detail)` + deprecated `onrowaction(detail)` → one `onAction(detail)` (`source` is `row-toolbar` or `context-menu`; `action`, `id`, `row`, `viewIndex`, `itemIndex`, `rowKey`, plus the cell for the menu) + `beforeActionCallback`
 - **QuickGrid:** `oncontextmenuopen(ctx)` → `onContextMenuOpen(ctx)`
-- **QuickGrid rowToolbar items:** `{id, icon, iconSnippet, title, label, row, group, type, danger, disabled(row, index), onclick({row, rowIndex})}` → action items `{id, action, icon (name or snippet), text, tooltip, isTextVisible, toolbarRow, isDanger, isDisabled / getIsDisabledCallback({row, rowIndex}), onClick(detail)}`; groups are `{divider: true}` entries
+- **QuickGrid rowToolbar items:** `{id, icon, iconSnippet, title, label, row, group, type, danger, disabled(row, index), onclick({row, rowIndex})}` → action items `{id, action, icon (name or snippet), text, tooltip, isTextVisible, toolbarRow, isDanger, isDisabled / getIsDisabledCallback({row, itemIndex}), onClick(detail)}`; groups are `{divider: true}` entries
 - **QuickGrid contextMenu items:** `{id, label (string or fn), icon (text glyph), disabled, visible, danger, dividerBefore, type, onclick(ctx)}` → menu entries `{id, action, text / getTextCallback, icon (Fluent name or snippet), isDisabled / getIsDisabledCallback, isVisible / getIsVisibleCallback, isDanger, onClick(detail)}` + `{divider: true}`; built-ins by name
 - **QuickGrid:** `showRowActions`, `rowActions` (deprecated aliases) → removed — use `showRowToolbar`, `rowToolbar`
 - **QuickGrid context ctx:** `colIndex` → `columnIndex`
+- **QuickGrid event / callback contexts** (`onRowChange`, `onEditStart`, `onEditCancel`, `onValidationError`, `onAction`, `beforeActionCallback`, `onContextMenuOpen`, `beforeCommitCallback`, `editCallback`, toolbar / menu item callbacks): `rowIndex` → `viewIndex` (position in the displayed list), plus new `itemIndex` (index in `items`, −1 if gone) and `rowKey`; write back with `items[itemIndex]`
 - **TopNav:** per-item `onClick()` only → item `onClick(detail)` + `onAction` + `beforeActionCallback` (can veto links)
 - **TopNav items:** `{label, href, icon (text glyph), onClick()}` → action item `{text, href?, icon (Fluent name or snippet), isDisabled, onClick(detail)}` (type `TopNavItem`)
 - **Toast:** `ontopactionclick()`, `onprimaryactionclick()`, `onsecondaryactionclick()` → one `onAction(detail)` (`detail.id` says which) + `beforeActionCallback`
@@ -169,6 +170,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 ### Fixed
 - QuickGrid: one `onRowChange` per edit (dropdown/date picks fired twice); after a valid edit the grid shows your items again instead of a stale draft row.
 - QuickGrid: removed unimplemented `editorOptions.multiple` / `maxSelections`.
+- QuickGrid: rows edited / deleted on page 2, after sorting or in a collapsed tree hit the wrong row in the docs' pattern (events now carry `itemIndex`); rows without `idMember` no longer share drafts across pages (keyed by row object, not position); the row toolbar works when items are replaced immutably; the edited / focused cell follows its row (keyed rows).
 - Select: type-ahead with nothing selected no longer skips the first matching option.
 - **Textarea — `bind:value` is two-way.** Typing never wrote back to the bound value (only
   `oninput`/`onchange` saw the text); the value is now updated on `input` and `change`.

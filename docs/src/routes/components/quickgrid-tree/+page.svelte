@@ -108,7 +108,7 @@
 		{name: "expandedPaths",           type: "Set<string>",            default: "undefined", description: "Bindable. Set of expanded path strings. When omitted, expansion is managed internally."},
 		{name: "defaultExpandDepth",      type: "number",                 default: "undefined", description: "Initial expansion depth when expandedPaths is not bound. Interpreted relative to the dataset's shallowest level. Omit to expand all on first render."},
 		{name: "treeDoubleClickBehavior", type: '"none" | "toggle"',      default: '"none"',    description: "When \"toggle\", a double-click anywhere on the tree column toggles expand/collapse on rows that have children. Wins over edit triggers on the tree column."},
-		{name: "idMember",                type: "keyof T",                default: "undefined", description: "Field that uniquely identifies a row. Drafts and invalid-cell markers key by it so they survive pagination, filter, sort, and tree expand/collapse re-orderings. In tree mode, treePathMember is the fallback."},
+		{name: "idMember",                type: "keyof T",                default: "undefined", description: "Field that uniquely identifies a row. Drafts and invalid-cell markers key by it so they survive pagination, filter, sort, and tree expand/collapse re-orderings. In tree mode, treePathMember is the fallback; otherwise each row object gets a generated key (state resets for rows replaced with new objects)."},
 		{name: "columnMinWidth",          type: "string",                 default: "undefined", description: "Default min-width applied to every column header without its own minWidth. Useful with fillerColumn to stop content-sized columns from collapsing too far. Skipped on autoWidth columns."},
 		{name: "fillerColumn",            type: "boolean",                default: "false",     description: "Append an empty trailing column with width: 100% so leftover horizontal space lands on the filler instead of an arbitrary content column."}
 	]
@@ -205,9 +205,9 @@
 	let lastTeamChange = $state("")
 	let teamEditTrigger = $state<"navigate" | "dblclick" | "click" | "button">("navigate")
 
-	function handleTeamRowChange(detail: {row: TeamRow; draftRow: TeamRow; rowIndex: number; field: string; oldValue: unknown; newValue: unknown; isValid: boolean}) {
+	function handleTeamRowChange(detail: {row: TeamRow; draftRow: TeamRow; itemIndex: number; field: string; oldValue: unknown; newValue: unknown; isValid: boolean}) {
 		if (!detail.isValid) return
-		teamData[detail.rowIndex] = {...detail.draftRow}
+		teamData[detail.itemIndex] = {...detail.draftRow}
 		lastTeamChange = `${detail.draftRow.name}: ${detail.field} → ${JSON.stringify(detail.newValue)}`
 	}
 </script>

@@ -3,6 +3,25 @@ import type {SearchBehavior} from "../helpers/text.js"
 import type {ActionEventDetail, ActionItem, MenuDivider, MenuEntry} from "../action-items/index.js"
 
 // ---------------------------------------------------------------------------
+// Row identity
+// ---------------------------------------------------------------------------
+
+/**
+ * Where a row is, carried by every row-level event / callback context. Write back with
+ * `items[itemIndex] = …` (or find the row by `rowKey` / your id) — never with `viewIndex`.
+ */
+export type QuickGridRowIdentity = {
+	/** Position in the displayed list: after filtering, sorting, tree collapse and paging
+	 * (0 = first row of the current page). Not an index into `items`. */
+	viewIndex: number
+	/** Index of the row object in `items`, or −1 when it is no longer there. */
+	itemIndex: number
+	/** Stable row key: `idMember`, else `treePathMember`, else a key generated per row object.
+	 * The same key `invalidCells` uses. */
+	rowKey: string
+}
+
+// ---------------------------------------------------------------------------
 // Editors
 // ---------------------------------------------------------------------------
 
@@ -98,10 +117,9 @@ export type GridCellEditorOptions = QuickGridEditorOptionsBase & {
 }
 
 /** What `Column.editCallback` receives for `editor: "custom"`. */
-export type QuickGridCustomEditorContext<T = any> = {
+export type QuickGridCustomEditorContext<T = any> = QuickGridRowIdentity & {
 	value: any
 	row: T
-	rowIndex: number
 	field: string
 	column: QuickGridColumn<T>
 	commit: (newValue: any) => void
@@ -126,11 +144,10 @@ export type QuickGridValidationResult = {
 }
 
 /** What `Column.beforeCommitCallback` receives. */
-export type QuickGridBeforeCommitContext<T = any> = {
+export type QuickGridBeforeCommitContext<T = any> = QuickGridRowIdentity & {
 	value: unknown
 	oldValue: unknown
 	row: T
-	rowIndex: number
 	field: string
 	column: QuickGridColumn<T>
 }
@@ -210,17 +227,38 @@ export type QuickGridColumn<T = any> = {
 // ---------------------------------------------------------------------------
 
 /** What `onRowChange` receives after every committed cell edit. */
-export type QuickGridRowChangeDetail<T = any> = {
+export type QuickGridRowChangeDetail<T = any> = QuickGridRowIdentity & {
 	/** Original row (unchanged). */
 	row: T
 	/** Draft row with the user's changes (including invalid ones). */
 	draftRow: T
-	rowIndex: number
 	field: string
 	oldValue: any
 	newValue: any
 	isValid: boolean
 	validationError?: string | null
+}
+
+/** What `onEditStart` receives. */
+export type QuickGridEditStartContext<T = any> = QuickGridRowIdentity & {
+	row: T
+	field: string
+	column: QuickGridColumn<T>
+}
+
+/** What `onEditCancel` receives. */
+export type QuickGridEditCancelContext<T = any> = QuickGridRowIdentity & {
+	row: T
+	field: string
+	column: QuickGridColumn<T> | undefined
+}
+
+/** What `onValidationError` receives. */
+export type QuickGridValidationErrorContext<T = any> = QuickGridRowIdentity & {
+	row: T
+	field: string
+	column: QuickGridColumn<T>
+	error: string
 }
 
 // ---------------------------------------------------------------------------
@@ -231,9 +269,8 @@ export type QuickGridRowChangeDetail<T = any> = {
 export type QuickGridRowToolbarAction = "add" | "delete" | "duplicate" | "move-up" | "move-down"
 
 /** The row a toolbar item / action runs for. */
-export type QuickGridRowContext<T = any> = {
+export type QuickGridRowContext<T = any> = QuickGridRowIdentity & {
 	row: T
-	rowIndex: number
 }
 
 export type QuickGridRowToolbarItem<T = any> = ActionItem<QuickGridRowContext<T>, QuickGridRowToolbarAction> & {
@@ -251,9 +288,8 @@ export type QuickGridRowToolbarConfig<T = any> = QuickGridRowToolbarAction | Qui
 // ---------------------------------------------------------------------------
 
 /** The right-clicked cell, as passed to `onContextMenuOpen` and context-menu items. */
-export type QuickGridContextMenuContext<T = any> = {
+export type QuickGridContextMenuContext<T = any> = QuickGridRowIdentity & {
 	row: T
-	rowIndex: number
 	columnIndex: number
 	column: QuickGridColumn<T>
 	cellValue: unknown
@@ -273,5 +309,5 @@ export type QuickGridContextMenuConfig<T = any> =
 
 /** What `onAction` / `beforeActionCallback` receive — the row (and, from the context menu, the cell). */
 export type QuickGridActionDetail<T = any> = ActionEventDetail<
-	QuickGridRowContext<T> & Partial<Omit<QuickGridContextMenuContext<T>, "row" | "rowIndex">>
+	QuickGridRowContext<T> & Partial<Omit<QuickGridContextMenuContext<T>, keyof QuickGridRowContext<T>>>
 >

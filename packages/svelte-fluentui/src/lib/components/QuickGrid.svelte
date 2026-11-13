@@ -24,6 +24,10 @@
 		QuickGridBeforeCommitContext as BeforeCommitContext,
 		QuickGridBeforeCommitResult as BeforeCommitResult,
 		QuickGridRowChangeDetail as RowChangeDetail,
+		QuickGridRowIdentity as RowIdentity,
+		QuickGridEditStartContext as EditStartContext,
+		QuickGridEditCancelContext as EditCancelContext,
+		QuickGridValidationErrorContext as ValidationErrorContext,
 		QuickGridRowToolbarAction as RowToolbarAction,
 		QuickGridRowContext as RowContext,
 		QuickGridRowToolbarItem as RowToolbarItem,
@@ -81,10 +85,10 @@
 		contextMenu?: ContextMenuConfig<T>[]
 		/** Fires when the cell context menu opens. */
 		onContextMenuOpen?: (ctx: ContextMenuContext<T>) => void
-		// Stable row identity — keys internal state (drafts, edits) so they survive
-		// re-orderings (pagination, filter, tree expand/collapse). When omitted, the grid
-		// falls back to treePathMember in tree mode, then to the displayed-row index, and
-		// console.warns once if neither stable key is available while editing is enabled.
+		/** Field that uniquely identifies a row; becomes `rowKey` and keys drafts, invalid cells,
+		 *  the edited / focused cell and the row toolbar. Without it the grid uses `treePathMember`
+		 *  (tree mode), else the row object's identity — which resets that state for rows you
+		 *  replace with new objects (`items.map(...)`). */
 		idMember?: keyof T
 		// Tree mode (ltree-style path hierarchy)
 		treePathMember?: keyof T              // Required to enable tree mode — field holding the path string ("1.2.3", "/1/2/3", "C:\\foo\\bar")
@@ -104,11 +108,11 @@
 		/** Fires after every committed cell edit (valid or not — see `isValid`). */
 		onRowChange?: (ctx: RowChangeDetail<T>) => void
 		/** Fires when a cell enters edit mode. */
-		onEditStart?: (ctx: {row: T; rowIndex: number; field: string; column: Column<T>}) => void
+		onEditStart?: (ctx: EditStartContext<T>) => void
 		/** Fires when a cell edit is cancelled. */
-		onEditCancel?: (ctx: {row: T; rowIndex: number; field: string; column: Column<T> | undefined}) => void
+		onEditCancel?: (ctx: EditCancelContext<T>) => void
 		/** Fires when a committed value fails validation. */
-		onValidationError?: (ctx: {row: T; rowIndex: number; field: string; column: Column<T>; error: string}) => void
+		onValidationError?: (ctx: ValidationErrorContext<T>) => void
 		/** Fires after a row-toolbar or context-menu item ran (`source` says which). */
 		onAction?: (detail: QuickGridActionDetail<T>) => void
 		/** Called before a row-toolbar or context-menu item runs; return `false` (or a Promise resolving to `false`) to cancel. */
@@ -234,19 +238,24 @@
 	let currentPage = $state(1)
 
 	// Editing state
-	let editingCell = $state<{ rowIndex: number; field: string; initialSearchQuery?: string } | null>(null)
+	// Interaction state is keyed by row key (never a view position), so it follows its row
+	// through sorting, paging, filtering, tree collapse and inserts.
+	let editingCell = $state<{ rowKey: string; field: string; initialSearchQuery?: string } | null>(null)
 	let currentCellError = $state<string | null>(null)  // Error for currently editing cell
 	let isValidating = $state(false)
 
 	// Draft rows - clones of rows being edited (preserves dirty values including invalid ones).
-	// Keyed by stable row id (idMember → treePathMember → displayed index fallback) so drafts
-	// survive pagination / filter / tree expand-collapse re-orderings.
+	// Keyed by row key (see getRowKey) so drafts survive pagination / filter / sort /
+	// tree expand-collapse re-orderings.
 	let draftRows = $state<Map<string, T>>(new Map())
 
-	// Returns a stable key for a row. Coalesces idMember → treePathMember → displayed index.
-	// The index fallback is lossy (drifts on re-order) and triggers a one-shot console warning
-	// via the effect below when editing is enabled without a real stable id.
-	function getRowId(item: T, displayedIndex: number): string {
+	// Generated keys for rows without idMember / treePathMember: one per row object, so
+	// state never leaks between rows that happen to share a view position.
+	const generatedRowKeys = new WeakMap<object, string>()
+	let generatedRowKeyCount = 0
+
+	// Stable key for a row: idMember → treePathMember → row object identity.
+	function getRowKey(item: T): string {
 		if (idMember !== undefined) {
 			const v = item[idMember]
 			if (v !== undefined && v !== null) return String(v)
@@ -255,7 +264,30 @@
 			const v = item[treePathMember]
 			if (v !== undefined && v !== null) return String(v)
 		}
-		return String(displayedIndex)
+		if (item !== null && typeof item === "object") {
+			let key = generatedRowKeys.get(item)
+			if (key === undefined) {
+				key = `__quickgrid-row-${++generatedRowKeyCount}`
+				generatedRowKeys.set(item, key)
+			}
+			return key
+		}
+		return String(item)
+	}
+
+	// Current position of a row in the displayed list, −1 when it isn't displayed.
+	function getViewIndex(rowKey: string): number {
+		return displayItems.findIndex((it) => getRowKey(it) === rowKey)
+	}
+
+	// `viewIndex` / `itemIndex` / `rowKey` for an event context, resolved now (not when the
+	// interaction started — a commit may resolve after the list re-sorted).
+	function getRowIdentity(row: T, rowKey: string = getRowKey(row)): RowIdentity {
+		let viewIndex = displayItems.indexOf(row)
+		if (viewIndex < 0) viewIndex = getViewIndex(rowKey)
+		let itemIndex = items.indexOf(row)
+		if (itemIndex < 0) itemIndex = items.findIndex((it) => getRowKey(it) === rowKey)
+		return {viewIndex, itemIndex, rowKey}
 	}
 
 	let idWarningEmitted = $state(false)
@@ -266,26 +298,27 @@
 		// eslint-disable-next-line no-console
 		console.warn(
 			"[QuickGrid] No `idMember` was provided while `editable` is enabled. Row state " +
-			"(drafts, in-progress edits) will be keyed by displayed-row index, which means " +
-			"pagination, filtering, sorting, or tree expand/collapse can shift the displayed " +
-			"order and cause an in-flight edit to land on the wrong row. Pass `idMember=\"id\"` " +
-			"(or any field that uniquely identifies a row) to fix this. In tree mode, " +
-			"`treePathMember` is also accepted as a fallback identity."
+			"(drafts, invalid cells, in-progress edits) is keyed by row object identity, so it " +
+			"is dropped for rows you replace with new objects (e.g. `items = items.map(...)`). " +
+			"Pass `idMember=\"id\"` (or any field that uniquely identifies a row) to keep it. " +
+			"In tree mode, `treePathMember` is also accepted as the identity."
 		)
 		idWarningEmitted = true
 	})
 
 	// Navigation mode state (for "navigate" editTrigger)
-	let focusedCell = $state<{ rowIndex: number; colIndex: number } | null>(null)
+	let focusedCell = $state<{ rowKey: string; colIndex: number } | null>(null)
 	let isNavigateMode = $derived(editTrigger === "navigate" || columns.some(c => c.editTrigger === "navigate"))
 	let tableElement: HTMLTableElement | undefined = $state()
 	let isCommittingFromKeyboard = $state(false)
 	let skipNextDropdownAutoEdit = $state(false)  // Prevents dropdown from reopening after selection
 
-	// Row action button state (floating + button between rows)
-	let hoveredRowIndex = $state<number | null>(null)
+	// Row toolbar state. The toolbar's row is tracked by key (rows replaced immutably keep
+	// working); the toolbar stays anchored to the view position it opened at, and the
+	// connector points at the row when an action moves it elsewhere.
+	let hoveredRowKey = $state<string | null>(null)
+	let hoveredAnchorViewIndex = $state<number | null>(null)
 	let hoveredRowElement = $state<HTMLElement | null>(null)
-	let hoveredRowItem = $state<T | null>(null)  // Track row data, not just index
 	let rowActionButtonHovered = $state(false)
 	let rowActionHideTimeout: ReturnType<typeof setTimeout> | null = null
 	let containerRef: HTMLDivElement | undefined = $state()
@@ -614,6 +647,18 @@
 	// Display items (final result)
 	let displayItems = $derived(paginatedItems)
 
+	// Body rows with their {#each} key: the row key, suffixed for repeats (duplicate ids, or
+	// the same object twice in items) so a keyed each never throws on them.
+	let displayRows = $derived.by(() => {
+		const seen = new Map<string, number>()
+		return displayItems.map((item) => {
+			const key = getRowKey(item)
+			const n = seen.get(key) ?? 0
+			seen.set(key, n + 1)
+			return {item, eachKey: n === 0 ? key : `${key}#${n}`}
+		})
+	})
+
 	function handleSort(column: Column<T>) {
 		if (!sortable || !column.sortable) return
 
@@ -640,21 +685,21 @@
 	}
 
 	// Get raw value for a cell (checks draft row first, then original)
-	function getCellRawValue(item: T, rowIndex: number, field: string): unknown {
-		const draftRow = draftRows.get(getRowId(item, rowIndex))
+	function getCellRawValue(item: T, rowKey: string, field: string): unknown {
+		const draftRow = draftRows.get(rowKey)
 		if (draftRow) {
 			return draftRow[field as keyof T]
 		}
 		return item[field as keyof T]
 	}
 
-	function getCellValue(item: T, column: Column<T>, rowIndex?: number): string {
+	function getCellValue(item: T, column: Column<T>, rowKey?: string): string {
 		if (column.renderCellCallback) {
 			return column.renderCellCallback({row: item, column})
 		}
 		// Use draft value if available
-		const value = rowIndex !== undefined
-			? getCellRawValue(item, rowIndex, String(column.field))
+		const value = rowKey !== undefined
+			? getCellRawValue(item, rowKey, String(column.field))
 			: item[column.field as keyof T]
 		if (column.getDisplayValueCallback) {
 			return column.getDisplayValueCallback({value, row: item, column})
@@ -733,8 +778,8 @@
 	}
 
 	// Editing functions
-	function isEditing(rowIndex: number, field: string): boolean {
-		return editingCell?.rowIndex === rowIndex && editingCell?.field === field
+	function isEditing(rowKey: string, field: string): boolean {
+		return editingCell?.rowKey === rowKey && editingCell?.field === field
 	}
 
 	function isCellEditable(column: Column<T>, row: T): boolean {
@@ -755,12 +800,12 @@
 		return column.editTrigger || editTrigger
 	}
 
-	async function startEdit(rowIndex: number, field: string, item: T, column: Column<T>, colIndex?: number, initialSearchQuery?: string) {
+	async function startEdit(field: string, item: T, column: Column<T>, colIndex?: number, initialSearchQuery?: string) {
 		const columnField = String(column.field)
 		currentCellError = null
 
 		// Clone row if not already cloned (preserves dirty values across edits)
-		const rowKey = getRowId(item, rowIndex)
+		const rowKey = getRowKey(item)
 		if (!draftRows.has(rowKey)) {
 			draftRows.set(rowKey, { ...item })
 		}
@@ -770,23 +815,23 @@
 			const context: CustomEditorContext<T> = {
 				value: item[column.field as keyof T],
 				row: item,
-				rowIndex,
+				...getRowIdentity(item, rowKey),
 				field: columnField,
 				column,
 				commit: (newValue: any) => {
-					commitEditDirect(rowIndex, column, newValue, item, colIndex)
+					commitEditDirect(item, column, newValue, colIndex)
 				},
 				cancel: () => {
 					editingCell = null
 					// Refocus cell on cancel in navigate mode
 					if (isNavigateMode && colIndex !== undefined) {
-						focusCell(rowIndex, colIndex)
+						focusCell(rowKey, colIndex)
 					}
 				}
 			}
 			column.editCallback(context)
 			// Mark as editing so we can show visual feedback
-			editingCell = { rowIndex, field }
+			editingCell = { rowKey, field }
 			return
 		}
 
@@ -798,14 +843,14 @@
 			await loadOptionsForColumn(column, item, columnField)
 		}
 
-		editingCell = { rowIndex, field, initialSearchQuery }
-		onEditStart?.({row: item, rowIndex, field, column})
+		editingCell = { rowKey, field, initialSearchQuery }
+		onEditStart?.({row: item, ...getRowIdentity(item, rowKey), field, column})
 	}
 
-	function cancelEdit(item: T, rowIndex: number) {
+	function cancelEdit(item: T) {
 		if (editingCell) {
 			const field = editingCell.field
-			onEditCancel?.({row: item, rowIndex, field, column: columns.find((c) => String(c.field) === field)})
+			onEditCancel?.({row: item, ...getRowIdentity(item), field, column: columns.find((c) => String(c.field) === field)})
 			editingCell = null
 			currentCellError = null
 		}
@@ -881,12 +926,12 @@
 	}
 
 	// Direct commit without validation (used by custom editors that handle their own validation)
-	function commitEditDirect(rowIndex: number, column: Column<T>, newValue: any, item: T, colIndex?: number) {
+	function commitEditDirect(item: T, column: Column<T>, newValue: any, colIndex?: number) {
 		const field = String(column.field)
 		const oldValue = item[column.field as keyof T]
 
 		// Update draft row
-		const rowKey = getRowId(item, rowIndex)
+		const rowKey = getRowKey(item)
 		const draftRow = draftRows.get(rowKey)
 		if (draftRow) {
 			;(draftRow as any)[field] = newValue
@@ -899,7 +944,7 @@
 		onRowChange?.({
 			row: item,
 			draftRow: draftRow || { ...item, [field]: newValue } as T,
-			rowIndex,
+			...getRowIdentity(item, rowKey),
 			field,
 			oldValue,
 			newValue,
@@ -913,7 +958,7 @@
 
 		// Refocus cell in navigate mode so arrow key navigation continues to work
 		if (isNavigateMode && colIndex !== undefined) {
-			focusCell(rowIndex, colIndex)
+			focusCell(rowKey, colIndex)
 		}
 	}
 
@@ -926,8 +971,9 @@
 		if (!invalidCells.some(c => c.rowKey === rowKey)) draftRows.delete(rowKey)
 	}
 
-	async function commitEdit(rowIndex: number, column: Column<T>, newValue: any, item: T, colIndex?: number) {
+	async function commitEdit(item: T, column: Column<T>, newValue: any, colIndex?: number) {
 		const field = String(column.field)
+		const rowKey = getRowKey(item)
 		const oldValue = item[column.field as keyof T]
 		let finalValue = newValue
 		let validationErrorMsg: string | null = null
@@ -942,7 +988,7 @@
 					value: newValue,
 					oldValue,
 					row: item,
-					rowIndex,
+					...getRowIdentity(item, rowKey),
 					field,
 					column
 				}
@@ -972,7 +1018,6 @@
 		isValidating = false
 
 		// Update draft row with the new value (valid or invalid - preserves user input)
-		const rowKey = getRowId(item, rowIndex)
 		const draftRow = draftRows.get(rowKey)
 		if (draftRow) {
 			;(draftRow as any)[field] = finalValue
@@ -985,7 +1030,7 @@
 		} else {
 			addInvalidCell(rowKey, field, validationErrorMsg || "Invalid value")
 			currentCellError = validationErrorMsg
-			onValidationError?.({row: item, rowIndex, field, column, error: validationErrorMsg || "Invalid value"})
+			onValidationError?.({row: item, ...getRowIdentity(item, rowKey), field, column, error: validationErrorMsg || "Invalid value"})
 		}
 
 		// Always fire onRowChange (with isValid flag)
@@ -993,7 +1038,7 @@
 		onRowChange?.({
 			row: item,
 			draftRow: draftRow || { ...item, [field]: finalValue } as T,
-			rowIndex,
+			...getRowIdentity(item, rowKey),
 			field,
 			oldValue,
 			newValue: finalValue,
@@ -1014,20 +1059,20 @@
 				if (isDropdownEditor) {
 					skipNextDropdownAutoEdit = true
 				}
-				focusCell(rowIndex, colIndex)
+				focusCell(rowKey, colIndex)
 			}
 		}
 	}
 
-	function handleCellClick(e: MouseEvent, rowIndex: number, colIndex: number, column: Column<T>, item: T) {
+	function handleCellClick(e: MouseEvent, colIndex: number, column: Column<T>, item: T) {
 		if (!isCellEditable(column, item)) return
 		const trigger = getColumnEditTrigger(column)
 		if (trigger === "click") {
-			startEdit(rowIndex, String(column.field), item, column, colIndex)
+			startEdit(String(column.field), item, column, colIndex)
 		}
 	}
 
-	function handleCellDblClick(e: MouseEvent, rowIndex: number, colIndex: number, column: Column<T>, item: T) {
+	function handleCellDblClick(e: MouseEvent, colIndex: number, column: Column<T>, item: T) {
 		// Tree-toggle on dblclick wins on the tree column when enabled and the row has
 		// children. Chevron's own ondblclick stops propagation, so this only fires for
 		// dblclicks elsewhere in the cell. Leaves fall through to the edit logic below.
@@ -1044,13 +1089,13 @@
 		const trigger = getColumnEditTrigger(column)
 		// Double-click should work in both "dblclick" and "navigate" modes
 		if (trigger === "dblclick" || trigger === "navigate") {
-			startEdit(rowIndex, String(column.field), item, column, colIndex)
+			startEdit(String(column.field), item, column, colIndex)
 		}
 	}
 
-	function handleEditButtonClick(e: MouseEvent, rowIndex: number, colIndex: number, column: Column<T>, item: T) {
+	function handleEditButtonClick(e: MouseEvent, colIndex: number, column: Column<T>, item: T) {
 		e.stopPropagation()
-		startEdit(rowIndex, String(column.field), item, column, colIndex)
+		startEdit(String(column.field), item, column, colIndex)
 	}
 
 	function getEditorType(column: Column<T>): EditorType {
@@ -1083,14 +1128,14 @@
 		fromRowIndex: number,
 		fromColEditableIndex: number,
 		direction: 1 | -1
-	): { rowIndex: number; colIndex: number } | null {
+	): { viewIndex: number; colIndex: number } | null {
 		const items = displayItems
 		const currentRow = items[fromRowIndex]
 		if (currentRow !== undefined) {
 			const currentCols = getEditableColumns(currentRow)
 			const next = fromColEditableIndex + direction
 			if (next >= 0 && next < currentCols.length) {
-				return { rowIndex: fromRowIndex, colIndex: currentCols[next].index }
+				return { viewIndex: fromRowIndex, colIndex: currentCols[next].index }
 			}
 		}
 		let r = fromRowIndex + direction
@@ -1098,29 +1143,37 @@
 			const cols = getEditableColumns(items[r])
 			if (cols.length > 0) {
 				const target = direction === 1 ? cols[0] : cols[cols.length - 1]
-				return { rowIndex: r, colIndex: target.index }
+				return { viewIndex: r, colIndex: target.index }
 			}
 			r += direction
 		}
 		return null
 	}
 
-	function isCellFocused(rowIndex: number, colIndex: number): boolean {
-		return focusedCell?.rowIndex === rowIndex && focusedCell?.colIndex === colIndex
+	function isCellFocused(rowKey: string, colIndex: number): boolean {
+		return focusedCell?.rowKey === rowKey && focusedCell?.colIndex === colIndex
 	}
 
-	function focusCell(rowIndex: number, colIndex: number) {
-		focusedCell = { rowIndex, colIndex }
+	// Focus a cell of a row (by key — wherever the row is displayed after the DOM updates).
+	function focusCell(rowKey: string, colIndex: number) {
+		focusedCell = { rowKey, colIndex }
 		// Focus the td element for keyboard events
 		requestAnimationFrame(() => {
-			const cell = tableElement?.querySelector(`[data-row="${rowIndex}"][data-col="${colIndex}"]`) as HTMLElement
+			const row = tableElement?.querySelector(`:scope > tbody > tr[data-row-key="${CSS.escape(rowKey)}"]`)
+			const cell = row?.querySelector(`:scope > td[data-col="${colIndex}"]`) as HTMLElement | null
 			cell?.focus({ preventScroll: true })
 		})
 	}
 
-	function handleCellFocus(rowIndex: number, colIndex: number, column: Column<T>, item: T) {
+	// Focus a cell of the row at a view position (keyboard navigation between rows).
+	function focusCellAt(viewIndex: number, colIndex: number) {
+		const item = displayItems[viewIndex]
+		if (item !== undefined) focusCell(getRowKey(item), colIndex)
+	}
+
+	function handleCellFocus(colIndex: number, column: Column<T>, item: T) {
 		if (isNavigateMode && !editingCell) {
-			focusedCell = { rowIndex, colIndex }
+			focusedCell = { rowKey: getRowKey(item), colIndex }
 
 			// Auto-start edit for dropdown editors (select/combobox/autocomplete) when dropdownShowOnFocus is enabled
 			if (dropdownShowOnFocus) {
@@ -1131,7 +1184,7 @@
 						skipNextDropdownAutoEdit = false
 						return
 					}
-					startEdit(rowIndex, String(column.field), item, column, colIndex)
+					startEdit(String(column.field), item, column, colIndex)
 				}
 			}
 		}
@@ -1146,8 +1199,9 @@
 		}
 	}
 
-	function handleNavigationKeyDown(e: KeyboardEvent, rowIndex: number, colIndex: number, column: Column<T>, item: T) {
+	function handleNavigationKeyDown(e: KeyboardEvent, viewIndex: number, colIndex: number, column: Column<T>, item: T) {
 		if (!isNavigateMode || editingCell) return
+		const rowKey = getRowKey(item)
 
 		const editableCols = getEditableColumns(item)
 		const currentEditableIndex = editableCols.findIndex(ec => ec.index === colIndex)
@@ -1155,11 +1209,11 @@
 		switch (e.key) {
 			case "ArrowUp":
 				e.preventDefault()
-				if (rowIndex > 0) focusCell(rowIndex - 1, colIndex)
+				if (viewIndex > 0) focusCellAt(viewIndex - 1, colIndex)
 				break
 			case "ArrowDown":
 				e.preventDefault()
-				if (rowIndex < displayItems.length - 1) focusCell(rowIndex + 1, colIndex)
+				if (viewIndex < displayItems.length - 1) focusCellAt(viewIndex + 1, colIndex)
 				break
 			case "ArrowLeft":
 				e.preventDefault()
@@ -1175,12 +1229,12 @@
 						if (ancestor) {
 							toggleExpand(ancestor)
 							const ancestorRowIndex = displayItems.findIndex(it => getRowPath(it) === ancestor)
-							if (ancestorRowIndex >= 0) focusCell(ancestorRowIndex, colIndex)
+							if (ancestorRowIndex >= 0) focusCellAt(ancestorRowIndex, colIndex)
 						}
 					}
 					break
 				}
-				if (colIndex > 0) focusCell(rowIndex, colIndex - 1)
+				if (colIndex > 0) focusCell(rowKey, colIndex - 1)
 				break
 			case "ArrowRight":
 				e.preventDefault()
@@ -1193,12 +1247,12 @@
 					}
 					break
 				}
-				if (colIndex < columns.length - 1) focusCell(rowIndex, colIndex + 1)
+				if (colIndex < columns.length - 1) focusCell(rowKey, colIndex + 1)
 				break
 			case "Tab": {
 				e.preventDefault()
-				const target = findNextEditableCell(rowIndex, currentEditableIndex, e.shiftKey ? -1 : 1)
-				if (target) focusCell(target.rowIndex, target.colIndex)
+				const target = findNextEditableCell(viewIndex, currentEditableIndex, e.shiftKey ? -1 : 1)
+				if (target) focusCellAt(target.viewIndex, target.colIndex)
 				break
 			}
 			case "Enter":
@@ -1210,7 +1264,7 @@
 				// other cell on a read-only row (e.g. team rows in the teams+employees
 				// demo). Click handlers gate already; the keyboard path was overlooked.
 				if (!isCellEditable(column, item)) break
-				startEdit(rowIndex, String(column.field), item, column, colIndex)
+				startEdit(String(column.field), item, column, colIndex)
 				break
 			case " ":
 				// Space toggles checkbox immediately. Same gate as Enter/F2 — read-only
@@ -1218,7 +1272,7 @@
 				if (column.editor === "checkbox" && isCellEditable(column, item)) {
 					e.preventDefault()
 					const newValue = !item[column.field as keyof T]
-					commitEditDirect(rowIndex, column, newValue, item, colIndex)
+					commitEditDirect(item, column, newValue, colIndex)
 				}
 				break
 			default:
@@ -1227,19 +1281,20 @@
 				// because the `|| !column.editor` branch matches columns with no editor configured at all.
 				if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey && isCellEditable(column, item)) {
 					if (column.editor === "text" || column.editor === "number" || !column.editor) {
-						startEdit(rowIndex, String(column.field), item, column, colIndex)
+						startEdit(String(column.field), item, column, colIndex)
 						// Don't prevent default - let the character be typed
 					} else if (column.editor === "autocomplete" || column.editor === "combobox" || column.editor === "select") {
 						// Pass typed character as initial search query for dropdown types
 						e.preventDefault()
-						startEdit(rowIndex, String(column.field), item, column, colIndex, e.key)
+						startEdit(String(column.field), item, column, colIndex, e.key)
 					}
 				}
 				break
 		}
 	}
 
-	async function handleEditorKeyDown(e: KeyboardEvent, rowIndex: number, colIndex: number, column: Column<T>, item: T) {
+	async function handleEditorKeyDown(e: KeyboardEvent, viewIndex: number, colIndex: number, column: Column<T>, item: T) {
+		const rowKey = getRowKey(item)
 		const editableCols = getEditableColumns(item)
 		const currentEditableIndex = editableCols.findIndex(ec => ec.index === colIndex)
 
@@ -1264,30 +1319,31 @@
 				// Just exit edit mode without committing (preserves original value if no selection made)
 				editingCell = null
 			} else if (input?.value !== undefined) {
-				await commitEdit(rowIndex, column, column.editor === "number" ? Number(input.value) : input.value, item)
+				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value)
 			}
 
 			isCommittingFromKeyboard = false
+			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
 
 			// Walk to the next / previous editable cell, skipping rows that have no editable
 			// columns (heterogeneous trees: team rows have zero, employee rows have N).
-			const tabTarget = findNextEditableCell(rowIndex, currentEditableIndex, e.shiftKey ? -1 : 1)
+			const tabTarget = findNextEditableCell(viewIndex, currentEditableIndex, e.shiftKey ? -1 : 1)
 			if (!tabTarget) return
 
 			if (isNavigateMode) {
 				// Navigate mode: focus the next cell as a focusable td (tabindex=0). User
 				// presses Enter / F2 / character to start editing.
-				focusCell(tabTarget.rowIndex, tabTarget.colIndex)
+				focusCellAt(tabTarget.viewIndex, tabTarget.colIndex)
 			} else {
 				// dblclick / click / button: spreadsheet pattern — auto-open the editor on
 				// the next editable cell. Cells in these modes don't have tabindex, so
 				// `focusCell` would be a no-op; we have to start the next edit directly.
 				// Wait one tick so the previous editor unmounts cleanly before the next mounts —
 				// otherwise the autofocus on the new editor races the blur on the old one.
-				const tabTargetItem = displayItems[tabTarget.rowIndex]
+				const tabTargetItem = displayItems[tabTarget.viewIndex]
 				const tabTargetColumn = columns[tabTarget.colIndex]
 				await tick()
-				startEdit(tabTarget.rowIndex, String(tabTargetColumn.field), tabTargetItem, tabTargetColumn, tabTarget.colIndex)
+				startEdit(String(tabTargetColumn.field), tabTargetItem, tabTargetColumn, tabTarget.colIndex)
 			}
 			return
 		}
@@ -1306,10 +1362,11 @@
 			// also commits during teardown via blur, and the commit wins. The flag must
 			// stay true across the async unmount (blur is async), hence `await tick()`.
 			isCommittingFromKeyboard = true
-			cancelEdit(item, rowIndex)
+			cancelEdit(item)
 			await tick()
 			isCommittingFromKeyboard = false
-			focusCell(rowIndex, colIndex)
+			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
+			focusCell(rowKey, colIndex)
 		} else if (e.key === "Enter") {
 			e.preventDefault()
 			e.stopPropagation()  // Prevent bubbling to handleNavigationKeyDown
@@ -1325,20 +1382,21 @@
 				// Just exit edit mode without committing (preserves original value if no selection made)
 				editingCell = null
 			} else if (input?.value !== undefined) {
-				await commitEdit(rowIndex, column, column.editor === "number" ? Number(input.value) : input.value, item)
+				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value)
 			}
 
 			isCommittingFromKeyboard = false
+			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
 
 			// Move to cell below after Enter (any cell — all are focusable in navigate mode).
-			if (rowIndex < displayItems.length - 1) focusCell(rowIndex + 1, colIndex)
-			else focusCell(rowIndex, colIndex)
+			if (viewIndex < displayItems.length - 1) focusCellAt(viewIndex + 1, colIndex)
+			else focusCell(rowKey, colIndex)
 		} else if (e.key === " " && column.editor === "checkbox") {
 			// Space toggles checkbox while in edit mode
 			e.preventDefault()
 			e.stopPropagation()
 			const newValue = !item[column.field as keyof T]
-			await commitEdit(rowIndex, column, newValue, item, colIndex)
+			await commitEdit(item, column, newValue, colIndex)
 		} else if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
 			// NOTE: Dropdown editors (select, combobox, autocomplete) handle their own arrow keys
 			// when dropdown is OPEN (via stopPropagation). When dropdown is CLOSED, events bubble
@@ -1366,10 +1424,11 @@
 				// For dropdown editors, just exit edit mode (dropdown was closed, no value to commit)
 				editingCell = null
 			} else if (input?.value !== undefined) {
-				await commitEdit(rowIndex, column, column.editor === "number" ? Number(input.value) : input.value, item)
+				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value)
 			}
 
 			isCommittingFromKeyboard = false
+			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
 
 			// Move to target cell (allow navigation even with invalid values).
 			// ArrowUp/Down: any cell (all are focusable in navigate mode).
@@ -1377,25 +1436,56 @@
 			// pressed an arrow inside an open editor, so they're explicitly stepping between
 			// editable cells, not browsing.
 			if (e.key === "ArrowUp") {
-				if (rowIndex > 0) focusCell(rowIndex - 1, colIndex)
-				else focusCell(rowIndex, colIndex)
+				if (viewIndex > 0) focusCellAt(viewIndex - 1, colIndex)
+				else focusCell(rowKey, colIndex)
 			} else if (e.key === "ArrowDown") {
-				if (rowIndex < displayItems.length - 1) focusCell(rowIndex + 1, colIndex)
-				else focusCell(rowIndex, colIndex)
+				if (viewIndex < displayItems.length - 1) focusCellAt(viewIndex + 1, colIndex)
+				else focusCell(rowKey, colIndex)
 			} else if (e.key === "ArrowLeft" && currentEditableIndex > 0) {
-				focusCell(rowIndex, editableCols[currentEditableIndex - 1].index)
+				focusCell(rowKey, editableCols[currentEditableIndex - 1].index)
 			} else if (e.key === "ArrowRight" && currentEditableIndex < editableCols.length - 1) {
-				focusCell(rowIndex, editableCols[currentEditableIndex + 1].index)
+				focusCell(rowKey, editableCols[currentEditableIndex + 1].index)
 			} else {
 				// Stay in current cell if can't move
-				focusCell(rowIndex, colIndex)
+				focusCell(rowKey, colIndex)
 			}
 		}
 	}
 
 	// Row action popup functions
+	function openRowToolbar(rowKey: string, viewIndex: number, anchor: HTMLElement) {
+		hoveredRowKey = rowKey
+		hoveredAnchorViewIndex = viewIndex
+		hoveredRowElement = anchor
+		hasRowMoved = false  // Reset movement tracking for new row
+	}
+
+	function closeRowToolbar() {
+		hoveredRowKey = null
+		hoveredAnchorViewIndex = null
+		hoveredRowElement = null
+		// The popup may be removed under the pointer (no mouseleave) — don't leave this stuck.
+		rowActionButtonHovered = false
+	}
+
+	// The toolbar's row, resolved by key against the current view (null once it's gone).
+	const hoveredRow = $derived.by(() => {
+		if (hoveredRowKey === null) return null
+		const viewIndex = getViewIndex(hoveredRowKey)
+		return viewIndex < 0 ? null : {row: displayItems[viewIndex], viewIndex}
+	})
+
+	// The toolbar stays at the view position it opened at; re-resolve that position's <tr>
+	// after the rows re-render (keyed rows move their elements along with the data).
+	$effect(() => {
+		if (hoveredAnchorViewIndex === null || !tableElement) return
+		void displayItems
+		const el = tableElement.querySelectorAll(':scope > tbody > tr')[hoveredAnchorViewIndex] as HTMLElement | undefined
+		if (el && el !== hoveredRowElement) hoveredRowElement = el
+	})
+
 	// Row click handler - toggles popup (for click/button trigger modes or touch devices)
-	function handleRowClickForActions(rowIndex: number, event: MouseEvent) {
+	function handleRowClickForActions(rowKey: string, viewIndex: number, event: MouseEvent) {
 		// For hover mode, only handle touch devices
 		if (toolbarTrigger === 'hover' && !isTouchDevice) return
 
@@ -1403,29 +1493,23 @@
 		event.stopPropagation()
 
 		// Toggle popup for this row
-		if (hoveredRowIndex === rowIndex) {
+		if (hoveredRowKey === rowKey) {
 			// Clicking same row - hide popup
-			hoveredRowIndex = null
-			hoveredRowElement = null
-			hoveredRowItem = null
+			closeRowToolbar()
 		} else {
-			// Show popup for this row
-			hoveredRowIndex = rowIndex
-			// For button trigger, find the parent row element
+			// Show popup for this row. For button trigger, find the parent row element.
 			const target = event.currentTarget as HTMLElement
-			hoveredRowElement = target.closest('tr') || target
-			hoveredRowItem = displayItems[rowIndex]
-			hasRowMoved = false
+			openRowToolbar(rowKey, viewIndex, target.closest('tr') || target)
 		}
 	}
 
 	// Button trigger click handler
-	function handleToolbarButtonClick(rowIndex: number, event: MouseEvent) {
+	function handleToolbarButtonClick(rowKey: string, viewIndex: number, event: MouseEvent) {
 		event.stopPropagation()
-		handleRowClickForActions(rowIndex, event)
+		handleRowClickForActions(rowKey, viewIndex, event)
 	}
 
-	function handleRowMouseEnter(rowIndex: number, event: MouseEvent) {
+	function handleRowMouseEnter(rowKey: string, viewIndex: number, event: MouseEvent) {
 		// Only for hover mode and non-touch devices
 		if (toolbarTrigger !== 'hover' || isTouchDevice) return
 
@@ -1433,10 +1517,7 @@
 			clearTimeout(rowActionHideTimeout)
 			rowActionHideTimeout = null
 		}
-		hoveredRowIndex = rowIndex
-		hoveredRowElement = event.currentTarget as HTMLElement
-		hoveredRowItem = displayItems[rowIndex]  // Store the row data
-		hasRowMoved = false  // Reset movement tracking for new row
+		openRowToolbar(rowKey, viewIndex, event.currentTarget as HTMLElement)
 	}
 
 	function handleRowMouseLeave() {
@@ -1445,11 +1526,7 @@
 
 		// Delay hiding to allow mouse to reach the popup
 		rowActionHideTimeout = setTimeout(() => {
-			if (!rowActionButtonHovered) {
-				hoveredRowIndex = null
-				hoveredRowElement = null
-				hoveredRowItem = null
-			}
+			if (!rowActionButtonHovered) closeRowToolbar()
 		}, 200)
 	}
 
@@ -1464,31 +1541,23 @@
 	function handleRowActionPopupMouseLeave() {
 		rowActionButtonHovered = false
 		// Start hide timeout when leaving the popup
-		rowActionHideTimeout = setTimeout(() => {
-			hoveredRowIndex = null
-			hoveredRowElement = null
-			hoveredRowItem = null
-		}, 150)
+		rowActionHideTimeout = setTimeout(closeRowToolbar, 150)
 	}
 
 	async function handleToolbarItemClick(item: RowToolbarItem<T>, action: string, event: MouseEvent) {
-		if (hoveredRowItem === null) return
-
-		// Find current index of the row item (it may have moved)
-		const currentIndex = displayItems.findIndex(i => i === hoveredRowItem)
-		if (currentIndex === -1) {
-			// Row was deleted externally, hide popup
-			hoveredRowIndex = null
-			hoveredRowElement = null
-			hoveredRowItem = null
+		// Resolve the row by key now — it may have moved, or been replaced by a new object
+		const target = hoveredRow
+		if (target === null) {
+			// Row was removed externally, hide popup
+			closeRowToolbar()
 			return
 		}
 
 		const ran = await runAction({
 			host: actionHost,
 			detail: {
-				row: hoveredRowItem,
-				rowIndex: currentIndex,
+				row: target.row,
+				...getRowIdentity(target.row),
 				action,
 				id: item.id,
 				item,
@@ -1501,11 +1570,7 @@
 		})
 
 		// For delete action, hide popup (row is gone)
-		if (ran && action === 'delete') {
-			hoveredRowIndex = null
-			hoveredRowElement = null
-			hoveredRowItem = null
-		}
+		if (ran && action === 'delete') closeRowToolbar()
 		// For other actions (add, duplicate, move), keep popup visible
 	}
 
@@ -1567,22 +1632,15 @@
 
 	// Calculate bracket-shaped connector path when row has moved from original position
 	$effect(() => {
-		if (!hoveredRowItem || !hoveredRowElement || !popupElement || !tableElement) {
+		if (!hoveredRow || !hoveredRowElement || !popupElement || !tableElement) {
 			connectorPath = null
 			connectorArrowPos = null
 			return
 		}
 
-		// Find current row element for the tracked item
-		const currentIndex = displayItems.findIndex(item => item === hoveredRowItem)
-		if (currentIndex === -1) {
-			connectorPath = null
-			connectorArrowPos = null
-			return
-		}
-
-		const rows = tableElement.querySelectorAll('tbody tr')
-		const currentRowEl = rows[currentIndex] as HTMLElement | undefined
+		// Find current row element for the tracked row
+		const rows = tableElement.querySelectorAll(':scope > tbody > tr')
+		const currentRowEl = rows[hoveredRow.viewIndex] as HTMLElement | undefined
 		if (!currentRowEl) {
 			connectorPath = null
 			connectorArrowPos = null
@@ -1658,24 +1716,18 @@
 
 	// Touch device detection and click-outside handler
 	function handleDocumentClick(event: MouseEvent) {
-		if (!isTouchDevice || !resolvedShowToolbar || hoveredRowIndex === null) return
+		if (!isTouchDevice || !resolvedShowToolbar || hoveredRowKey === null) return
 
 		const target = event.target as HTMLElement
 		// Check if click is outside popup and table
 		if (!popupElement?.contains(target) && !tableElement?.contains(target)) {
-			hoveredRowIndex = null
-			hoveredRowElement = null
-			hoveredRowItem = null
+			closeRowToolbar()
 		}
 	}
 
 	// Hide toolbar on scroll (row may have moved out of view)
 	function handleScroll() {
-		if (hoveredRowIndex !== null) {
-			hoveredRowIndex = null
-			hoveredRowElement = null
-			hoveredRowItem = null
-		}
+		if (hoveredRowKey !== null) closeRowToolbar()
 		// Also close context menu on scroll
 		if (contextMenuVisible) {
 			closeContextMenu()
@@ -1683,12 +1735,12 @@
 	}
 
 	// Context menu handlers
-	function handleCellContextMenu(e: MouseEvent, rowIndex: number, colIndex: number, column: Column<T>, item: T) {
+	function handleCellContextMenu(e: MouseEvent, colIndex: number, column: Column<T>, item: T) {
 		if (!contextMenu || contextMenu.length === 0) return
 
 		const context: ContextMenuContext<T> = {
 			row: item,
-			rowIndex,
+			...getRowIdentity(item),
 			columnIndex: colIndex,
 			column,
 			cellValue: item[column.field as keyof T]
@@ -1713,6 +1765,8 @@
 			host: actionHost,
 			detail: {
 				...ctx,
+				// re-resolved: the row may have moved while the menu was open
+				...getRowIdentity(ctx.row, ctx.rowKey),
 				action,
 				id: item.id,
 				item,
@@ -1861,7 +1915,7 @@
 
 <div {...rest} bind:this={containerRef} class="quickgrid-container" {style} onfocusout={handleGridFocusOut}>
 	<!-- Row toolbar (uses fixed positioning to float outside container) -->
-	{#if resolvedShowToolbar && hoveredRowIndex !== null && hoveredRowElement}
+	{#if resolvedShowToolbar && hoveredRow && hoveredRowElement}
 		<PositioningRegion anchor={hoveredRowElement} visible={true} position={toolbarRegionPosition} align={toolbarAlign} matchWidth={false} style="width: auto;">
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
@@ -1870,8 +1924,8 @@
 				onmouseenter={handleRowActionPopupMouseEnter}
 				onmouseleave={handleRowActionPopupMouseLeave}
 			>
-				{#if hoveredRowItem !== null}
-					{@const rowCtx = {row: hoveredRowItem, rowIndex: displayItems.findIndex(i => i === hoveredRowItem)}}
+				{#if hoveredRow}
+					{@const rowCtx = {row: hoveredRow.row, ...getRowIdentity(hoveredRow.row)}}
 					{#each toolbarLines as line}
 						<div class="row-toolbar-row">
 							{#each resolveMenuEntries(line, rowCtx, toolbarDefaults) as entry}
@@ -2032,18 +2086,20 @@
 					</td>
 				</tr>
 			{:else}
-				{#each displayItems as item, rowIndex}
+				{#each displayRows as {item, eachKey}, viewIndex (eachKey)}
+					{@const rowKey = getRowKey(item)}
 					<tr
-						onclick={resolvedShowToolbar && toolbarTrigger === 'click' ? (e) => handleRowClickForActions(rowIndex, e) : undefined}
-						onmouseenter={resolvedShowToolbar && toolbarTrigger === 'hover' ? (e) => handleRowMouseEnter(rowIndex, e) : undefined}
+						data-row-key={rowKey}
+						onclick={resolvedShowToolbar && toolbarTrigger === 'click' ? (e) => handleRowClickForActions(rowKey, viewIndex, e) : undefined}
+						onmouseenter={resolvedShowToolbar && toolbarTrigger === 'hover' ? (e) => handleRowMouseEnter(rowKey, viewIndex, e) : undefined}
 						onmouseleave={resolvedShowToolbar && toolbarTrigger === 'hover' ? handleRowMouseLeave : undefined}
 					>
 						{#if resolvedShowToolbar && toolbarTrigger === 'button'}
 							<td class="actions-column">
 								<button
 									class="toolbar-trigger-btn"
-									class:active={hoveredRowIndex === rowIndex}
-									onclick={(e) => handleToolbarButtonClick(rowIndex, e)}
+									class:active={hoveredRowKey === rowKey}
+									onclick={(e) => handleToolbarButtonClick(rowKey, viewIndex, e)}
 									title="Actions"
 								>
 									⋮
@@ -2052,25 +2108,24 @@
 						{/if}
 						{#each columns as column, colIndex}
 							{@const cellField = String(column.field)}
-							{@const cellRowKey = getRowId(item, rowIndex)}
-							{@const cellInvalid = isCellInvalid(cellRowKey, cellField)}
-							{@const cellError = getCellValidationError(cellRowKey, cellField)}
+							{@const cellInvalid = isCellInvalid(rowKey, cellField)}
+							{@const cellError = getCellValidationError(rowKey, cellField)}
 							<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_noninteractive_element_interactions -->
 							<td
-								data-row={rowIndex}
+								data-row={viewIndex}
 								data-col={colIndex}
 								tabindex={isNavigateMode ? 0 : undefined}
 								style={getColumnBodyStyle(column)}
-								class={`${isCellEditable(column, item) ? "editable-cell" : ""} ${cellInvalid ? "validation-error" : ""} ${isCellFocused(rowIndex, colIndex) ? "focused" : ""} ${isEditing(rowIndex, cellField) ? "editing" : ""} ${column.nowrap ? "nowrap-cell" : ""}`}
-								onclick={(e) => handleCellClick(e, rowIndex, colIndex, column, item)}
-								ondblclick={(e) => handleCellDblClick(e, rowIndex, colIndex, column, item)}
-								oncontextmenu={(e) => handleCellContextMenu(e, rowIndex, colIndex, column, item)}
-								onfocus={() => handleCellFocus(rowIndex, colIndex, column, item)}
-								onkeydown={(e) => handleNavigationKeyDown(e, rowIndex, colIndex, column, item)}
+								class={`${isCellEditable(column, item) ? "editable-cell" : ""} ${cellInvalid ? "validation-error" : ""} ${isCellFocused(rowKey, colIndex) ? "focused" : ""} ${isEditing(rowKey, cellField) ? "editing" : ""} ${column.nowrap ? "nowrap-cell" : ""}`}
+								onclick={(e) => handleCellClick(e, colIndex, column, item)}
+								ondblclick={(e) => handleCellDblClick(e, colIndex, column, item)}
+								oncontextmenu={(e) => handleCellContextMenu(e, colIndex, column, item)}
+								onfocus={() => handleCellFocus(colIndex, column, item)}
+								onkeydown={(e) => handleNavigationKeyDown(e, viewIndex, colIndex, column, item)}
 								title={cellError || undefined}
 							>
 								{#snippet cellContent()}
-								{#if isEditing(rowIndex, cellField)}
+								{#if isEditing(rowKey, cellField)}
 									{#if column.editor === "custom"}
 										<!-- Custom editor - handled via callback, show indicator -->
 										<span class="custom-editing-indicator">Editing...</span>
@@ -2079,15 +2134,15 @@
 										<div
 											class="editor-wrapper"
 											class:validating={isValidating}
-											onkeydown={(e) => handleEditorKeyDown(e, rowIndex, colIndex, column, item)}
+											onkeydown={(e) => handleEditorKeyDown(e, viewIndex, colIndex, column, item)}
 										>
 											<GridCellEditor
 												type={getEditorType(column)}
-												value={getCellRawValue(item, rowIndex, cellField)}
+												value={getCellRawValue(item, rowKey, cellField)}
 												options={getEditorOptionsForCell(column, item)}
 												initialSearchQuery={editingCell?.initialSearchQuery}
-												onCommit={({value: newValue}) => commitEdit(rowIndex, column, newValue, item, colIndex)}
-												onCancel={() => cancelEdit(item, rowIndex)}
+												onCommit={({value: newValue}) => commitEdit(item, column, newValue, colIndex)}
+												onCancel={() => cancelEdit(item)}
 												skipBlurCommit={isCommittingFromKeyboard}
 												skipKeyboardCommit={isNavigateMode}
 											/>
@@ -2102,9 +2157,9 @@
 								{:else if isCellEditable(column, item) && getColumnEditTrigger(column) === "always"}
 									<GridCellEditor
 										type={getEditorType(column)}
-										value={getCellRawValue(item, rowIndex, cellField)}
+										value={getCellRawValue(item, rowKey, cellField)}
 										options={getEditorOptionsForCell(column, item)}
-										onCommit={({value: newValue}) => commitEdit(rowIndex, column, newValue, item)}
+										onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
 										onCancel={() => {}}
 									/>
 								{:else}
@@ -2112,28 +2167,28 @@
 										{#if hasSnippet(column)}
 											{@render column.snippet?.(item)}
 										{:else if hasTemplate(column)}
-											{@html getCellValue(item, column, rowIndex)}
+											{@html getCellValue(item, column, rowKey)}
 										{:else if isNavigateMode && column.editor === "checkbox"}
 											<!-- Checkbox in navigate mode: either always editable or disabled display -->
 											{#if checkboxAlwaysEditable}
 												<GridCellEditor
 													type="checkbox"
-													value={getCellRawValue(item, rowIndex, cellField)}
+													value={getCellRawValue(item, rowKey, cellField)}
 													options={getEditorOptionsForCell(column, item)}
-													onCommit={({value: newValue}) => commitEdit(rowIndex, column, newValue, item)}
+													onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
 													onCancel={() => {}}
 												/>
 											{:else}
 												<input
 													type="checkbox"
 													class="cell-checkbox-display"
-													checked={!!getCellRawValue(item, rowIndex, cellField)}
+													checked={!!getCellRawValue(item, rowKey, cellField)}
 													disabled
 													tabindex={-1}
 												/>
 											{/if}
 										{:else}
-											<span class="cell-text">{getCellValue(item, column, rowIndex)}</span>
+											<span class="cell-text">{getCellValue(item, column, rowKey)}</span>
 										{/if}
 										{#if cellInvalid}
 											<span class="cell-error-indicator" title={cellError || "Invalid value"}>⚠</span>
@@ -2141,7 +2196,7 @@
 										{#if isCellEditable(column, item) && shouldShowEditButton(column)}
 											<button
 												class="cell-edit-btn"
-												onclick={(e) => handleEditButtonClick(e, rowIndex, colIndex, column, item)}
+												onclick={(e) => handleEditButtonClick(e, colIndex, column, item)}
 												title="Edit"
 											>
 												✎

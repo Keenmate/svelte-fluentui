@@ -223,7 +223,7 @@
 		const next = {...detail.draftRow}
 		// Dependent field: a component belongs to one team, so a team change clears it.
 		if (detail.field === "team" && detail.oldValue !== detail.newValue) next.component = null
-		tasks[detail.rowIndex] = next
+		tasks[detail.itemIndex] = next
 		log = [`✓ #${next.id} ${detail.field}: ${JSON.stringify(detail.oldValue)} → ${JSON.stringify(detail.newValue)}`, ...log].slice(0, 6)
 	}
 

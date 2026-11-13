@@ -35,6 +35,15 @@ Fix:
 - Row key fallback without `idMember`: object identity (`WeakMap<T, string>` counter), not the index.
 - Key `{#each displayItems}` by row key; store `editingCell` / `focusedCell` / hovered row as row keys.
 
+**Phase 1 status — done 2026-11-13.** `QuickGridRowIdentity {viewIndex, itemIndex, rowKey}` in every row
+context; `getRowKey` falls back to a per-object `WeakMap` key (not the view index); body rows keyed;
+`editingCell` / `focusedCell` / toolbar row tracked by key; demos write back via `itemIndex`.
+4 new e2e tests + 4 rewritten, all fail on the old code. Noticed for later: advanced row toolbar is
+clipped off-screen at the start side on the editable docs page (pre-existing); `getCellValue`
+callbacks, context-menu `cellValue` and the Space toggle read the item, not the draft (Phase 2);
+a row whose key changes mid-edit closes the editor silently (Phase 2 edit token); move-up/down demos
+have no `idMember`.
+
 ## Phase 2 — editing state machine
 
 | # | Bug |

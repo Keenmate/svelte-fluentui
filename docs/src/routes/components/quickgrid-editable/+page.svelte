@@ -23,10 +23,10 @@
 	]
 
 	const editableCallbacks: Property[] = [
-		{name: "onRowChange", type: "(ctx: QuickGridRowChangeDetail<T>) => void", default: "undefined", description: "Called when a cell value is committed; detail includes row, draftRow, rowIndex, field, oldValue, newValue, isValid, validationError"},
-		{name: "onEditStart", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Called when a cell enters edit mode"},
-		{name: "onEditCancel", type: "(ctx: { row, rowIndex, field, column }) => void", default: "undefined", description: "Called when editing is cancelled (e.g. Escape key)"},
-		{name: "onValidationError", type: "(ctx: { row, rowIndex, field, column, error }) => void", default: "undefined", description: "Called when a value fails validation"}
+		{name: "onRowChange", type: "(ctx: QuickGridRowChangeDetail<T>) => void", default: "undefined", description: "Called when a cell value is committed; detail includes row, draftRow, viewIndex, itemIndex, rowKey, field, oldValue, newValue, isValid, validationError"},
+		{name: "onEditStart", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column }) => void", default: "undefined", description: "Called when a cell enters edit mode"},
+		{name: "onEditCancel", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column }) => void", default: "undefined", description: "Called when editing is cancelled (e.g. Escape key)"},
+		{name: "onValidationError", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column, error }) => void", default: "undefined", description: "Called when a value fails validation"}
 	]
 
 	const editableSlots: Property[] = [
@@ -234,15 +234,15 @@
 
 	let lastChange = $state<string>("")
 
-	function handleRowChange(detail: {row: Person; draftRow: Person; rowIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean; validationError?: string | null}) {
+	function handleRowChange(detail: {row: Person; draftRow: Person; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean; validationError?: string | null}) {
 		// Only update data if validation passed
 		if (detail.isValid) {
 			// Apply the change from draftRow to the original data
-			sampleData[detail.rowIndex] = {...detail.draftRow}
-			lastChange = `Changed ${detail.field}: "${JSON.stringify(detail.oldValue)}" → "${JSON.stringify(detail.newValue)}" (row ${detail.rowIndex + 1})`
+			sampleData[detail.itemIndex] = {...detail.draftRow}
+			lastChange = `Changed ${detail.field}: "${JSON.stringify(detail.oldValue)}" → "${JSON.stringify(detail.newValue)}" (row ${detail.itemIndex + 1})`
 		} else {
 			// Invalid value stays in draftRow and cell displays it (user can fix it)
-			lastChange = `Validation failed for ${detail.field}: ${detail.validationError} (row ${detail.rowIndex + 1})`
+			lastChange = `Validation failed for ${detail.field}: ${detail.validationError} (row ${detail.itemIndex + 1})`
 		}
 	}
 
@@ -511,10 +511,10 @@
 		}
 	]
 
-	function handleValidationRowChange(detail: {row: typeof validationData[0]; draftRow: typeof validationData[0]; rowIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean; validationError?: string | null}) {
+	function handleValidationRowChange(detail: {row: typeof validationData[0]; draftRow: typeof validationData[0]; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean; validationError?: string | null}) {
 		if (detail.isValid) {
 			// Apply changes from draftRow to original data
-			validationData[detail.rowIndex] = {...detail.draftRow}
+			validationData[detail.itemIndex] = {...detail.draftRow}
 			validationLastChange = `✓ ${detail.field} updated to "${detail.newValue}"`
 		} else {
 			// Invalid value persists in draftRow - cell will display the invalid value
@@ -573,10 +573,10 @@
 		}
 	]
 
-	function handleAsyncValidationRowChange(detail: {row: typeof asyncValidationData[0]; draftRow: typeof asyncValidationData[0]; rowIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean; validationError?: string | null}) {
+	function handleAsyncValidationRowChange(detail: {row: typeof asyncValidationData[0]; draftRow: typeof asyncValidationData[0]; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean; validationError?: string | null}) {
 		if (detail.isValid) {
 			// Apply changes from draftRow
-			asyncValidationData[detail.rowIndex] = {...detail.draftRow}
+			asyncValidationData[detail.itemIndex] = {...detail.draftRow}
 			asyncLastChange = `✓ ${detail.field} updated`
 		} else {
 			// Invalid value shown in cell - user can fix it
@@ -617,116 +617,116 @@
 		{field: "value", title: "Value", width: "120px", align: "end" as const, editable: true, editor: "number" as const}
 	]
 
-	function handleRowAction(detail: {action: string; rowIndex: number; row: SimpleItem}) {
-		const { action, rowIndex, row } = detail
+	function handleRowAction(detail: {action: string; itemIndex: number; row: SimpleItem}) {
+		const { action, itemIndex, row } = detail
 
 		switch (action) {
 			case 'add': {
 				const newRow: SimpleItem = {id: nextRowId++, name: "", value: 0}
 				rowActionsData = [
-					...rowActionsData.slice(0, rowIndex + 1),
+					...rowActionsData.slice(0, itemIndex + 1),
 					newRow,
-					...rowActionsData.slice(rowIndex + 1)
+					...rowActionsData.slice(itemIndex + 1)
 				]
-				lastRowAction = `Added empty row after row ${rowIndex + 1}`
+				lastRowAction = `Added empty row after row ${itemIndex + 1}`
 				break
 			}
 			case 'delete': {
-				rowActionsData = rowActionsData.filter((_, i) => i !== rowIndex)
-				lastRowAction = `Deleted row ${rowIndex + 1}`
+				rowActionsData = rowActionsData.filter((_, i) => i !== itemIndex)
+				lastRowAction = `Deleted row ${itemIndex + 1}`
 				break
 			}
 			case 'duplicate': {
 				const newRow = {...row, id: nextRowId++}
 				rowActionsData = [
-					...rowActionsData.slice(0, rowIndex + 1),
+					...rowActionsData.slice(0, itemIndex + 1),
 					newRow,
-					...rowActionsData.slice(rowIndex + 1)
+					...rowActionsData.slice(itemIndex + 1)
 				]
-				lastRowAction = `Duplicated row ${rowIndex + 1}`
+				lastRowAction = `Duplicated row ${itemIndex + 1}`
 				break
 			}
 			case 'move-up': {
-				if (rowIndex > 0) {
+				if (itemIndex > 0) {
 					const items = [...rowActionsData]
-					;[items[rowIndex - 1], items[rowIndex]] = [items[rowIndex], items[rowIndex - 1]]
+					;[items[itemIndex - 1], items[itemIndex]] = [items[itemIndex], items[itemIndex - 1]]
 					rowActionsData = items
-					lastRowAction = `Moved row ${rowIndex + 1} up`
+					lastRowAction = `Moved row ${itemIndex + 1} up`
 				}
 				break
 			}
 			case 'move-down': {
-				if (rowIndex < rowActionsData.length - 1) {
+				if (itemIndex < rowActionsData.length - 1) {
 					const items = [...rowActionsData]
-					;[items[rowIndex], items[rowIndex + 1]] = [items[rowIndex + 1], items[rowIndex]]
+					;[items[itemIndex], items[itemIndex + 1]] = [items[itemIndex + 1], items[itemIndex]]
 					rowActionsData = items
-					lastRowAction = `Moved row ${rowIndex + 1} down`
+					lastRowAction = `Moved row ${itemIndex + 1} down`
 				}
 				break
 			}
 		}
 	}
 
-	function handleRowActionsRowChange(detail: {row: SimpleItem; draftRow: SimpleItem; rowIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean}) {
+	function handleRowActionsRowChange(detail: {row: SimpleItem; draftRow: SimpleItem; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean}) {
 		if (detail.isValid) {
-			rowActionsData[detail.rowIndex] = {...detail.draftRow}
+			rowActionsData[detail.itemIndex] = {...detail.draftRow}
 		}
 	}
 
 	// Handler for second row actions example
-	function handleRowAction2(detail: {action: string; rowIndex: number; row: SimpleItem}) {
-		const { action, rowIndex, row } = detail
+	function handleRowAction2(detail: {action: string; itemIndex: number; row: SimpleItem}) {
+		const { action, itemIndex, row } = detail
 
 		switch (action) {
 			case 'add': {
 				const newRow: SimpleItem = {id: nextRowId2++, name: "", value: 0}
 				rowActionsData2 = [
-					...rowActionsData2.slice(0, rowIndex + 1),
+					...rowActionsData2.slice(0, itemIndex + 1),
 					newRow,
-					...rowActionsData2.slice(rowIndex + 1)
+					...rowActionsData2.slice(itemIndex + 1)
 				]
-				lastRowAction2 = `Added empty row after row ${rowIndex + 1}`
+				lastRowAction2 = `Added empty row after row ${itemIndex + 1}`
 				break
 			}
 			case 'delete': {
-				rowActionsData2 = rowActionsData2.filter((_, i) => i !== rowIndex)
-				lastRowAction2 = `Deleted row ${rowIndex + 1}`
+				rowActionsData2 = rowActionsData2.filter((_, i) => i !== itemIndex)
+				lastRowAction2 = `Deleted row ${itemIndex + 1}`
 				break
 			}
 			case 'duplicate': {
 				const newRow = {...row, id: nextRowId2++}
 				rowActionsData2 = [
-					...rowActionsData2.slice(0, rowIndex + 1),
+					...rowActionsData2.slice(0, itemIndex + 1),
 					newRow,
-					...rowActionsData2.slice(rowIndex + 1)
+					...rowActionsData2.slice(itemIndex + 1)
 				]
-				lastRowAction2 = `Duplicated row ${rowIndex + 1}`
+				lastRowAction2 = `Duplicated row ${itemIndex + 1}`
 				break
 			}
 			case 'move-up': {
-				if (rowIndex > 0) {
+				if (itemIndex > 0) {
 					const items = [...rowActionsData2]
-					;[items[rowIndex - 1], items[rowIndex]] = [items[rowIndex], items[rowIndex - 1]]
+					;[items[itemIndex - 1], items[itemIndex]] = [items[itemIndex], items[itemIndex - 1]]
 					rowActionsData2 = items
-					lastRowAction2 = `Moved row ${rowIndex + 1} up`
+					lastRowAction2 = `Moved row ${itemIndex + 1} up`
 				}
 				break
 			}
 			case 'move-down': {
-				if (rowIndex < rowActionsData2.length - 1) {
+				if (itemIndex < rowActionsData2.length - 1) {
 					const items = [...rowActionsData2]
-					;[items[rowIndex], items[rowIndex + 1]] = [items[rowIndex + 1], items[rowIndex]]
+					;[items[itemIndex], items[itemIndex + 1]] = [items[itemIndex + 1], items[itemIndex]]
 					rowActionsData2 = items
-					lastRowAction2 = `Moved row ${rowIndex + 1} down`
+					lastRowAction2 = `Moved row ${itemIndex + 1} down`
 				}
 				break
 			}
 		}
 	}
 
-	function handleRowActionsRowChange2(detail: {row: SimpleItem; draftRow: SimpleItem; rowIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean}) {
+	function handleRowActionsRowChange2(detail: {row: SimpleItem; draftRow: SimpleItem; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean}) {
 		if (detail.isValid) {
-			rowActionsData2[detail.rowIndex] = {...detail.draftRow}
+			rowActionsData2[detail.itemIndex] = {...detail.draftRow}
 		}
 	}
 
@@ -759,7 +759,7 @@
 	// Advanced toolbar: two lines, dividers between groups, built-ins and custom actions.
 	// Items are action items (text, icon, onClick, getIsDisabledCallback, …); built-in
 	// names ("add", "delete", …) only bring a preset icon/text — onAction does the work.
-	type RowCtx = {row: SimpleItem; rowIndex: number}
+	type RowCtx = {row: SimpleItem; itemIndex: number}
 	type ToolbarEntry =
 		| 'add' | 'delete' | 'duplicate' | 'move-up' | 'move-down'
 		| MenuDivider
@@ -767,8 +767,8 @@
 
 	const advancedToolbar: ToolbarEntry[] = [
 		// Line 1: move | add, duplicate, delete
-		{action: 'move-up', text: 'Move up', getIsDisabledCallback: ({rowIndex}) => rowIndex === 0},
-		{action: 'move-down', text: 'Move down', getIsDisabledCallback: ({rowIndex}) => rowIndex === toolbarData.length - 1},
+		{action: 'move-up', text: 'Move up', getIsDisabledCallback: ({itemIndex}) => itemIndex === 0},
+		{action: 'move-down', text: 'Move down', getIsDisabledCallback: ({itemIndex}) => itemIndex === toolbarData.length - 1},
 		{divider: true},
 		'add',
 		{action: 'duplicate', text: 'Duplicate'},
@@ -791,8 +791,8 @@
 		{id: 'test10', icon: 'pin', text: 'Test 10', toolbarRow: 2}
 	]
 
-	function handleToolbarClick(detail: {action: string; rowIndex: number; row: SimpleItem}) {
-		const {action, rowIndex, row} = detail
+	function handleToolbarClick(detail: {action: string; itemIndex: number; row: SimpleItem}) {
+		const {action, itemIndex, row} = detail
 
 		// Built-in actions: the grid only supplies icon/text — the work happens here
 		{
@@ -800,41 +800,41 @@
 				case 'add': {
 					const newRow: SimpleItem = {id: nextToolbarId++, name: "New Project", value: 0}
 					toolbarData = [
-						...toolbarData.slice(0, rowIndex + 1),
+						...toolbarData.slice(0, itemIndex + 1),
 						newRow,
-						...toolbarData.slice(rowIndex + 1)
+						...toolbarData.slice(itemIndex + 1)
 					]
 					lastToolbarAction = `Added new row after "${row.name}"`
 					break
 				}
 				case 'delete': {
-					toolbarData = toolbarData.filter((_, i) => i !== rowIndex)
+					toolbarData = toolbarData.filter((_, i) => i !== itemIndex)
 					lastToolbarAction = `Deleted "${row.name}"`
 					break
 				}
 				case 'duplicate': {
 					const newRow = {...row, id: nextToolbarId++, name: row.name + " (copy)"}
 					toolbarData = [
-						...toolbarData.slice(0, rowIndex + 1),
+						...toolbarData.slice(0, itemIndex + 1),
 						newRow,
-						...toolbarData.slice(rowIndex + 1)
+						...toolbarData.slice(itemIndex + 1)
 					]
 					lastToolbarAction = `Duplicated "${row.name}"`
 					break
 				}
 				case 'move-up': {
-					if (rowIndex > 0) {
+					if (itemIndex > 0) {
 						const items = [...toolbarData]
-						;[items[rowIndex - 1], items[rowIndex]] = [items[rowIndex], items[rowIndex - 1]]
+						;[items[itemIndex - 1], items[itemIndex]] = [items[itemIndex], items[itemIndex - 1]]
 						toolbarData = items
 						lastToolbarAction = `Moved "${row.name}" up`
 					}
 					break
 				}
 				case 'move-down': {
-					if (rowIndex < toolbarData.length - 1) {
+					if (itemIndex < toolbarData.length - 1) {
 						const items = [...toolbarData]
-						;[items[rowIndex], items[rowIndex + 1]] = [items[rowIndex + 1], items[rowIndex]]
+						;[items[itemIndex], items[itemIndex + 1]] = [items[itemIndex + 1], items[itemIndex]]
 						toolbarData = items
 						lastToolbarAction = `Moved "${row.name}" down`
 					}
@@ -844,9 +844,9 @@
 		}
 	}
 
-	function handleToolbarRowChange(detail: {row: SimpleItem; draftRow: SimpleItem; rowIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean}) {
+	function handleToolbarRowChange(detail: {row: SimpleItem; draftRow: SimpleItem; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean}) {
 		if (detail.isValid) {
-			toolbarData[detail.rowIndex] = {...detail.draftRow}
+			toolbarData[detail.itemIndex] = {...detail.draftRow}
 		}
 	}
 </script>
@@ -1111,7 +1111,7 @@
 			<li><strong>Multi-row layout:</strong> Items can be placed in different rows (<code>row: 1</code> = closest to grid)</li>
 			<li><strong>Groups with dividers:</strong> Items with different <code>group</code> numbers are separated by <code>|</code></li>
 			<li><strong>Custom actions:</strong> Define <code>onclick</code> handlers with async support</li>
-			<li><strong>Dynamic disabled:</strong> Use a function <code>(row, rowIndex) =&gt; boolean</code> to disable conditionally</li>
+			<li><strong>Dynamic disabled:</strong> Use <code>getIsDisabledCallback(&#123;row, itemIndex&#125;)</code> to disable conditionally</li>
 			<li><strong>Labels:</strong> Add text labels next to icons with <code>label</code> property</li>
 			<li><strong>Toolbar alignment:</strong> Use <code>toolbarAlign</code> to control vertical alignment (<code>center</code> or <code>top</code>)</li>
 			<li><strong>Toolbar trigger:</strong> Use <code>toolbarTrigger</code> to control how toolbar appears (<code>hover</code>, <code>click</code>, or <code>button</code>)</li>
@@ -1155,8 +1155,8 @@
 		<pre>{`// Toolbar entries: built-in names, action items, {divider: true}; toolbarRow stacks lines
 const advancedToolbar = [
   // Line 1: move | add, duplicate, delete
-  { action: 'move-up', getIsDisabledCallback: ({ rowIndex }) => rowIndex === 0 },
-  { action: 'move-down', getIsDisabledCallback: ({ rowIndex }) => rowIndex === items.length - 1 },
+  { action: 'move-up', getIsDisabledCallback: ({ itemIndex }) => itemIndex === 0 },
+  { action: 'move-down', getIsDisabledCallback: ({ itemIndex }) => itemIndex === items.length - 1 },
   { divider: true },
   'add', 'duplicate', 'delete',
 
@@ -1176,7 +1176,7 @@ const advancedToolbar = [
   {columns}
   showRowToolbar
   rowToolbar={advancedToolbar}
-  onAction={handleToolbarClick}   // ({ action, id, row, rowIndex, source }) — built-ins land here
+  onAction={handleToolbarClick}   // ({ action, id, row, itemIndex, source }) — built-ins land here
 />`}</pre>
 
 		<h3>Row Actions Code Example</h3>
@@ -1189,24 +1189,24 @@ const advancedToolbar = [
   let nextId = 3
 
   function handleRowAction(detail) {
-    const { action, rowIndex, row } = detail
+    const { action, itemIndex, row } = detail
 
     switch (action) {
       case 'add':
         items = [
-          ...items.slice(0, rowIndex + 1),
+          ...items.slice(0, itemIndex + 1),
           { id: nextId++, name: "", value: 0 },
-          ...items.slice(rowIndex + 1)
+          ...items.slice(itemIndex + 1)
         ]
         break
       case 'delete':
-        items = items.filter((_, i) => i !== rowIndex)
+        items = items.filter((_, i) => i !== itemIndex)
         break
       case 'duplicate':
         items = [
-          ...items.slice(0, rowIndex + 1),
+          ...items.slice(0, itemIndex + 1),
           { ...row, id: nextId++ },
-          ...items.slice(rowIndex + 1)
+          ...items.slice(itemIndex + 1)
         ]
         break
     }
@@ -1267,7 +1267,7 @@ ${'<'}QuickGrid
 
   function handleRowChange(detail) {
     // Update data - the component does NOT mutate your data
-    data[detail.rowIndex] = {
+    data[detail.itemIndex] = {
       ...detail.row,
       [detail.field]: detail.newValue
     }
@@ -1355,7 +1355,7 @@ ${'<'}QuickGrid
       showEditButton: true,  // Shows edit icon in cell
       getDisplayValueCallback: ({value}) => value ? "{ ... }" : "(empty)",
       editCallback: (context) => {
-        // context provides: value, row, rowIndex, field, commit(), cancel()
+        // context provides: value, row, viewIndex, itemIndex, rowKey, field, commit(), cancel()
         jsonEditorContext = context
         showJsonDialog = true
       }
@@ -1421,7 +1421,7 @@ ${'<'}QuickGrid {items} {columns} editable onRowChange={handleRowChange} />
 function handleRowChange(detail) {
   if (detail.isValid) {
     // Safe to update - newValue may be transformed
-    data[detail.rowIndex][detail.field] = detail.newValue
+    data[detail.itemIndex][detail.field] = detail.newValue
   } else {
     // Cell marked invalid, user can see error
     console.log("Validation error:", detail.validationError)
@@ -1446,9 +1446,9 @@ function canSave() {
 }
 
 // Clear a specific cell's error
-function clearError(rowIndex, field) {
+function clearError(rowKey, field) {
   invalidCells = invalidCells.filter(c =>
-    !(c.rowIndex === rowIndex && c.field === field)
+    !(c.rowKey === rowKey && c.field === field)
   )
 }`}</pre>
 	</Card>
@@ -1632,7 +1632,9 @@ function clearError(rowIndex, field) {
 				<tr><td>id</td><td>string</td><td>The item's id (custom items)</td></tr>
 				<tr><td>item</td><td>ActionItem</td><td>The clicked item</td></tr>
 				<tr><td>source</td><td>"row-toolbar" | "context-menu"</td><td>Where it was clicked</td></tr>
-				<tr><td>rowIndex</td><td>number</td><td>Index of the row</td></tr>
+				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
+				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, else a generated per-object key)</td></tr>
 				<tr><td>row</td><td>T</td><td>The row data</td></tr>
 				<tr><td>column / columnIndex / cellValue</td><td></td><td>The right-clicked cell (context menu only)</td></tr>
 			</tbody>
@@ -1653,7 +1655,9 @@ function clearError(rowIndex, field) {
 			<tbody>
 				<tr><td>value</td><td>any</td><td>Current cell value</td></tr>
 				<tr><td>row</td><td>T</td><td>Full row data</td></tr>
-				<tr><td>rowIndex</td><td>number</td><td>Row index in current view</td></tr>
+				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
+				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, else a generated per-object key)</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name being edited</td></tr>
 				<tr><td>commit</td><td>(newValue) =&gt; void</td><td>Call to save new value (fires onRowChange)</td></tr>
 				<tr><td>cancel</td><td>() =&gt; void</td><td>Call to cancel editing</td></tr>
@@ -1715,7 +1719,9 @@ function clearError(rowIndex, field) {
 			<tbody>
 				<tr><td>row</td><td>T</td><td>Original row data (unchanged)</td></tr>
 				<tr><td>draftRow</td><td>T</td><td>Draft row with user's changes (including invalid values)</td></tr>
-				<tr><td>rowIndex</td><td>number</td><td>Row index in current view</td></tr>
+				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
+				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, else a generated per-object key)</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name that changed</td></tr>
 				<tr><td>oldValue</td><td>any</td><td>Previous value</td></tr>
 				<tr><td>newValue</td><td>any</td><td>New value (may be transformed)</td></tr>
@@ -1741,7 +1747,9 @@ function clearError(rowIndex, field) {
 				<tr><td>value</td><td>unknown</td><td>The new value being committed</td></tr>
 				<tr><td>oldValue</td><td>unknown</td><td>The previous value</td></tr>
 				<tr><td>row</td><td>T</td><td>Full row data</td></tr>
-				<tr><td>rowIndex</td><td>number</td><td>Row index in current view</td></tr>
+				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
+				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, else a generated per-object key)</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name being edited</td></tr>
 			</tbody>
 		</table>
@@ -1780,7 +1788,7 @@ function clearError(rowIndex, field) {
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>rowKey</td><td>string</td><td>Stable key of the invalid cell's row (idMember / tree path / row index)</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable key of the invalid cell's row (idMember / tree path / generated per row object) — the same rowKey events carry</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name of the invalid cell</td></tr>
 				<tr><td>error</td><td>string</td><td>Validation error message</td></tr>
 			</tbody>
