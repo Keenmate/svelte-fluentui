@@ -219,3 +219,9 @@ Select (type-ahead), Autocomplete and the QuickGrid cell editor (column `editorO
 e2e (`ces` → `Český` in each), release-notes row (behaviour change: Select type-ahead, Autocomplete
 and cell editor become accent-insensitive by default).
 
+
+**Q24 done 2026-11-13.** `helpers/text.ts` is a port of web-components-core `search/normalize.ts`
+(hand folds `ł ø ß æ …`, NFKD, marks kept outside Latin/Greek/Cyrillic). No component highlights
+matches, so the highlight rule has nothing to apply to. Select type-ahead no longer lowercases its
+buffer (`exact` would otherwise never match an uppercase label). Found while wiring: QuickGrid
+`editorOptions.maxSelections` is declared but unused (and misnamed per D-NC-22) — open.

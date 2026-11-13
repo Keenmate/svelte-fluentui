@@ -160,6 +160,7 @@
 		{name: "maxSelectionCount", type: "number", default: "undefined", description: "Max selections allowed (1 = single-select)"},
 		{name: "maxResultCount", type: "number", default: "9", description: "Max options shown in dropdown"},
 		{name: "minSearchLength", type: "number", default: "undefined", description: "Minimum typed characters before search runs. Below the threshold, searchCallback is NOT called and the dropdown stays closed."},
+		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How the local search compares text: normalized ignores case and diacritics (ces finds Český), case-insensitive ignores case only, exact matches both. No effect on searchCallback."},
 		{name: "showOverlayOnEmptyResults", type: "boolean", default: "true", description: "Show dropdown on no results"},
 		{name: "showInitialOptions", type: "boolean", default: "false", description: "Show options on focus when empty"},
 		{name: "initialOptionsCount", type: "number", default: "maxResultCount", description: "Initial options count limit"},

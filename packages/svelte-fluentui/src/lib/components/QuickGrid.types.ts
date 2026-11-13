@@ -1,4 +1,5 @@
 import type {Snippet} from "svelte"
+import type {SearchBehavior} from "../helpers/text.js"
 import type {ActionEventDetail, ActionItem, MenuDivider, MenuEntry} from "../action-items/index.js"
 
 // ---------------------------------------------------------------------------
@@ -63,6 +64,11 @@ type QuickGridEditorOptionsBase = {
 	maxDate?: Date | string
 	/** What to store: Date object, ISO string, or timestamp. */
 	outputFormat?: QuickGridDateOutputFormat
+
+	// === SELECT / COMBOBOX / AUTOCOMPLETE ===
+	/** How filtering and type-ahead compare text: `normalized` (default) ignores case and
+	 * diacritics, `case-insensitive` ignores case only, `exact` matches both. No effect on `searchCallback`. */
+	searchBehavior?: SearchBehavior
 
 	// === AUTOCOMPLETE ===
 	/** Shown before the user searches (popular items). */

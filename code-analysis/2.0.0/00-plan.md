@@ -155,7 +155,7 @@ never run git; report release-note rows); I verify (both checks + full e2e), log
 "Renamed props and values" + CHANGELOG), and commit per batch. Push only when the user says "push".
 
 Next steps, in order:
-1. **Q24** — `searchBehavior` (see questions.md Q24 for the full spec).
+1. ~~**Q24** — `searchBehavior`~~ **done** (helpers/text.ts port of web-components-core `normalizeSearchText`; Combobox, Select, Autocomplete, QuickGrid editorOptions; docs, e2e, release notes).
 2. **Q23** — if confirmed, Alert/Toast warning → palette orange; drop SCSS `$color-*`.
 3. Phase 3 helper migrations (list in the Phase 3 status above), incl. Tabs RTL scroll/indicator
    JS fix.

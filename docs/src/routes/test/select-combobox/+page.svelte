@@ -52,6 +52,16 @@
 	<output id="combo-filtered">{filtered.length > 0 ? "called" : ""}</output>
 </section>
 
+<section id="search-behavior">
+	<Combobox id="sb-normalized" options={[{value: "cz", label: "Český"}, {value: "de", label: "Deutsch"}]} />
+	<Combobox id="sb-case" searchBehavior="case-insensitive" options={[{value: "cz", label: "Český"}, {value: "de", label: "Deutsch"}]} />
+	<Combobox id="sb-exact" searchBehavior="exact" options={[{value: "cz", label: "Český"}, {value: "de", label: "Deutsch"}]} />
+	<Select id="sb-select">
+		<Option value="a">Alpha</Option>
+		<Option value="c">Český</Option>
+	</Select>
+</section>
+
 <section id="search">
 	<Combobox id="search-input" options={[]} onSearch={({term}) => terms.push(term)} searchDelay={0} />
 	<output id="search-terms">{terms.join(",")}</output>

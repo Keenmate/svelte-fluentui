@@ -115,7 +115,7 @@
 			return effectiveOptions
 		}
 		return effectiveOptions.filter(opt =>
-			containsText(getOptionLabel(opt), filterText, {diacritics: true})
+			containsText(getOptionLabel(opt), filterText, options.searchBehavior)
 		)
 	})
 
@@ -139,7 +139,7 @@
 			const initialOpts = options.initialOptions || options.options || []
 			if (query.length < (options.minSearchLength ?? 1)) return initialOpts
 			if (!options.onSearch) {
-				return initialOpts.filter(opt => containsText(getOptionLabel(opt), query, {diacritics: true}))
+				return initialOpts.filter(opt => containsText(getOptionLabel(opt), query, options.searchBehavior))
 			}
 			return options.onSearch(query, signal)
 		},
@@ -288,7 +288,7 @@
 			// Search from current position
 			for (let i = 0; i < opts.length; i++) {
 				const idx = (startIdx + i) % opts.length
-				if (startsWithText(getOptionLabel(opts[idx]), e.key, {diacritics: true})) {
+				if (startsWithText(getOptionLabel(opts[idx]), e.key, options.searchBehavior)) {
 					// Open first: openDropdown() re-highlights the current value.
 					if (!dropdownOpen) {
 						openDropdown()
@@ -387,7 +387,7 @@
 			if (type === "select") {
 				// Jump to option starting with the letter
 				const idx = effectiveOptions.findIndex(opt =>
-					startsWithText(getOptionLabel(opt), initialSearchQuery, {diacritics: true})
+					startsWithText(getOptionLabel(opt), initialSearchQuery, options.searchBehavior)
 				)
 				if (idx >= 0) {
 					// Open first: openDropdown() re-highlights the current value.

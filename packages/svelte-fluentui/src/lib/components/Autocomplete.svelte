@@ -16,7 +16,7 @@
 	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
 	import {AsyncSearch} from "../helpers/async-search.svelte.js"
-	import {containsText} from "../helpers/text.js"
+	import {containsText, type SearchBehavior} from "../helpers/text.js"
 	import type {OptionItem, RestProps} from "../types/index.js"
 
 	type OwnProps<T = any> = {
@@ -75,6 +75,10 @@
 		class?: string
 		style?: string
 		initialSearchQuery?: string
+		/** How the built-in search compares text: `normalized` (default) ignores case and
+		 * diacritics (`ces` finds `Český`), `case-insensitive` ignores case only, `exact`
+		 * matches both. Local search only; no effect on `searchCallback`. */
+		searchBehavior?: SearchBehavior
 		/** Provides options for a search term (server-side search). `signal` aborts when a newer search starts, the query is cleared, the dropdown closes or the component unmounts. */
 		searchCallback?: (ctx: {term: string; signal: AbortSignal}) => Promise<OptionItem<T>[]> | OptionItem<T>[]
 		/** Fires when the user adds or removes a selection. */
@@ -130,6 +134,7 @@
 		class: className = "",
 		style = "",
 		initialSearchQuery = "",
+		searchBehavior = "normalized",
 		searchCallback = undefined,
 		onChange = undefined,
 		open = $bindable(undefined),
@@ -164,7 +169,7 @@
 		delay: () => immediateDelay,
 		search: (term, signal) => searchCallback
 			? searchCallback({term, signal})
-			: options.filter(opt => containsText(opt.label, term, {diacritics: true})),
+			: options.filter(opt => containsText(opt.label, term, searchBehavior)),
 		onResults: results => showResults(results),
 		onError: error => {
 			console.error("[Autocomplete] searchCallback failed:", error)

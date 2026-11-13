@@ -9,14 +9,23 @@ import {debounce} from "../packages/svelte-fluentui/src/lib/helpers/debounce.js"
  */
 
 test.describe("helpers/text", () => {
-	test("normalizeForSearch folds case and diacritics unless asked not to", () => {
+	test("normalizeForSearch follows searchBehavior", () => {
 		expect(normalizeForSearch("Žluťoučký KŮŇ")).toBe("zlutoucky kun")
-		expect(normalizeForSearch("Žluť", {diacritics: true})).toBe("žluť")
+		expect(normalizeForSearch("Łódź Straße ﬁ")).toBe("lodz strasse fi")
+		expect(normalizeForSearch("Žluť", "case-insensitive")).toBe("žluť")
+		expect(normalizeForSearch("STRASSE", "case-insensitive")).toBe(normalizeForSearch("Straße", "case-insensitive"))
+		expect(normalizeForSearch("Žluť", "exact")).toBe("Žluť")
+		// NFC in every mode: composed č equals c + combining caron
+		expect(normalizeForSearch("č", "exact")).toBe("č")
+		// Marks that are part of the letter (kana dakuten) are kept
+		expect(normalizeForSearch("が")).not.toBe(normalizeForSearch("か"))
 	})
 
 	test("containsText / startsWithText", () => {
 		expect(containsText("Žluťoučký kůň", "KUN")).toBe(true)
-		expect(containsText("Žluťoučký kůň", "kun", {diacritics: true})).toBe(false)
+		expect(containsText("Žluťoučký kůň", "kun", "case-insensitive")).toBe(false)
+		expect(containsText("Žluťoučký kůň", "KŮŇ", "case-insensitive")).toBe(true)
+		expect(containsText("Žluťoučký kůň", "KŮŇ", "exact")).toBe(false)
 		expect(containsText("Apple", "")).toBe(true)
 		expect(startsWithText("Charlie", "ch")).toBe(true)
 		expect(startsWithText("Charlie", "ha")).toBe(false)

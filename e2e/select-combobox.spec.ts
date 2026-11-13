@@ -123,3 +123,30 @@ test("Combobox keyboard: diacritic-insensitive filter; arrows walk visible, enab
 	await page.keyboard.press("Enter")
 	await expect(input).toHaveValue("Žluťoučký kůň")
 })
+
+test("Combobox searchBehavior: normalized ignores accents, case-insensitive and exact do not", async ({page}) => {
+	// The listbox is portalled — reach it through the input's aria-controls.
+	const expectCesky = async (id: string, term: string, shown: boolean) => {
+		const input = page.locator(`#${id}`)
+		await input.click()
+		await input.fill(term)
+		const listId = await input.getAttribute("aria-controls")
+		const option = page.locator(`[id="${listId}"]`).getByRole("option", {name: "Český"})
+		if (shown) await expect(option).toBeVisible()
+		else await expect(option).toBeHidden()
+		await page.keyboard.press("Escape")
+	}
+	await expectCesky("sb-normalized", "ces", true)
+	await expectCesky("sb-case", "ces", false)
+	await expectCesky("sb-case", "ČES", true)
+	await expectCesky("sb-exact", "čes", false)
+	await expectCesky("sb-exact", "Čes", true)
+})
+
+test("Select type-ahead: a plain letter finds an accented label by default", async ({page}) => {
+	const trigger = page.locator("#sb-select")
+	await trigger.focus()
+	await page.keyboard.press("c")
+	await page.keyboard.press("Enter")
+	await expect(trigger).toContainText("Český")
+})

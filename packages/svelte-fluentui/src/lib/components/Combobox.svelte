@@ -32,7 +32,7 @@
 	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
 	import {debounce} from "../helpers/debounce.js"
-	import {normalizeForSearch, startsWithText} from "../helpers/text.js"
+	import {normalizeForSearch, startsWithText, type SearchBehavior} from "../helpers/text.js"
 	import {
 		OPTION_SELECTOR,
 		getOptionEls,
@@ -110,8 +110,11 @@
 		onSearch?: (ctx: {term: string}) => void
 		/** Debounce (ms) before `onSearch` fires. Ignored without `onSearch`. */
 		searchDelay?: number
-		/** Custom client-side matcher, replacing the built-in diacritic-insensitive
-		 * substring match. Return `true` to keep the option. Ignored when `onSearch` is set. */
+		/** How the built-in search compares text: `normalized` (default) ignores case and
+		 * diacritics (`ces` finds `Český`), `case-insensitive` ignores case only, `exact`
+		 * matches both. Applies to filtering and inline completion; no effect on `filterCallback` or `onSearch`. */
+		searchBehavior?: SearchBehavior
+		/** Custom client-side matcher, replacing the built-in substring match. Return `true` to keep the option. Ignored when `onSearch` is set. */
 		filterCallback?: ComboboxFilter
 		/** Parent-controlled loading flag (for async `onSearch`). While true the
 		 * dropdown shows `loadingText` instead of the empty-state message. */
@@ -161,6 +164,7 @@
 		noDataTemplate = undefined,
 		onSearch = undefined,
 		searchDelay = 250,
+		searchBehavior = "normalized",
 		filterCallback = undefined,
 		loading = undefined,
 		loadingText = "Searching…",
@@ -375,7 +379,7 @@
 
 	function applyFilter() {
 		if (!listEl) return
-		const q = normalizeForSearch(typed)
+		const q = normalizeForSearch(typed, searchBehavior)
 		// In async mode (onSearch) the parent already filtered — show everything it
 		// gave us. Otherwise filter client-side, via a custom `filter` if provided.
 		const clientFilter = !onSearch && isFiltering && doListFilter && q.length > 0
@@ -385,7 +389,7 @@
 			if (clientFilter) {
 				match = filterCallback
 					? filterCallback({term: typed, option: toFilterOption(el)})
-					: normalizeForSearch(optionLabel(el)).includes(q)
+					: normalizeForSearch(optionLabel(el), searchBehavior).includes(q)
 			}
 			el.toggleAttribute("data-filtered-out", !match)
 			if (match) shown++ // displayed rows include disabled options (still visible)
@@ -406,7 +410,7 @@
 	function applyInlineCompletion() {
 		if (!inputEl || !typed) return
 		const visible = visibleOptionEls()
-		const idx = visible.findIndex(el => startsWithText(optionLabel(el), typed))
+		const idx = visible.findIndex(el => startsWithText(optionLabel(el), typed, searchBehavior))
 		if (idx < 0) return
 		const full = optionLabel(visible[idx])
 		// Set canonical text (restores diacritics) and select the remainder.

@@ -1632,6 +1632,7 @@ function clearError(rowIndex, field) {
 				<tr><td>emptyLabel</td><td>string</td><td>select</td><td>Label for empty option (default: "-- Select --")</td></tr>
 				<tr><td>placeholder</td><td>string</td><td>text, number, autocomplete</td><td>Input placeholder text</td></tr>
 				<tr><td>initialOptions</td><td>QuickGridEditorOption[]</td><td>autocomplete</td><td>Options shown before search</td></tr>
+				<tr><td>searchBehavior</td><td>"normalized" | "case-insensitive" | "exact"</td><td>select, combobox, autocomplete</td><td>How filtering and type-ahead compare text (default: "normalized", ignores case and diacritics). No effect on searchCallback</td></tr>
 				<tr><td>minSearchLength</td><td>number</td><td>autocomplete</td><td>Min chars before search (default: 1)</td></tr>
 				<tr><td>debounceMs</td><td>number</td><td>autocomplete</td><td>Search debounce delay (default: 300)</td></tr>
 				<tr><td>trueValue</td><td>any</td><td>checkbox</td><td>Value to store when checked (default: true)</td></tr>

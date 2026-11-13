@@ -25,7 +25,7 @@
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
-	import {startsWithText} from "../helpers/text.js"
+	import {startsWithText, type SearchBehavior} from "../helpers/text.js"
 	import {
 		OPTION_SELECTOR,
 		getOptionEls,
@@ -54,6 +54,10 @@
 		position?: "top" | "bottom"
 		multiple?: boolean
 		disabled?: boolean
+		/** How type-ahead compares typed keys with option labels: `normalized` (default)
+		 * ignores case and diacritics (`c` finds `Český`), `case-insensitive` ignores
+		 * case only, `exact` matches both. */
+		searchBehavior?: SearchBehavior
 		/** Non-editable: the value shows but can't be changed (dropdown won't open,
 		 * options can't be toggled). Unlike `disabled`, it stays focusable and un-dimmed. */
 		readonly?: boolean
@@ -99,6 +103,7 @@
 		position = undefined,
 		multiple = false,
 		disabled = false,
+		searchBehavior = "normalized",
 		readonly = false,
 		appearance = "outline",
 		required = false,
@@ -329,7 +334,7 @@
 	// ---------- Keyboard (single mode) ----------
 	function typeAheadJump(ch: string) {
 		clearTimeout(typeAheadTimer)
-		typeAheadBuffer += ch.toLowerCase()
+		typeAheadBuffer += ch
 		typeAheadTimer = setTimeout(() => { typeAheadBuffer = "" }, 750)
 
 		const opts = enabledOptionEls(listEl)
@@ -337,7 +342,7 @@
 		const start = nav.index >= 0 ? nav.index : 0
 		const n = opts.length
 		const startsWith = (el: HTMLElement | undefined, needle: string) =>
-			!!el && startsWithText(optionLabel(el), needle, {diacritics: true})
+			!!el && startsWithText(optionLabel(el), needle, searchBehavior)
 
 		// Mode picking:
 		// - "Repeat" (buffer="cc"|"ccc"): user is cycling — advance past current.

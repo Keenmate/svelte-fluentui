@@ -110,6 +110,7 @@
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Single mode: width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "maxVisibleOptionCount", type: "number", default: "undefined", description: "Limits visible options in multiple select, enables scrolling"},
 		{name: "multiple", type: "boolean", default: "false", description: "Allow multiple selections"},
+		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How type-ahead compares typed keys with option labels: normalized ignores case and diacritics, case-insensitive ignores case only, exact matches both."},
 		{name: "name", type: "string", default: "undefined", description: "Form field name"},
 		{name: "open", type: "boolean", default: "undefined", description: "Controls dropdown open state"},
 		{name: "position", type: '"top" | "bottom"', default: "undefined", description: "Forces dropdown position"},
