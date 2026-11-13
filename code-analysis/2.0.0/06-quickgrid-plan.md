@@ -46,13 +46,13 @@ Fix:
 | 2.5 | concurrent commits on one row lose an invalid draft (`releaseCleanDraft` from the other field) |
 | 2.6 | `startEdit` options load has no generation check — a late response opens the editor on the previous cell |
 | 2.7 | drafts: `$state(new Map())` isn't reactive; while a row has an invalid cell every cell shows the stale clone; resetting `invalidCells = []` leaves drafts forever; discard helpers exist but aren't exported |
-| 2.8 | `draftRow` carries other cells' invalid values into valid commits (consumers store them) |
+| 2.8 | `draftRow` carries other cells' invalid values into valid commits without saying so → add `invalidFields` / `isRowValid` (Q-QG-1) |
 | 2.9 | inline validation message never renders (set and cleared in the same tick); only the ⚠ tooltip shows |
 | 2.10 | `commitEditDirect` (custom editors, Space toggle) skips `beforeCommitCallback` / `validateCallback` |
 
 Fix: one edit token per `startEdit`; everything after an `await` applies only if the token matches.
 Replace whole-row drafts with **per-cell overrides of invalid values** in a `SvelteMap<rowKey, Map<field, value>>`;
-`draftRow` = item + those overrides for the *committed* field only (decide: include other invalid cells or not — Q-QG-1).
+`draftRow` = current item + all overrides, plus `invalidFields` / `isRowValid` in the event (Q-QG-1).
 Export `discardDrafts(rowKey?)`. Route every commit through `commitEdit` (validation everywhere).
 Re-sync always-mode editors from `value` when not focused.
 
@@ -147,9 +147,22 @@ Space with `trueValue`; axe scan; no listeners after unmount.
 
 ## Open questions
 
-- **Q-QG-1** `draftRow` contents: only the committed field over the current item (consumer data is
-  the truth), or keep other invalid cells' values too (today's behaviour)? Recommendation: committed
-  field only; expose invalid values via `invalidCells`.
+- ~~**Q-QG-1**~~ **Decided 2026-11-13 (user):** `onRowChange` gives the row's full current state
+  plus which fields are invalid, so the consumer decides what to store:
+  ```ts
+  onRowChange({
+    row,            // the item as it is in `items`
+    draftRow,       // current state: item + every cell's pending value, invalid ones included
+    field, oldValue, newValue,
+    isValid,        // the edited field
+    invalidFields,  // [{field, error, value}] — every invalid cell of the row right now
+    isRowValid,     // invalidFields.length === 0
+    rowKey, itemIndex, viewIndex   // see Q-QG-3
+  })
+  ```
+  `draftRow` is built per event from the current item + the per-cell overrides (Phase 2), so
+  consumer-side changes to other fields always show through. Typical consumer:
+  `if (isRowValid) save(draftRow)` or save `draftRow` minus `invalidFields`.
 - **Q-QG-2** Controlled sort/page/filters: bindable props (`bind:sort`, `bind:page`, `bind:filters`) +
   `onSortChange` / `onPageChange` events, and a `serverSide` flag that skips the internal pipeline?
 - **Q-QG-3** Breaking: event contexts gain `rowKey` + `itemIndex`; should `rowIndex` keep meaning the

@@ -230,3 +230,7 @@ buffer (`exact` would otherwise never match an uppercase label). Found while wir
 light Foreground1/3 `#bc4b09`, Background1 `#fff9f5`, Border1 `#fdcfb4`; dark Foreground1 `#faa06b`.
 `--fluent-color-warning-foreground` `#c87018` → `#bc4b09`; Alert and Toast warning read it (were
 hard-coded `#ffb900`). Badge/Label/CompositeBadge yellow fill (`--fluent-color-warning`) unchanged.
+
+**Q-QG-1 decided 2026-11-13:** `onRowChange` provides the row's full current state (`draftRow`, invalid
+values included) plus `invalidFields` (`{field, error, value}[]`) and `isRowValid`; consumer decides
+what to store. Details in `06-quickgrid-plan.md`.
