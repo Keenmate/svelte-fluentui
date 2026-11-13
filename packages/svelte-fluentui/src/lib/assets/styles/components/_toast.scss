@@ -263,15 +263,15 @@
 
 // Warning toast
 .fluent-toast--warning {
-	border-inline-start: 4px solid $color-warning;
+	border-inline-start: 4px solid var(--fluent-color-warning-foreground, #{$color-warning});
 
 	.fluent-toast__icon {
-		background-color: rgba($color-warning, 0.1);
-		color: $color-warning;
+		background-color: color-mix(in srgb, var(--fluent-color-warning-foreground, #{$color-warning}) 10%, transparent);
+		color: var(--fluent-color-warning-foreground, #{$color-warning});
 	}
 
 	.fluent-toast__progress {
-		color: $color-warning;
+		color: var(--fluent-color-warning-foreground, #{$color-warning});
 	}
 }
 

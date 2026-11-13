@@ -225,3 +225,8 @@ and cell editor become accent-insensitive by default).
 matches, so the highlight rule has nothing to apply to. Select type-ahead no longer lowercases its
 buffer (`exact` would otherwise never match an uppercase label). Found while wiring: QuickGrid
 `editorOptions.maxSelections` is declared but unused (and misnamed per D-NC-22) — open.
+
+**Q23 done 2026-11-13 (user: yes).** Verified against `@fluentui/tokens` 9.75: warning → `orange`;
+light Foreground1/3 `#bc4b09`, Background1 `#fff9f5`, Border1 `#fdcfb4`; dark Foreground1 `#faa06b`.
+`--fluent-color-warning-foreground` `#c87018` → `#bc4b09`; Alert and Toast warning read it (were
+hard-coded `#ffb900`). Badge/Label/CompositeBadge yellow fill (`--fluent-color-warning`) unchanged.

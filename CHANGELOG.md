@@ -11,6 +11,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+- CSS: Alert / Toast `warning` use Fluent 2 orange via `--fluent-color-warning-foreground` (`#bc4b09`, dark `#faa06b`) instead of the v8 yellow `#ffb900`.
 - CSS: logical properties throughout (RTL mirrors correctly); undefined `--error-*` / `--success-*` variables replaced by the `--fluent-color-*` palette (error red is now `#d13438`).
 - **AppBarItem (`rel`):** explicit prop → native attribute through `...rest` (typed anchor attributes)
 - **Alert (`intent`):** `"danger"` (class `.fluent-alert--danger`) → `"error"` (class `.fluent-alert--error`), Microsoft Fluent naming

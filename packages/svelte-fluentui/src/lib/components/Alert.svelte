@@ -120,12 +120,12 @@
 	}
 
 	.fluent-alert--warning {
-		border-inline-start-color: #ffb900;
+		border-inline-start-color: var(--fluent-color-warning-foreground, #bc4b09);
 	}
 
 	.fluent-alert--warning .fluent-alert__icon {
-		background-color: rgba(255, 185, 0, 0.1);
-		color: #ffb900;
+		background-color: color-mix(in srgb, var(--fluent-color-warning-foreground, #bc4b09) 10%, transparent);
+		color: var(--fluent-color-warning-foreground, #bc4b09);
 	}
 
 	.fluent-alert--error {

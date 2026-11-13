@@ -92,7 +92,7 @@
 	--fluent-color-warning-contrast: #242424;
 	--fluent-color-warning-emphasis: #8a6d00;
 	--fluent-color-warning-tint: color-mix(in srgb, #fde300 22%, transparent);
-	--fluent-color-warning-foreground: #c87018;
+	--fluent-color-warning-foreground: #bc4b09; // Fluent 2 colorStatusWarningForeground1
 
 	// danger (red)
 	--fluent-color-danger: #c50f1f;
@@ -126,7 +126,7 @@
 // overrides that ContextMenu / MenuButton / QuickGrid used to carry.
 [data-theme="dark"] {
 	--fluent-color-success-foreground: #54b054;
-	--fluent-color-warning-foreground: #faa06b;
+	--fluent-color-warning-foreground: #faa06b; // Fluent 2 dark colorStatusWarningForeground1
 	--fluent-color-danger-foreground: #f87c86;
 	--fluent-color-info-foreground: #479ef5;
 }
