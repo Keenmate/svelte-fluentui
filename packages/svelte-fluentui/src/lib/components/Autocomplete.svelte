@@ -76,7 +76,7 @@
 		style?: string
 		initialSearchQuery?: string
 		/** How the built-in search compares text: `normalized` (default) ignores case and
-		 * diacritics (`ces` finds `Český`), `case-insensitive` ignores case only, `exact`
+		 * diacritics (`zurich` finds `Zürich`), `case-insensitive` ignores case only, `exact`
 		 * matches both. Local search only; no effect on `searchCallback`. */
 		searchBehavior?: SearchBehavior
 		/** Provides options for a search term (server-side search). `signal` aborts when a newer search starts, the query is cleared, the dropdown closes or the component unmounts. */

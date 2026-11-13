@@ -99,7 +99,7 @@ test("Select keyboard: arrows/Home/End skip disabled options; type-ahead jumps; 
 	await expect(hl).toHaveText("Delta") // Echo is disabled
 	await page.keyboard.press("Home")
 	await expect(hl).toHaveText("Alpha")
-	await page.keyboard.press("c")
+	await page.keyboard.press("a")
 	await expect(hl).toHaveText("Charlie")
 	await page.keyboard.press("Enter")
 	await expect(page.locator(".select-listbox-popover")).toHaveCount(0)
@@ -126,39 +126,39 @@ test("Combobox keyboard: diacritic-insensitive filter; arrows walk visible, enab
 
 test("Combobox searchBehavior: normalized ignores accents, case-insensitive and exact do not", async ({page}) => {
 	// The listbox is portalled — reach it through the input's aria-controls.
-	const expectCesky = async (id: string, term: string, shown: boolean) => {
+	const expectZurich = async (id: string, term: string, shown: boolean) => {
 		const input = page.locator(`#${id}`)
 		await input.click()
 		await input.fill(term)
 		const listId = await input.getAttribute("aria-controls")
-		const option = page.locator(`[id="${listId}"]`).getByRole("option", {name: "Český"})
+		const option = page.locator(`[id="${listId}"]`).getByRole("option", {name: "Zürich"})
 		if (shown) await expect(option).toBeVisible()
 		else await expect(option).toBeHidden()
 		await page.keyboard.press("Escape")
 	}
-	await expectCesky("sb-normalized", "ces", true)
-	await expectCesky("sb-case", "ces", false)
-	await expectCesky("sb-case", "ČES", true)
-	await expectCesky("sb-exact", "čes", false)
-	await expectCesky("sb-exact", "Čes", true)
+	await expectZurich("sb-normalized", "zurich", true)
+	await expectZurich("sb-case", "zurich", false)
+	await expectZurich("sb-case", "ZÜRICH", true)
+	await expectZurich("sb-exact", "zürich", false)
+	await expectZurich("sb-exact", "Zürich", true)
 })
 
 test("Select type-ahead: with nothing selected the first letter lands on the first match", async ({page}) => {
 	const trigger = page.locator("#sb-select")
 	await trigger.focus()
-	await page.keyboard.press("c")
+	await page.keyboard.press("a")
 	await page.keyboard.press("Enter")
-	await expect(trigger).toContainText("Cheb")
+	await expect(trigger).toContainText("Amsterdam")
 })
 
 test("Select type-ahead: a plain letter steps on to an accented label by default", async ({page}) => {
 	const trigger = page.locator("#sb-select")
 	await trigger.focus()
-	await page.keyboard.press("c")
+	await page.keyboard.press("a")
 	await page.keyboard.press("Enter")
-	await expect(trigger).toContainText("Cheb")
-	// Closed with Cheb selected: pressing c again moves to the next c… label, Český
-	await page.keyboard.press("c")
+	await expect(trigger).toContainText("Amsterdam")
+	// Closed with Amsterdam selected: pressing a again moves to the next a… label, Ávila
+	await page.keyboard.press("a")
 	await page.keyboard.press("Enter")
-	await expect(trigger).toContainText("Český")
+	await expect(trigger).toContainText("Ávila")
 })

@@ -3,16 +3,18 @@
 	import {References, Meta} from "$lib/components";
 
 	// searchBehavior example
-	const towns = [
-		{value: "cheb", label: "Cheb"},
-		{value: "caslav", label: "Čáslav"},
-		{value: "ceske-budejovice", label: "České Budějovice"},
-		{value: "strakonice", label: "Strakonice"},
-		{value: "sumperk", label: "Šumperk"},
-		{value: "uherske-hradiste", label: "Uherské Hradiště"},
-		{value: "usti", label: "Ústí nad Labem"},
-		{value: "zatec", label: "Žatec"},
-		{value: "zlin", label: "Zlín"}
+	const cities = [
+		{value: "amsterdam", label: "Amsterdam"},
+		{value: "arhus", label: "Århus"},
+		{value: "avila", label: "Ávila"},
+		{value: "edinburgh", label: "Edinburgh"},
+		{value: "evora", label: "Évora"},
+		{value: "geneve", label: "Genève"},
+		{value: "koln", label: "Köln"},
+		{value: "malaga", label: "Málaga"},
+		{value: "montreal", label: "Montréal"},
+		{value: "sao-paulo", label: "São Paulo"},
+		{value: "zurich", label: "Zürich"}
 	]
 	const searchBehaviors = ["normalized", "case-insensitive", "exact"] as const
 
@@ -334,16 +336,16 @@
 
 		<h3>Type-ahead and accents (searchBehavior)</h3>
 		<p>
-			Focus a select and type a letter. <code>normalized</code> (default) ignores case and accents, so <code>c</code>
-			cycles through Cheb, Čáslav and České Budějovice. <code>case-insensitive</code> keeps accents: <code>c</code> finds only
-			Cheb, <code>č</code> finds Čáslav. <code>exact</code> also needs the case: <code>C</code> finds Cheb, <code>c</code> finds nothing.
+			Focus a select and type a letter. <code>normalized</code> (default) ignores case and accents, so <code>a</code>
+			cycles through Amsterdam, Århus and Ávila. <code>case-insensitive</code> keeps accents: <code>a</code> finds only
+			Amsterdam, <code>á</code> finds Ávila. <code>exact</code> also needs the case: <code>A</code> finds Amsterdam, <code>a</code> finds nothing.
 		</p>
 		<Grid columns={3} gap="1rem">
 			{#each searchBehaviors as behavior (behavior)}
 				<GridItem>
 					<Select label={`searchBehavior="${behavior}"`} searchBehavior={behavior}>
-						{#each towns as town (town.value)}
-							<Option value={town.value}>{town.label}</Option>
+						{#each cities as city (city.value)}
+							<Option value={city.value}>{city.label}</Option>
 						{/each}
 					</Select>
 				</GridItem>

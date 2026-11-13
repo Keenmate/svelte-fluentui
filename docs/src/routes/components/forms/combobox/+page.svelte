@@ -188,7 +188,7 @@
 		{name: "noDataTemplate", type: "Snippet", default: "undefined", description: "Custom content shown when the filter matches no options; overrides noDataText."},
 		{name: "onSearch", type: "(ctx: {term: string}) => void", default: "undefined", description: "Debounced notification that the search term changed. When set, update options with the results yourself; the component skips its own client-side filtering."},
 		{name: "searchDelay", type: "number", default: "250", description: "Debounce in ms before onSearch fires. Ignored without onSearch."},
-		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How filtering and inline completion compare text: normalized ignores case and diacritics (ces finds Český), case-insensitive ignores case only, exact matches both. No effect on filterCallback or onSearch."},
+		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How filtering and inline completion compare text: normalized ignores case and diacritics (zurich finds Zürich), case-insensitive ignores case only, exact matches both. No effect on filterCallback or onSearch."},
 		{name: "filterCallback", type: "(ctx: {term, option}) => boolean", default: "undefined", description: "Custom client-side matcher replacing the built-in substring match. Ignored when onSearch is set."},
 		{name: "loading", type: "boolean", default: "undefined", description: "Parent-controlled loading flag for async onSearch; shows loadingText instead of the empty-state message while true."},
 		{name: "loadingText", type: "string", default: '"Searching…"', description: "Text shown while loading is true."},

@@ -4,16 +4,18 @@
 	import { countries } from "$lib/demo-data/datasets"
 
 	// searchBehavior example
-	const towns = [
-		{value: "cheb", label: "Cheb"},
-		{value: "caslav", label: "Čáslav"},
-		{value: "ceske-budejovice", label: "České Budějovice"},
-		{value: "strakonice", label: "Strakonice"},
-		{value: "sumperk", label: "Šumperk"},
-		{value: "uherske-hradiste", label: "Uherské Hradiště"},
-		{value: "usti", label: "Ústí nad Labem"},
-		{value: "zatec", label: "Žatec"},
-		{value: "zlin", label: "Zlín"}
+	const cities = [
+		{value: "amsterdam", label: "Amsterdam"},
+		{value: "arhus", label: "Århus"},
+		{value: "avila", label: "Ávila"},
+		{value: "edinburgh", label: "Edinburgh"},
+		{value: "evora", label: "Évora"},
+		{value: "geneve", label: "Genève"},
+		{value: "koln", label: "Köln"},
+		{value: "malaga", label: "Málaga"},
+		{value: "montreal", label: "Montréal"},
+		{value: "sao-paulo", label: "São Paulo"},
+		{value: "zurich", label: "Zürich"}
 	]
 	const searchBehaviors = ["normalized", "case-insensitive", "exact"] as const
 
@@ -174,7 +176,7 @@
 		{name: "maxSelectionCount", type: "number", default: "undefined", description: "Max selections allowed (1 = single-select)"},
 		{name: "maxResultCount", type: "number", default: "9", description: "Max options shown in dropdown"},
 		{name: "minSearchLength", type: "number", default: "undefined", description: "Minimum typed characters before search runs. Below the threshold, searchCallback is NOT called and the dropdown stays closed."},
-		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How the local search compares text: normalized ignores case and diacritics (ces finds Český), case-insensitive ignores case only, exact matches both. No effect on searchCallback."},
+		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How the local search compares text: normalized ignores case and diacritics (zurich finds Zürich), case-insensitive ignores case only, exact matches both. No effect on searchCallback."},
 		{name: "showOverlayOnEmptyResults", type: "boolean", default: "true", description: "Show dropdown on no results"},
 		{name: "showInitialOptions", type: "boolean", default: "false", description: "Show options on focus when empty"},
 		{name: "initialOptionsCount", type: "number", default: "maxResultCount", description: "Initial options count limit"},
@@ -627,14 +629,14 @@
 
 		<h3>Search and accents (searchBehavior)</h3>
 		<p>
-			Without <code>searchCallback</code>, Autocomplete searches <code>options</code> itself. Type <code>ces</code>:
-			<code>normalized</code> (default) finds České Budějovice, <code>case-insensitive</code> needs <code>čes</code>,
-			<code>exact</code> needs <code>Čes</code>.
+			Without <code>searchCallback</code>, Autocomplete searches <code>options</code> itself. Type <code>zurich</code>:
+			<code>normalized</code> (default) finds Zürich, <code>case-insensitive</code> needs <code>zürich</code>,
+			<code>exact</code> needs <code>Zürich</code>.
 		</p>
 		<Grid columns={3} gap="1rem">
 			{#each searchBehaviors as behavior (behavior)}
 				<GridItem>
-					<Autocomplete label={`searchBehavior="${behavior}"`} searchBehavior={behavior} options={towns} placeholder="Type ces…" />
+					<Autocomplete label={`searchBehavior="${behavior}"`} searchBehavior={behavior} options={cities} placeholder="Type zurich…" />
 				</GridItem>
 			{/each}
 		</Grid>

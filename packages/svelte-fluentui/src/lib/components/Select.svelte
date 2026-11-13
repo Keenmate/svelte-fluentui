@@ -55,7 +55,7 @@
 		multiple?: boolean
 		disabled?: boolean
 		/** How type-ahead compares typed keys with option labels: `normalized` (default)
-		 * ignores case and diacritics (`c` finds `Český`), `case-insensitive` ignores
+		 * ignores case and diacritics (`a` finds `Ávila`), `case-insensitive` ignores
 		 * case only, `exact` matches both. */
 		searchBehavior?: SearchBehavior
 		/** Non-editable: the value shows but can't be changed (dropdown won't open,

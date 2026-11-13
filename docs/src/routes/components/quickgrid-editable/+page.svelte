@@ -75,29 +75,31 @@
 
 	// Editable columns configuration
 	// searchBehavior example: the same combobox editor under each mode
-	const towns = [
-		{value: "cheb", label: "Cheb"},
-		{value: "caslav", label: "Čáslav"},
-		{value: "ceske-budejovice", label: "České Budějovice"},
-		{value: "strakonice", label: "Strakonice"},
-		{value: "sumperk", label: "Šumperk"},
-		{value: "uherske-hradiste", label: "Uherské Hradiště"},
-		{value: "usti", label: "Ústí nad Labem"},
-		{value: "zatec", label: "Žatec"},
-		{value: "zlin", label: "Zlín"}
+	const cities = [
+		{value: "amsterdam", label: "Amsterdam"},
+		{value: "arhus", label: "Århus"},
+		{value: "avila", label: "Ávila"},
+		{value: "edinburgh", label: "Edinburgh"},
+		{value: "evora", label: "Évora"},
+		{value: "geneve", label: "Genève"},
+		{value: "koln", label: "Köln"},
+		{value: "malaga", label: "Málaga"},
+		{value: "montreal", label: "Montréal"},
+		{value: "sao-paulo", label: "São Paulo"},
+		{value: "zurich", label: "Zürich"}
 	]
-	const townName = (value: string | null) => towns.find(t => t.value === value)?.label ?? ""
+	const cityName = (value: string | null) => cities.find(c => c.value === value)?.label ?? ""
 	let searchBehaviorRows = $state([
-		{id: 1, normalized: "cheb", caseInsensitive: "cheb", exact: "cheb"},
-		{id: 2, normalized: "zlin", caseInsensitive: "zlin", exact: "zlin"}
+		{id: 1, normalized: "amsterdam", caseInsensitive: "amsterdam", exact: "amsterdam"},
+		{id: 2, normalized: "koln", caseInsensitive: "koln", exact: "koln"}
 	])
 	const searchBehaviorColumn = (field: string, title: string, searchBehavior: "normalized" | "case-insensitive" | "exact") => ({
 		field,
 		title,
 		editable: true,
 		editor: "combobox" as const,
-		getDisplayValueCallback: ({value}: {value: string | null}) => townName(value),
-		editorOptions: {options: towns, valueMember: "value", displayMember: "label", searchBehavior, placeholder: "Type ces…"}
+		getDisplayValueCallback: ({value}: {value: string | null}) => cityName(value),
+		editorOptions: {options: cities, valueMember: "value", displayMember: "label", searchBehavior, placeholder: "Type zurich…"}
 	})
 	const searchBehaviorColumns = [
 		searchBehaviorColumn("normalized", "normalized (default)", "normalized"),
@@ -921,8 +923,8 @@
 		<h3>Search and accents (editorOptions.searchBehavior)</h3>
 		<p>
 			Select, combobox and autocomplete editors take <code>searchBehavior</code> in <code>editorOptions</code>. Double-click a cell
-			and type <code>ces</code>: <code>normalized</code> finds České Budějovice, <code>case-insensitive</code> needs <code>čes</code>,
-			<code>exact</code> needs <code>Čes</code>.
+			and type <code>zurich</code>: <code>normalized</code> finds Zürich, <code>case-insensitive</code> needs <code>zürich</code>,
+			<code>exact</code> needs <code>Zürich</code>.
 		</p>
 		<QuickGrid items={searchBehaviorRows} columns={searchBehaviorColumns} editable editTrigger="dblclick" />
 

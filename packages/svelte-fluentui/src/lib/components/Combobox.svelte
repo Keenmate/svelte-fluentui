@@ -111,7 +111,7 @@
 		/** Debounce (ms) before `onSearch` fires. Ignored without `onSearch`. */
 		searchDelay?: number
 		/** How the built-in search compares text: `normalized` (default) ignores case and
-		 * diacritics (`ces` finds `Český`), `case-insensitive` ignores case only, `exact`
+		 * diacritics (`zurich` finds `Zürich`), `case-insensitive` ignores case only, `exact`
 		 * matches both. Applies to filtering and inline completion; no effect on `filterCallback` or `onSearch`. */
 		searchBehavior?: SearchBehavior
 		/** Custom client-side matcher, replacing the built-in substring match. Return `true` to keep the option. Ignored when `onSearch` is set. */

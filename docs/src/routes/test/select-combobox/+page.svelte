@@ -53,13 +53,13 @@
 </section>
 
 <section id="search-behavior">
-	<Combobox id="sb-normalized" options={[{value: "cz", label: "Český"}, {value: "de", label: "Deutsch"}]} />
-	<Combobox id="sb-case" searchBehavior="case-insensitive" options={[{value: "cz", label: "Český"}, {value: "de", label: "Deutsch"}]} />
-	<Combobox id="sb-exact" searchBehavior="exact" options={[{value: "cz", label: "Český"}, {value: "de", label: "Deutsch"}]} />
+	<Combobox id="sb-normalized" options={[{value: "zurich", label: "Zürich"}, {value: "zagreb", label: "Zagreb"}]} />
+	<Combobox id="sb-case" searchBehavior="case-insensitive" options={[{value: "zurich", label: "Zürich"}, {value: "zagreb", label: "Zagreb"}]} />
+	<Combobox id="sb-exact" searchBehavior="exact" options={[{value: "zurich", label: "Zürich"}, {value: "zagreb", label: "Zagreb"}]} />
 	<Select id="sb-select">
-		<Option value="a">Alpha</Option>
-		<Option value="ch">Cheb</Option>
-		<Option value="c">Český</Option>
+		<Option value="berlin">Berlin</Option>
+		<Option value="amsterdam">Amsterdam</Option>
+		<Option value="avila">Ávila</Option>
 	</Select>
 </section>
 

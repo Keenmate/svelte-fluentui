@@ -8,11 +8,11 @@
 /**
  * How built-in search normalizes text before matching.
  *
- * - `normalized` (default) — ignores case and diacritics: `ces` matches `Český`, `muller` matches `Müller`
- * - `case-insensitive` — ignores case only: `čes` matches `Český`, `ces` does not
+ * - `normalized` (default) — ignores case and diacritics: `zurich` matches `Zürich`, `muller` matches `Müller`
+ * - `case-insensitive` — ignores case only: `zürich` matches `Zürich`, `zurich` does not
  * - `exact` — case- and diacritic-sensitive
  *
- * Every mode compares Unicode NFC text, so a composed `č` and `c` + combining caron are equal.
+ * Every mode compares Unicode NFC text, so a composed `é` and `e` + combining acute are equal.
  */
 export type SearchBehavior = "normalized" | "case-insensitive" | "exact"
 
@@ -65,7 +65,7 @@ function foldCodePoint(ch: string, behavior: SearchBehavior, afterDiacriticBase:
  * Prepares text for matching under `behavior` — used for both the option labels and the
  * typed term. Exported so a custom `filterCallback` can prepare text the same way.
  *
- * `normalized`: `Český` → `cesky`, `Łódź` → `lodz`; `case-insensitive`: `Český` → `český`,
+ * `normalized`: `Zürich` → `zurich`, `Łódź` → `lodz`; `case-insensitive`: `Zürich` → `zürich`,
  * `ß` → `ss`; `exact`: unchanged (NFC only).
  */
 export function normalizeForSearch(text: string, behavior: SearchBehavior = "normalized"): string {
