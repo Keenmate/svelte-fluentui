@@ -151,6 +151,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- Docs: QuickGrid Editable "task tracker" demo using every editor type together (async autocomplete, dependent combobox via `loadOptionsCallback`, row-aware date validation, custom multi-value editor); `searchBehavior` demos on Select, Autocomplete, Combobox and QuickGrid.
 - `searchBehavior` (`normalized` default / `case-insensitive` / `exact`, as in web-multiselect) on Combobox, Select (type-ahead), Autocomplete and QuickGrid `editorOptions`; `normalizeForSearch` and `SearchBehavior` exported. **Behaviour change:** Select type-ahead, Autocomplete and the grid editors now ignore accents by default.
 - `--fluent-color-{success,warning,danger,info}-foreground` tokens with dark-theme values.
 - Autocomplete bindable `open`; `onOpenChange` consistent across Select/Combobox/Autocomplete/DatePicker/TimePicker (real changes only, incl. `bind:open`).
