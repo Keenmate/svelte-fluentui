@@ -58,6 +58,7 @@
 	<Combobox id="sb-exact" searchBehavior="exact" options={[{value: "cz", label: "Český"}, {value: "de", label: "Deutsch"}]} />
 	<Select id="sb-select">
 		<Option value="a">Alpha</Option>
+		<Option value="ch">Cheb</Option>
 		<Option value="c">Český</Option>
 	</Select>
 </section>

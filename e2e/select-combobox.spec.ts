@@ -143,9 +143,21 @@ test("Combobox searchBehavior: normalized ignores accents, case-insensitive and 
 	await expectCesky("sb-exact", "Čes", true)
 })
 
-test("Select type-ahead: a plain letter finds an accented label by default", async ({page}) => {
+test("Select type-ahead: with nothing selected the first letter lands on the first match", async ({page}) => {
 	const trigger = page.locator("#sb-select")
 	await trigger.focus()
+	await page.keyboard.press("c")
+	await page.keyboard.press("Enter")
+	await expect(trigger).toContainText("Cheb")
+})
+
+test("Select type-ahead: a plain letter steps on to an accented label by default", async ({page}) => {
+	const trigger = page.locator("#sb-select")
+	await trigger.focus()
+	await page.keyboard.press("c")
+	await page.keyboard.press("Enter")
+	await expect(trigger).toContainText("Cheb")
+	// Closed with Cheb selected: pressing c again moves to the next c… label, Český
 	await page.keyboard.press("c")
 	await page.keyboard.press("Enter")
 	await expect(trigger).toContainText("Český")

@@ -353,7 +353,7 @@
 		//   from the current position.
 		const isRepeat = typeAheadBuffer.length > 1
 			&& typeAheadBuffer.split("").every(c => c === typeAheadBuffer[0])
-		const isSingleRepress = typeAheadBuffer.length === 1 && startsWith(opts[start], typeAheadBuffer)
+		const isSingleRepress = typeAheadBuffer.length === 1 && nav.index >= 0 && startsWith(opts[start], typeAheadBuffer)
 		const advance = isRepeat || isSingleRepress
 		const needle = isRepeat ? typeAheadBuffer[0] : typeAheadBuffer
 		const startAt = advance ? (start + 1) % n : start
@@ -385,8 +385,15 @@
 			// Type-ahead on the closed trigger: open + jump-highlight (no commit).
 			if (ev.key.length === 1 && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
 				ev.preventDefault()
+				// With nothing selected the open highlight on row 0 isn't a pick, so the first
+				// press must land on the first match rather than step past it.
+				// (An empty value — a "Select…" placeholder row — counts as nothing selected.)
+				const hasSelection = selectedSingle !== ""
 				openDropdown()
-				tick().then(() => typeAheadJump(ev.key))
+				tick().then(() => {
+					if (!hasSelection) nav.reset()
+					typeAheadJump(ev.key)
+				})
 			}
 			return
 		}

@@ -3,6 +3,20 @@
 	import {References, Meta} from "$lib/components"
 	import { countries } from "$lib/demo-data/datasets"
 
+	// searchBehavior example
+	const towns = [
+		{value: "cheb", label: "Cheb"},
+		{value: "caslav", label: "Čáslav"},
+		{value: "ceske-budejovice", label: "České Budějovice"},
+		{value: "strakonice", label: "Strakonice"},
+		{value: "sumperk", label: "Šumperk"},
+		{value: "uherske-hradiste", label: "Uherské Hradiště"},
+		{value: "usti", label: "Ústí nad Labem"},
+		{value: "zatec", label: "Žatec"},
+		{value: "zlin", label: "Zlín"}
+	]
+	const searchBehaviors = ["normalized", "case-insensitive", "exact"] as const
+
 	const colors = [
 		{ value: "red", label: "Red" },
 		{ value: "blue", label: "Blue" },
@@ -609,6 +623,20 @@
 					<small>Selected: {debounceValue.join(", ") || "None"}</small>
 				</Stack>
 			</GridItem>
+		</Grid>
+
+		<h3>Search and accents (searchBehavior)</h3>
+		<p>
+			Without <code>searchCallback</code>, Autocomplete searches <code>options</code> itself. Type <code>ces</code>:
+			<code>normalized</code> (default) finds České Budějovice, <code>case-insensitive</code> needs <code>čes</code>,
+			<code>exact</code> needs <code>Čes</code>.
+		</p>
+		<Grid columns={3} gap="1rem">
+			{#each searchBehaviors as behavior (behavior)}
+				<GridItem>
+					<Autocomplete label={`searchBehavior="${behavior}"`} searchBehavior={behavior} options={towns} placeholder="Type ces…" />
+				</GridItem>
+			{/each}
 		</Grid>
 
 		<h3>Minimum search length</h3>

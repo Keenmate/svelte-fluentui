@@ -165,6 +165,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   (port of web-components-core `/actions`). MenuButton and ContextMenu use it.
 
 ### Fixed
+- Select: type-ahead with nothing selected no longer skips the first matching option.
 - **Textarea — `bind:value` is two-way.** Typing never wrote back to the bound value (only
   `oninput`/`onchange` saw the text); the value is now updated on `input` and `change`.
 - **Listbox — single mode binds a string, `multi` works.** Clicking an option turned a single-select

@@ -2,6 +2,20 @@
 	import {Select, Option, OptionGroup, Stack, Grid, GridItem, Card, QuickGrid, Slider, Icon} from "svelte-fluentui";
 	import {References, Meta} from "$lib/components";
 
+	// searchBehavior example
+	const towns = [
+		{value: "cheb", label: "Cheb"},
+		{value: "caslav", label: "Čáslav"},
+		{value: "ceske-budejovice", label: "České Budějovice"},
+		{value: "strakonice", label: "Strakonice"},
+		{value: "sumperk", label: "Šumperk"},
+		{value: "uherske-hradiste", label: "Uherské Hradiště"},
+		{value: "usti", label: "Ústí nad Labem"},
+		{value: "zatec", label: "Žatec"},
+		{value: "zlin", label: "Zlín"}
+	]
+	const searchBehaviors = ["normalized", "case-insensitive", "exact"] as const
+
 	// Two-way binding example
 	let selectedFruit = $state("apple");
 
@@ -317,6 +331,24 @@
 				<Option value="watermelon">Watermelon</Option>
 			{/snippet}
 		</Select>
+
+		<h3>Type-ahead and accents (searchBehavior)</h3>
+		<p>
+			Focus a select and type a letter. <code>normalized</code> (default) ignores case and accents, so <code>c</code>
+			cycles through Cheb, Čáslav and České Budějovice. <code>case-insensitive</code> keeps accents: <code>c</code> finds only
+			Cheb, <code>č</code> finds Čáslav. <code>exact</code> also needs the case: <code>C</code> finds Cheb, <code>c</code> finds nothing.
+		</p>
+		<Grid columns={3} gap="1rem">
+			{#each searchBehaviors as behavior (behavior)}
+				<GridItem>
+					<Select label={`searchBehavior="${behavior}"`} searchBehavior={behavior}>
+						{#each towns as town (town.value)}
+							<Option value={town.value}>{town.label}</Option>
+						{/each}
+					</Select>
+				</GridItem>
+			{/each}
+		</Grid>
 
 		<h3>Appearances</h3>
 		<Grid columns={2} gap="1rem">

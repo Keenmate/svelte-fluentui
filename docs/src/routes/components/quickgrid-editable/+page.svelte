@@ -74,6 +74,37 @@
 	])
 
 	// Editable columns configuration
+	// searchBehavior example: the same combobox editor under each mode
+	const towns = [
+		{value: "cheb", label: "Cheb"},
+		{value: "caslav", label: "Čáslav"},
+		{value: "ceske-budejovice", label: "České Budějovice"},
+		{value: "strakonice", label: "Strakonice"},
+		{value: "sumperk", label: "Šumperk"},
+		{value: "uherske-hradiste", label: "Uherské Hradiště"},
+		{value: "usti", label: "Ústí nad Labem"},
+		{value: "zatec", label: "Žatec"},
+		{value: "zlin", label: "Zlín"}
+	]
+	const townName = (value: string | null) => towns.find(t => t.value === value)?.label ?? ""
+	let searchBehaviorRows = $state([
+		{id: 1, normalized: "cheb", caseInsensitive: "cheb", exact: "cheb"},
+		{id: 2, normalized: "zlin", caseInsensitive: "zlin", exact: "zlin"}
+	])
+	const searchBehaviorColumn = (field: string, title: string, searchBehavior: "normalized" | "case-insensitive" | "exact") => ({
+		field,
+		title,
+		editable: true,
+		editor: "combobox" as const,
+		getDisplayValueCallback: ({value}: {value: string | null}) => townName(value),
+		editorOptions: {options: towns, valueMember: "value", displayMember: "label", searchBehavior, placeholder: "Type ces…"}
+	})
+	const searchBehaviorColumns = [
+		searchBehaviorColumn("normalized", "normalized (default)", "normalized"),
+		searchBehaviorColumn("caseInsensitive", "case-insensitive", "case-insensitive"),
+		searchBehaviorColumn("exact", "exact", "exact")
+	]
+
 	const editableColumns = [
 		{field: "id", title: "ID", width: "80px", align: "center" as const},
 		{field: "name", title: "Name", editable: true, editor: "text" as const},
@@ -886,6 +917,14 @@
 				<strong>Last change:</strong> {lastChange}
 			</p>
 		{/if}
+
+		<h3>Search and accents (editorOptions.searchBehavior)</h3>
+		<p>
+			Select, combobox and autocomplete editors take <code>searchBehavior</code> in <code>editorOptions</code>. Double-click a cell
+			and type <code>ces</code>: <code>normalized</code> finds České Budějovice, <code>case-insensitive</code> needs <code>čes</code>,
+			<code>exact</code> needs <code>Čes</code>.
+		</p>
+		<QuickGrid items={searchBehaviorRows} columns={searchBehaviorColumns} editable editTrigger="dblclick" />
 
 		<h3>Always Editable (Spreadsheet Mode)</h3>
 		<p>All cells are always in edit mode - like a spreadsheet. Try using <strong>Tab</strong> to move between cells.</p>
