@@ -200,3 +200,22 @@ for warning backgrounds). Once picked, the SCSS `$color-*` tokens can go.
 Combobox matching ignores accents (`"cesky"` finds `"Český"`). Select type-ahead, Autocomplete and the
 QuickGrid cell editor still treat accents as significant — kept as is by the helpers refactor. Make
 them all accent-insensitive (one option flip each in `helpers/text.ts` callers)?
+
+**Q23 answer pending — asked 2026-11-13 "which is standard for Microsoft?"** Answer given: Fluent 2 /
+v9 (current Microsoft standard) uses an **orange** family for warning status (`colorStatusWarning*`
+tokens, dark-orange foreground/icon, pale-orange background). The yellow `#ffb900` is the older
+Fluent v8 / Office UI Fabric "warning" yellow. Recommendation: align Alert/Toast to the palette's
+orange (`--fluent-color-warning*`, currently `#c87018`; verify against Fluent v9 values). Awaiting the
+user's go-ahead.
+
+**Q24 decided 2026-11-13: copy web-multiselect.** It has `searchBehavior?: "normalized" |
+"case-insensitive" | "exact"` (default `"normalized"`; `normalized` ignores case and diacritics,
+`case-insensitive` ignores case only, `exact` is both-sensitive; every mode compares NFC text; the
+match highlight follows the same rules; no effect on `searchCallback` / regex). See
+`C:/Git/KM/web-multiselect/src/types.ts` (~line 1000) and `normalizeSearchText` in its
+`src/multiselect.ts`. **To do:** replace `helpers/text.ts`'s `{diacritics}` option with
+`SearchBehavior` (exported type), add a `searchBehavior` prop (default `"normalized"`) to Combobox,
+Select (type-ahead), Autocomplete and the QuickGrid cell editor (column `editorOptions`), docs rows,
+e2e (`ces` → `Český` in each), release-notes row (behaviour change: Select type-ahead, Autocomplete
+and cell editor become accent-insensitive by default).
+

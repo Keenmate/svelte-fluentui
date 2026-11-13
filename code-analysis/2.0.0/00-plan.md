@@ -142,3 +142,25 @@ reboot opt-in, `prefers-reduced-motion`.
 7. ~~Stores~~ — decided 2026-11-10: move to `.svelte.ts` runes classes.
 8. ~~code-analysis/~~ — decided 2026-11-10: commit it.
 9. ~~BlissFramework rulebook~~ — D-NC-29 / C-NC-14 (Svelte native vs component event casing) fully applied 2026-11-11 (naming-conventions.md section, decisions.md D-NC-29 + summary line, checks.md C-NC-14 + checklist line + totals 9/4/1, checks.sh, guidelines CHANGELOG). Backup of the originals: `%TEMP%/bliss-naming-backup-20261110-215724`.
+
+## Handoff — 2026-11-13 (before context compaction)
+
+State: everything committed and pushed to `origin/prod` (last pushed commit `b8aa608`). Library and
+docs `npm run check` at 0 errors; full e2e 125/125. Docs dev server: `npm run dev` from repo root
+(port 12900); Playwright uses it (`npx playwright test`).
+
+Working method that worked well: two background agents in parallel on **disjoint file sets** (they
+never run git; report release-note rows); I verify (both checks + full e2e), log renames with
+`python $TEMP/logprops.py "Component|before|after" …` (appends to `release-notes/2.0.0-rc01.md`
+"Renamed props and values" + CHANGELOG), and commit per batch. Push only when the user says "push".
+
+Next steps, in order:
+1. **Q24** — `searchBehavior` (see questions.md Q24 for the full spec).
+2. **Q23** — if confirmed, Alert/Toast warning → palette orange; drop SCSS `$color-*`.
+3. Phase 3 helper migrations (list in the Phase 3 status above), incl. Tabs RTL scroll/indicator
+   JS fix.
+4. Phase 5 remainder (list in the Phase 5 status above).
+5. Phase 6: splits, JSDoc, README What's New, `.claude/commands/publish.md` release-notes check,
+   stores → runes.
+Open decisions: Q23 (pending), Q5 (Prettier pass) and any older unanswered items in questions.md.
+
