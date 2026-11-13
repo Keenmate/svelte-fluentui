@@ -164,3 +164,7 @@ Next steps, in order:
    stores → runes.
 Open decisions: Q23 (pending), Q5 (Prettier pass) and any older unanswered items in questions.md.
 
+
+### QuickGrid repair (2026-11-13)
+Plan in `06-quickgrid-plan.md` (7 phases, test-first; open questions Q-QG-1..3). Start with
+Phase 1 (row identity) — `rowIndex` is a view position used as an `items` index in the docs.
