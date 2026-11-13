@@ -99,7 +99,7 @@ test("Select keyboard: arrows/Home/End skip disabled options; type-ahead jumps; 
 	await expect(hl).toHaveText("Delta") // Echo is disabled
 	await page.keyboard.press("Home")
 	await expect(hl).toHaveText("Alpha")
-	await page.keyboard.press("a")
+	await page.keyboard.press("c")
 	await expect(hl).toHaveText("Charlie")
 	await page.keyboard.press("Enter")
 	await expect(page.locator(".select-listbox-popover")).toHaveCount(0)

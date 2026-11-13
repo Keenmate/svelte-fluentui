@@ -166,6 +166,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   (port of web-components-core `/actions`). MenuButton and ContextMenu use it.
 
 ### Fixed
+- QuickGrid: one `onRowChange` per edit (dropdown/date picks fired twice); after a valid edit the grid shows your items again instead of a stale draft row.
+- QuickGrid: removed unimplemented `editorOptions.multiple` / `maxSelections`.
 - Select: type-ahead with nothing selected no longer skips the first matching option.
 - **Textarea — `bind:value` is two-way.** Typing never wrote back to the bound value (only
   `oninput`/`onchange` saw the text); the value is now updated on `input` and `change`.

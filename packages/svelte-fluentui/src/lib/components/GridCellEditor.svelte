@@ -212,7 +212,7 @@
 		isUserFiltering = false  // Not filtering, just displaying selected value
 		justSelected = true  // Prevent dropdown from reopening on refocus
 		closeDropdown()
-		onCommit({value: newValue})
+		commitValue(newValue)
 	}
 
 	// Handle keyboard navigation in dropdown
@@ -250,7 +250,7 @@
 					// Autocomplete can commit freeform text
 					internalValue = filterText.trim()
 					closeDropdown()
-					onCommit({value: filterText.trim()})
+					commitValue(filterText.trim())
 				}
 				break
 			case "Tab":
@@ -456,8 +456,19 @@
 		}
 	}))
 
+	// One commit per edit. A dropdown pick commits at once, but QuickGrid's commit is async
+	// (validation), so the editor is still mounted when focus returns to the cell — without
+	// this its blur would commit the same value a second time. The checkbox is exempt:
+	// with checkboxAlwaysEditable one editor instance takes many toggles.
+	let hasCommitted = false
+	function commitValue(newValue: unknown) {
+		if (hasCommitted) return
+		if (type !== "checkbox") hasCommitted = true
+		onCommit({value: newValue})
+	}
+
 	function handleBlur(e: FocusEvent) {
-		if (skipBlurCommit || cancelledViaEscape) {
+		if (hasCommitted || skipBlurCommit || cancelledViaEscape) {
 			return
 		}
 
@@ -476,7 +487,7 @@
 		}
 
 		if (finalValue !== value) {
-			onCommit({value: finalValue})
+			commitValue(finalValue)
 		} else {
 			onCancel()
 		}
@@ -487,7 +498,7 @@
 		const falseVal = options.falseValue ?? false
 		const currentIsTrue = internalValue === trueVal || internalValue === true
 		internalValue = currentIsTrue ? falseVal : trueVal
-		onCommit({value: internalValue})
+		commitValue(internalValue)
 	}
 
 	function handleDateChange(e: Event) {
@@ -496,7 +507,7 @@
 
 		if (!dateStr) {
 			internalValue = null
-			onCommit({value: null})
+			commitValue(null)
 			return
 		}
 
@@ -515,7 +526,7 @@
 				internalValue = date
 				break
 		}
-		onCommit({value: internalValue})
+		commitValue(internalValue)
 	}
 
 	// Format date value for input
@@ -672,7 +683,7 @@
 							class:highlighted={nav.index === -1 && (internalValue === null || internalValue === undefined)}
 							role="option"
 							aria-selected={nav.index === -1 && (internalValue === null || internalValue === undefined)}
-							onclick={() => { internalValue = null; closeDropdown(); onCommit({value: null}); }}
+							onclick={() => { internalValue = null; closeDropdown(); commitValue(null); }}
 						>
 							{options.emptyLabel || "-- Select --"}
 						</div>

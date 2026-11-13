@@ -906,6 +906,7 @@
 			isValid: true,
 			validationError: null
 		})
+		releaseCleanDraft(rowKey)
 
 		editingCell = null
 		currentCellError = null
@@ -914,6 +915,15 @@
 		if (isNavigateMode && colIndex !== undefined) {
 			focusCell(rowIndex, colIndex)
 		}
+	}
+
+	// A draft only has to outlive a commit while it holds an invalid value the consumer
+	// didn't accept. Once a row is clean, drop it so the grid shows the consumer's items
+	// again — otherwise changes the consumer makes to other fields of the row (clearing
+	// a dependent field, server-side normalisation) stay hidden behind the stale draft and
+	// come back in the next onRowChange's draftRow.
+	function releaseCleanDraft(rowKey: string) {
+		if (!invalidCells.some(c => c.rowKey === rowKey)) draftRows.delete(rowKey)
 	}
 
 	async function commitEdit(rowIndex: number, column: Column<T>, newValue: any, item: T, colIndex?: number) {
@@ -990,6 +1000,7 @@
 			isValid,
 			validationError: validationErrorMsg
 		})
+		if (isValid) releaseCleanDraft(rowKey)
 
 		// Always exit edit mode (allow navigation even with invalid values)
 		editingCell = null

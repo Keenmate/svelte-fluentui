@@ -77,10 +77,6 @@ type QuickGridEditorOptionsBase = {
 	minSearchLength?: number
 	/** Debounce search calls (default: 300). */
 	debounceMs?: number
-	/** Allow multiple selections. */
-	multiple?: boolean
-	/** Max items when `multiple` is true. */
-	maxSelections?: number
 }
 
 /** Per-column editor configuration (`Column.editorOptions`). */

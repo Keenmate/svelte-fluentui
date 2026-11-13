@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {QuickGrid} from "svelte-fluentui"
+	import type {QuickGridCellValidationState} from "svelte-fluentui"
 
 	type Row = {id: number; name: string; qty: number}
 	let items = $state<Row[]>([
@@ -8,6 +9,9 @@
 		{id: 3, name: "Cherry", qty: 40}
 	])
 	let log = $state<string[]>([])
+	let teamRows = $state([{id: 1, team: "web", component: "auth-ui" as string | null}])
+	let teamLog = $state<string[]>([])
+	let teamInvalid = $state<QuickGridCellValidationState[]>([])
 
 	const columns = [
 		{field: "name", title: "Name", editable: true, editor: "text" as const,
@@ -43,4 +47,20 @@
 		onRowChange={({newValue, isValid}) => log.push(`change:${newValue}:${isValid}`)}
 		onValidationError={({error}) => log.push(`error:${error}`)} />
 </div>
+<!-- Dependent fields: picking a team clears the row's component (consumer-side). -->
+<div id="dependent-wrap">
+	<QuickGrid items={teamRows} idMember="id" editable editTrigger="navigate" bind:invalidCells={teamInvalid}
+		columns={[
+			{field: "team", title: "Team", editable: true, editor: "select" as const,
+				editorOptions: {options: [{value: "web", label: "Web"}, {value: "api", label: "API"}]}},
+			{field: "component", title: "Component", getDisplayValueCallback: ({value}: {value: string | null}) => value ?? "none"}
+		]}
+		onRowChange={({rowIndex, field, oldValue, newValue, draftRow, isValid}) => {
+			teamLog.push(`${field}:${oldValue}->${newValue}`)
+			if (!isValid) return
+			teamRows[rowIndex] = {...draftRow, component: field === "team" ? null : draftRow.component}
+		}} />
+	<output id="team-log">{teamLog.join(" | ")}</output>
+</div>
+
 <output id="log">{log.join(" | ")}</output>

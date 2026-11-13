@@ -54,3 +54,16 @@ test("context menu: dynamic text, hidden items and trailing divider dropped, onA
 	await menu.locator("fluent-menu-item", {hasText: "Copy Name"}).click()
 	await expect(page.locator("#log")).toContainText("copy:Cherry | context-menu:custom:copy@2")
 })
+
+test("a dropdown pick fires onRowChange once; the consumer's change to another field shows", async ({page}) => {
+	const wrap = page.locator("#dependent-wrap")
+	// Navigate mode (Excel-like): select the cell, Enter opens the select editor's list
+	await wrap.locator("td", {hasText: "web"}).click()
+	await page.keyboard.press("Enter")
+	await page.getByRole("option", {name: "API"}).click()
+	await expect(wrap.locator("tbody td").first()).toHaveText("api")
+	// The consumer cleared the component; the grid must show its items, not a stale draft.
+	await expect(wrap.locator("td", {hasText: "none"})).toBeVisible()
+	await page.waitForTimeout(300) // a duplicate commit would arrive on the blur that follows
+	await expect(page.locator("#team-log")).toHaveText("team:web->api")
+})

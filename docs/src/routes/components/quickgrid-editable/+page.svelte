@@ -2,6 +2,7 @@
 	import {QuickGrid, Stack, Grid, GridItem, Card, Dialog, Button, Select, Option} from "svelte-fluentui"
 	import type {ActionItem, MenuDivider, QuickGridCellValidationState, QuickGridCustomEditorContext} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
+	import TaskTrackerDemo from "./TaskTrackerDemo.svelte"
 
 	// === API Documentation ===
 
@@ -903,6 +904,21 @@
 	<Card>
 		<h2>Examples</h2>
 
+		<h3>Complex scenario: task tracker (every editor type)</h3>
+		<p>
+			One grid using all editors together. Click a cell and use the arrow keys, type or press <strong>Enter</strong> / <strong>F2</strong> to edit:
+		</p>
+		<ul style="margin: 0.5rem 0 1rem 1.5rem;">
+			<li><strong>Task</strong> (text) — required, trimmed by <code>beforeCommitCallback</code></li>
+			<li><strong>Assignee</strong> (autocomplete) — async <code>searchCallback</code> with <code>initialOptions</code>; accents don't matter (<code>jose</code> finds José)</li>
+			<li><strong>Team</strong> (select) and <strong>Component</strong> (combobox) — the component list comes from <code>loadOptionsCallback</code> for the row's team; changing the team clears the component</li>
+			<li><strong>Start / Due</strong> (date) — stored as ISO days; row-aware validation keeps due ≥ start</li>
+			<li><strong>Estimate</strong> (number) — 0.5–80 h, rounded to half hours</li>
+			<li><strong>Done</strong> (checkbox) — always clickable; updates the summary</li>
+			<li><strong>Labels</strong> (custom) — several values in one cell, edited in a dialog via <code>editCallback</code></li>
+		</ul>
+		<TaskTrackerDemo />
+
 		<h3>Editable Grid (Double-click)</h3>
 		<p>Double-click any editable cell to edit. Press <strong>Enter</strong> to save, <strong>Escape</strong> to cancel. Supports text, number, checkbox, and select editors.</p>
 		<QuickGrid
@@ -1469,7 +1485,7 @@ function clearError(rowIndex, field) {
 				</tr>
 				<tr>
 					<td>editor</td>
-					<td>"text" | "number" | "checkbox" | "select" | "date" | "autocomplete" | "custom"</td>
+					<td>"text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"</td>
 					<td>"text"</td>
 					<td>Editor type for this column</td>
 				</tr>
