@@ -67,3 +67,13 @@ test("a dropdown pick fires onRowChange once; the consumer's change to another f
 	await page.waitForTimeout(300) // a duplicate commit would arrive on the blur that follows
 	await expect(page.locator("#team-log")).toHaveText("team:web->api")
 })
+
+test("editTrigger always: the same cell commits again after its first edit", async ({page}) => {
+	const input = page.locator("#always-wrap tbody tr").first().locator("input")
+	await input.fill("Alicia")
+	await page.locator("#always-wrap tbody tr").nth(1).locator("input").focus()
+	await expect(page.locator("#always-log")).toHaveText("Alicia")
+	await input.fill("Ali")
+	await page.locator("#always-wrap tbody tr").nth(1).locator("input").focus()
+	await expect(page.locator("#always-log")).toHaveText("Alicia | Ali")
+})

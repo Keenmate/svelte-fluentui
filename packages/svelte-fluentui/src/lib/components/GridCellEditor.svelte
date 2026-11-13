@@ -467,6 +467,12 @@
 		onCommit({value: newValue})
 	}
 
+	// Focus coming in from outside starts a new edit: "always" cells keep one editor
+	// instance for life, so the one-commit guard must re-arm here, not only on mount.
+	function handleFocusIn(e: FocusEvent) {
+		if (!editorElement?.contains(e.relatedTarget as Node | null)) hasCommitted = false
+	}
+
 	function handleBlur(e: FocusEvent) {
 		if (hasCommitted || skipBlurCommit || cancelledViaEscape) {
 			return
@@ -564,6 +570,7 @@
 	bind:this={editorElement}
 	class="grid-cell-editor"
 	onkeydown={handleKeyDown}
+	onfocusin={handleFocusIn}
 	onfocusout={handleBlur}
 >
 	{#if type === "text"}

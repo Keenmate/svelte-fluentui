@@ -11,6 +11,8 @@
 	let log = $state<string[]>([])
 	let teamRows = $state([{id: 1, team: "web", component: "auth-ui" as string | null}])
 	let teamLog = $state<string[]>([])
+	let alwaysRows = $state([{id: 1, name: "Alice"}, {id: 2, name: "Bob"}])
+	let alwaysLog = $state<string[]>([])
 	let teamInvalid = $state<QuickGridCellValidationState[]>([])
 
 	const columns = [
@@ -61,6 +63,14 @@
 			teamRows[rowIndex] = {...draftRow, component: field === "team" ? null : draftRow.component}
 		}} />
 	<output id="team-log">{teamLog.join(" | ")}</output>
+</div>
+
+<!-- editTrigger "always": one editor instance per cell for life. -->
+<div id="always-wrap">
+	<QuickGrid items={alwaysRows} idMember="id" editable editTrigger="always"
+		columns={[{field: "name", title: "Name", editable: true, editor: "text" as const}]}
+		onRowChange={({rowIndex, draftRow, newValue}) => { alwaysLog.push(String(newValue)); alwaysRows[rowIndex] = {...draftRow} }} />
+	<output id="always-log">{alwaysLog.join(" | ")}</output>
 </div>
 
 <output id="log">{log.join(" | ")}</output>
