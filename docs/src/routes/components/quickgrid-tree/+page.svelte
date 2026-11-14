@@ -207,8 +207,8 @@
 
 	function handleTeamRowChange(detail: {row: TeamRow; draftRow: TeamRow; itemIndex: number; field: string; oldValue: unknown; newValue: unknown; isValid: boolean}) {
 		if (!detail.isValid) return
-		teamData[detail.itemIndex] = {...detail.draftRow}
-		lastTeamChange = `${detail.draftRow.name}: ${detail.field} → ${JSON.stringify(detail.newValue)}`
+		teamData[detail.itemIndex] = {...detail.row, [detail.field]: detail.newValue}
+		lastTeamChange = `${detail.row.name}: ${detail.field} → ${JSON.stringify(detail.newValue)}`
 	}
 </script>
 

@@ -65,6 +65,28 @@ Replace whole-row drafts with **per-cell overrides of invalid values** in a `Sve
 Export `discardDrafts(rowKey?)`. Route every commit through `commitEdit` (validation everywhere).
 Re-sync always-mode editors from `value` when not focused.
 
+**Phase 2 status — done 2026-11-14.** `editingCell` is an edit session `{token, rowKey, field, item,
+column}` (`$state.raw`); every `startEdit` takes a new token. `commitEdit` (the only commit path now —
+`commitEditDirect` / `releaseCleanDraft` / the dead draft helpers are gone) closes / refocuses the edit
+UI only while its token is the open edit; a cancelled edit's late commit is dropped, and a commit
+superseded by a newer one of the same cell is dropped. `validatingToken` replaces the shared
+`isValidating`; `currentCellError` is gone (the editor shows the cell's `invalidCells` error, so the
+inline message renders when an invalid cell is reopened). The options-load `await` in `startEdit`
+checks the token. Custom editors: the edit opens before `editCallback`, `onEditStart`/`onEditCancel`
+fire, `commit`/`cancel` are one-shot + token-checked, `ctx.value` is the draft. Drafts are
+`SvelteMap<rowKey, SvelteMap<field, {value, error}>>` overrides of invalid values; an effect drops an
+override whose cell left `invalidCells`; `discardDrafts(rowKey?)` is an exported instance method.
+`onRowChange` gains `invalidFields` / `isRowValid` (Q-QG-1), `draftRow` = item + overrides + committed
+value. An effect cancels the edit (with `onEditCancel`) when its row key is no longer displayed.
+GridCellEditor re-syncs `internalValue` from `value` whenever it doesn't hold focus; the editor is
+`{#key}`ed by token. Space toggle / context-menu `cellValue` / `renderCellCallback` read the draft.
+12 new e2e tests, all failing on the old code (148/148 full suite). No existing tests changed.
+Deferred / noticed: Space toggle still ignores `trueValue`/`falseValue` (3.4); keyboard commits still
+use `Number(input.value)` (3.1); orphaned overrides/`invalidCells` entries of rows replaced without
+an id (per-object keys) are never cleaned up — `discardDrafts()` or resetting `invalidCells` clears them;
+a superseded custom edit (another cell's `startEdit` while a custom dialog is open) ends without
+`onEditCancel`; `snippet` cells receive the item, not the draft row.
+
 ## Phase 3 — editors
 
 | # | Bug |
@@ -194,7 +216,11 @@ State: Phase 1 done (`879dbb6`). Branch `prod` is ahead of origin and **not push
 "push" in that turn; a previous push attempt was blocked by the permission classifier).
 All decisions Q-QG-1…5 recorded in `questions.md`.
 
-Next, in order:
+**Update 2026-11-14 (later):** items 1 and 2 done (`c7ca2e0` toolbar, Q-QG-4 idMember default),
+Phase 2 done (see its status block). Next: **Phase 3** (editors). Extra flakes seen under full-suite load:
+AppBar count badge, Combobox open-at-load (pass alone).
+
+Next, in order (original list):
 1. Small commit: advanced row toolbar on `/components/quickgrid-editable` is clipped off-screen at the
    start side ("Move up" unclickable) — find why (PositioningRegion/toolbar anchoring), fix, e2e.
 2. Q-QG-4: `idMember` defaults to `"id"` when rows have an `id` field (keep warning otherwise);

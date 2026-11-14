@@ -23,7 +23,7 @@
 	]
 
 	const editableCallbacks: Property[] = [
-		{name: "onRowChange", type: "(ctx: QuickGridRowChangeDetail<T>) => void", default: "undefined", description: "Called when a cell value is committed; detail includes row, draftRow, viewIndex, itemIndex, rowKey, field, oldValue, newValue, isValid, validationError"},
+		{name: "onRowChange", type: "(ctx: QuickGridRowChangeDetail<T>) => void", default: "undefined", description: "Called when a cell value is committed; detail includes row, draftRow, viewIndex, itemIndex, rowKey, field, oldValue, newValue, isValid, validationError, invalidFields, isRowValid"},
 		{name: "onEditStart", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column }) => void", default: "undefined", description: "Called when a cell enters edit mode"},
 		{name: "onEditCancel", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column }) => void", default: "undefined", description: "Called when editing is cancelled (e.g. Escape key)"},
 		{name: "onValidationError", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column, error }) => void", default: "undefined", description: "Called when a value fails validation"}
@@ -237,11 +237,11 @@
 	function handleRowChange(detail: {row: Person; draftRow: Person; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean; validationError?: string | null}) {
 		// Only update data if validation passed
 		if (detail.isValid) {
-			// Apply the change from draftRow to the original data
-			sampleData[detail.itemIndex] = {...detail.draftRow}
+			// Store the committed field (draftRow would also carry other cells' pending invalid values)
+			sampleData[detail.itemIndex] = {...detail.row, [detail.field]: detail.newValue}
 			lastChange = `Changed ${detail.field}: "${JSON.stringify(detail.oldValue)}" → "${JSON.stringify(detail.newValue)}" (row ${detail.itemIndex + 1})`
 		} else {
-			// Invalid value stays in draftRow and cell displays it (user can fix it)
+			// The grid keeps the invalid value in the cell (user can fix it)
 			lastChange = `Validation failed for ${detail.field}: ${detail.validationError} (row ${detail.itemIndex + 1})`
 		}
 	}
@@ -513,11 +513,11 @@
 
 	function handleValidationRowChange(detail: {row: typeof validationData[0]; draftRow: typeof validationData[0]; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean; validationError?: string | null}) {
 		if (detail.isValid) {
-			// Apply changes from draftRow to original data
-			validationData[detail.itemIndex] = {...detail.draftRow}
+			// Store the committed field only; other invalid cells of the row stay pending in the grid
+			validationData[detail.itemIndex] = {...detail.row, [detail.field]: detail.newValue}
 			validationLastChange = `✓ ${detail.field} updated to "${detail.newValue}"`
 		} else {
-			// Invalid value persists in draftRow - cell will display the invalid value
+			// The grid keeps the invalid value as the cell's draft and displays it
 			validationLastChange = `✗ ${detail.field}: ${detail.validationError} (invalid value "${detail.newValue}" shown in cell)`
 		}
 	}
@@ -575,8 +575,8 @@
 
 	function handleAsyncValidationRowChange(detail: {row: typeof asyncValidationData[0]; draftRow: typeof asyncValidationData[0]; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean; validationError?: string | null}) {
 		if (detail.isValid) {
-			// Apply changes from draftRow
-			asyncValidationData[detail.itemIndex] = {...detail.draftRow}
+			// Store the committed field only
+			asyncValidationData[detail.itemIndex] = {...detail.row, [detail.field]: detail.newValue}
 			asyncLastChange = `✓ ${detail.field} updated`
 		} else {
 			// Invalid value shown in cell - user can fix it
@@ -669,7 +669,7 @@
 
 	function handleRowActionsRowChange(detail: {row: SimpleItem; draftRow: SimpleItem; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean}) {
 		if (detail.isValid) {
-			rowActionsData[detail.itemIndex] = {...detail.draftRow}
+			rowActionsData[detail.itemIndex] = {...detail.row, [detail.field]: detail.newValue}
 		}
 	}
 
@@ -726,7 +726,7 @@
 
 	function handleRowActionsRowChange2(detail: {row: SimpleItem; draftRow: SimpleItem; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean}) {
 		if (detail.isValid) {
-			rowActionsData2[detail.itemIndex] = {...detail.draftRow}
+			rowActionsData2[detail.itemIndex] = {...detail.row, [detail.field]: detail.newValue}
 		}
 	}
 
@@ -846,7 +846,7 @@
 
 	function handleToolbarRowChange(detail: {row: SimpleItem; draftRow: SimpleItem; itemIndex: number; field: string; oldValue: any; newValue: any; isValid: boolean}) {
 		if (detail.isValid) {
-			toolbarData[detail.itemIndex] = {...detail.draftRow}
+			toolbarData[detail.itemIndex] = {...detail.row, [detail.field]: detail.newValue}
 		}
 	}
 </script>
@@ -1422,6 +1422,7 @@ function handleRowChange(detail) {
   if (detail.isValid) {
     // Safe to update - newValue may be transformed
     data[detail.itemIndex][detail.field] = detail.newValue
+    // detail.isRowValid / detail.invalidFields: the row's other invalid cells
   } else {
     // Cell marked invalid, user can see error
     console.log("Validation error:", detail.validationError)
@@ -1653,14 +1654,14 @@ function clearError(rowKey, field) {
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>value</td><td>any</td><td>Current cell value</td></tr>
+				<tr><td>value</td><td>any</td><td>Current cell value (its pending invalid value, if it has one)</td></tr>
 				<tr><td>row</td><td>T</td><td>Full row data</td></tr>
 				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
 				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
 				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, default <code>"id"</code> when rows have one, else a generated per-object key)</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name being edited</td></tr>
-				<tr><td>commit</td><td>(newValue) =&gt; void</td><td>Call to save new value (fires onRowChange)</td></tr>
-				<tr><td>cancel</td><td>() =&gt; void</td><td>Call to cancel editing</td></tr>
+				<tr><td>commit</td><td>(newValue) =&gt; void</td><td>Validates (beforeCommitCallback / validateCallback) and commits the value, firing onRowChange. One-shot; ignored once another edit started</td></tr>
+				<tr><td>cancel</td><td>() =&gt; void</td><td>Abandons the edit (fires onEditCancel). One-shot</td></tr>
 			</tbody>
 		</table>
 	</Card>
@@ -1717,19 +1718,21 @@ function clearError(rowKey, field) {
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>row</td><td>T</td><td>Original row data (unchanged)</td></tr>
-				<tr><td>draftRow</td><td>T</td><td>Draft row with user's changes (including invalid values)</td></tr>
+				<tr><td>row</td><td>T</td><td>The row as it is in <code>items</code> (unchanged)</td></tr>
+				<tr><td>draftRow</td><td>T</td><td>The row's current state: <code>row</code> + every pending invalid value of the row + this commit's value</td></tr>
 				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
 				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
 				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, default <code>"id"</code> when rows have one, else a generated per-object key)</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name that changed</td></tr>
 				<tr><td>oldValue</td><td>any</td><td>Previous value</td></tr>
 				<tr><td>newValue</td><td>any</td><td>New value (may be transformed)</td></tr>
-				<tr><td>isValid</td><td>boolean</td><td>True if validation passed</td></tr>
+				<tr><td>isValid</td><td>boolean</td><td>True if the edited field passed validation</td></tr>
 				<tr><td>validationError</td><td>string | null</td><td>Error message if validation failed</td></tr>
+				<tr><td>invalidFields</td><td>QuickGridInvalidField[]</td><td>Every invalid cell of the row after this commit: <code>{"{"}field, error, value{"}"}</code></td></tr>
+				<tr><td>isRowValid</td><td>boolean</td><td><code>invalidFields.length === 0</code></td></tr>
 			</tbody>
 		</table>
-		<p><strong>Note:</strong> Invalid values persist in <code>draftRow</code> and are displayed in the cell, allowing users to see and fix their invalid input. Use <code>draftRow</code> when applying changes to your data.</p>
+		<p><strong>Note:</strong> An invalid value is kept by the grid as that cell's draft and displayed, so users can see and fix it; a valid commit drops the cell's draft. Store <code>{"{"}...row, [field]: newValue{"}"}</code> on a valid commit, or <code>draftRow</code> once <code>isRowValid</code>. Clearing <code>invalidCells</code> (or calling the instance method <code>discardDrafts(rowKey?)</code> via <code>bind:this</code>) drops the drafts.</p>
 	</Card>
 
 	<Card>

@@ -158,3 +158,172 @@ test("a row toolbar wider than the space beside the grid stays on screen", async
 	}).toBe(true)
 	await toolbar.getByRole("button", {name: "Move row up"}).click({trial: true})
 })
+
+// ---- Phase 2: editing state machine ----
+
+async function typeInto(wrap: Locator, cellText: string, text: string) {
+	await wrap.locator("td.editable-cell").filter({hasText: new RegExp(`^${cellText}`)}).first().dblclick()
+	await expect(wrap.locator("td.editing input")).toBeFocused()
+	await wrap.page().keyboard.press("Control+A")
+	await wrap.page().keyboard.type(text)
+}
+
+test("an async commit resolving does not close the editor opened meanwhile, nor show it as validating", async ({page}) => {
+	const wrap = page.locator("#async-wrap")
+	await typeInto(wrap, "Alpha", "A")
+	// dblclick on City blurs (= commits) Name, whose validation takes 400 ms
+	await wrap.locator("td", {hasText: "Oslo"}).dblclick()
+	const cityEditor = wrap.locator("tbody tr").first().locator("td").nth(1).locator("input")
+	await expect(cityEditor).toBeFocused()
+	// Name is still validating: the City editor must not show that as its own state
+	expect(await wrap.locator(".validating-indicator").count()).toBe(0)
+	await expect(page.locator("#async-log")).toContainText("name:A:false")
+	await expect(cityEditor).toBeVisible()
+	await expect(cityEditor).toBeFocused()
+})
+
+test("a valid commit on another field keeps the row's pending invalid draft", async ({page}) => {
+	const wrap = page.locator("#async-wrap")
+	await typeInto(wrap, "Alpha", "A")
+	await wrap.locator("td", {hasText: "Oslo"}).dblclick()
+	await page.keyboard.press("Control+A")
+	await page.keyboard.type("Paris")
+	await page.keyboard.press("Enter")
+	await expect(page.locator("#async-log")).toContainText("name:A:false")
+	await expect(wrap.locator("td.validation-error .cell-text")).toHaveText("A")
+	await expect(wrap.locator("td", {hasText: "Paris"})).toBeVisible()
+})
+
+test("onRowChange: draftRow, invalidFields and isRowValid describe the whole row", async ({page}) => {
+	const wrap = page.locator("#async-wrap")
+	const log = page.locator("#async-log")
+	await typeInto(wrap, "Alpha", "A")
+	await page.keyboard.press("Enter")
+	await expect(log).toHaveText("name:A:false row:false inv:name=A draft:A/Oslo")
+	await typeInto(wrap, "Oslo", "Paris")
+	await page.keyboard.press("Enter")
+	await expect(log).toContainText("city:Paris:true row:false inv:name=A draft:A/Paris")
+	await typeInto(wrap, "A", "Anna")
+	await page.keyboard.press("Enter")
+	await expect(log).toContainText("name:Anna:true row:true inv: draft:Anna/Paris")
+	await expect(wrap.locator("td.validation-error")).toHaveCount(0)
+	await expect(wrap.locator("tbody tr").first().locator("td").first()).toHaveText("Anna")
+})
+
+test("an invalid cell shows its override; other fields show the consumer's live values", async ({page}) => {
+	const wrap = page.locator("#async-wrap")
+	await typeInto(wrap, "Alpha", "A")
+	await page.keyboard.press("Enter")
+	await expect(wrap.locator("td.validation-error .cell-text")).toHaveText("A")
+	await page.locator("#async-city").click()
+	await expect(wrap.locator("tbody tr").first().locator("td").nth(1)).toHaveText("Rome")
+	// renderCellCallback and the context menu see the draft value too
+	await expect(wrap.locator(".label-html").first()).toHaveText("A")
+	await wrap.locator("td.validation-error").click({button: "right"})
+	await page.locator(".context-menu fluent-menu-item", {hasText: "Copy"}).click()
+	await expect(page.locator("#async-log")).toContainText("copy:A")
+})
+
+test("resetting invalidCells drops the drafts; discardDrafts() is exported", async ({page}) => {
+	const wrap = page.locator("#async-wrap")
+	const firstCell = wrap.locator("tbody tr").first().locator("td").first()
+	await typeInto(wrap, "Alpha", "A")
+	await page.keyboard.press("Enter")
+	await expect(firstCell).toHaveClass(/validation-error/)
+	await page.locator("#async-clear").click()
+	await expect(firstCell).toHaveText("Alpha")
+	await expect(firstCell).not.toHaveClass(/validation-error/)
+	await typeInto(wrap, "Alpha", "B")
+	await page.keyboard.press("Enter")
+	await expect(firstCell).toHaveClass(/validation-error/)
+	await page.locator("#async-discard").click()
+	await expect(firstCell).toHaveText("Alpha")
+	await expect(firstCell).not.toHaveClass(/validation-error/)
+})
+
+test("reopening an invalid cell shows the inline validation message", async ({page}) => {
+	const wrap = page.locator("#async-wrap")
+	await typeInto(wrap, "Alpha", "A")
+	await page.keyboard.press("Enter")
+	await expect(wrap.locator("td.validation-error")).toHaveCount(1)
+	await wrap.locator("td.validation-error").dblclick()
+	await expect(wrap.locator("td.editing input")).toHaveValue("A")
+	await expect(wrap.locator("td.editing .validation-error-message")).toHaveText("Too short")
+})
+
+test("custom editor committing synchronously leaves edit mode", async ({page}) => {
+	const wrap = page.locator("#custom-wrap")
+	await page.locator("#custom-sync").click()
+	await wrap.locator("td", {hasText: "Alpha"}).dblclick()
+	await expect(page.locator("#custom-log")).toContainText("change:Alpha!:true")
+	await expect(wrap.locator(".custom-editing-indicator")).toHaveCount(0)
+	await expect(wrap.locator("tbody tr").first()).toHaveText("Alpha!")
+})
+
+test("custom editor: events fire, commit validates, is one-shot, and value is the draft", async ({page}) => {
+	const wrap = page.locator("#custom-wrap")
+	const log = page.locator("#custom-log")
+	await wrap.locator("td", {hasText: "Alpha"}).dblclick()
+	await expect(log).toHaveText("start:name | open:Alpha")
+	await page.locator("#custom-invalid").click()
+	await expect(log).toContainText("change:A:false")
+	await expect(wrap.locator("td.validation-error .cell-text")).toHaveText("A")
+	await wrap.locator("td.validation-error").dblclick()
+	await expect(log).toContainText("open:A")
+	await page.locator("#custom-twice").click()
+	await expect(log).toHaveText("start:name | open:Alpha | change:A:false | start:name | open:A | change:Bob:true")
+	await expect(wrap.locator("tbody tr").first()).toHaveText("Bob")
+	await page.locator("#custom-cancel").click()
+	await wrap.locator("td", {hasText: "Bravo"}).dblclick()
+	await page.locator("#custom-cancel").click()
+	await expect(log).toContainText("open:Bravo | cancel:name")
+	await expect(wrap.locator(".custom-editing-indicator")).toHaveCount(0)
+})
+
+test("a row whose key changes mid-edit cancels the edit", async ({page}) => {
+	const wrap = page.locator("#custom-wrap")
+	const log = page.locator("#custom-log")
+	await wrap.locator("td", {hasText: "Alpha"}).dblclick()
+	await expect(log).toHaveText("start:name | open:Alpha")
+	await page.locator("#custom-reid").click()
+	await expect(log).toHaveText("start:name | open:Alpha | cancel:name")
+	await page.locator("#custom-invalid").click()  // the stale ctx must not commit
+	await page.waitForTimeout(100)
+	await expect(log).toHaveText("start:name | open:Alpha | cancel:name")
+})
+
+test("a late options load does not open the editor on the previous cell", async ({page}) => {
+	const wrap = page.locator("#options-wrap")
+	await wrap.locator("td", {hasText: "web"}).dblclick()
+	await wrap.locator("td", {hasText: "api"}).dblclick()
+	await expect(wrap.locator("td.editing")).toHaveCount(1)
+	await page.waitForTimeout(900)
+	await expect(wrap.locator("td.editing")).toHaveCount(1)
+	await expect(wrap.locator("tbody tr").nth(1).locator("td.editing")).toHaveCount(1)
+	await expect(page.locator("#options-log")).toHaveText("start:2")
+})
+
+test("Space on a checkbox validates and toggles the draft value", async ({page}) => {
+	const wrap = page.locator("#check-wrap")
+	const cell = wrap.locator("tbody td").nth(1)
+	await cell.click()
+	await page.keyboard.press(" ")
+	await expect(page.locator("#check-log")).toHaveText("done:true:false")
+	await expect(cell).toHaveClass(/validation-error/)
+	await expect(cell.locator("input")).toBeChecked()
+	await page.keyboard.press(" ")
+	await expect(page.locator("#check-log")).toHaveText("done:true:false | done:false:true")
+	await expect(cell).not.toHaveClass(/validation-error/)
+	await expect(cell.locator("input")).not.toBeChecked()
+})
+
+test("editTrigger always: an editor shows the consumer's new value when not focused", async ({page}) => {
+	const inputs = page.locator("#always-wrap tbody input")
+	await expect(inputs.nth(1)).toHaveValue("Bob")
+	await page.locator("#always-rename").click()
+	await expect(inputs.nth(1)).toHaveValue("Robert")
+	await inputs.nth(1).focus()
+	await inputs.nth(0).focus()
+	await page.waitForTimeout(100)
+	await expect(page.locator("#always-log")).toHaveText("")
+})

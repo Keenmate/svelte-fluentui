@@ -118,11 +118,14 @@ export type GridCellEditorOptions = QuickGridEditorOptionsBase & {
 
 /** What `Column.editCallback` receives for `editor: "custom"`. */
 export type QuickGridCustomEditorContext<T = any> = QuickGridRowIdentity & {
+	/** The cell's current value: its pending invalid value if it has one, else the row's. */
 	value: any
 	row: T
 	field: string
 	column: QuickGridColumn<T>
+	/** Validates and commits (like the built-in editors). One-shot; ignored once another edit started. */
 	commit: (newValue: any) => void
+	/** Abandons the edit (fires `onEditCancel`). One-shot; ignored once another edit started. */
 	cancel: () => void
 }
 
@@ -226,17 +229,30 @@ export type QuickGridColumn<T = any> = {
 // Events
 // ---------------------------------------------------------------------------
 
+/** One invalid cell of a row, as reported in `QuickGridRowChangeDetail.invalidFields`. */
+export type QuickGridInvalidField = {
+	field: string
+	error: string
+	/** The value that failed validation (what the cell shows). */
+	value: unknown
+}
+
 /** What `onRowChange` receives after every committed cell edit. */
 export type QuickGridRowChangeDetail<T = any> = QuickGridRowIdentity & {
-	/** Original row (unchanged). */
+	/** The row as it is in `items` (unchanged). */
 	row: T
-	/** Draft row with the user's changes (including invalid ones). */
+	/** The row's current state: `row` + every pending invalid value of the row + this commit's value. */
 	draftRow: T
 	field: string
 	oldValue: any
 	newValue: any
+	/** The edited field passed validation. */
 	isValid: boolean
 	validationError?: string | null
+	/** Every invalid cell of the row after this commit (including this one when it failed). */
+	invalidFields: QuickGridInvalidField[]
+	/** `invalidFields.length === 0`. */
+	isRowValid: boolean
 }
 
 /** What `onEditStart` receives. */

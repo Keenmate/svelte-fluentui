@@ -7,7 +7,8 @@
 
 <script lang="ts" generics="T">
 	import type {Snippet} from "svelte"
-	import {tick, onMount, onDestroy} from "svelte"
+	import {tick, untrack, onMount, onDestroy} from "svelte"
+	import {SvelteMap} from "svelte/reactivity"
 	import GridCellEditor from "./GridCellEditor.svelte"
 	import Icon from "./Icon.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
@@ -24,6 +25,7 @@
 		QuickGridBeforeCommitContext as BeforeCommitContext,
 		QuickGridBeforeCommitResult as BeforeCommitResult,
 		QuickGridRowChangeDetail as RowChangeDetail,
+		QuickGridInvalidField as InvalidField,
 		QuickGridRowIdentity as RowIdentity,
 		QuickGridEditStartContext as EditStartContext,
 		QuickGridEditCancelContext as EditCancelContext,
@@ -241,14 +243,85 @@
 	// Editing state
 	// Interaction state is keyed by row key (never a view position), so it follows its row
 	// through sorting, paging, filtering, tree collapse and inserts.
-	let editingCell = $state<{ rowKey: string; field: string; initialSearchQuery?: string } | null>(null)
-	let currentCellError = $state<string | null>(null)  // Error for currently editing cell
-	let isValidating = $state(false)
+	// Every startEdit gets a token; anything that resolves after an `await` (validation,
+	// options load, a custom editor's commit/cancel) only touches the edit UI while its
+	// token is still the open edit's.
+	type EditSession = {
+		token: number
+		rowKey: string
+		field: string
+		item: T
+		column: Column<T>
+		initialSearchQuery?: string
+	}
+	let editingCell = $state.raw<EditSession | null>(null)
+	let editSeq = 0                                    // last token handed out by startEdit
+	const cancelledEdits = new Set<number>()           // tokens whose late commits are dropped
+	let validatingToken = $state<number | null>(null)  // the open edit is waiting for its validation
 
-	// Draft rows - clones of rows being edited (preserves dirty values including invalid ones).
-	// Keyed by row key (see getRowKey) so drafts survive pagination / filter / sort /
-	// tree expand-collapse re-orderings.
-	let draftRows = $state<Map<string, T>>(new Map())
+	function isCurrentEdit(token: number | undefined): boolean {
+		return token !== undefined && editingCell?.token === token
+	}
+
+	// Close the edit UI, but only if `token` is still the open edit.
+	function endEdit(token: number | undefined) {
+		if (isCurrentEdit(token)) editingCell = null
+	}
+
+	// Drafts: per-cell overrides holding the values that failed validation (rowKey -> field ->
+	// {value, error}). A cell shows its override if it has one, else the live item value, so
+	// the consumer's changes to other fields always show. Every override has an entry in
+	// `invalidCells`; dropping the entry (e.g. `invalidCells = []`) drops the override.
+	type CellOverride = {value: unknown; error: string}
+	const overrides = new SvelteMap<string, SvelteMap<string, CellOverride>>()
+	const cellKeyOf = (rowKey: string, field: string) => `${rowKey}\u0000${field}`
+
+	function setOverride(rowKey: string, field: string, value: unknown, error: string) {
+		let row = overrides.get(rowKey)
+		if (!row) {
+			row = new SvelteMap()
+			overrides.set(rowKey, row)
+		}
+		row.set(field, {value, error})
+	}
+
+	function deleteOverride(rowKey: string, field: string) {
+		const row = overrides.get(rowKey)
+		if (!row) return
+		row.delete(field)
+		if (row.size === 0) overrides.delete(rowKey)
+	}
+
+	$effect(() => {
+		const kept = new Set(invalidCells.map((c) => cellKeyOf(c.rowKey, c.field)))
+		untrack(() => {
+			for (const [rowKey, row] of overrides) {
+				for (const field of [...row.keys()]) {
+					if (!kept.has(cellKeyOf(rowKey, field))) deleteOverride(rowKey, field)
+				}
+			}
+		})
+	})
+
+	// The row with its overrides applied (the item itself when it has none).
+	function getDraftRow(item: T, rowKey: string = getRowKey(item)): T {
+		const row = overrides.get(rowKey)
+		if (!row || row.size === 0) return item
+		const draft = {...item} as Record<string, unknown>
+		for (const [field, override] of row) draft[field] = override.value
+		return draft as T
+	}
+
+	/** Drops the pending invalid values (and their `invalidCells` entries) of one row, or of all rows. */
+	export function discardDrafts(rowKey?: string): void {
+		if (rowKey === undefined) {
+			overrides.clear()
+			invalidCells = []
+		} else {
+			overrides.delete(rowKey)
+			invalidCells = invalidCells.filter((c) => c.rowKey !== rowKey)
+		}
+	}
 
 	// Generated keys for rows without idMember / treePathMember: one per row object, so
 	// state never leaks between rows that happen to share a view position.
@@ -693,18 +766,15 @@
 		}
 	}
 
-	// Get raw value for a cell (checks draft row first, then original)
+	// A cell's value: its pending invalid override, else the live item value.
 	function getCellRawValue(item: T, rowKey: string, field: string): unknown {
-		const draftRow = draftRows.get(rowKey)
-		if (draftRow) {
-			return draftRow[field as keyof T]
-		}
-		return item[field as keyof T]
+		const override = overrides.get(rowKey)?.get(field)
+		return override ? override.value : item[field as keyof T]
 	}
 
 	function getCellValue(item: T, column: Column<T>, rowKey?: string): string {
 		if (column.renderCellCallback) {
-			return column.renderCellCallback({row: item, column})
+			return column.renderCellCallback({row: rowKey !== undefined ? getDraftRow(item, rowKey) : item, column})
 		}
 		// Use draft value if available
 		const value = rowKey !== undefined
@@ -811,36 +881,40 @@
 
 	async function startEdit(field: string, item: T, column: Column<T>, colIndex?: number, initialSearchQuery?: string) {
 		const columnField = String(column.field)
-		currentCellError = null
-
-		// Clone row if not already cloned (preserves dirty values across edits)
 		const rowKey = getRowKey(item)
-		if (!draftRows.has(rowKey)) {
-			draftRows.set(rowKey, { ...item })
+		const token = ++editSeq
+
+		const open = () => {
+			editingCell = {token, rowKey, field, item, column, initialSearchQuery}
+			onEditStart?.({row: item, ...getRowIdentity(item, rowKey), field, column})
 		}
 
-		// Handle custom editor
+		// Custom editor: the edit is open before editCallback runs (it may commit synchronously).
+		// commit / cancel are one-shot and only act while this edit is still the open one.
 		if (column.editor === "custom" && column.editCallback) {
-			const context: CustomEditorContext<T> = {
-				value: item[column.field as keyof T],
+			open()
+			let settled = false
+			const settle = () => {
+				if (settled || !isCurrentEdit(token)) return false
+				settled = true
+				return true
+			}
+			column.editCallback({
+				value: getCellRawValue(item, rowKey, columnField),
 				row: item,
 				...getRowIdentity(item, rowKey),
 				field: columnField,
 				column,
 				commit: (newValue: any) => {
-					commitEditDirect(item, column, newValue, colIndex)
+					if (settle()) void commitEdit(item, column, newValue, colIndex, token)
 				},
 				cancel: () => {
-					editingCell = null
+					if (!settle()) return
+					cancelEdit(token)
 					// Refocus cell on cancel in navigate mode
-					if (isNavigateMode && colIndex !== undefined) {
-						focusCell(rowKey, colIndex)
-					}
+					if (isNavigateMode && colIndex !== undefined) focusCell(rowKey, colIndex)
 				}
-			}
-			column.editCallback(context)
-			// Mark as editing so we can show visual feedback
-			editingCell = { rowKey, field }
+			})
 			return
 		}
 
@@ -850,20 +924,31 @@
 			(column.editorOptions?.optionsLoadTrigger === "edit-start" || !column.editorOptions?.optionsLoadTrigger)
 		) {
 			await loadOptionsForColumn(column, item, columnField)
+			// A newer edit started while the options loaded: this one is stale.
+			if (token !== editSeq) return
 		}
 
-		editingCell = { rowKey, field, initialSearchQuery }
-		onEditStart?.({row: item, ...getRowIdentity(item, rowKey), field, column})
+		open()
 	}
 
-	function cancelEdit(item: T) {
-		if (editingCell) {
-			const field = editingCell.field
-			onEditCancel?.({row: item, ...getRowIdentity(item), field, column: columns.find((c) => String(c.field) === field)})
-			editingCell = null
-			currentCellError = null
-		}
+	// Abandon the open edit (only if `token` is still it); a late commit for it is dropped.
+	function cancelEdit(token: number | undefined) {
+		const cell = editingCell
+		if (!cell || cell.token !== token) return
+		cancelledEdits.add(cell.token)
+		editingCell = null
+		if (validatingToken === cell.token) validatingToken = null
+		onEditCancel?.({row: cell.item, ...getRowIdentity(cell.item, cell.rowKey), field: cell.field, column: cell.column})
 	}
+
+	// The edited row left the view (its key changed, it was removed, filtered or paged away):
+	// cancel the edit instead of leaving it dangling.
+	$effect(() => {
+		const cell = editingCell
+		if (cell === null) return
+		if (displayItems.some((it) => getRowKey(it) === cell.rowKey)) return
+		untrack(() => cancelEdit(cell.token))
+	})
 
 	// Helper functions for managing invalid cells. Keyed by stable row id so markers survive
 	// pagination / filter / tree expand-collapse re-orderings.
@@ -889,32 +974,6 @@
 		return invalidCells.some(c => c.rowKey === rowKey && c.field === field)
 	}
 
-	// ============ Draft Row Management Functions ============
-	// External-facing helpers (not currently called from inside the grid). Drafts are now
-	// keyed by the same stable id as everything else, so these accept a row key (string).
-
-	function getRowDraft(rowKey: string): T | undefined {
-		return draftRows.get(rowKey)
-	}
-
-	function hasRowDraft(rowKey: string): boolean {
-		return draftRows.has(rowKey)
-	}
-
-	function discardRowDraft(rowKey: string): void {
-		draftRows.delete(rowKey)
-		invalidCells = invalidCells.filter(c => c.rowKey !== rowKey)
-	}
-
-	function getDraftRowKeys(): string[] {
-		return Array.from(draftRows.keys())
-	}
-
-	function discardAllDrafts(): void {
-		draftRows.clear()
-		invalidCells = []
-	}
-
 	// Normalize validation result from various return types
 	function normalizeValidationResult(result: BeforeCommitResult, value: unknown): { valid: boolean; message?: string; finalValue: unknown } {
 		if (result === null || result === undefined || result === true) {
@@ -934,61 +993,28 @@
 		}
 	}
 
-	// Direct commit without validation (used by custom editors that handle their own validation)
-	function commitEditDirect(item: T, column: Column<T>, newValue: any, colIndex?: number) {
-		const field = String(column.field)
-		const oldValue = item[column.field as keyof T]
+	// Latest commit per cell: a commit superseded by a newer one of the same cell (while its
+	// validation was pending) is dropped.
+	const latestCommits = new Map<string, number>()
+	let commitSeq = 0
 
-		// Update draft row
-		const rowKey = getRowKey(item)
-		const draftRow = draftRows.get(rowKey)
-		if (draftRow) {
-			;(draftRow as any)[field] = newValue
-		}
-
-		// Remove from invalid cells if it was invalid
-		removeInvalidCell(rowKey, field)
-
-		// Always fire onRowChange with isValid: true
-		onRowChange?.({
-			row: item,
-			draftRow: draftRow || { ...item, [field]: newValue } as T,
-			...getRowIdentity(item, rowKey),
-			field,
-			oldValue,
-			newValue,
-			isValid: true,
-			validationError: null
-		})
-		releaseCleanDraft(rowKey)
-
-		editingCell = null
-		currentCellError = null
-
-		// Refocus cell in navigate mode so arrow key navigation continues to work
-		if (isNavigateMode && colIndex !== undefined) {
-			focusCell(rowKey, colIndex)
-		}
-	}
-
-	// A draft only has to outlive a commit while it holds an invalid value the consumer
-	// didn't accept. Once a row is clean, drop it so the grid shows the consumer's items
-	// again — otherwise changes the consumer makes to other fields of the row (clearing
-	// a dependent field, server-side normalisation) stay hidden behind the stale draft and
-	// come back in the next onRowChange's draftRow.
-	function releaseCleanDraft(rowKey: string) {
-		if (!invalidCells.some(c => c.rowKey === rowKey)) draftRows.delete(rowKey)
-	}
-
-	async function commitEdit(item: T, column: Column<T>, newValue: any, colIndex?: number) {
+	// Every commit path (editors, keyboard, Space toggle, custom editors) goes through here:
+	// beforeCommitCallback / validateCallback, then the override + invalidCells update and
+	// onRowChange. `token` is the edit being committed (none for "always" editors); the edit
+	// UI is only closed / refocused while that edit is still the open one.
+	async function commitEdit(item: T, column: Column<T>, newValue: any, colIndex?: number, token?: number) {
+		if (token !== undefined && cancelledEdits.has(token)) return
 		const field = String(column.field)
 		const rowKey = getRowKey(item)
+		const cellKey = cellKeyOf(rowKey, field)
+		const seq = ++commitSeq
+		latestCommits.set(cellKey, seq)
 		const oldValue = item[column.field as keyof T]
 		let finalValue = newValue
 		let validationErrorMsg: string | null = null
 		let isValid = true
 
-		isValidating = true
+		if (token !== undefined && isCurrentEdit(token)) validatingToken = token
 
 		try {
 			// First, run beforeCommitCallback if defined (preferred)
@@ -1024,44 +1050,51 @@
 			validationErrorMsg = err instanceof Error ? err.message : "Validation failed"
 		}
 
-		isValidating = false
+		if (token !== undefined && validatingToken === token) validatingToken = null
+		// Superseded by a newer commit of the same cell, or the edit was cancelled meanwhile.
+		if (latestCommits.get(cellKey) !== seq) return
+		latestCommits.delete(cellKey)
+		if (token !== undefined && cancelledEdits.has(token)) return
 
-		// Update draft row with the new value (valid or invalid - preserves user input)
-		const draftRow = draftRows.get(rowKey)
-		if (draftRow) {
-			;(draftRow as any)[field] = finalValue
-		}
-
-		// Update invalid cells tracking
+		// A valid value replaces the item's (the consumer writes it back); an invalid one is
+		// kept as this cell's override so the user sees and can fix it.
 		if (isValid) {
+			deleteOverride(rowKey, field)
 			removeInvalidCell(rowKey, field)
-			currentCellError = null
 		} else {
-			addInvalidCell(rowKey, field, validationErrorMsg || "Invalid value")
-			currentCellError = validationErrorMsg
-			onValidationError?.({row: item, ...getRowIdentity(item, rowKey), field, column, error: validationErrorMsg || "Invalid value"})
+			const error = validationErrorMsg || "Invalid value"
+			setOverride(rowKey, field, finalValue, error)
+			addInvalidCell(rowKey, field, error)
+			onValidationError?.({row: item, ...getRowIdentity(item, rowKey), field, column, error})
 		}
 
-		// Always fire onRowChange (with isValid flag)
-		// draftRow contains all user changes including invalid ones
+		// Always fire onRowChange (with isValid flag): draftRow = item + every override of the
+		// row + this value; invalidFields = every invalid cell of the row after this commit.
+		const draftRow = {...getDraftRow(item, rowKey), [field]: finalValue} as T
+		const invalidFields: InvalidField[] = invalidCells
+			.filter((c) => c.rowKey === rowKey)
+			.map((c) => ({field: c.field, error: c.error, value: getCellRawValue(item, rowKey, c.field)}))
 		onRowChange?.({
 			row: item,
-			draftRow: draftRow || { ...item, [field]: finalValue } as T,
+			draftRow,
 			...getRowIdentity(item, rowKey),
 			field,
 			oldValue,
 			newValue: finalValue,
 			isValid,
-			validationError: validationErrorMsg
+			validationError: validationErrorMsg,
+			invalidFields,
+			isRowValid: invalidFields.length === 0
 		})
-		if (isValid) releaseCleanDraft(rowKey)
 
-		// Always exit edit mode (allow navigation even with invalid values)
-		editingCell = null
+		// Always exit edit mode (allow navigation even with invalid values), but only this
+		// edit: another cell may have opened while the validation ran.
+		const ownsUi = token === undefined ? editingCell === null : isCurrentEdit(token)
+		endEdit(token)
 
 		// For immediate-commit editors in navigate mode, refocus the cell so arrow key navigation continues
-		if (isNavigateMode && colIndex !== undefined) {
-			const isImmediateCommitEditor = column.editor === "checkbox" || column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete" || column.editor === "date"
+		if (ownsUi && isNavigateMode && colIndex !== undefined) {
+			const isImmediateCommitEditor = column.editor === "checkbox" || column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete" || column.editor === "date" || column.editor === "custom"
 			if (isImmediateCommitEditor) {
 				// For dropdown editors, prevent auto-reopening when we refocus
 				const isDropdownEditor = column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
@@ -1280,8 +1313,8 @@
 				// cells with a checkbox-editor column shouldn't toggle.
 				if (column.editor === "checkbox" && isCellEditable(column, item)) {
 					e.preventDefault()
-					const newValue = !item[column.field as keyof T]
-					commitEditDirect(item, column, newValue, colIndex)
+					const newValue = !getCellRawValue(item, rowKey, String(column.field))
+					commitEdit(item, column, newValue, colIndex)
 				}
 				break
 			default:
@@ -1304,6 +1337,9 @@
 
 	async function handleEditorKeyDown(e: KeyboardEvent, viewIndex: number, colIndex: number, column: Column<T>, item: T) {
 		const rowKey = getRowKey(item)
+		const token = editingCell?.token
+		// After an awaited commit: false when another edit opened meanwhile (don't move focus).
+		const stillOurs = () => editingCell === null || editingCell.token === token
 		const editableCols = getEditableColumns(item)
 		const currentEditableIndex = editableCols.findIndex(ec => ec.index === colIndex)
 
@@ -1322,16 +1358,17 @@
 			const isDropdownEditor = column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
 			if (column.editor === "checkbox") {
 				// Checkbox already committed on change, just clear editing state
-				editingCell = null
+				endEdit(token)
 			} else if (isDropdownEditor) {
 				// Dropdown editors handle their own commit via selectDropdownOption
 				// Just exit edit mode without committing (preserves original value if no selection made)
-				editingCell = null
+				endEdit(token)
 			} else if (input?.value !== undefined) {
-				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value)
+				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value, undefined, token)
 			}
 
 			isCommittingFromKeyboard = false
+			if (!stillOurs()) return
 			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
 
 			// Walk to the next / previous editable cell, skipping rows that have no editable
@@ -1371,7 +1408,7 @@
 			// also commits during teardown via blur, and the commit wins. The flag must
 			// stay true across the async unmount (blur is async), hence `await tick()`.
 			isCommittingFromKeyboard = true
-			cancelEdit(item)
+			cancelEdit(token)
 			await tick()
 			isCommittingFromKeyboard = false
 			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
@@ -1385,16 +1422,17 @@
 			const isDropdownEditor = column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
 			if (column.editor === "checkbox") {
 				// Checkbox already committed on change, just clear editing state
-				editingCell = null
+				endEdit(token)
 			} else if (isDropdownEditor) {
 				// Dropdown editors handle their own commit via selectDropdownOption
 				// Just exit edit mode without committing (preserves original value if no selection made)
-				editingCell = null
+				endEdit(token)
 			} else if (input?.value !== undefined) {
-				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value)
+				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value, undefined, token)
 			}
 
 			isCommittingFromKeyboard = false
+			if (!stillOurs()) return
 			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
 
 			// Move to cell below after Enter (any cell — all are focusable in navigate mode).
@@ -1404,8 +1442,8 @@
 			// Space toggles checkbox while in edit mode
 			e.preventDefault()
 			e.stopPropagation()
-			const newValue = !item[column.field as keyof T]
-			await commitEdit(item, column, newValue, colIndex)
+			const newValue = !getCellRawValue(item, rowKey, String(column.field))
+			await commitEdit(item, column, newValue, colIndex, token)
 		} else if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
 			// NOTE: Dropdown editors (select, combobox, autocomplete) handle their own arrow keys
 			// when dropdown is OPEN (via stopPropagation). When dropdown is CLOSED, events bubble
@@ -1428,15 +1466,16 @@
 			// Commit current edit first (or just exit for dropdown editors with closed dropdown)
 			const isDropdownEditor = column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
 			if (column.editor === "checkbox") {
-				editingCell = null
+				endEdit(token)
 			} else if (isDropdownEditor) {
 				// For dropdown editors, just exit edit mode (dropdown was closed, no value to commit)
-				editingCell = null
+				endEdit(token)
 			} else if (input?.value !== undefined) {
-				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value)
+				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value, undefined, token)
 			}
 
 			isCommittingFromKeyboard = false
+			if (!stillOurs()) return
 			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
 
 			// Move to target cell (allow navigation even with invalid values).
@@ -1754,7 +1793,7 @@
 			...getRowIdentity(item),
 			columnIndex: colIndex,
 			column,
-			cellValue: item[column.field as keyof T]
+			cellValue: getCellRawValue(item, getRowKey(item), String(column.field))
 		}
 		// Nothing visible for this cell (e.g. tree-only built-ins on a flat grid) → native menu.
 		if (resolveMenuEntries(contextMenu, context, (item) => contextMenuDefaults(item, context)).length === 0) return
@@ -2140,29 +2179,34 @@
 									{#if column.editor === "custom"}
 										<!-- Custom editor - handled via callback, show indicator -->
 										<span class="custom-editing-indicator">Editing...</span>
-									{:else}
+									{:else if editingCell}
+										{@const editToken = editingCell.token}
+										{@const isValidating = validatingToken === editToken}
 										<!-- svelte-ignore a11y_no_static_element_interactions -->
 										<div
 											class="editor-wrapper"
 											class:validating={isValidating}
 											onkeydown={(e) => handleEditorKeyDown(e, viewIndex, colIndex, column, item)}
 										>
-											<GridCellEditor
-												type={getEditorType(column)}
-												value={getCellRawValue(item, rowKey, cellField)}
-												options={getEditorOptionsForCell(column, item)}
-												initialSearchQuery={editingCell?.initialSearchQuery}
-												onCommit={({value: newValue}) => commitEdit(item, column, newValue, colIndex)}
-												onCancel={() => cancelEdit(item)}
-												skipBlurCommit={isCommittingFromKeyboard}
-												skipKeyboardCommit={isNavigateMode}
-											/>
+											{#key editToken}
+												<GridCellEditor
+													type={getEditorType(column)}
+													value={getCellRawValue(item, rowKey, cellField)}
+													options={getEditorOptionsForCell(column, item)}
+													initialSearchQuery={editingCell.initialSearchQuery}
+													onCommit={({value: newValue}) => commitEdit(item, column, newValue, colIndex, editToken)}
+													onCancel={() => cancelEdit(editToken)}
+													skipBlurCommit={isCommittingFromKeyboard}
+													skipKeyboardCommit={isNavigateMode}
+												/>
+											{/key}
 											{#if isValidating}
 												<span class="validating-indicator">...</span>
 											{/if}
 										</div>
-										{#if currentCellError}
-											<div class="validation-error-message">{currentCellError}</div>
+										<!-- The cell's current validation error (set by an earlier invalid commit). -->
+										{#if cellError}
+											<div class="validation-error-message">{cellError}</div>
 										{/if}
 									{/if}
 								{:else if isCellEditable(column, item) && getColumnEditTrigger(column) === "always"}

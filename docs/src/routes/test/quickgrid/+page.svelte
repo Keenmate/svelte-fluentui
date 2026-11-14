@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {QuickGrid} from "svelte-fluentui"
-	import type {QuickGridCellValidationState} from "svelte-fluentui"
+	import type {QuickGridCellValidationState, QuickGridCustomEditorContext, QuickGridRowChangeDetail} from "svelte-fluentui"
 
 	type Row = {id: number; name: string; qty: number}
 	let items = $state<Row[]>([
@@ -26,6 +26,35 @@
 	let bumpLog = $state<string[]>([])
 	let idRows = $state([{id: 7, name: "Alpha"}, {id: 8, name: "Bravo"}])
 	let idLog = $state<string[]>([])
+
+	// ---- Phase 2: editing state machine ----
+	const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+	// Async validation on `name`, sync `city`; consumer writes back valid commits only.
+	type AsyncRow = {id: number; name: string; city: string}
+	let asyncRows = $state<AsyncRow[]>([{id: 1, name: "Alpha", city: "Oslo"}, {id: 2, name: "Bravo", city: "Bern"}])
+	let asyncLog = $state<string[]>([])
+	let asyncInvalid = $state<QuickGridCellValidationState[]>([])
+	let asyncGrid: {discardDrafts: (rowKey?: string) => void} | undefined = $state()
+	function logRowChange(d: QuickGridRowChangeDetail<AsyncRow>) {
+		const inv = (d.invalidFields ?? []).map((f) => `${f.field}=${f.value}`).join(",")
+		asyncLog.push(`${d.field}:${d.newValue}:${d.isValid} row:${d.isRowValid} inv:${inv} draft:${d.draftRow.name}/${d.draftRow.city}`)
+		if (d.isValid) asyncRows[d.itemIndex] = {...d.row, [d.field]: d.newValue}
+	}
+
+	// Custom editor: commit synchronously, or keep ctx for the buttons below.
+	let customRows = $state([{id: 1, name: "Alpha"}, {id: 2, name: "Bravo"}])
+	let customLog = $state<string[]>([])
+	let customSync = $state(false)
+	let customCtx: QuickGridCustomEditorContext | null = null
+
+	// Options loaded per row with different latencies.
+	let optionRows = $state([{id: 1, team: "web"}, {id: 2, team: "api"}])
+	let optionLog = $state<string[]>([])
+
+	// Navigate-mode checkbox with a validator (Space toggle).
+	let checkRows = $state([{id: 1, name: "Task", done: false}])
+	let checkLog = $state<string[]>([])
 
 	const columns = [
 		{field: "name", title: "Name", editable: true, editor: "text" as const,
@@ -82,6 +111,7 @@
 	<QuickGrid items={alwaysRows} idMember="id" editable editTrigger="always"
 		columns={[{field: "name", title: "Name", editable: true, editor: "text" as const}]}
 		onRowChange={({itemIndex, draftRow, newValue}) => { alwaysLog.push(String(newValue)); alwaysRows[itemIndex] = {...draftRow} }} />
+	<button type="button" id="always-rename" onclick={() => (alwaysRows[1] = {...alwaysRows[1], name: "Robert"})}>Rename Bob</button>
 	<output id="always-log">{alwaysLog.join(" | ")}</output>
 </div>
 
@@ -133,6 +163,71 @@
 		columns={[{field: "name", title: "Name"}, {field: "bumps", title: "Bumps"}]}
 		rowToolbar={["add", "duplicate", "move-up", "move-down", "delete",
 			...["star", "pin", "flash", "eye", "share", "search"].map((icon) => ({id: icon, text: icon, icon}))]} />
+</div>
+
+<!-- Phase 2: async validation, per-cell drafts, onRowChange ctx, discardDrafts. -->
+<div id="async-wrap">
+	<QuickGrid bind:this={asyncGrid} items={asyncRows} idMember="id" editable editTrigger="dblclick" bind:invalidCells={asyncInvalid}
+		columns={[
+			{field: "name", title: "Name", editable: true, editor: "text" as const,
+				beforeCommitCallback: async ({value}) => { await sleep(400); return String(value).length < 2 ? "Too short" : null }},
+			{field: "city", title: "City", editable: true, editor: "text" as const},
+			{field: "label", title: "Label", renderCellCallback: ({row}) => `<b class="label-html">${row.name}</b>`}
+		]}
+		contextMenu={[{id: "copy", text: "Copy", onClick: ({cellValue}) => asyncLog.push(`copy:${cellValue}`)}]}
+		onRowChange={logRowChange} />
+	<button type="button" id="async-city" onclick={() => (asyncRows[0] = {...asyncRows[0], city: "Rome"})}>Set city</button>
+	<button type="button" id="async-clear" onclick={() => (asyncInvalid = [])}>Clear invalid</button>
+	<button type="button" id="async-discard" onclick={() => asyncGrid?.discardDrafts()}>Discard drafts</button>
+	<output id="async-log">{asyncLog.join(" | ")}</output>
+</div>
+
+<div id="custom-wrap">
+	<QuickGrid items={customRows} idMember="id" editable editTrigger="dblclick"
+		columns={[{field: "name", title: "Name", editable: true, editor: "custom" as const,
+			beforeCommitCallback: ({value}) => String(value).length < 2 ? "Too short" : null,
+			editCallback: (ctx) => {
+				customLog.push(`open:${ctx.value}`)
+				if (customSync) ctx.commit(`${ctx.value}!`)
+				else customCtx = ctx
+			}}]}
+		onEditStart={({field}) => customLog.push(`start:${field}`)}
+		onEditCancel={({field}) => customLog.push(`cancel:${field}`)}
+		onRowChange={({itemIndex, row, field, newValue, isValid}) => {
+			customLog.push(`change:${newValue}:${isValid}`)
+			if (isValid) customRows[itemIndex] = {...row, [field]: newValue}
+		}} />
+	<button type="button" id="custom-sync" onclick={() => (customSync = true)}>Sync mode</button>
+	<button type="button" id="custom-invalid" onclick={() => customCtx?.commit("A")}>Commit A</button>
+	<button type="button" id="custom-twice" onclick={() => { customCtx?.commit("Bob"); customCtx?.commit("Rob"); customCtx?.cancel() }}>Commit twice</button>
+	<button type="button" id="custom-cancel" onclick={() => customCtx?.cancel()}>Cancel</button>
+	<button type="button" id="custom-reid" onclick={() => (customRows[0] = {...customRows[0], id: 99})}>Re-id</button>
+	<output id="custom-log">{customLog.join(" | ")}</output>
+</div>
+
+<div id="options-wrap">
+	<QuickGrid items={optionRows} idMember="id" editable editTrigger="dblclick"
+		columns={[{field: "team", title: "Team", editable: true, editor: "select" as const,
+			editorOptions: {loadOptionsCallback: async ({row}) => {
+				await sleep(row.id === 1 ? 700 : 50)
+				return [{value: "web", label: "web"}, {value: "api", label: "api"}]
+			}}}]}
+		onEditStart={({rowKey}) => optionLog.push(`start:${rowKey}`)} />
+	<output id="options-log">{optionLog.join(" | ")}</output>
+</div>
+
+<div id="check-wrap">
+	<QuickGrid items={checkRows} idMember="id" editable editTrigger="navigate"
+		columns={[
+			{field: "name", title: "Name"},
+			{field: "done", title: "Done", editable: true, editor: "checkbox" as const,
+				beforeCommitCallback: ({value}) => value === true ? "Not yet" : null}
+		]}
+		onRowChange={({itemIndex, row, field, newValue, isValid}) => {
+			checkLog.push(`${field}:${newValue}:${isValid}`)
+			if (isValid) checkRows[itemIndex] = {...row, [field]: newValue}
+		}} />
+	<output id="check-log">{checkLog.join(" | ")}</output>
 </div>
 
 <output id="log">{log.join(" | ")}</output>

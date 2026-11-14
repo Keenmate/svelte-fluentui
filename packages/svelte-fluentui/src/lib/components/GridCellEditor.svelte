@@ -1,4 +1,5 @@
 <script lang="ts">
+	import {untrack} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
@@ -39,15 +40,18 @@
 	// svelte-ignore state_referenced_locally
 	let internalValue = $state(value)
 
-	// Sync value prop to internalValue when it changes (for always-editable checkboxes)
-	// Only for checkbox type to avoid interfering with other editor types
-	$effect(() => {
-		if (type === "checkbox") {
-			internalValue = value
-		}
-	})
-
 	let editorElement: HTMLElement | undefined = $state()
+
+	// Follow the `value` prop while the user isn't in the editor ("always" editors live as
+	// long as their cell: the consumer's updates, a transformed commit or a discarded draft
+	// must show, and a later blur must not commit the stale text back). While focused, the
+	// user's typing wins. Checkboxes always follow (one click = one commit).
+	$effect(() => {
+		const next = value
+		untrack(() => {
+			if (type === "checkbox" || !editorElement?.contains(document.activeElement)) internalValue = next
+		})
+	})
 	// Set when Escape fires so the cascading blur (Esc removes focus from <input>
 	// in most browsers) doesn't sneak in a commit of whatever was in the field.
 	// Without this, clearing a number field then pressing Esc commits null instead

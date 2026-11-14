@@ -97,6 +97,7 @@ export type {
 	QuickGridBeforeCommitContext,
 	QuickGridBeforeCommitResult,
 	QuickGridRowChangeDetail,
+	QuickGridInvalidField,
 	QuickGridRowIdentity,
 	QuickGridEditStartContext,
 	QuickGridEditCancelContext,

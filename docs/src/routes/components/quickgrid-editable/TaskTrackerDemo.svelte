@@ -220,11 +220,14 @@
 			log = [`✗ ${detail.field}: ${detail.validationError}`, ...log].slice(0, 6)
 			return
 		}
-		const next = {...detail.draftRow}
+		// Store the committed field only: `draftRow` would also carry the row's other pending
+		// invalid values (listed in `invalidFields`), which stay in the grid until fixed.
+		const next = {...detail.row, [detail.field]: detail.newValue} as Task
 		// Dependent field: a component belongs to one team, so a team change clears it.
 		if (detail.field === "team" && detail.oldValue !== detail.newValue) next.component = null
 		tasks[detail.itemIndex] = next
-		log = [`✓ #${next.id} ${detail.field}: ${JSON.stringify(detail.oldValue)} → ${JSON.stringify(detail.newValue)}`, ...log].slice(0, 6)
+		const pending = detail.isRowValid ? "" : ` (still invalid: ${detail.invalidFields.map((f) => f.field).join(", ")})`
+		log = [`✓ #${next.id} ${detail.field}: ${JSON.stringify(detail.oldValue)} → ${JSON.stringify(detail.newValue)}${pending}`, ...log].slice(0, 6)
 	}
 
 	const totalHours = $derived(tasks.reduce((sum, t) => sum + t.estimate, 0))
