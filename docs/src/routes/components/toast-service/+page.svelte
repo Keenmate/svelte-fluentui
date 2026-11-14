@@ -352,19 +352,19 @@ toast.dismissAll('top-end');`}</code></pre>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Properties</h2>
-				<QuickGrid items={properties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={properties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Callbacks</h2>
-				<QuickGrid items={callbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={callbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Slots</h2>
-				<QuickGrid items={slots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={slots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -373,14 +373,14 @@ toast.dismissAll('top-end');`}</code></pre>
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>Store Methods</h2>
-				<QuickGrid items={storeMethodsData} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={storeMethodsData} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>Toast Options</h2>
-				<QuickGrid items={optionsData} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={optionsData} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

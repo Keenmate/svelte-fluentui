@@ -449,19 +449,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Tabs Properties</h2>
-				<QuickGrid items={tabsProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={tabsProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Tabs Callbacks</h2>
-				<QuickGrid items={tabsCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={tabsCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Tabs Slots</h2>
-				<QuickGrid items={tabsSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={tabsSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -470,19 +470,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Tab Properties</h2>
-				<QuickGrid items={tabProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={tabProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Tab Callbacks</h2>
-				<QuickGrid items={tabCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={tabCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Tab Slots</h2>
-				<QuickGrid items={tabSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={tabSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

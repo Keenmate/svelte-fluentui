@@ -428,21 +428,21 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Properties</h2>
-				<QuickGrid items={properties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={properties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Stack orientation="vertical" gap="1rem">
 				<Card>
 					<h2>Callbacks</h2>
-					<QuickGrid items={callbacks} columns={propertyColumns} sortable filterable striped />
+					<QuickGrid items={callbacks} columns={propertyColumns} sortMode="single" filterable striped />
 				</Card>
 			</Stack>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Slots</h2>
-				<QuickGrid items={slots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={slots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -451,19 +451,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Label Properties</h2>
-				<QuickGrid items={labelProps} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={labelProps} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>CompositeBadge Properties</h2>
-				<QuickGrid items={compositeProps} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={compositeProps} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>BadgeGroup Properties</h2>
-				<QuickGrid items={groupProps} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={groupProps} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

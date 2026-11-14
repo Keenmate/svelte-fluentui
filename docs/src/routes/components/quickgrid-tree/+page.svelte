@@ -104,9 +104,10 @@
 		{name: "treeLevelMember",         type: "keyof T",                default: "undefined", description: "Optional. Field on each row that holds a pre-computed depth (0-based). Falls back to deriving from path."},
 		{name: "treeParentMember",        type: "keyof T",                default: "undefined", description: "Optional. Field on each row that holds the parent path. Falls back to deriving from path."},
 		{name: "treeSeparator",           type: "string",                 default: "auto",      description: "Path separator. Auto-detected from items by scanning for \"/\", \"\\\\\", or \".\"."},
-		{name: "treeDataSorted",          type: "boolean",                default: "false",     description: "True when items are already sorted so parents precede children. False sorts internally by path with numeric-aware segment comparison."},
-		{name: "expandedPaths",           type: "Set<string>",            default: "undefined", description: "Bindable. Set of expanded path strings. When omitted, expansion is managed internally."},
-		{name: "defaultExpandDepth",      type: "number",                 default: "undefined", description: "Initial expansion depth when expandedPaths is not bound. Interpreted relative to the dataset's shallowest level. Omit to expand all on first render."},
+		{name: "treeDataSorted",          type: "boolean",                default: "false",     description: "True when items are already in their final order (parents before children): the grid never reorders them, and sort only reports (onSortChange / onDataRequest). False orders by path with numeric-aware segment comparison, siblings by sort."},
+		{name: "sortMode",                type: '"none" | "single" | "multiple"', default: '"none"', description: "Sorting in tree mode orders siblings within their parent — the hierarchy stays intact (ties keep path order)."},
+		{name: "expandedPaths",           type: "Set<string>",            default: "undefined", description: "Bindable set of expanded paths, written back on every toggle / expand-all / collapse-all. Bound to undefined, it receives the defaultExpandDepth set; a set you pass wins for the rows present at that time."},
+		{name: "defaultExpandDepth",      type: "number",                 default: "undefined", description: "Expansion depth for parents the grid hasn't seen yet — on the first items and for new parents arriving later (seen parents keep their state). Relative to the dataset's shallowest level. Omit to expand all."},
 		{name: "treeDoubleClickBehavior", type: '"none" | "toggle"',      default: '"none"',    description: "When \"toggle\", a double-click anywhere on the tree column toggles expand/collapse on rows that have children. Wins over edit triggers on the tree column."},
 		{name: "idMember",                type: "keyof T",                default: "undefined", description: "Field that uniquely identifies a row. Drafts and invalid-cell markers key by it so they survive pagination, filter, sort, and tree expand/collapse re-orderings. Outside tree mode it defaults to \"id\" when the rows have an id field. In tree mode, treePathMember is the fallback; otherwise each row object gets a generated key (state resets for rows replaced with new objects)."},
 		{name: "columnMinWidth",          type: "string",                 default: "undefined", description: "Default min-width applied to every column header without its own minWidth. Useful with fillerColumn to stop content-sized columns from collapsing too far. Skipped on autoWidth columns."},
@@ -114,7 +115,7 @@
 	]
 
 	const callbacks: PropertyRow[] = [
-		{name: "onFiltersChange", type: "(ctx: {filters: Record<string, string>}) => void", default: "undefined", description: "When provided, internal client-side filtering is bypassed entirely. Filter inputs still render and fire this callback with a copy of the current {field: value} map on every keystroke. Caller is expected to update items (typical server-side pattern: debounce, post to backend, replace items)."}
+		{name: "onFiltersChange", type: "(ctx: {filters: Record<string, string>}) => void", default: "undefined", description: "Fires with a copy of the {field: value} map on every filter keystroke. With filterMode=\"server\" the grid doesn't filter items itself — debounce, post to your backend, replace items. While a client-side filter is active, every match shows with its ancestors; chevrons show expanded and are disabled until the filter is cleared."}
 	]
 
 	const slots: PropertyRow[] = [
@@ -245,6 +246,9 @@
 			try <code>&gt;500</code> or <code>&lt;=50</code> on Headcount, <code>&gt;1000000</code> or <code>&lt;500000</code> on Budget.
 			A plain number falls back to substring match. Typing just <code>&gt;</code> paints the input red and leaves all rows visible until you finish.
 		</p>
+		<p>
+			<code>sortMode="single"</code>: clicking Head, Headcount, Budget or Region sorts siblings within their parent — the hierarchy stays intact.
+		</p>
 		<label style="display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
 			<input type="checkbox" bind:checked={dblClickToggle} />
 			<span><code>treeDoubleClickBehavior</code> = <code>{dblClickToggle ? "toggle" : "none"}</code></span>
@@ -254,6 +258,7 @@
 			columns={orgColumns}
 			treePathMember="path"
 			treeDoubleClickBehavior={dblClickToggle ? "toggle" : "none"}
+			sortMode="single"
 			filterable
 			striped
 			fillerColumn
@@ -370,13 +375,13 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Properties</h2>
-				<QuickGrid items={properties} columns={propertyColumns} sortable filterable striped fillerColumn />
+				<QuickGrid items={properties} columns={propertyColumns} sortMode="single" filterable striped fillerColumn />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Callbacks</h2>
-				<QuickGrid items={callbacks} columns={propertyColumns} sortable filterable striped fillerColumn />
+				<QuickGrid items={callbacks} columns={propertyColumns} sortMode="single" filterable striped fillerColumn />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
@@ -389,6 +394,6 @@
 
 	<Card>
 		<h2>Column Properties</h2>
-		<QuickGrid items={columnProperties} columns={propertyColumns} sortable filterable striped fillerColumn />
+		<QuickGrid items={columnProperties} columns={propertyColumns} sortMode="single" filterable striped fillerColumn />
 	</Card>
 </Stack>

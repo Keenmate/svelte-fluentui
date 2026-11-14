@@ -173,8 +173,18 @@ export type QuickGridColumn<T = any> = {
 	title: string
 	/** Info tooltip shown next to the header title (displays an ⓘ icon). */
 	headerInfo?: string
+	/** `false` opts the column out of sorting (the grid's `sortMode` turns sorting on). */
 	sortable?: boolean
+	/** `false` hides this column's filter input (the grid's `filterable` turns the filter row on). */
 	filterable?: boolean
+	/** The value this column sorts by (default: the raw field value) — e.g. an option's label. */
+	getSortValueCallback?: (ctx: {value: any; row: T; column: QuickGridColumn<T>}) => unknown
+	/** Replaces the built-in comparison for this column: return < 0, 0 or > 0 for ascending
+	 *  order (the grid reverses it for `"desc"`; empty values are yours to place). `valueA` /
+	 *  `valueB` are the sort values (see `getSortValueCallback`). */
+	compareCallback?: (ctx: {rowA: T; rowB: T; valueA: unknown; valueB: unknown; column: QuickGridColumn<T>}) => number
+	/** How this column's filter input matches the cell text (default: the grid's `searchBehavior`). */
+	searchBehavior?: SearchBehavior
 	/** Explicit column width. Accepts any CSS length (px, %, rem, ch, etc.). Ignored when `autoWidth` is true. */
 	width?: string
 	/** CSS min-width for the column. */
@@ -224,6 +234,62 @@ export type QuickGridColumn<T = any> = {
 	/** Tree mode: render this column with indent + expand/collapse chevron (never editable). */
 	tree?: boolean
 }
+
+// ---------------------------------------------------------------------------
+// Sorting, filtering, paging
+// ---------------------------------------------------------------------------
+
+/** `"none"` (no sorting), `"single"` (one column), `"multiple"` (Ctrl / ⌘ + click adds a column). */
+export type QuickGridSortMode = "none" | "single" | "multiple"
+
+export type QuickGridSortDirection = "asc" | "desc"
+
+/** One sorted column; `sort` is an array of these, the first one sorting first. */
+export type QuickGridSortState = {
+	column: string
+	direction: QuickGridSortDirection
+}
+
+/** `"client"`: the grid filters / sorts / slices `items`. `"server"`: `items` is the current
+ *  page, already filtered and sorted — the grid only renders it (see `onDataRequest`). */
+export type QuickGridPaginationMode = "client" | "server"
+
+/** `"client"`: the grid filters `items`. `"server"`: the filter inputs only report
+ *  (`onFiltersChange` / `onDataRequest`); you replace `items`. */
+export type QuickGridFilterMode = "client" | "server"
+
+/** What made the grid ask for data. `"init"` fires once on mount, in `paginationMode="server"`. */
+export type QuickGridDataRequestTrigger = "sort" | "page" | "page-size" | "filter" | "init"
+
+/** What `onDataRequest` receives: the state the displayed rows should reflect. */
+export type QuickGridDataRequestDetail = {
+	sort: QuickGridSortState[]
+	/** 1-based. */
+	page: number
+	pageSize: number
+	trigger: QuickGridDataRequestTrigger
+	/** Always `"replace"` (the rows replace `items`; no load-more yet). */
+	mode: "replace"
+	/** Rows before this page: `(page - 1) * pageSize`. */
+	skip: number
+	filters: Record<string, string>
+}
+
+/** User actions that run through `beforePageChangeCallback` (`"sort"` / `"filter"` only in server mode). */
+export type QuickGridPageChangeTrigger = "page" | "page-size" | "sort" | "filter"
+
+/** What `beforePageChangeCallback` receives — a user action is about to change the page. */
+export type QuickGridBeforePageChangeContext = {
+	trigger: QuickGridPageChangeTrigger
+	fromPage: number
+	/** The page the action leads to (1 for page-size / sort / filter changes). */
+	toPage: number
+	/** The grid's invalid cells (unsaved drafts) — e.g. to ask "leave without saving?". */
+	invalidCells: QuickGridCellValidationState[]
+}
+
+/** `false` keeps the current page, a number goes to that page instead, anything else continues. */
+export type QuickGridBeforePageChangeResult = boolean | number | void | undefined | null
 
 // ---------------------------------------------------------------------------
 // Events

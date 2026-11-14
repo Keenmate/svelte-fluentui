@@ -199,19 +199,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Panel Properties</h2>
-				<QuickGrid items={panelProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={panelProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Panel Callbacks</h2>
-				<QuickGrid items={panelCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={panelCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Panel Slots</h2>
-				<QuickGrid items={panelSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={panelSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

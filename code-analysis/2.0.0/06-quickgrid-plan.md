@@ -159,6 +159,37 @@ Fix: a pure pipeline module (tree order → filter → sort → visibility → p
 with a grid/column `searchBehavior`. Bindable `sort` / `page` / `filters` + `onSortChange` /
 `onPageChange` (API decision — Q-QG-2).
 
+**Phase 4 status — done 2026-11-14.** Pure pipeline in `quickgrid/pipeline.ts` (no runes): `createRowFilter`
+(display text via `getDisplayValueCallback` / formatted value + `containsText(…, searchBehavior)`, column
+override; `filterCallback` unchanged), `createRowComparator` (one `Intl.Collator(culture, {numeric: true})`,
+Dates by time, numbers / bigints / booleans by value, empty values last both ways, column
+`getSortValueCallback` / `compareCallback`), `nextSort` (web-grid's click cycle), `treeOrder` (depth-first,
+siblings by the comparator, path order on ties), `filterTreeRows`, `visibleTreeRows`, `getPageCount` /
+`clampPage` / `pageSlice`. QuickGrid derives `orderedItems → visibleItems → displayItems`; `effectivePage`
+is clamped in the derivation (no empty-page frame) and an effect writes it back to `bind:currentPage`
+(+ `onCurrentPageChange`, server mode re-requests). API (Q-QG-2): `sortMode` replaces `sortable`, `bind:sort`
++ `onSortChange`, `bind:filters` + `filterMode` (web-grid name; replaces "`onFiltersChange` present ⇒
+server filtering"), `searchBehavior`, `culture`, `bind:currentPage`, `bind:pageSize`, `pageSizes` (native
+select in the pager), `paginationMode` + `totalItems`, `beforePageChangeCallback` (`{trigger, fromPage,
+toPage, invalidCells}`; false / number / async — pager disabled meanwhile; sort / filter go through it only
+in server mode, like web-grid), `onPageSizeChange`, `onDataRequest({sort, page, pageSize, skip, filters,
+trigger, mode: "replace"})` — `filters` added to web-grid's detail; `"init"` fires on mount in server mode
+only; no `"load-more"` (no infinite scroll). Server mode: no client filter / sort / slice (web-grid still
+sorts the page locally — deliberately not mirrored). Tree: `bind:expandedPaths` is the only expansion state
+(written back; `$bindable()` without fallback so `bind:…={undefined}` works); new parents get the default
+expansion, seen ones keep theirs; while filtering, matches + ancestors show, chevrons expanded + disabled
+(only rows with a matching child get one). Date cells without a display callback show
+`toLocaleDateString(culture)`. 15 new e2e tests (`e2e/quickgrid-paging.spec.ts`, fixture
+`/test/quickgrid-paging`), 14 fail on the old code (the 15th, "sortMode none shows no sort UI", is a
+regression guard); `sortable` → `sortMode="single"` on ~190 docs grids; fixture `#sorted-wrap` migrated.
+Deferred / noticed: sorting is by the raw value (typed), not the display text — a lookup column needs
+`getSortValueCallback` (could default to the option label of `editorOptions.options`); client mode clamps
+a restored `currentPage` while `items` is still empty (async load) — server mode avoids it by leaving
+`totalItems` undefined until known; Ctrl+←/→ still toggle expansion while filtering (invisible until the
+filter is cleared); a pending async `beforePageChangeCallback` ignores further filter typing in server
+mode (input reverted when rejected); sort headers still mouse-only, no `aria-sort` (Phase 6); pager strings
+not localisable (Phase 6); filter row matches the item, not a cell's pending invalid draft.
+
 ## Phase 5 — row toolbar, context menu, listeners
 
 | # | Bug |
@@ -258,6 +289,10 @@ write back `{...row, [field]: newValue}` (not `draftRow`). Branch `prod` 9 ahead
 **Update 2026-11-14 (Phase 3):** Phase 3 done (see its status block; 161/161 full suite). Next: **Phase 4**
 (web-grid sort/paging model, Q-QG-2). Phase 3's Deferred list has a real Escape bug (every always-editor
 pushes an Escape layer) — fold into Phase 6 (keyboard & a11y) or fix early if it blocks Phase 4 tests.
+
+**Update 2026-11-14 (Phase 4):** Phase 4 done (see its status block; 176/176). Next: **Phase 5** (row
+toolbar, context menu, listeners), then 6 (keyboard & a11y — include the always-editor Escape bug,
+sort-header keyboard/`aria-sort`, localisable pager strings), then 7.
 
 Next, in order (original list):
 1. Small commit: advanced row toolbar on `/components/quickgrid-editable` is clipped off-screen at the

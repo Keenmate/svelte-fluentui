@@ -110,7 +110,7 @@
 				<QuickGrid
 					items={components}
 					columns={componentColumns}
-					sortable
+					sortMode="single"
 					filterable
 					striped
 				/>

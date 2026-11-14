@@ -266,31 +266,31 @@
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>MultiSplitter properties</h2>
-				<QuickGrid items={multiSplitterProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={multiSplitterProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>MultiSplitter callbacks</h2>
-				<QuickGrid items={multiSplitterCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={multiSplitterCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>MultiSplitterPane properties</h2>
-				<QuickGrid items={multiSplitterPaneProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={multiSplitterPaneProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>Data attributes</h2>
-				<QuickGrid items={dataAttributes} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={dataAttributes} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>CSS custom properties</h2>
-				<QuickGrid items={cssCustomProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={cssCustomProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

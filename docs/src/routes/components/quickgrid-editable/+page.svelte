@@ -1456,13 +1456,13 @@ function clearError(rowKey, field) {
 
 	<Grid spacing={3}>
 		<GridItem xs={12} xl={6} xxl={4}>
-			<Card><h2>Properties</h2><QuickGrid items={editableProperties} columns={propertyColumns} sortable filterable striped /></Card>
+			<Card><h2>Properties</h2><QuickGrid items={editableProperties} columns={propertyColumns} sortMode="single" filterable striped /></Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
-			<Card><h2>Callbacks</h2><QuickGrid items={editableCallbacks} columns={propertyColumns} sortable filterable striped /></Card>
+			<Card><h2>Callbacks</h2><QuickGrid items={editableCallbacks} columns={propertyColumns} sortMode="single" filterable striped /></Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
-			<Card><h2>Slots</h2><QuickGrid items={editableSlots} columns={propertyColumns} sortable filterable striped /></Card>
+			<Card><h2>Slots</h2><QuickGrid items={editableSlots} columns={propertyColumns} sortMode="single" filterable striped /></Card>
 		</GridItem>
 	</Grid>
 

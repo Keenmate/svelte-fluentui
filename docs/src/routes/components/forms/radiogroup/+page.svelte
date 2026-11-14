@@ -171,19 +171,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Properties</h2>
-				<QuickGrid items={radioGroupProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={radioGroupProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Callbacks</h2>
-				<QuickGrid items={radioGroupCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={radioGroupCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Slots</h2>
-				<QuickGrid items={radioGroupSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={radioGroupSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

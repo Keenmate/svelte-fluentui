@@ -38,19 +38,69 @@
 		QuickGridContextMenuAction as ContextMenuAction,
 		QuickGridContextMenuConfig as ContextMenuConfig,
 		QuickGridActionDetail,
+		QuickGridSortMode as SortMode,
+		QuickGridSortState as SortState,
+		QuickGridPaginationMode as PaginationMode,
+		QuickGridFilterMode as FilterMode,
+		QuickGridDataRequestDetail as DataRequestDetail,
+		QuickGridDataRequestTrigger as DataRequestTrigger,
+		QuickGridPageChangeTrigger as PageChangeTrigger,
+		QuickGridBeforePageChangeContext as BeforePageChangeContext,
+		QuickGridBeforePageChangeResult as BeforePageChangeResult,
 		GridCellEditorOptions
 	} from "./QuickGrid.types.js"
 	import type {RestProps} from "../types/index.js"
+	import type {SearchBehavior} from "../helpers/text.js"
+	import {defaultLocale} from "../helpers/locale.js"
+	import {
+		createRowComparator, createRowFilter, nextSort, sortRows, treeOrder, filterTreeRows,
+		visibleTreeRows, getPageCount, clampPage, pageSlice, type TreeAccess
+	} from "./quickgrid/pipeline.js"
 
 	// Public model types live in QuickGrid.types.ts (exported from the package root).
 
 	type OwnProps<T> = {
 		items: T[]
 		columns: Column<T>[]
-		sortable?: boolean
+		/** `"none"` (default), `"single"`, or `"multiple"` (Ctrl / ⌘ + click adds a column). A column opts out with `sortable: false`. */
+		sortMode?: SortMode
+		/** Bindable. The sort, first entry first; set it for an initial / server-side sort. */
+		sort?: SortState[]
+		/** Fires when a header click changed `sort`. */
+		onSortChange?: (ctx: {sort: SortState[]}) => void
+		/** Shows the filter row. */
 		filterable?: boolean
+		/** Bindable. Filter text per field. */
+		filters?: Record<string, string>
+		/** `"server"`: the grid doesn't filter `items` — it reports the filters (`onFiltersChange`,
+		 *  `onDataRequest`) and you replace `items`. Default `"client"` (`"server"` paging implies it). */
+		filterMode?: FilterMode
+		/** How filter inputs match the cell text: `normalized` (default; ignores case and diacritics), `case-insensitive`, `exact`. Columns can override. */
+		searchBehavior?: SearchBehavior
+		/** Locale for sorting text (numeric-aware) and showing Date values. Default: the browser's. */
+		culture?: Intl.Locale
+		/** Shows the pager. */
 		pageable?: boolean
+		/** Bindable. Rows per page. */
 		pageSize?: number
+		/** Offer these page sizes in the pager. */
+		pageSizes?: number[]
+		/** Bindable. 1-based; brought back into range when the page count shrinks. */
+		currentPage?: number
+		/** `"server"`: `items` is the current page (already filtered and sorted); the pager counts `totalItems`. */
+		paginationMode?: PaginationMode
+		/** Server mode: how many rows there are in total. Leave it undefined until known — `currentPage`
+		 *  is only clamped against a known total (a full page then counts as "maybe one more"). */
+		totalItems?: number
+		/** Before the pager (or, in server mode, a sort / filter change) changes the page: `false` stays,
+		 *  a number goes to that page instead. May be async (the pager is disabled meanwhile). */
+		beforePageChangeCallback?: (ctx: BeforePageChangeContext) => BeforePageChangeResult | Promise<BeforePageChangeResult>
+		/** Fires when the grid changed `currentPage` (pager, sort / filter reset, clamping). */
+		onCurrentPageChange?: (ctx: {currentPage: number}) => void
+		/** Fires when the page-size selector changed `pageSize`. */
+		onPageSizeChange?: (ctx: {pageSize: number}) => void
+		/** Fires when the displayed data should change — load it here in server mode. */
+		onDataRequest?: (detail: DataRequestDetail) => void
 		striped?: boolean
 		hoverable?: boolean
 		/** When true, appends an empty filler column at the end of every row that absorbs any remaining
@@ -98,14 +148,11 @@
 		treeLevelMember?: keyof T             // Optional — pre-computed depth (0-based). Falls back to deriving from path.
 		treeParentMember?: keyof T            // Optional — pre-computed parent path. Falls back to deriving from path.
 		treeSeparator?: string                // Path separator. Auto-detected from first row if omitted.
-		treeDataSorted?: boolean              // True when caller already sorted items so parents precede children. Default false → grid sorts internally.
-		expandedPaths?: Set<string>           // Bindable set of expanded path strings. Default: managed internally.
-		defaultExpandDepth?: number           // Initial expansion depth when expandedPaths not bound. Omit to expand all.
+		treeDataSorted?: boolean              // True when the caller's order is final (parents before children): the grid never reorders, `sort` only reports. Default false → grid orders by path, siblings by `sort`.
+		expandedPaths?: Set<string>           // Bindable set of expanded paths; written back on every toggle.
+		defaultExpandDepth?: number           // Expansion depth for parents the grid hasn't seen yet (initially, and new ones in `items`). Omit to expand all.
 		treeDoubleClickBehavior?: "none" | "toggle"  // "toggle": double-clicking the tree column toggles expand/collapse on rows with children. Default "none".
-		// Filter mode. When set, internal client-side filtering is bypassed and the caller
-		// owns the filtered dataset (typical for server-side search). Filter inputs still
-		// render and fire this callback with a copy of the current `{field: value}` map on
-		// every keystroke — debounce + post to your backend, then update `items`.
+		/** Fires on every filter input change with a copy of the `{field: value}` map. */
 		onFiltersChange?: (ctx: {filters: Record<string, string>}) => void
 		// Events
 		/** Fires after every committed cell edit (valid or not — see `isValid`). */
@@ -130,10 +177,24 @@
 	let {
 		items = [],
 		columns = [],
-		sortable = false,
+		sortMode = "none",
+		sort = $bindable([]),
+		onSortChange = undefined,
 		filterable = false,
+		filters = $bindable({}),
+		filterMode = "client",
+		searchBehavior = "normalized",
+		culture = defaultLocale(),
 		pageable = false,
-		pageSize = 10,
+		pageSize = $bindable(10),
+		pageSizes = undefined,
+		currentPage = $bindable(1),
+		paginationMode = "client",
+		totalItems = undefined,
+		beforePageChangeCallback = undefined,
+		onCurrentPageChange = undefined,
+		onPageSizeChange = undefined,
+		onDataRequest = undefined,
 		striped = true,
 		hoverable = true,
 		fillerColumn = false,
@@ -165,10 +226,9 @@
 		treeParentMember = undefined,
 		treeSeparator = undefined,
 		treeDataSorted = false,
-		expandedPaths = $bindable(undefined),
+		expandedPaths = $bindable(),
 		defaultExpandDepth = undefined,
 		treeDoubleClickBehavior = "none",
-		// Filter delegation
 		onFiltersChange = undefined,
 		// Callbacks
 		onRowChange = undefined,
@@ -229,16 +289,6 @@
 		if (column.maxWidth) parts.push(`max-width: ${column.maxWidth}`)
 		return parts.join("; ")
 	}
-
-	// Sorting state
-	let sortColumn = $state<string | null>(null)
-	let sortDirection = $state<"asc" | "desc">("asc")
-
-	// Filtering state
-	let filters = $state<Record<string, string>>({})
-
-	// Pagination state
-	let currentPage = $state(1)
 
 	// Editing state
 	// Interaction state is keyed by row key (never a view position), so it follows its row
@@ -443,8 +493,6 @@
 
 	// ============ Tree mode helpers ============
 	let isTreeMode = $derived(treePathMember !== undefined)
-	let internalExpandedPaths = $state(new Set<string>())
-	let treeInitialized = $state(false)
 
 	let resolvedTreeSeparator = $derived.by(() => {
 		if (treeSeparator) return treeSeparator
@@ -538,32 +586,23 @@
 		return treeParentPathSet.has(getRowPath(item))
 	}
 
-	let resolvedExpandedPaths = $derived(expandedPaths ?? internalExpandedPaths)
+	const NO_PATHS = new Set<string>()
+	let resolvedExpandedPaths = $derived(expandedPaths ?? NO_PATHS)
 
 	function isPathExpanded(path: string): boolean {
 		return resolvedExpandedPaths.has(path)
 	}
 
-	function toggleExpand(path: string) {
-		if (expandedPaths !== undefined) {
-			const next = new Set(expandedPaths)
-			if (next.has(path)) next.delete(path)
-			else next.add(path)
-			expandedPaths = next
-		} else {
-			const next = new Set(internalExpandedPaths)
-			if (next.has(path)) next.delete(path)
-			else next.add(path)
-			internalExpandedPaths = next
-		}
+	// Every expansion change (toggle, expand-all, …) goes through here and writes the bindable back.
+	function setExpandedPaths(next: Set<string>) {
+		expandedPaths = next
 	}
 
-	// Replace the entire expanded-paths set, respecting the bound vs internal split that
-	// `toggleExpand` uses. Centralized so every bulk mutation (expand-all, collapse-all,
-	// subtree variants) goes through one code path.
-	function setExpandedPaths(next: Set<string>) {
-		if (expandedPaths !== undefined) expandedPaths = next
-		else internalExpandedPaths = next
+	function toggleExpand(path: string) {
+		const next = new Set(resolvedExpandedPaths)
+		if (next.has(path)) next.delete(path)
+		else next.add(path)
+		setExpandedPaths(next)
 	}
 
 	// Walk ancestors of `path` until we find one that is currently expanded; returns its
@@ -582,37 +621,55 @@
 		return null
 	}
 
-	// Initialize internal expansion when items first arrive (only if no external binding).
-	// `defaultExpandDepth` is interpreted relative to the shallowest level present in the
-	// dataset, not absolute level 0 — so a partial tree where the shallowest row is level 3
-	// still gets its own "roots" expanded.
+	let rowByPath = $derived(isTreeMode ? new Map(items.map((it) => [getRowPath(it), it])) : new Map<string, T>())
+
+	// Default expansion for parents the grid hasn't seen yet — on the first non-empty `items`
+	// (unless `expandedPaths` came with a set) and for new parents arriving later; parents seen
+	// before keep their state. `defaultExpandDepth` is relative to the shallowest level present.
+	const seenParentPaths = new Set<string>()
+	let expansionSeeded = false
 	$effect(() => {
-		if (!isTreeMode) return
-		if (expandedPaths !== undefined) return
-		if (treeInitialized) return
-		if (items.length === 0) return
-		let minLevel = Infinity
-		for (const item of items) minLevel = Math.min(minLevel, getRowLevel(item))
-		if (!Number.isFinite(minLevel)) minLevel = 0
-		const next = new Set<string>()
-		for (const item of items) {
-			const level = getRowLevel(item) - minLevel
-			if (defaultExpandDepth === undefined || level < defaultExpandDepth) {
-				next.add(getRowPath(item))
+		if (!isTreeMode || items.length === 0) return
+		const parents = treeParentPathSet
+		untrack(() => {
+			const fresh = [...parents].filter((p) => !seenParentPaths.has(p))
+			for (const p of fresh) seenParentPaths.add(p)
+			const current = expandedPaths
+			if (!expansionSeeded) {
+				expansionSeeded = true
+				if (current !== undefined) return  // the consumer's initial set wins
 			}
+			if (fresh.length === 0 && current !== undefined) return
+			let minLevel = Infinity
+			for (const item of items) minLevel = Math.min(minLevel, getRowLevel(item))
+			if (!Number.isFinite(minLevel)) minLevel = 0
+			const next = new Set(current ?? [])
+			for (const path of fresh) {
+				const row = rowByPath.get(path)
+				const level = (row ? getRowLevel(row) : path.split(resolvedTreeSeparator).filter(Boolean).length - 1) - minLevel
+				if (defaultExpandDepth === undefined || level < defaultExpandDepth) next.add(path)
+			}
+			if (current === undefined || next.size !== current.size) setExpandedPaths(next)
+		})
+	})
+
+	// Nearest ancestor that is a row ("" = none): virtual ancestors (not in `items`) never gate.
+	function getRowParent(item: T): string {
+		const sep = resolvedTreeSeparator
+		let parent = getRowParentPath(item)
+		while (parent && !treePathSet.has(parent)) {
+			const i = parent.lastIndexOf(sep)
+			parent = i >= 0 ? parent.slice(0, i) : ""
 		}
-		internalExpandedPaths = next
-		treeInitialized = true
-	})
+		return parent
+	}
+	const treeAccess: TreeAccess<T> = {getPath: (row) => getRowPath(row), getParent: (row) => getRowParent(row)}
 
-	// ============ Display chain ============
+	// ============ Display chain: filter → sort → tree visibility → page (quickgrid/pipeline.ts) ============
 
-	// Tree-ordered: caller-sorted, or sorted internally by path
-	let treeOrderedItems = $derived.by(() => {
-		if (!isTreeMode) return items
-		if (treeDataSorted) return items
-		return [...items].sort((a, b) => compareTreePaths(getRowPath(a), getRowPath(b)))
-	})
+	// Server paging: `items` is the page, already filtered and sorted by the server.
+	let isServerPaging = $derived(paginationMode === "server")
+	let collator = $derived(new Intl.Collator(culture.baseName, {numeric: true}))
 
 	// Per-field validity for custom filters — `false` when the column's filter predicate
 	// returned null on the first row (probe), meaning the input is syntactically invalid
@@ -631,108 +688,58 @@
 		return result
 	})
 
-	// Computed: filtered items (tree-aware: includes ancestors of matches).
-	// When `onFiltersChange` is provided the caller owns filtering — we render the inputs
-	// and fire the callback, but skip internal filtering entirely (server-side mode).
-	let filteredItems = $derived.by(() => {
-		if (onFiltersChange) return treeOrderedItems
-		if (!filterable || Object.keys(filters).length === 0) return treeOrderedItems
+	// Matches the text the cell shows (getDisplayValueCallback / formatted value) under `searchBehavior`.
+	let rowFilter = $derived(
+		filterable && filterMode === "client" && !isServerPaging
+			? createRowFilter({filters, columns, searchBehavior, getText: (row, column) => formatCellValue(row[column.field as keyof T], row, column)})
+			: null
+	)
+	let isFiltering = $derived(rowFilter !== null)
 
-		const matchesFilter = (item: T) =>
-			Object.entries(filters).every(([field, filterValue]) => {
-				if (!filterValue) return true
-				// Per-column custom predicate wins over the built-in substring match.
-				const col = columns.find((c) => String(c.field) === field)
-				if (col?.filterCallback) {
-					const result = col.filterCallback({term: filterValue, row: item, column: col})
-					// null = invalid input → don't filter, treat row as a match.
-					return result === null ? true : result
-				}
-				const cellValue = String(item[field as keyof T] ?? "").toLowerCase()
-				return cellValue.includes(filterValue.toLowerCase())
-			})
+	let rowComparator = $derived(sortMode !== "none" && !isServerPaging ? createRowComparator(sort, columns, collator) : null)
 
-		if (!isTreeMode) return treeOrderedItems.filter(matchesFilter)
-
-		// Tree mode: include matched rows + all their ancestors so the hierarchy reads correctly
-		const matchedPaths = new Set<string>()
-		for (const item of treeOrderedItems) {
-			if (matchesFilter(item)) matchedPaths.add(getRowPath(item))
-		}
-		const includePaths = new Set(matchedPaths)
-		const sep = resolvedTreeSeparator
-		for (const path of matchedPaths) {
-			let parent = path
-			const idx0 = parent.lastIndexOf(sep)
-			parent = idx0 >= 0 ? parent.slice(0, idx0) : ""
-			while (parent) {
-				includePaths.add(parent)
-				const idx = parent.lastIndexOf(sep)
-				parent = idx >= 0 ? parent.slice(0, idx) : ""
-			}
-		}
-		return treeOrderedItems.filter((i) => includePaths.has(getRowPath(i)))
+	// Filtered and sorted. Tree: matches + their ancestors, depth-first, siblings sorted within
+	// their parent (by path when unsorted); `treeDataSorted` keeps the caller's order.
+	let orderedItems = $derived.by(() => {
+		if (!isTreeMode) return sortRows(rowFilter ? items.filter(rowFilter) : items, rowComparator)
+		const rows = rowFilter ? filterTreeRows(items, treeAccess, rowFilter) : items
+		if (treeDataSorted) return rows
+		const byPath = (a: T, b: T) => compareTreePaths(getRowPath(a), getRowPath(b))
+		const compare = rowComparator
+		return treeOrder(rows, treeAccess, compare ? (a, b) => compare(a, b) || byPath(a, b) : byPath)
 	})
 
-	// Computed: sorted items. Tree mode preserves hierarchy and ignores column sort.
-	let sortedItems = $derived.by(() => {
-		if (isTreeMode) return filteredItems
-		if (!sortColumn) return filteredItems
+	// Tree: descendants of collapsed rows hidden — except while filtering, when every match
+	// shows with its ancestors (chevrons then show expanded and are disabled).
+	let visibleItems = $derived(isTreeMode && !isFiltering ? visibleTreeRows(orderedItems, treeAccess, isPathExpanded) : orderedItems)
 
-		return [...filteredItems].sort((a, b) => {
-			const aVal = a[sortColumn as keyof T]
-			const bVal = b[sortColumn as keyof T]
+	// While filtering: the rows that have a matching child.
+	let filteredParentPaths = $derived(isTreeMode && isFiltering ? new Set(visibleItems.map((it) => getRowParent(it)).filter(Boolean)) : NO_PATHS)
 
-			if (aVal === bVal) return 0
+	// What the pager counts: the visible rows, or the server's `totalItems`.
+	let pagedTotal = $derived(isServerPaging ? (totalItems ?? items.length) : visibleItems.length)
+	// Server mode without `totalItems`: a full page means there may be another one.
+	let totalPages = $derived(isServerPaging && totalItems === undefined
+		? Math.max(1, currentPage) + (items.length >= pageSize ? 1 : 0)
+		: getPageCount(pagedTotal, pageSize))
+	let effectivePage = $derived(clampPage(currentPage, totalPages))
 
-			let comparison = 0
-			if (typeof aVal === "string" && typeof bVal === "string") {
-				comparison = aVal.localeCompare(bVal)
-			} else if (typeof aVal === "number" && typeof bVal === "number") {
-				comparison = aVal - bVal
-			} else {
-				comparison = String(aVal).localeCompare(String(bVal))
-			}
+	let displayItems = $derived(!pageable || isServerPaging ? visibleItems : pageSlice(visibleItems, effectivePage, pageSize))
 
-			return sortDirection === "asc" ? comparison : -comparison
+	// The page count shrank (rows deleted / filtered / collapsed, smaller `totalItems`): bring
+	// `currentPage` back into range — server mode then asks for that page.
+	$effect(() => {
+		const page = effectivePage
+		if (!pageable) return
+		untrack(() => {
+			if (page === currentPage) return
+			setPage(page, isServerPaging ? "page" : null)
 		})
 	})
 
-	// Computed: visible items — hide descendants of collapsed nodes (tree only).
-	// When a filter is active, ancestors are already auto-included above and we render the
-	// full filtered set so users can see matches inside otherwise-collapsed branches.
-	// Ancestors that aren't actually present as rows in the dataset are treated as virtual
-	// roots and never gate visibility (supports partial-tree / subtree views).
-	let visibleItems = $derived.by(() => {
-		if (!isTreeMode) return sortedItems
-		const filterActive = filterable && Object.values(filters).some((v) => !!v)
-		if (filterActive) return sortedItems
-		const sep = resolvedTreeSeparator
-		return sortedItems.filter((item) => {
-			let parent = getRowParentPath(item)
-			while (parent) {
-				if (treePathSet.has(parent) && !resolvedExpandedPaths.has(parent)) return false
-				const idx = parent.lastIndexOf(sep)
-				parent = idx >= 0 ? parent.slice(0, idx) : ""
-			}
-			return true
-		})
+	onMount(() => {
+		if (isServerPaging) requestData("init")
 	})
-
-	// Computed: paginated items
-	let paginatedItems = $derived.by(() => {
-		if (!pageable) return visibleItems
-
-		const start = (currentPage - 1) * pageSize
-		const end = start + pageSize
-		return visibleItems.slice(start, end)
-	})
-
-	// Computed: total pages
-	let totalPages = $derived(Math.ceil(visibleItems.length / pageSize))
-
-	// Display items (final result)
-	let displayItems = $derived(paginatedItems)
 
 	// Body rows with their {#each} key: the row key, suffixed for repeats (duplicate ids, or
 	// the same object twice in items) so a keyed each never throws on them.
@@ -746,29 +753,117 @@
 		})
 	})
 
-	function handleSort(column: Column<T>) {
-		if (!sortable || !column.sortable) return
-
-		const field = String(column.field)
-		if (sortColumn === field) {
-			sortDirection = sortDirection === "asc" ? "desc" : "asc"
-		} else {
-			sortColumn = field
-			sortDirection = "asc"
-		}
+	function requestData(trigger: DataRequestTrigger) {
+		onDataRequest?.({
+			sort: [...sort], page: currentPage, pageSize, trigger, mode: "replace",
+			skip: (currentPage - 1) * pageSize, filters: {...filters}
+		})
 	}
 
-	function handleFilter(field: string, value: string) {
-		filters[field] = value
-		currentPage = 1 // Reset to first page when filtering
-		// Pass a shallow copy so callers can't mutate our internal state.
-		onFiltersChange?.({filters: {...filters}})
+	function setPage(page: number, trigger: DataRequestTrigger | null) {
+		const changed = page !== currentPage
+		currentPage = page
+		if (changed) onCurrentPageChange?.({currentPage: page})
+		if (trigger) requestData(trigger)
+	}
+
+	// A user action that changes the page runs `apply(page)` once `beforePageChangeCallback`
+	// allows it (`false` → nothing happens, a number → that page). Resolves to whether it applied.
+	let pageChangePending = $state(false)
+	async function guardPageChange(trigger: PageChangeTrigger, toPage: number, apply: (page: number) => void): Promise<boolean> {
+		if (pageChangePending) return false
+		if (!beforePageChangeCallback) {
+			apply(toPage)
+			return true
+		}
+		let result: BeforePageChangeResult
+		try {
+			const returned = beforePageChangeCallback({trigger, fromPage: effectivePage, toPage, invalidCells: [...invalidCells]})
+			if (returned instanceof Promise) {
+				pageChangePending = true
+				result = await returned
+			} else {
+				result = returned
+			}
+		} catch (error) {
+			console.error("[QuickGrid] beforePageChangeCallback failed", error)
+			result = false
+		} finally {
+			pageChangePending = false
+		}
+		if (result === false) return false
+		apply(typeof result === "number" && Number.isFinite(result) ? clampPage(result, totalPages) : toPage)
+		return true
 	}
 
 	function goToPage(page: number) {
-		if (page >= 1 && page <= totalPages) {
-			currentPage = page
+		const target = clampPage(page, totalPages)
+		if (target === effectivePage) return
+		void guardPageChange("page", target, (p) => setPage(p, "page"))
+	}
+
+	function changePageSize(select: HTMLSelectElement) {
+		const size = Number(select.value)
+		if (!(size > 0) || size === pageSize) return
+		void guardPageChange("page-size", 1, (p) => {
+			pageSize = size
+			onPageSizeChange?.({pageSize: size})
+			setPage(p, "page-size")
+		}).then((applied) => {
+			if (!applied) select.value = String(pageSize)
+		})
+	}
+
+	// The pager's size choices (the current size included).
+	let pageSizeChoices = $derived(pageSizes?.length ? [...new Set([...pageSizes, pageSize])].sort((a, b) => a - b) : [])
+
+	function isColumnSortable(column: Column<T>): boolean {
+		return sortMode !== "none" && column.sortable !== false
+	}
+
+	function getSortIndex(column: Column<T>): number {
+		return sort.findIndex((s) => s.column === String(column.field))
+	}
+
+	// Header click: asc → desc → unsorted; "multiple" mode: Ctrl / ⌘ + click adds the column.
+	// Back to page 1; in server mode that goes through beforePageChangeCallback first.
+	function handleSort(column: Column<T>, event: MouseEvent) {
+		if (!isColumnSortable(column)) return
+		const next = nextSort(sort, String(column.field), sortMode, event.ctrlKey || event.metaKey)
+		const apply = (page: number) => {
+			sort = next
+			onSortChange?.({sort: next})
+			if (pageable) setPage(page, null)
+			requestData("sort")
 		}
+		if (isServerPaging && pageable) void guardPageChange("sort", 1, apply)
+		else apply(1)
+	}
+
+	function handleFilter(field: string, input: HTMLInputElement) {
+		const value = input.value
+		if ((filters[field] ?? "") === value) return
+		const apply = (page: number) => {
+			const next = {...filters}
+			if (value) next[field] = value
+			else delete next[field]
+			filters = next
+			onFiltersChange?.({filters: {...next}})
+			if (pageable) setPage(page, null)
+			requestData("filter")
+		}
+		if (isServerPaging && pageable) {
+			void guardPageChange("filter", 1, apply).then((applied) => {
+				if (!applied) input.value = filters[field] ?? ""
+			})
+		} else apply(1)
+	}
+
+	// A value as the cell shows it: getDisplayValueCallback, else a Date as a local date, else the text.
+	function formatCellValue(value: unknown, row: T, column: Column<T>): string {
+		if (column.getDisplayValueCallback) return column.getDisplayValueCallback({value, row, column})
+		if (value instanceof Date) return Number.isNaN(value.getTime()) ? "" : value.toLocaleDateString(culture.baseName)
+		return String(value ?? "")
 	}
 
 	// A cell's value: its pending invalid override, else the live item value.
@@ -785,16 +880,13 @@
 		const value = rowKey !== undefined
 			? getCellRawValue(item, rowKey, String(column.field))
 			: item[column.field as keyof T]
-		if (column.getDisplayValueCallback) {
-			return column.getDisplayValueCallback({value, row: item, column})
-		}
-		return String(value ?? "")
+		return formatCellValue(value, item, column)
 	}
 
 	// The cell's text for an editor (autocomplete shows it when no option has the value).
 	function getEditorDisplayText(item: T, column: Column<T>, rowKey: string): string {
 		const value = getCellRawValue(item, rowKey, String(column.field))
-		return column.getDisplayValueCallback ? column.getDisplayValueCallback({value, row: item, column}) : String(value ?? "")
+		return formatCellValue(value, item, column)
 	}
 
 	function hasTemplate(column: Column<T>): boolean {
@@ -2106,7 +2198,7 @@
 									class:invalid={filterValidity[String(column.field)] === false}
 									placeholder="Filter..."
 									value={filters[String(column.field)] || ""}
-									oninput={(e) => handleFilter(String(column.field), e.currentTarget.value)}
+									oninput={(e) => handleFilter(String(column.field), e.currentTarget)}
 								/>
 							{/if}
 						</th>
@@ -2121,13 +2213,15 @@
 					<th class="actions-column"></th>
 				{/if}
 				{#each columns as column}
+					{@const sortIndex = getSortIndex(column)}
+					{@const sortState = sortIndex >= 0 ? sort[sortIndex] : undefined}
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<th
-						class={`column-header ${column.sortable !== false && sortable ? "sortable" : ""} ${
-							sortColumn === String(column.field) ? `sorted sorted-${sortDirection}` : ""
+						class={`column-header ${isColumnSortable(column) ? "sortable" : ""} ${
+							sortState ? `sorted sorted-${sortState.direction}` : ""
 						}`}
 						style={getColumnHeaderStyle(column, true)}
-						onclick={() => handleSort(column)}
+						onclick={(e) => handleSort(column, e)}
 					>
 						<div class="column-header-content">
 							<span>{column.title}</span>
@@ -2136,10 +2230,10 @@
 									<Icon name="info" size={16} color="accent" title={column.headerInfo} />
 								</span>
 							{/if}
-							{#if column.sortable !== false && sortable}
+							{#if isColumnSortable(column)}
 								<span class="sort-indicator">
-									{#if sortColumn === String(column.field)}
-										{sortDirection === "asc" ? "▲" : "▼"}
+									{#if sortState}
+										{sortState.direction === "asc" ? "▲" : "▼"}{#if sort.length > 1}<span class="sort-priority">{sortIndex + 1}</span>{/if}
 									{:else}
 										<span class="sort-placeholder">⬍</span>
 									{/if}
@@ -2295,8 +2389,8 @@
 								{#if isTreeMode && column.tree}
 									{@const _path = getRowPath(item)}
 									{@const _level = getRowLevel(item)}
-									{@const _hasChildren = rowHasChildren(item)}
-									{@const _expanded = isPathExpanded(_path)}
+									{@const _hasChildren = isFiltering ? filteredParentPaths.has(_path) : rowHasChildren(item)}
+									{@const _expanded = isFiltering || isPathExpanded(_path)}
 									<!-- svelte-ignore a11y_no_static_element_interactions -->
 									<div
 										class="tree-cell"
@@ -2317,9 +2411,10 @@
 												type="button"
 												class="tree-chevron"
 												class:expanded={_expanded}
+												disabled={isFiltering}
 												onclick={(e) => { e.stopPropagation(); toggleExpand(_path) }}
 												ondblclick={(e) => e.stopPropagation()}
-												title={_expanded ? "Collapse" : "Expand"}
+												title={isFiltering ? "Clear the filter to collapse" : _expanded ? "Collapse" : "Expand"}
 											>
 												▶
 											</button>
@@ -2342,27 +2437,43 @@
 		</tbody>
 	</table>
 
-	{#if pageable && totalPages > 1}
-		<div class="pagination">
+	{#if pageable && (totalPages > 1 || pageSizeChoices.length > 0)}
+		<div class="pagination" aria-busy={pageChangePending || null}>
+			{#if pageSizeChoices.length > 0}
+				<label class="pagination-size">
+					<select
+						class="pagination-size-select"
+						value={pageSize}
+						disabled={pageChangePending}
+						onchange={(e) => changePageSize(e.currentTarget)}
+					>
+						{#each pageSizeChoices as size (size)}
+							<option value={size}>{size}</option>
+						{/each}
+					</select>
+					per page
+				</label>
+			{/if}
+
 			<button
 				class="pagination-btn"
-				disabled={currentPage === 1}
-				onclick={() => goToPage(currentPage - 1)}
+				disabled={effectivePage <= 1 || pageChangePending}
+				onclick={() => goToPage(effectivePage - 1)}
 			>
 				Previous
 			</button>
 
 			<div class="pagination-info">
-				Page {currentPage} of {totalPages}
+				Page {effectivePage} of {totalPages}
 				<span class="item-count">
-					({sortedItems.length} item{sortedItems.length !== 1 ? "s" : ""})
+					({pagedTotal} item{pagedTotal !== 1 ? "s" : ""})
 				</span>
 			</div>
 
 			<button
 				class="pagination-btn"
-				disabled={currentPage === totalPages}
-				onclick={() => goToPage(currentPage + 1)}
+				disabled={effectivePage >= totalPages || pageChangePending}
+				onclick={() => goToPage(effectivePage + 1)}
 			>
 				Next
 			</button>
@@ -2535,6 +2646,12 @@
 		color: var(--accent-fill-rest, currentColor);
 	}
 
+	.sort-priority {
+		font-size: 9px;
+		margin-inline-start: 1px;
+		vertical-align: super;
+	}
+
 	.sort-placeholder {
 		color: var(--neutral-foreground-rest, currentColor);
 		opacity: 0.3;
@@ -2702,6 +2819,28 @@
 	.pagination-btn:disabled {
 		opacity: 0.4;
 		cursor: not-allowed;
+	}
+
+	.pagination-size {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 12px;
+		color: var(--neutral-foreground-hint, #707070);
+	}
+
+	.pagination-size-select {
+		padding: 4px 6px;
+		background: var(--neutral-layer-1, #ffffff);
+		border: 1px solid var(--neutral-stroke-input-rest, #d1d1d1);
+		border-radius: var(--control-corner-radius, 4px);
+		color: var(--neutral-foreground-rest, #242424);
+		font: inherit;
+	}
+
+	.tree-chevron:disabled {
+		cursor: default;
+		opacity: 0.5;
 	}
 
 	.pagination-info {

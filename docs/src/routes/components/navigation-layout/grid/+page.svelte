@@ -349,19 +349,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Grid Properties</h2>
-				<QuickGrid items={gridProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={gridProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Grid Callbacks</h2>
-				<QuickGrid items={gridCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={gridCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Grid Slots</h2>
-				<QuickGrid items={gridSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={gridSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -370,19 +370,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>GridItem Properties</h2>
-				<QuickGrid items={gridItemProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={gridItemProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>GridItem Callbacks</h2>
-				<QuickGrid items={gridItemCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={gridItemCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>GridItem Slots</h2>
-				<QuickGrid items={gridItemSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={gridItemSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

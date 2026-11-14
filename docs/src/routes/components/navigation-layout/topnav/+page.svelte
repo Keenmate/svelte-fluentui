@@ -220,19 +220,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>TopNav Properties</h2>
-				<QuickGrid items={topNavProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={topNavProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>TopNav Callbacks</h2>
-				<QuickGrid items={topNavCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={topNavCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>TopNav Slots</h2>
-				<QuickGrid items={topNavSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={topNavSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

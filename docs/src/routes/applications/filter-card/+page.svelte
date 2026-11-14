@@ -159,7 +159,7 @@
 	</Card>
 
 	<Card>
-		<QuickGrid items={filtered} {columns} sortable filterable striped />
+		<QuickGrid items={filtered} {columns} sortMode="single" filterable striped />
 	</Card>
 
 	<Card>

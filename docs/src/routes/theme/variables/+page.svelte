@@ -300,7 +300,7 @@
 		<QuickGrid
 			items={variables}
 			columns={columns}
-			sortable
+			sortMode="single"
 			filterable
 			striped
 			pageable

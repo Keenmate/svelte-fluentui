@@ -298,19 +298,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavMenu Properties</h2>
-				<QuickGrid items={navMenuProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navMenuProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavMenu Callbacks</h2>
-				<QuickGrid items={navMenuCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navMenuCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavMenu Slots</h2>
-				<QuickGrid items={navMenuSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navMenuSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -319,19 +319,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavGroup Properties</h2>
-				<QuickGrid items={navGroupProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navGroupProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavGroup Callbacks</h2>
-				<QuickGrid items={navGroupCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navGroupCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavGroup Slots</h2>
-				<QuickGrid items={navGroupSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navGroupSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -340,19 +340,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavLinkItem Properties</h2>
-				<QuickGrid items={navLinkItemProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navLinkItemProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavLinkItem Callbacks</h2>
-				<QuickGrid items={navLinkItemCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navLinkItemCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavLinkItem Slots</h2>
-				<QuickGrid items={navLinkItemSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navLinkItemSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -361,19 +361,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavItem Properties</h2>
-				<QuickGrid items={navItemProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navItemProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavItem Callbacks</h2>
-				<QuickGrid items={navItemCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navItemCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>NavItem Slots</h2>
-				<QuickGrid items={navItemSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={navItemSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

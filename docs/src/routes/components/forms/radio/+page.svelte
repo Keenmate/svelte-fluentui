@@ -200,19 +200,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>RadioGroup Properties</h2>
-				<QuickGrid items={radioGroupProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={radioGroupProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>RadioGroup Callbacks</h2>
-				<QuickGrid items={radioCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={radioCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>RadioGroup Slots</h2>
-				<QuickGrid items={radioGroupSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={radioGroupSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -221,13 +221,13 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Radio Properties</h2>
-				<QuickGrid items={radioProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={radioProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Radio Slots</h2>
-				<QuickGrid items={radioSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={radioSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

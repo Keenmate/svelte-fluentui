@@ -109,7 +109,17 @@ export type {
 	QuickGridContextMenuContext,
 	QuickGridContextMenuAction,
 	QuickGridContextMenuConfig,
-	QuickGridActionDetail
+	QuickGridActionDetail,
+	QuickGridSortMode,
+	QuickGridSortDirection,
+	QuickGridSortState,
+	QuickGridPaginationMode,
+	QuickGridFilterMode,
+	QuickGridDataRequestTrigger,
+	QuickGridDataRequestDetail,
+	QuickGridPageChangeTrigger,
+	QuickGridBeforePageChangeContext,
+	QuickGridBeforePageChangeResult
 } from "./components/QuickGrid.types.js"
 export {default as SiteSettings} from "./components/SiteSettings.svelte"
 export {default as Tab} from "./components/Tab.svelte"

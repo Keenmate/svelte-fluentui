@@ -105,7 +105,7 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Properties</h2>
-				<QuickGrid items={properties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={properties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

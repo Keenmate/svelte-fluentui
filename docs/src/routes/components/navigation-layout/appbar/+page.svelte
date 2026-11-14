@@ -200,19 +200,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>AppBar Properties</h2>
-				<QuickGrid items={appBarProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={appBarProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>AppBar Callbacks</h2>
-				<QuickGrid items={appBarCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={appBarCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>AppBar Slots</h2>
-				<QuickGrid items={appBarSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={appBarSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -221,26 +221,26 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>AppBarItem Properties</h2>
-				<QuickGrid items={appBarItemProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={appBarItemProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>AppBarItem Callbacks</h2>
-				<QuickGrid items={appBarItemCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={appBarItemCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>AppBarItem Slots</h2>
-				<QuickGrid items={appBarItemSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={appBarItemSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12}>
 			<Card>
 				<h2 id="css-variables">AppBarItem CSS Variables</h2>
 				<p>Count badge styling. Set them on the AppBar, an AppBarItem (via <code>class</code>) or any ancestor.</p>
-				<QuickGrid items={appBarItemCssVariables} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={appBarItemCssVariables} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

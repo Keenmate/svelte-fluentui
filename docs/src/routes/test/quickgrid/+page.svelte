@@ -159,7 +159,7 @@
 
 <!-- Sortable grid without idMember: itemIndex survives sorting (row toolbar + context menu too). -->
 <div id="sorted-wrap">
-	<QuickGrid items={sortedRows} columns={[nameColumn]} sortable editable editTrigger="dblclick"
+	<QuickGrid items={sortedRows} columns={[nameColumn]} sortMode="single" editable editTrigger="dblclick"
 		contextMenu={[{id: "pick", text: "Pick"}]}
 		onAction={({viewIndex, itemIndex}) => sortedLog.push(`action:${itemIndex}/${viewIndex}`)}
 		onRowChange={({itemIndex, viewIndex, draftRow, isValid}) => {

@@ -645,19 +645,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Properties</h2>
-				<QuickGrid items={selectProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={selectProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Callbacks</h2>
-				<QuickGrid items={callbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={callbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Slots</h2>
-				<QuickGrid items={slots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={slots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -665,6 +665,6 @@
 	<Card>
 		<h2>Option Properties</h2>
 		<p>Props on the <code>&lt;Option&gt;</code> child component.</p>
-		<QuickGrid items={optionProperties} columns={propertyColumns} sortable filterable striped />
+		<QuickGrid items={optionProperties} columns={propertyColumns} sortMode="single" filterable striped />
 	</Card>
 </Stack>

@@ -851,25 +851,25 @@
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>Properties</h2>
-				<QuickGrid items={properties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={properties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>Callbacks</h2>
-				<QuickGrid items={callbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={callbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>Snippets</h2>
-				<QuickGrid items={slots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={slots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6}>
 			<Card>
 				<h2>Instance API (bind:this)</h2>
-				<QuickGrid items={instanceMethods} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={instanceMethods} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

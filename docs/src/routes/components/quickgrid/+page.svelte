@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
+	import type {QuickGridDataRequestDetail, QuickGridSortState} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
 	type Property = {
@@ -12,10 +13,19 @@
 	const properties: Property[] = [
 		{name: "items", type: "T[]", default: "[]", description: "Array of data items to display"},
 		{name: "columns", type: "QuickGridColumn<T>[]", default: "[]", description: "Column definitions"},
-		{name: "sortable", type: "boolean", default: "false", description: "Enable sorting globally for all columns"},
-		{name: "filterable", type: "boolean", default: "false", description: "Enable filtering globally for all columns"},
-		{name: "pageable", type: "boolean", default: "false", description: "Enable pagination"},
-		{name: "pageSize", type: "number", default: "10", description: "Number of items per page"},
+		{name: "sortMode", type: '"none" | "single" | "multiple"', default: '"none"', description: "Header-click sorting. A click cycles ascending → descending → unsorted; in \"multiple\" mode Ctrl / ⌘ + click adds the column to the sort. Every column is sortable unless it sets sortable: false"},
+		{name: "sort", type: "QuickGridSortState[]", default: "[]", description: "Bindable. The sort, first entry first ({column, direction: \"asc\" | \"desc\"}); set it for an initial or server-side sort. Text sorts numeric-aware in culture's collation, Dates by time, empty values (null / undefined / \"\") always last"},
+		{name: "filterable", type: "boolean", default: "false", description: "Show the filter row (every column has an input unless it sets filterable: false)"},
+		{name: "filters", type: "Record<string, string>", default: "{}", description: "Bindable. Filter text per field"},
+		{name: "filterMode", type: '"client" | "server"', default: '"client"', description: "\"server\": the grid doesn't filter items — it reports the filters (onFiltersChange / onDataRequest) and you replace items. paginationMode=\"server\" implies it"},
+		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How filter inputs match the cell's displayed text (getDisplayValueCallback): normalized ignores case and diacritics (zurich finds Zürich). A column can override it"},
+		{name: "culture", type: "Intl.Locale", default: "browser locale", description: "Locale for sorting text and showing Date values"},
+		{name: "pageable", type: "boolean", default: "false", description: "Show the pager"},
+		{name: "pageSize", type: "number", default: "10", description: "Bindable. Rows per page"},
+		{name: "pageSizes", type: "number[]", default: "undefined", description: "Page sizes offered in the pager (the pager then always shows)"},
+		{name: "currentPage", type: "number", default: "1", description: "Bindable. 1-based. Brought back into range whenever the page count shrinks (rows removed, filtered, collapsed, smaller totalItems)"},
+		{name: "paginationMode", type: '"client" | "server"', default: '"client"', description: "\"server\": items is the current page, already filtered and sorted — the grid neither filters, sorts nor slices it; load pages in onDataRequest"},
+		{name: "totalItems", type: "number", default: "undefined", description: "Server mode: the total row count the pager shows and pages over. Leave it undefined until the first response — currentPage is only clamped against a known total"},
 		{name: "striped", type: "boolean", default: "true", description: "Alternate row background colors"},
 		{name: "hoverable", type: "boolean", default: "true", description: "Highlight rows on mouse hover"},
 		{name: "fillerColumn", type: "boolean", default: "false", description: "Append an empty trailing column that absorbs leftover horizontal space, so preceding columns keep their defined widths instead of stretching to justify"},
@@ -35,6 +45,12 @@
 	]
 
 	const callbacks: Property[] = [
+		{name: "onSortChange", type: "(ctx: {sort: QuickGridSortState[]}) => void", default: "undefined", description: "Fired when a header click changed the sort"},
+		{name: "onFiltersChange", type: "(ctx: {filters: Record<string, string>}) => void", default: "undefined", description: "Fired on every filter input change with a copy of the {field: value} map"},
+		{name: "onCurrentPageChange", type: "(ctx: {currentPage: number}) => void", default: "undefined", description: "Fired when the grid changed currentPage (pager, a sort / filter / page-size change going back to page 1, clamping)"},
+		{name: "onPageSizeChange", type: "(ctx: {pageSize: number}) => void", default: "undefined", description: "Fired when the page-size selector changed pageSize"},
+		{name: "onDataRequest", type: "(detail: QuickGridDataRequestDetail) => void", default: "undefined", description: "Fired when the displayed data should change: {sort, page, pageSize, skip, filters, mode: \"replace\", trigger: \"init\" | \"page\" | \"page-size\" | \"sort\" | \"filter\"}. \"init\" fires once on mount in server mode. Load the page here in paginationMode=\"server\""},
+		{name: "beforePageChangeCallback", type: "(ctx: QuickGridBeforePageChangeContext) => boolean | number | void | Promise<…>", default: "undefined", description: "Runs before the pager (and, in server mode, a sort / filter change) changes the page. ctx: {trigger, fromPage, toPage, invalidCells}. Return false to stay, a number to go to that page instead; may be async (the pager is disabled meanwhile)"},
 		{name: "onRowChange", type: "(ctx: QuickGridRowChangeDetail<T>) => void", default: "undefined", description: "Fired when a cell value is committed during inline editing. Detail includes row, draftRow, viewIndex, itemIndex, rowKey, field, oldValue, newValue, isValid, validationError, invalidFields, isRowValid"},
 		{name: "onEditStart", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column }) => void", default: "undefined", description: "Fired when a cell enters edit mode"},
 		{name: "onEditCancel", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column }) => void", default: "undefined", description: "Fired when editing is cancelled (e.g. Escape key)"},
@@ -89,6 +105,10 @@
 		{field: "email", title: "Email"},
 		{field: "city", title: "City"}
 	]
+
+	let multiSort = $state<QuickGridSortState[]>([{column: "city", direction: "asc"}, {column: "age", direction: "desc"}])
+	let clientPage = $state(1)
+	let clientPageSize = $state(5)
 
 	const sortableColumns = [
 		{field: "id", title: "ID", width: "80px", sortable: true},
@@ -145,6 +165,43 @@
 		{field: "bio", title: "Bio (wraps)", maxWidth: "260px"}
 	]
 
+	// Server-side paging: a fake server (setTimeout over a local array) answering onDataRequest.
+	type Customer = {id: number; name: string; city: string; orders: number}
+	const cities = ["Praha", "Zürich", "Oslo", "Brno", "Wien"]
+	const serverSource: Customer[] = Array.from({length: 87}, (_, i) => ({
+		id: i + 1, name: `Customer ${i + 1}`, city: cities[i % cities.length], orders: (i * 37) % 120
+	}))
+	const serverColumns = [
+		{field: "id", title: "ID", width: "80px"},
+		{field: "name", title: "Name"},
+		{field: "city", title: "City"},
+		{field: "orders", title: "Orders", width: "100px", align: "end" as const, filterable: false}
+	]
+	let serverItems = $state<Customer[]>([])
+	let serverTotal = $state<number | undefined>(undefined)  // unknown until the first response (no clamping meanwhile)
+	let serverLoading = $state(false)
+	let serverSort = $state<QuickGridSortState[]>([{column: "orders", direction: "desc"}])
+	let serverPage = $state(1)
+	let serverPageSize = $state(10)
+	let serverRequestId = 0
+	function loadCustomers(request: QuickGridDataRequestDetail) {
+		const id = ++serverRequestId
+		serverLoading = true
+		setTimeout(() => {
+			if (id !== serverRequestId) return  // a newer request is on its way
+			let rows = serverSource.filter((row) =>
+				Object.entries(request.filters).every(([field, term]) =>
+					String(row[field as keyof Customer]).toLowerCase().includes(term.toLowerCase())))
+			for (const {column, direction} of [...request.sort].reverse()) {
+				const key = column as keyof Customer
+				rows = [...rows].sort((a, b) => (a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0) * (direction === "asc" ? 1 : -1))
+			}
+			serverTotal = rows.length
+			serverItems = rows.slice(request.skip, request.skip + request.pageSize)
+			serverLoading = false
+		}, 400)
+	}
+
 	const allFeaturesColumns = [
 		{field: "id", title: "ID", width: "80px", sortable: true, align: "center" as const},
 		{field: "name", title: "Name", sortable: true, filterable: true},
@@ -191,16 +248,52 @@
 		<QuickGrid items={sampleData} columns={basicColumns} />
 
 		<h3>Sortable Grid</h3>
-		<p>Click column headers to sort (supports string, number, and mixed types):</p>
-		<QuickGrid items={sampleData} columns={sortableColumns} sortable />
+		<p>
+			<code>sortMode="single"</code>: click a header to sort ascending, again for descending, a third time to clear.
+			Text sorts numeric-aware (<code>item2</code> before <code>item10</code>), Dates by time, empty values last.
+		</p>
+		<QuickGrid items={sampleData} columns={sortableColumns} sortMode="single" />
+
+		<h3>Multi-column sort</h3>
+		<p>
+			<code>sortMode="multiple"</code>: Ctrl / ⌘ + click adds a column to the sort (the small number is its priority);
+			a plain click sorts by that column alone. <code>bind:sort</code> sets the initial sort — here city, then age descending.
+		</p>
+		<QuickGrid items={sampleData} columns={sortableColumns} sortMode="multiple" bind:sort={multiSort} />
+		<p>Sort: <code>{JSON.stringify(multiSort)}</code></p>
 
 		<h3>Filterable Grid</h3>
-		<p>Type in the filter inputs to search (case-insensitive):</p>
+		<p>Type in the filter inputs to search the displayed text — case and diacritics are ignored (<code>searchBehavior="normalized"</code>):</p>
 		<QuickGrid items={sampleData} columns={filterableColumns} filterable />
 
 		<h3>Paginated Grid</h3>
-		<p>Grid with pagination (5 items per page):</p>
-		<QuickGrid items={sampleData} columns={basicColumns} pageable pageSize={5} />
+		<p>Grid with pagination and a page-size selector (<code>pageSizes</code>); <code>bind:currentPage</code> / <code>bind:pageSize</code> track it:</p>
+		<QuickGrid items={sampleData} columns={basicColumns} pageable bind:pageSize={clientPageSize} bind:currentPage={clientPage} pageSizes={[5, 10, 15]} />
+		<p>Page <code>{clientPage}</code>, <code>{clientPageSize}</code> per page.</p>
+
+		<h3>Server-side paging, sorting and filtering</h3>
+		<p>
+			<code>paginationMode="server"</code>: <code>items</code> is just the current page and <code>totalItems</code> the total.
+			The grid fires <code>onDataRequest(&#123;trigger, page, pageSize, skip, sort, filters&#125;)</code> on mount
+			(<code>trigger: "init"</code>) and on every page / page-size / sort / filter change, and you replace <code>items</code>.
+			The "server" here is a <code>setTimeout</code> over 87 local rows.
+		</p>
+		<QuickGrid
+			items={serverItems}
+			columns={serverColumns}
+			idMember="id"
+			paginationMode="server"
+			totalItems={serverTotal}
+			pageable
+			bind:currentPage={serverPage}
+			bind:pageSize={serverPageSize}
+			pageSizes={[10, 25, 50]}
+			sortMode="single"
+			bind:sort={serverSort}
+			filterable
+			onDataRequest={loadCustomers}
+		/>
+		<p>{serverLoading ? "Loading…" : `Page ${serverPage}, ${serverPageSize} per page, ${serverTotal ?? "?"} rows`}</p>
 
 		<h3>Custom Formatting</h3>
 		<p>Use format function to customize cell display:</p>
@@ -211,7 +304,7 @@
 		<QuickGrid
 			items={sampleData}
 			columns={allFeaturesColumns}
-			sortable
+			sortMode="single"
 			filterable
 			pageable
 			pageSize={7}
@@ -244,19 +337,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Properties</h2>
-				<QuickGrid items={properties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={properties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Callbacks</h2>
-				<QuickGrid items={callbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={callbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Slots</h2>
-				<QuickGrid items={slots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={slots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -290,13 +383,37 @@
 					<td>sortable</td>
 					<td>boolean</td>
 					<td>undefined</td>
-					<td>Enable sorting for this column</td>
+					<td><code>false</code> opts the column out of sorting (the grid's <code>sortMode</code> turns sorting on)</td>
+				</tr>
+				<tr>
+					<td>getSortValueCallback</td>
+					<td>(&#123;value, row, column&#125;) =&gt; unknown</td>
+					<td>undefined</td>
+					<td>The value the column sorts by (default: the raw field value) — e.g. an option label or a rank</td>
+				</tr>
+				<tr>
+					<td>compareCallback</td>
+					<td>(&#123;rowA, rowB, valueA, valueB, column&#125;) =&gt; number</td>
+					<td>undefined</td>
+					<td>Replaces the built-in comparison: return &lt; 0 / 0 / &gt; 0 for ascending order (reversed for descending; empty values are yours to place)</td>
 				</tr>
 				<tr>
 					<td>filterable</td>
 					<td>boolean</td>
 					<td>undefined</td>
-					<td>Enable filtering for this column</td>
+					<td><code>false</code> hides this column's filter input (the grid's <code>filterable</code> shows the filter row)</td>
+				</tr>
+				<tr>
+					<td>searchBehavior</td>
+					<td>"normalized" | "case-insensitive" | "exact"</td>
+					<td>grid's</td>
+					<td>How this column's filter matches its displayed text</td>
+				</tr>
+				<tr>
+					<td>filterCallback</td>
+					<td>(&#123;term, row, column&#125;) =&gt; boolean | null</td>
+					<td>undefined</td>
+					<td>Custom filter predicate replacing the text match; <code>null</code> = incomplete input (filter ignored, input marked invalid)</td>
 				</tr>
 				<tr>
 					<td>width</td>

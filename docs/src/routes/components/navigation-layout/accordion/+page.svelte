@@ -340,19 +340,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Accordion Properties</h2>
-				<QuickGrid items={accordionProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={accordionProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Accordion Callbacks</h2>
-				<QuickGrid items={accordionCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={accordionCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>Accordion Slots</h2>
-				<QuickGrid items={accordionSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={accordionSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -361,19 +361,19 @@
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>AccordionItem Properties</h2>
-				<QuickGrid items={accordionItemProperties} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={accordionItemProperties} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>AccordionItem Callbacks</h2>
-				<QuickGrid items={accordionItemCallbacks} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={accordionItemCallbacks} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
 				<h2>AccordionItem Slots</h2>
-				<QuickGrid items={accordionItemSlots} columns={propertyColumns} sortable filterable striped />
+				<QuickGrid items={accordionItemSlots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
