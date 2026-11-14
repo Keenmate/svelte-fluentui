@@ -1619,7 +1619,9 @@
 
 		const tableRect = tableElement.getBoundingClientRect()
 		const viewportWidth = window.innerWidth
-		const minSpace = 100  // Minimum space needed for popup
+		// The side needs room for the whole toolbar (measured once it has rendered —
+		// popupElement re-runs this effect), or a wide toolbar ends up off-screen.
+		const minSpace = Math.max(100, (popupElement?.offsetWidth ?? 0) + 8)
 
 		if (tableRect.left >= minSpace) {
 			popupPosition = 'left'

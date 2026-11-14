@@ -117,4 +117,12 @@
 	<output id="bump-log">{bumpLog.join(" | ")}</output>
 </div>
 
+<!-- A toolbar wider than the space beside the grid: must go on top, not off-screen. -->
+<div id="wide-toolbar-wrap" style="margin-inline-start: 150px; width: calc(100vw - 180px);">
+	<QuickGrid items={bumpRows} idMember="id" showRowToolbar
+		columns={[{field: "name", title: "Name"}, {field: "bumps", title: "Bumps"}]}
+		rowToolbar={["add", "duplicate", "move-up", "move-down", "delete",
+			...["star", "pin", "flash", "eye", "share", "search"].map((icon) => ({id: icon, text: icon, icon}))]} />
+</div>
+
 <output id="log">{log.join(" | ")}</output>

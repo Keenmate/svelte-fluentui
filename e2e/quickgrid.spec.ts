@@ -134,3 +134,18 @@ test("row toolbar keeps working when the consumer replaces items immutably", asy
 	await expect(page.locator("#bump-log")).toHaveText("Banana@1 | Banana@1")
 	await expect(wrap.locator("tbody tr", {hasText: "Banana"})).toContainText("2")
 })
+
+test("a row toolbar wider than the space beside the grid stays on screen", async ({page}) => {
+	const wrap = page.locator("#wide-toolbar-wrap")
+	await wrap.scrollIntoViewIfNeeded()
+	await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+	await wrap.locator("tbody tr", {hasText: "Banana"}).hover()
+	const toolbar = page.locator(".row-toolbar")
+	await expect(toolbar).toBeVisible()
+	const viewportWidth = page.viewportSize()!.width
+	await expect.poll(async () => {
+		const box = (await toolbar.boundingBox())!
+		return box.x >= 0 && box.x + box.width <= viewportWidth
+	}).toBe(true)
+	await toolbar.getByRole("button", {name: "Move row up"}).click({trial: true})
+})

@@ -171,6 +171,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - QuickGrid: one `onRowChange` per edit (dropdown/date picks fired twice); after a valid edit the grid shows your items again instead of a stale draft row.
 - QuickGrid: removed unimplemented `editorOptions.multiple` / `maxSelections`.
 - QuickGrid: rows edited / deleted on page 2, after sorting or in a collapsed tree hit the wrong row in the docs' pattern (events now carry `itemIndex`); rows without `idMember` no longer share drafts across pages (keyed by row object, not position); the row toolbar works when items are replaced immutably; the edited / focused cell follows its row (keyed rows).
+- QuickGrid: a row toolbar wider than the space beside the grid opens above the row instead of off-screen (the side was chosen by a fixed 100 px minimum, not the toolbar's width).
 - Select: type-ahead with nothing selected no longer skips the first matching option.
 - **Textarea — `bind:value` is two-way.** Typing never wrote back to the bound value (only
   `oninput`/`onchange` saw the text); the value is now updated on `input` and `change`.
