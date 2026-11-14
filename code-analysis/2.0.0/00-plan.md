@@ -168,3 +168,35 @@ Open decisions: Q23 (pending), Q5 (Prettier pass) and any older unanswered items
 ### QuickGrid repair (2026-11-13)
 Plan in `06-quickgrid-plan.md` (7 phases, test-first; open questions Q-QG-1..3). Start with
 Phase 1 (row identity) — `rowIndex` is a view position used as an `items` index in the docs.
+
+## Handoff — 2026-11-15 (resume here after compaction)
+
+State: QuickGrid repair **complete** (all 7 phases of `06-quickgrid-plan.md`, commits 879dbb6 … 6d2833a;
+each phase's status block + Deferred list is in that file). Full e2e 206/206; library check 0/0, docs
+check 0 errors + 6 pre-existing warnings. Branch `prod` is 15+ commits ahead of `origin/prod`, **not
+pushed** (push only when the user says "push" in that turn).
+
+Next (recommended order, user to confirm):
+1. **Phase 3 popup migrations** — DatePicker / TimePicker (`dismissOnOutside` + focus-out close),
+   MenuButton / ContextMenu (`dismissOnOutside` + `ListNav` arrows), Tabs overflow (+ RTL scroll /
+   indicator JS fix), InputFile, CommandPalette (`ListNav` + `text.ts`), Search (`debounce`); then
+   `attrs()` in all wrappers, selection context, field labels, a11y pass.
+2. **Phase 5 CSS remainder** (breaking ones before release): Icon `colorMap` → palette, drop SCSS
+   `$color-*`, `--badge-fill-*` into palette, delete `fluent-components.scss` after moving live rules,
+   `--fluent-z-*` scale, CSS var prefix renames, reboot opt-in, `prefers-reduced-motion`.
+3. **Phase 6**: split InputFile / Tabs / MultiSplitter; GridCellEditor → real Select/Combobox/Autocomplete
+   (+ QuickGridCell / edit-session extraction, see 06 Phase 7 Deferred); JSDoc (47 components); dead
+   code (NavGroup, `fluent-ui/setup.ts`); README What's New; `.claude/commands/publish.md`
+   release-notes check; stores → runes.
+4. **Verify Phase 4 "Left" list** against the code: empty-state / debounce / close-behaviour names,
+   `InputFileUpload*` / `FluentDialogElement` renames, one `Orientation` — unclear if done.
+Open decisions: Q5 (Prettier pass). Version still `1.6.0-rc07` (bump at release).
+
+Working method: one background agent per phase/area with a precise spec — mandatory
+fail-before/pass-after e2e per bug, **scratch files only in the system temp dir + cleanup** (an agent
+once left `C:\tmp_qg`), no commits by agents. I review the diff, run `npm run check` in
+`packages/svelte-fluentui` and `docs`, run the full `npx playwright test` from the repo root, then
+commit with CHANGELOG + `release-notes/2.0.0-rc01.md` rows for breaking changes. Dev server: background
+`npm run dev` from repo root on port 12900 (watcher misses git checkout — swap file contents and
+confirm with `curl -s localhost:12900/@fs/<abs path> | grep -c <marker>`). Known flakes under load
+(pass alone): Autocomplete outside-click, AppBar count badge, Combobox open-at-load.
