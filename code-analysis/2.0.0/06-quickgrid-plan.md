@@ -239,6 +239,37 @@ is updated); keyboard access to the toolbar / menu
 - `aria-rowcount`/`aria-rowindex` when paged; `aria-label` on filter inputs; a way to label the `<table>`; live region for result/page changes.
 - Localisable strings (`labels` prop): "Filter…", "No items to display", pager, Expand/Collapse, toolbar presets, menu built-ins.
 
+**Phase 6 status — done 2026-11-14.** `labels?: Partial<QuickGridLabels>` (type in `QuickGrid.types.ts`, English
+defaults `defaultQuickGridLabels` in `quickgrid/labels.ts`, both exported; positional function labels like
+InputFile's) covers the filter row, empty message, pager (now a `<nav>`), tree chevrons, toolbar presets, menu
+built-ins, indicators, GridCellEditor's dropdown texts and the announcements. Sortable headers render a
+`<button>` (padding moved onto it) — click / Enter / Space, Ctrl/⌘ + Enter / Space adds (`handleSortKeyDown`);
+`aria-sort` only on `sort[0]`'s column; glyph + priority `aria-hidden`. Navigate mode: `tabStop` → roving
+`tabindex` (`getCellTabIndex`, falls back to the first cell); Tab without a target is left to the browser;
+inner chevron / edit / ⋮ buttons get `tabindex=-1`; editor Tab at the last cell refocuses the cell.
+`handleCellKeyDown` wraps the navigation handler: Shift+F10 / ContextMenu → `openContextMenu(cell, …, null)`
+(below the cell, first `fluent-menu-item` focused; FAST items only emit `change` on Enter / Space, so
+`onkeydown` runs the item); `closeContextMenu` / `closeRowToolbar` restore focus when it was inside. Alt+F10 →
+`openToolbarFromKeyboard`; toolbar is `role="toolbar"` with arrow / Home / End roving, Tab / Escape close and
+return focus; Enter on ⋮ (`detail === 0`) focuses it. Non-navigate hover / click toolbar grids make rows one
+tab stop (↑ / ↓ / Home / End, Enter / Alt+F10). Tree: `role="treegrid"`, `aria-level` (from the shallowest
+level), `aria-expanded` on parent rows, chevron `aria-label` + focus ring. `aria-rowcount` / `aria-rowindex`
+when pageable or server (`-1` while `totalItems` unknown; header rows counted); filter `aria-label`;
+`ariaLabel` / `ariaLabelledby` on the `<table>`; `role="status"` polite live region (`announce`, cleared then
+set per frame): count after a filter (server / server-filter: when `items` next changes), page after
+`goToPage`, sort after a header. D1: GridCellEditor pushes its Escape layer only while focused or its
+dropdown is open; Escape reverts `internalValue`; `cancelledViaEscape` resets on focus-in from outside / input.
+D2: the toolbar's layer is a separate effect — hover mode registers it only while the toolbar holds focus.
+17 new e2e tests (`e2e/quickgrid-a11y.spec.ts`, fixture `/test/quickgrid-a11y`), all failing on the old code;
+no existing test changed. Docs: `ariaLabel` / `ariaLabelledby` / `labels` rows, Labels and Keyboard cards
+(quickgrid), a11y paragraph (quickgrid-tree).
+Deferred / noticed: the table keeps role `table` in navigate mode (a `grid` role would want `aria-selected`,
+cell-level `aria-colindex` and Home/End/PageUp/PageDown — not done); the sort button's name includes the
+`headerInfo` icon's title; secondary sort columns have no `aria-sort` (per ARIA) — their state is only in the
+announcement; server-mode announcements of the page / count rely on `items` changing; validation error texts
+from the grid itself ("Validation failed", "Invalid value" in `invalidCells`) are data, not `labels`;
+editor-level Tab in dblclick / click mode at the last cell still ends without moving focus anywhere; no axe scan yet.
+
 ## Phase 7 — performance, styling, split
 
 - Key `{#each}` (Phase 1); precompute per-render maps (`invalidByKey`, column styles, path segments)
@@ -323,6 +354,9 @@ sort-header keyboard/`aria-sort`, localisable pager strings), then 7.
 **Update 2026-11-14 (Phase 5):** Phase 5 done (189/189). Next: **Phase 6** (keyboard & a11y): fold in
 the always-editor Escape bug (Phase 3), sort-header keyboard/`aria-sort` + localisable pager strings
 (Phase 4), toolbar/menu keyboard access and the hover-toolbar Escape layer above dialogs (Phase 5). Then 7.
+
+**Update 2026-11-14 (Phase 6):** Phase 6 done (206/206). Next: **Phase 7** (performance, styling,
+split, cleanup), then the GridCellEditor → Select/Combobox/Autocomplete reuse step (after Phase 3).
 
 Next, in order (original list):
 1. Small commit: advanced row toolbar on `/components/quickgrid-editable` is clipped off-screen at the

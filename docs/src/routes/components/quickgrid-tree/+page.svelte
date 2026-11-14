@@ -293,6 +293,12 @@
 			<code>expand-tree</code> / <code>collapse-tree</code> act on the entire dataset. Watch the <code>expanded</code> set above
 			update reactively.
 		</p>
+		<p>
+			Accessibility: tree mode renders the table as a <code>treegrid</code> — rows carry <code>aria-level</code>
+			(1 = the shallowest level present) and parent rows <code>aria-expanded</code>; each chevron is a button named
+			"Expand" / "Collapse" (<code>labels.expand</code> / <code>labels.collapse</code>) with a focus ring.
+			<kbd>Shift</kbd>+<kbd>F10</kbd> (or the <kbd>ContextMenu</kbd> key) opens the tree commands for the focused cell.
+		</p>
 		<QuickGrid
 			items={orgs}
 			columns={orgColumns}

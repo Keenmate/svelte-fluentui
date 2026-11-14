@@ -393,3 +393,66 @@ export type QuickGridContextMenuConfig<T = any> =
 export type QuickGridActionDetail<T = any> = ActionEventDetail<
 	QuickGridRowContext<T> & Partial<Omit<QuickGridContextMenuContext<T>, keyof QuickGridRowContext<T>>>
 >
+
+// ---------------------------------------------------------------------------
+// Labels
+// ---------------------------------------------------------------------------
+
+/** Every user-facing string of QuickGrid; pass a partial `labels` to override some. Defaults: `defaultQuickGridLabels`. */
+export type QuickGridLabels = {
+	/** Filter input placeholder. */
+	filterPlaceholder: string
+	/** Filter input accessible name, from the column title. */
+	filterAriaLabel: (columnTitle: string) => string
+	/** Empty grid message. */
+	noItems: string
+	previousPage: string
+	nextPage: string
+	/** Pager text; also announced after a page change. */
+	pageInfo: (page: number, pageCount: number) => string
+	/** Pager item count; also announced after a filter change. */
+	itemCount: (count: number) => string
+	/** Text after the page-size selector. */
+	perPage: string
+	/** Accessible name of the pager. */
+	pagination: string
+	/** Announced after a header changed the sort. */
+	sortedBy: (columnTitle: string, direction: "ascending" | "descending") => string
+	/** Announced after a header removed its column from the sort. */
+	sortCleared: (columnTitle: string) => string
+	/** Tree chevron, collapsed row. */
+	expand: string
+	/** Tree chevron, expanded row. */
+	collapse: string
+	/** Tree chevron tooltip while a filter is active (chevrons are disabled then). */
+	clearFilterToCollapse: string
+	/** The row toolbar and its ⋮ trigger (`toolbarTrigger="button"`). */
+	rowActions: string
+	addRow: string
+	deleteRow: string
+	duplicateRow: string
+	moveRowUp: string
+	moveRowDown: string
+	expandAll: string
+	collapseAll: string
+	expandTree: string
+	collapseTree: string
+	/** A custom editor (`editor: "custom"`) is open. */
+	editing: string
+	/** A commit's validation is running. */
+	validating: string
+	/** `loadOptionsCallback` is running for the cell. */
+	loadingOptions: string
+	/** The cell edit button (`showEditButton` / `editTrigger="button"`). */
+	edit: string
+	/** Error indicator tooltip when the validation gave no message. */
+	invalidValue: string
+	/** Editor dropdowns. `editorOptions.emptyLabel` / `placeholder` win over these. */
+	editorEmptyOption: string
+	editorSelectPlaceholder: string
+	editorSearchPlaceholder: string
+	editorLoading: string
+	editorSearching: string
+	editorNoOptions: string
+	editorNoMatches: string
+}

@@ -119,8 +119,10 @@ export type {
 	QuickGridDataRequestDetail,
 	QuickGridPageChangeTrigger,
 	QuickGridBeforePageChangeContext,
-	QuickGridBeforePageChangeResult
+	QuickGridBeforePageChangeResult,
+	QuickGridLabels
 } from "./components/QuickGrid.types.js"
+export {defaultQuickGridLabels} from "./components/quickgrid/labels.js"
 export {default as SiteSettings} from "./components/SiteSettings.svelte"
 export {default as Tab} from "./components/Tab.svelte"
 export {default as TabPanel} from "./components/TabPanel.svelte"

@@ -38,8 +38,11 @@
 		{name: "showRowToolbar", type: "boolean", default: "false", description: "Show floating row toolbar with action buttons"},
 		{name: "rowToolbar", type: "QuickGridRowToolbarConfig<T>[]", default: "undefined", description: 'Toolbar items — predefined strings ("add", "delete", "duplicate", "move-up", "move-down") or custom objects'},
 		{name: "toolbarAlign", type: '"center" | "top"', default: '"center"', description: "Vertical alignment of the row toolbar"},
-		{name: "toolbarTrigger", type: '"hover" | "click" | "button"', default: '"hover"', description: "How to reveal the row toolbar: hover (mouse / pen; a tap toggles it on touch), a row click, or a ⋮ button in the first column. A press outside the grid or Escape closes it; it follows its row when the grid or page scrolls and closes once the row scrolls out of view"},
+		{name: "toolbarTrigger", type: '"hover" | "click" | "button"', default: '"hover"', description: "How to reveal the row toolbar: hover (mouse / pen; a tap toggles it on touch), a row click, or a ⋮ button in the first column. A press outside the grid closes it, Escape too (in hover mode only while it holds keyboard focus, so Escape over a hovered row still reaches e.g. a dialog). Keyboard: Alt+F10 on a cell (rows of a hover / click grid are focusable — Enter works too) or Enter on the ⋮ button moves focus into it; it follows its row when the grid or page scrolls and closes once the row scrolls out of view"},
 		{name: "contextMenu", type: "QuickGridContextMenuConfig<T>[]", default: "undefined", description: 'Context menu entries shown on right-click — built-in names ("expand-all", "collapse-all", "expand-tree", "collapse-tree"), menu items, or {divider: true}'},
+		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessible name of the <table>"},
+		{name: "ariaLabelledby", type: "string", default: "undefined", description: "Id of the element that names the <table> (e.g. a heading)"},
+		{name: "labels", type: "Partial<QuickGridLabels>", default: "defaultQuickGridLabels", description: "User-facing strings (filter row, pager, tree chevrons, toolbar / menu built-ins, indicators, screen-reader announcements, editor dropdowns), merged over the English defaults — see Labels below"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class applied to the grid wrapper"},
 		{name: "style", type: "string", default: '""', description: "Inline CSS style applied to the grid wrapper"}
 	]
@@ -465,5 +468,183 @@
 				</tr>
 			</tbody>
 		</table>
+	</Card>
+	<Card>
+		<h2>Labels</h2>
+		<p>Every user-facing string comes from <code>labels</code> (type <code>QuickGridLabels</code>); pass the keys you want to change, the rest stay English. <code>defaultQuickGridLabels</code> is exported from the package root.</p>
+		<pre><code>{`<QuickGrid {items} {columns} pageable labels={{
+	filterPlaceholder: "Filtrovat…",
+	previousPage: "Předchozí",
+	nextPage: "Další",
+	pageInfo: (page, pageCount) => \`Strana \${page} z \${pageCount}\`
+}} />`}</code></pre>
+		<table class="member-table">
+			<thead>
+				<tr>
+					<th>Key</th>
+					<th>Type</th>
+					<th>Default</th>
+					<th>Used for</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>filterPlaceholder</td>
+					<td>string</td>
+					<td>&quot;Filter...&quot;</td>
+					<td>Filter input placeholder</td>
+				</tr>
+				<tr>
+					<td>filterAriaLabel</td>
+					<td>(columnTitle) =&gt; string</td>
+					<td>`Filter $&#123;title&#125;`</td>
+					<td>Filter input accessible name</td>
+				</tr>
+				<tr>
+					<td>noItems</td>
+					<td>string</td>
+					<td>&quot;No items to display&quot;</td>
+					<td>Empty grid message</td>
+				</tr>
+				<tr>
+					<td>previousPage / nextPage</td>
+					<td>string</td>
+					<td>&quot;Previous&quot; / &quot;Next&quot;</td>
+					<td>Pager buttons</td>
+				</tr>
+				<tr>
+					<td>pageInfo</td>
+					<td>(page, pageCount) =&gt; string</td>
+					<td>`Page $&#123;page&#125; of $&#123;pageCount&#125;`</td>
+					<td>Pager text; announced after a page change</td>
+				</tr>
+				<tr>
+					<td>itemCount</td>
+					<td>(count) =&gt; string</td>
+					<td>`$&#123;count&#125; item(s)`</td>
+					<td>Pager item count (shown in parentheses); announced after a filter change</td>
+				</tr>
+				<tr>
+					<td>perPage</td>
+					<td>string</td>
+					<td>&quot;per page&quot;</td>
+					<td>After the page-size selector</td>
+				</tr>
+				<tr>
+					<td>pagination</td>
+					<td>string</td>
+					<td>&quot;Pagination&quot;</td>
+					<td>Accessible name of the pager (&lt;nav&gt;)</td>
+				</tr>
+				<tr>
+					<td>sortedBy</td>
+					<td>(columnTitle, &quot;ascending&quot; | &quot;descending&quot;) =&gt; string</td>
+					<td>`Sorted by $&#123;title&#125;, $&#123;direction&#125;`</td>
+					<td>Announced after a header sorted</td>
+				</tr>
+				<tr>
+					<td>sortCleared</td>
+					<td>(columnTitle) =&gt; string</td>
+					<td>`Sort removed from $&#123;title&#125;`</td>
+					<td>Announced after a header removed its column from the sort</td>
+				</tr>
+				<tr>
+					<td>expand / collapse</td>
+					<td>string</td>
+					<td>&quot;Expand&quot; / &quot;Collapse&quot;</td>
+					<td>Tree chevron name</td>
+				</tr>
+				<tr>
+					<td>clearFilterToCollapse</td>
+					<td>string</td>
+					<td>&quot;Clear the filter to collapse&quot;</td>
+					<td>Tree chevron tooltip while filtering</td>
+				</tr>
+				<tr>
+					<td>rowActions</td>
+					<td>string</td>
+					<td>&quot;Row actions&quot;</td>
+					<td>Row toolbar and its ⋮ trigger</td>
+				</tr>
+				<tr>
+					<td>addRow / deleteRow / duplicateRow / moveRowUp / moveRowDown</td>
+					<td>string</td>
+					<td>&quot;Add row below&quot; / &quot;Delete row&quot; / &quot;Duplicate row&quot; / &quot;Move row up&quot; / &quot;Move row down&quot;</td>
+					<td>Built-in toolbar items</td>
+				</tr>
+				<tr>
+					<td>expandAll / collapseAll / expandTree / collapseTree</td>
+					<td>string</td>
+					<td>&quot;Expand all&quot; / &quot;Collapse all&quot; / &quot;Expand entire tree&quot; / &quot;Collapse entire tree&quot;</td>
+					<td>Built-in context-menu items</td>
+				</tr>
+				<tr>
+					<td>editing</td>
+					<td>string</td>
+					<td>&quot;Editing...&quot;</td>
+					<td>A custom editor is open</td>
+				</tr>
+				<tr>
+					<td>validating</td>
+					<td>string</td>
+					<td>&quot;Validating&quot;</td>
+					<td>Name of the validation indicator</td>
+				</tr>
+				<tr>
+					<td>loadingOptions</td>
+					<td>string</td>
+					<td>&quot;Loading options&quot;</td>
+					<td>Name of the options-loading indicator</td>
+				</tr>
+				<tr>
+					<td>edit</td>
+					<td>string</td>
+					<td>&quot;Edit&quot;</td>
+					<td>Cell edit button</td>
+				</tr>
+				<tr>
+					<td>invalidValue</td>
+					<td>string</td>
+					<td>&quot;Invalid value&quot;</td>
+					<td>Error indicator tooltip without a message</td>
+				</tr>
+				<tr>
+					<td>editorEmptyOption</td>
+					<td>string</td>
+					<td>&quot;-- Select --&quot;</td>
+					<td>Select editor empty row (editorOptions.emptyLabel wins)</td>
+				</tr>
+				<tr>
+					<td>editorSelectPlaceholder / editorSearchPlaceholder</td>
+					<td>string</td>
+					<td>&quot;Select...&quot; / &quot;Type to search...&quot;</td>
+					<td>Combobox / autocomplete editor placeholder (editorOptions.placeholder wins)</td>
+				</tr>
+				<tr>
+					<td>editorLoading / editorSearching</td>
+					<td>string</td>
+					<td>&quot;Loading...&quot; / &quot;Searching...&quot;</td>
+					<td>Editor dropdown while loading options / searching</td>
+				</tr>
+				<tr>
+					<td>editorNoOptions / editorNoMatches</td>
+					<td>string</td>
+					<td>&quot;No options&quot; / &quot;No matching options&quot;</td>
+					<td>Empty editor dropdown</td>
+				</tr>
+			</tbody>
+		</table>
+	</Card>
+
+	<Card>
+		<h2>Keyboard &amp; accessibility</h2>
+		<ul>
+			<li><kbd>Enter</kbd> / <kbd>Space</kbd> on a sortable header (a button) sorts it; <kbd>Ctrl</kbd> / <kbd>⌘</kbd>+<kbd>Enter</kbd> adds the column in <code>sortMode="multiple"</code>. The primary sorted column carries <code>aria-sort</code>.</li>
+			<li><code>editTrigger="navigate"</code>: the grid is one tab stop (the last focused cell). Arrow keys move between cells, <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> between editable cells and out of the grid past the last / first one; <kbd>Enter</kbd> / <kbd>F2</kbd> / typing edits, <kbd>Space</kbd> toggles a checkbox, <kbd>Escape</kbd> cancels. Tree: <kbd>Ctrl</kbd>+<kbd>→</kbd> / <kbd>←</kbd> expand / collapse.</li>
+			<li><kbd>Shift</kbd>+<kbd>F10</kbd> or the <kbd>ContextMenu</kbd> key on a focused cell opens the context menu below it with focus on the first item; arrows move, <kbd>Enter</kbd> / <kbd>Space</kbd> run an item, <kbd>Escape</kbd> closes it and returns focus.</li>
+			<li>Row toolbar: <kbd>Alt</kbd>+<kbd>F10</kbd> on a cell opens it for that row and focuses its first button. Without navigate mode, rows of a hover / click toolbar grid are one tab stop: <kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>Home</kbd> / <kbd>End</kbd> move between rows, <kbd>Enter</kbd> or <kbd>Alt</kbd>+<kbd>F10</kbd> opens the toolbar. In the toolbar, arrows / <kbd>Home</kbd> / <kbd>End</kbd> move, <kbd>Enter</kbd> / <kbd>Space</kbd> run, <kbd>Escape</kbd> or <kbd>Tab</kbd> close it and return focus. <code>toolbarTrigger="button"</code>: <kbd>Enter</kbd> on <kbd>⋮</kbd> (<code>aria-haspopup</code>, <code>aria-expanded</code>) does the same.</li>
+			<li>Paged and server grids set <code>aria-rowcount</code> / <code>aria-rowindex</code> (server mode from <code>totalItems</code>, <code>-1</code> while unknown). Filter inputs are named after their column; name the table with <code>ariaLabel</code> / <code>ariaLabelledby</code>. A polite live region announces the row count after filtering, the page after paging and the sort after a header change.</li>
+			<li>Tree mode renders a <code>treegrid</code> with <code>aria-level</code> and <code>aria-expanded</code> on rows; chevrons are buttons named Expand / Collapse.</li>
+		</ul>
 	</Card>
 </Stack>

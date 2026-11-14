@@ -6,12 +6,17 @@
 	import {AsyncSearch} from "../helpers/async-search.svelte.js"
 	import {containsText, startsWithText} from "../helpers/text.js"
 	import {parseLocalDate, toLocalDateString} from "../helpers/date.js"
+	import {defaultQuickGridLabels} from "./quickgrid/labels.js"
 
 	import type {
 		QuickGridEditorType as EditorType,
 		QuickGridEditorOption as EditorOption,
-		GridCellEditorOptions as EditorOptions
+		GridCellEditorOptions as EditorOptions,
+		QuickGridLabels
 	} from "./QuickGrid.types.js"
+
+	type EditorLabels = Pick<QuickGridLabels, "editorEmptyOption" | "editorSelectPlaceholder" | "editorSearchPlaceholder" |
+		"editorLoading" | "editorSearching" | "editorNoOptions" | "editorNoMatches">
 
 	type Props = {
 		type: EditorType
@@ -28,6 +33,8 @@
 		autofocus?: boolean
 		/** What the cell shows for `value` — the autocomplete text when no option has the value. */
 		displayText?: string
+		/** Dropdown strings (QuickGrid passes its resolved `labels`). */
+		labels?: EditorLabels
 	}
 
 	let {
@@ -40,7 +47,8 @@
 		skipKeyboardCommit = false,
 		initialSearchQuery = "",
 		autofocus = false,
-		displayText = undefined
+		displayText = undefined,
+		labels = defaultQuickGridLabels
 	}: Props = $props()
 
 	// Internal state
@@ -187,7 +195,7 @@
 	// Get display value for current selection (for select trigger)
 	function getCurrentDisplayValue(): string {
 		if (internalValue === null || internalValue === undefined) {
-			return options.emptyLabel || "-- Select --"
+			return options.emptyLabel || labels.editorEmptyOption
 		}
 		const selectedOption = effectiveOptions.find(opt => getOptionValue(opt) === internalValue)
 		return selectedOption ? getOptionLabel(selectedOption) : String(internalValue)
@@ -482,18 +490,28 @@
 
 	// Escape goes to the topmost open layer (helpers/layer-stack.ts): the open
 	// dropdown first, then the edit itself — so an editor inside a Dialog
-	// cancels the edit instead of closing the dialog.
-	$effect(() => pushLayer({
-		onEscape: () => {
-			if (skipKeyboardCommit) return false
-			if (dropdownOpen) {
-				closeDropdown()
-			} else {
-				cancelledViaEscape = true
-				onCancel()
+	// cancels the edit instead of closing the dialog. Only while the editor is in use
+	// (focused or its dropdown open): "always" editors live for the page, and an idle
+	// one must not take Escape from everything else.
+	let hasFocus = $state(false)
+	$effect(() => {
+		if (!hasFocus && !dropdownOpen) return
+		return pushLayer({
+			onEscape: () => {
+				if (skipKeyboardCommit) return false
+				if (dropdownOpen) {
+					closeDropdown()
+				} else {
+					cancelledViaEscape = true
+					// "always" editors stay mounted: show the value again
+					internalValue = value
+					if (type === "autocomplete") filterText = labelFor(value)
+					autocompleteTyped = false
+					onCancel()
+				}
 			}
-		}
-	}))
+		})
+	})
 
 	// One commit per edit. A dropdown pick commits at once, but QuickGrid's commit is async
 	// (validation), so the editor is still mounted when focus returns to the cell — without
@@ -511,18 +529,21 @@
 	// Focus coming in from outside starts a new edit: "always" cells keep one editor
 	// instance for life, so the one-commit guard must re-arm here, not only on mount.
 	function handleFocusIn(e: FocusEvent) {
+		hasFocus = true
 		if (!editorElement?.contains(e.relatedTarget as Node | null)) {
 			hasCommitted = false
 			lastCommit = undefined
+			cancelledViaEscape = false
 		}
 	}
 
 	function handleBlur(e: FocusEvent) {
+		const relatedTarget = e.relatedTarget as HTMLElement
+		if (!editorElement?.contains(relatedTarget)) hasFocus = false
 		if (hasCommitted || skipBlurCommit || cancelledViaEscape) {
 			return
 		}
 
-		const relatedTarget = e.relatedTarget as HTMLElement
 		if (editorElement && !editorElement.contains(relatedTarget)) {
 			commit()
 		}
@@ -611,6 +632,7 @@
 	onkeydown={handleKeyDown}
 	onfocusin={handleFocusIn}
 	onfocusout={handleBlur}
+	oninput={() => (cancelledViaEscape = false)}
 >
 	{#if type === "text"}
 		<input
@@ -661,7 +683,7 @@
 				type="text"
 				class="cell-combobox-input"
 				value={filterText}
-				placeholder={options.placeholder || "Select..."}
+				placeholder={options.placeholder || labels.editorSelectPlaceholder}
 				oninput={handleComboboxInput}
 				onkeydown={handleComboboxKeyDown}
 				onfocus={handleComboboxFocus}
@@ -687,7 +709,7 @@
 				type="text"
 				class="cell-autocomplete-input"
 				value={filterText}
-				placeholder={options.placeholder || "Type to search..."}
+				placeholder={options.placeholder || labels.editorSearchPlaceholder}
 				oninput={handleAutocompleteInput}
 				onkeydown={handleAutocompleteKeyDown}
 				onfocus={handleAutocompleteFocus}
@@ -720,7 +742,7 @@
 						</div>
 					{/each}
 					{#if opts.length === 0}
-						<div class="cell-dropdown-empty">{isLoadingOptions ? "Loading..." : "No matching options"}</div>
+						<div class="cell-dropdown-empty">{isLoadingOptions ? labels.editorLoading : labels.editorNoMatches}</div>
 					{/if}
 				{:else}
 					{#if options.allowEmpty && type === "select"}
@@ -734,7 +756,7 @@
 							aria-selected={nav.index === -1 && (internalValue === null || internalValue === undefined)}
 							onclick={() => { internalValue = null; closeDropdown(); commitValue(null); }}
 						>
-							{options.emptyLabel || "-- Select --"}
+							{options.emptyLabel || labels.editorEmptyOption}
 						</div>
 					{/if}
 					{#each dropdownOptions as opt, index}
@@ -752,7 +774,7 @@
 					{/each}
 					{#if dropdownOptions.length === 0}
 						<div class="cell-dropdown-empty">
-							{isLoadingOptions ? "Loading..." : search.loading ? "Searching..." : "No options"}
+							{isLoadingOptions ? labels.editorLoading : search.loading ? labels.editorSearching : labels.editorNoOptions}
 						</div>
 					{/if}
 				{/if}

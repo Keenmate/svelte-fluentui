@@ -50,8 +50,10 @@
 		QuickGridPageChangeTrigger as PageChangeTrigger,
 		QuickGridBeforePageChangeContext as BeforePageChangeContext,
 		QuickGridBeforePageChangeResult as BeforePageChangeResult,
+		QuickGridLabels,
 		GridCellEditorOptions
 	} from "./QuickGrid.types.js"
+	import {defaultQuickGridLabels} from "./quickgrid/labels.js"
 	import type {RestProps} from "../types/index.js"
 	import type {SearchBehavior} from "../helpers/text.js"
 	import {defaultLocale} from "../helpers/locale.js"
@@ -172,6 +174,12 @@
 		beforeActionCallback?: (detail: QuickGridActionDetail<T>) => unknown
 		/** Native `focusout` event on the root, forwarded untouched. */
 		onfocusout?: (event: FocusEvent) => void
+		/** Accessible name of the `<table>`. */
+		ariaLabel?: string
+		/** Id of the element naming the `<table>`. */
+		ariaLabelledby?: string
+		/** User-facing strings; merged over `defaultQuickGridLabels`. */
+		labels?: Partial<QuickGridLabels>
 	}
 
 	/** Other native attributes and events go to the root `<div class="quickgrid-container">`. */
@@ -241,8 +249,13 @@
 		onAction = undefined,
 		beforeActionCallback = undefined,
 		onfocusout = undefined,
+		ariaLabel = undefined,
+		ariaLabelledby = undefined,
+		labels: labelsProp = undefined,
 		...rest
 	}: Props<T> = $props()
+
+	const labels = $derived<QuickGridLabels>({...defaultQuickGridLabels, ...(labelsProp ?? {})})
 
 	const resolvedShowToolbar = $derived(showRowToolbar)
 	const resolvedToolbarConfig = $derived(rowToolbar ?? (['add', 'delete', 'duplicate'] as RowToolbarConfig<T>[]))
@@ -626,6 +639,14 @@
 		return null
 	}
 
+	// aria-level is 1-based from the shallowest level present
+	let treeMinLevel = $derived.by(() => {
+		if (!isTreeMode) return 0
+		let min = Infinity
+		for (const item of items) min = Math.min(min, getRowLevel(item))
+		return Number.isFinite(min) ? min : 0
+	})
+
 	let rowByPath = $derived(isTreeMode ? new Map(items.map((it) => [getRowPath(it), it])) : new Map<string, T>())
 
 	// Default expansion for parents the grid hasn't seen yet — on the first non-empty `items`
@@ -804,8 +825,46 @@
 	function goToPage(page: number) {
 		const target = clampPage(page, totalPages)
 		if (target === effectivePage) return
-		void guardPageChange("page", target, (p) => setPage(p, "page"))
+		void guardPageChange("page", target, (p) => {
+			setPage(p, "page")
+			void tick().then(() => announce(labels.pageInfo(effectivePage, totalPages)))
+		})
 	}
+
+	// ============ Screen-reader announcements (polite live region) ============
+	let liveMessage = $state("")
+	let liveFrame = 0
+	function announce(message: string) {
+		// Cleared first, so the same text twice is still read out
+		liveMessage = ""
+		cancelAnimationFrame(liveFrame)
+		liveFrame = requestAnimationFrame(() => (liveMessage = message))
+	}
+	$effect(() => () => cancelAnimationFrame(liveFrame))
+
+	// The filtered row count: at once on the client; with server filtering once the new `items` arrive
+	let countAnnouncementPending = false
+	function announceCount() {
+		if (filterMode === "server" || isServerPaging) countAnnouncementPending = true
+		else void tick().then(() => announce(labels.itemCount(pagedTotal)))
+	}
+	$effect(() => {
+		void items
+		untrack(() => {
+			if (!countAnnouncementPending) return
+			countAnnouncementPending = false
+			announce(labels.itemCount(pagedTotal))
+		})
+	})
+
+	// aria-rowcount / aria-rowindex when only part of the rows is in the DOM (paged / server)
+	let headerRowCount = $derived(filterable ? 2 : 1)
+	let ariaRowCount = $derived(
+		!pageable && !isServerPaging ? undefined
+			: isServerPaging && totalItems === undefined ? -1
+			: headerRowCount + pagedTotal
+	)
+	let rowIndexBase = $derived(headerRowCount + (pageable || isServerPaging ? (effectivePage - 1) * pageSize : 0))
 
 	function changePageSize(select: HTMLSelectElement) {
 		const size = Number(select.value)
@@ -830,16 +889,34 @@
 		return sort.findIndex((s) => s.column === String(column.field))
 	}
 
-	// Header click: asc → desc → unsorted; "multiple" mode: Ctrl / ⌘ + click adds the column.
-	// Back to page 1; in server mode that goes through beforePageChangeCallback first.
-	function handleSort(column: Column<T>, event: MouseEvent) {
+	// Header click / Enter / Space: asc → desc → unsorted; "multiple" mode: Ctrl / ⌘ (`additive`)
+	// adds the column. Back to page 1; in server mode that goes through beforePageChangeCallback first.
+	function handleSortKeyDown(column: Column<T>, event: KeyboardEvent) {
+		// Ctrl / ⌘ + Enter / Space mirrors Ctrl + click (the button's own click has no modifier)
+		if ((event.key === "Enter" || event.key === " ") && (event.ctrlKey || event.metaKey)) {
+			event.preventDefault()
+			handleSort(column, true)
+		}
+	}
+
+	// `aria-sort` goes on the primary sorted column only (ARIA: one header at a time)
+	function getAriaSort(column: Column<T>): "ascending" | "descending" | undefined {
+		const primary = sort[0]
+		if (!primary || primary.column !== String(column.field) || !isColumnSortable(column)) return undefined
+		return primary.direction === "asc" ? "ascending" : "descending"
+	}
+
+	function handleSort(column: Column<T>, additive: boolean) {
 		if (!isColumnSortable(column)) return
-		const next = nextSort(sort, String(column.field), sortMode, event.ctrlKey || event.metaKey)
+		const field = String(column.field)
+		const next = nextSort(sort, field, sortMode, additive)
 		const apply = (page: number) => {
 			sort = next
 			onSortChange?.({sort: next})
 			if (pageable) setPage(page, null)
 			requestData("sort")
+			const entry = next.find((s) => s.column === field)
+			announce(entry ? labels.sortedBy(column.title, entry.direction === "asc" ? "ascending" : "descending") : labels.sortCleared(column.title))
 		}
 		if (isServerPaging && pageable) void guardPageChange("sort", 1, apply)
 		else apply(1)
@@ -856,6 +933,7 @@
 			onFiltersChange?.({filters: {...next}})
 			if (pageable) setPage(page, null)
 			requestData("filter")
+			announceCount()
 		}
 		if (isServerPaging && pageable) {
 			void guardPageChange("filter", 1, apply).then((applied) => {
@@ -1342,9 +1420,26 @@
 		return focusedCell?.rowKey === rowKey && focusedCell?.colIndex === colIndex
 	}
 
+	// Navigate mode: one tab stop (roving tabindex) — the last focused cell while its row is
+	// displayed, else the first cell. Tab from outside lands there; Tab past the last editable
+	// cell leaves the grid.
+	let tabStop = $state<{ rowKey: string; colIndex: number } | null>(null)
+	let resolvedTabStop = $derived.by(() => {
+		if (!isNavigateMode || displayItems.length === 0) return null
+		const stop = tabStop
+		if (stop && stop.colIndex < columns.length && displayItems.some((it) => getRowKey(it) === stop.rowKey)) return stop
+		return { rowKey: getRowKey(displayItems[0]), colIndex: 0 }
+	})
+
+	function getCellTabIndex(rowKey: string, colIndex: number): number | undefined {
+		if (!isNavigateMode) return undefined
+		return resolvedTabStop?.rowKey === rowKey && resolvedTabStop.colIndex === colIndex ? 0 : -1
+	}
+
 	// Focus a cell of a row (by key — wherever the row is displayed after the DOM updates).
 	function focusCell(rowKey: string, colIndex: number) {
 		focusedCell = { rowKey, colIndex }
+		tabStop = { rowKey, colIndex }
 		// Focus the td element for keyboard events
 		requestAnimationFrame(() => {
 			const row = tableElement?.querySelector(`:scope > tbody > tr[data-row-key="${CSS.escape(rowKey)}"]`)
@@ -1360,6 +1455,7 @@
 	}
 
 	function handleCellFocus(colIndex: number, column: Column<T>, item: T) {
+		if (isNavigateMode) tabStop = { rowKey: getRowKey(item), colIndex }
 		if (isNavigateMode && !editingCell) {
 			focusedCell = { rowKey: getRowKey(item), colIndex }
 
@@ -1385,6 +1481,24 @@
 		if (!relatedTarget || !tableElement?.contains(relatedTarget)) {
 			focusedCell = null
 		}
+	}
+
+	// Keys that work on any cell (focus on the cell or a control in it, not in an editor's input):
+	// Shift+F10 / ContextMenu opens the context menu, Alt+F10 the row toolbar.
+	function handleCellKeyDown(e: KeyboardEvent, viewIndex: number, colIndex: number, column: Column<T>, item: T) {
+		const inInput = !!(e.target as Element).closest('input, textarea, select, [contenteditable]')
+		const cell = e.currentTarget as HTMLElement
+		if (!inInput && (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey && !e.altKey))) {
+			if (openContextMenu(cell, colIndex, column, item, null)) e.preventDefault()
+			return
+		}
+		if (!inInput && e.key === "F10" && e.altKey && resolvedShowToolbar) {
+			e.preventDefault()
+			const row = cell.closest('tr') as HTMLElement | null
+			if (row) openToolbarFromKeyboard(getRowKey(item), viewIndex, row)
+			return
+		}
+		handleNavigationKeyDown(e, viewIndex, colIndex, column, item)
 	}
 
 	function handleNavigationKeyDown(e: KeyboardEvent, viewIndex: number, colIndex: number, column: Column<T>, item: T) {
@@ -1438,9 +1552,11 @@
 				if (colIndex < columns.length - 1) focusCell(rowKey, colIndex + 1)
 				break
 			case "Tab": {
-				e.preventDefault()
+				// No editable cell further on: the browser's Tab leaves the grid (WCAG 2.1.2)
 				const target = findNextEditableCell(viewIndex, currentEditableIndex, e.shiftKey ? -1 : 1)
-				if (target) focusCellAt(target.viewIndex, target.colIndex)
+				if (!target) break
+				e.preventDefault()
+				focusCellAt(target.viewIndex, target.colIndex)
 				break
 			}
 			case "Enter":
@@ -1517,7 +1633,11 @@
 			// Walk to the next / previous editable cell, skipping rows that have no editable
 			// columns (heterogeneous trees: team rows have zero, employee rows have N).
 			const tabTarget = findNextEditableCell(viewIndex, currentEditableIndex, e.shiftKey ? -1 : 1)
-			if (!tabTarget) return
+			if (!tabTarget) {
+				// Last / first editable cell: back on the cell (focus isn't lost); the next Tab leaves
+				if (isNavigateMode) focusCell(rowKey, colIndex)
+				return
+			}
 
 			if (isNavigateMode) {
 				// Navigate mode: focus the next cell as a focusable td (tabindex=0). User
@@ -1631,11 +1751,102 @@
 	}
 
 	function closeRowToolbar() {
+		// Focus inside the toolbar goes back to where the keyboard opened it from (or the row)
+		const refocus = !!popupElement?.contains(document.activeElement)
+		const row = hoveredRowElement
+		const returnTo = toolbarReturnFocus
 		hoveredRowKey = null
 		hoveredAnchorViewIndex = null
 		hoveredRowElement = null
 		// The popup may be removed under the pointer (no mouseleave) — don't leave this stuck.
 		rowActionButtonHovered = false
+		toolbarFocused = false
+		toolbarReturnFocus = null
+		if (refocus) {
+			const target = returnTo?.isConnected ? returnTo : row?.querySelector('.toolbar-trigger-btn, td[tabindex="0"]') as HTMLElement | null
+			target?.focus()
+		}
+	}
+
+	// Keyboard access: the toolbar opens for the row and takes focus (its first enabled button).
+	// Arrows / Home / End move between its buttons; Escape or Tab return focus to `toolbarReturnFocus`.
+	let toolbarFocused = $state(false)
+	let toolbarReturnFocus: HTMLElement | null = null
+
+	function focusToolbar() {
+		void tick().then(() => requestAnimationFrame(() => {
+			popupElement?.querySelector<HTMLElement>('.row-toolbar-btn:not(:disabled)')?.focus()
+		}))
+	}
+
+	function openToolbarFromKeyboard(rowKey: string, viewIndex: number, row: HTMLElement) {
+		toolbarReturnFocus = document.activeElement as HTMLElement | null
+		if (hoveredRowKey !== rowKey) openRowToolbar(rowKey, viewIndex, row)
+		focusToolbar()
+	}
+
+	function handleToolbarKeyDown(event: KeyboardEvent) {
+		const buttons = [...(popupElement?.querySelectorAll<HTMLElement>('.row-toolbar-btn:not(:disabled)') ?? [])]
+		const index = buttons.indexOf(document.activeElement as HTMLElement)
+		const rtl = !!popupElement && getComputedStyle(popupElement).direction === 'rtl'
+		let next: number
+		switch (event.key) {
+			case 'ArrowRight': next = index + (rtl ? -1 : 1); break
+			case 'ArrowLeft': next = index + (rtl ? 1 : -1); break
+			case 'ArrowDown': next = index + 1; break
+			case 'ArrowUp': next = index - 1; break
+			case 'Home': next = 0; break
+			case 'End': next = buttons.length - 1; break
+			case 'Tab':
+				// The toolbar is portalled: Tab would leave for the end of the page
+				event.preventDefault()
+				closeRowToolbar()
+				return
+			default: return
+		}
+		event.preventDefault()
+		if (buttons.length === 0) return
+		buttons[(next + buttons.length) % buttons.length].focus()
+	}
+
+	// Without navigate mode, rows with a hover / click toolbar are focusable (one tab stop):
+	// ↑ / ↓ / Home / End move between them, Enter or Alt+F10 opens the toolbar.
+	let rowsFocusable = $derived(resolvedShowToolbar && toolbarTrigger !== 'button' && !isNavigateMode)
+	let rowTabStop = $state<string | null>(null)
+	let resolvedRowTabStop = $derived.by(() => {
+		if (!rowsFocusable || displayItems.length === 0) return null
+		const stop = rowTabStop
+		if (stop !== null && displayItems.some((it) => getRowKey(it) === stop)) return stop
+		return getRowKey(displayItems[0])
+	})
+
+	function handleRowKeyDown(rowKey: string, viewIndex: number, event: KeyboardEvent) {
+		if (event.target !== event.currentTarget) return
+		const row = event.currentTarget as HTMLElement
+		const rows = [...(tableElement?.querySelectorAll<HTMLElement>(':scope > tbody > tr[data-row-key]') ?? [])]
+		let next = -1
+		switch (event.key) {
+			case 'ArrowDown': next = Math.min(viewIndex + 1, rows.length - 1); break
+			case 'ArrowUp': next = Math.max(viewIndex - 1, 0); break
+			case 'Home': next = 0; break
+			case 'End': next = rows.length - 1; break
+			case 'Enter':
+				event.preventDefault()
+				openToolbarFromKeyboard(rowKey, viewIndex, row)
+				return
+			case 'F10':
+				if (!event.altKey) return
+				event.preventDefault()
+				openToolbarFromKeyboard(rowKey, viewIndex, row)
+				return
+			default: return
+		}
+		event.preventDefault()
+		rows[next]?.focus()
+	}
+
+	function handleToolbarFocusOut(event: FocusEvent) {
+		if (!popupElement?.contains(event.relatedTarget as Node | null)) toolbarFocused = false
 	}
 
 	// The toolbar's row, resolved by key against the current view (null once it's gone).
@@ -1673,10 +1884,15 @@
 		}
 	}
 
-	// Button trigger click handler
+	// Button trigger click handler; a keyboard press (detail 0) moves focus into the toolbar
 	function handleToolbarButtonClick(rowKey: string, viewIndex: number, event: MouseEvent) {
 		event.stopPropagation()
+		const trigger = event.currentTarget as HTMLElement
 		handleRowClickForActions(rowKey, viewIndex, event)
+		if (event.detail === 0 && hoveredRowKey === rowKey) {
+			toolbarReturnFocus = trigger
+			focusToolbar()
+		}
 	}
 
 	// Hover mode, decided per event: touch-screen laptops still get hover for the mouse
@@ -1693,9 +1909,9 @@
 	function handleRowPointerLeave(event: PointerEvent) {
 		if (event.pointerType === 'touch') return
 
-		// Delay hiding to allow mouse to reach the popup
+		// Delay hiding to allow mouse to reach the popup (a keyboard user inside it keeps it)
 		rowActionHideTimeout = setTimeout(() => {
-			if (!rowActionButtonHovered) closeRowToolbar()
+			if (!rowActionButtonHovered && !toolbarFocused) closeRowToolbar()
 		}, 200)
 	}
 
@@ -1712,7 +1928,9 @@
 		if (event.pointerType === 'touch') return
 		rowActionButtonHovered = false
 		// Start hide timeout when leaving the popup (hover mode only)
-		if (toolbarTrigger === 'hover') rowActionHideTimeout = setTimeout(closeRowToolbar, 150)
+		if (toolbarTrigger === 'hover') rowActionHideTimeout = setTimeout(() => {
+			if (!toolbarFocused) closeRowToolbar()
+		}, 150)
 	}
 
 	async function handleToolbarItemClick(item: RowToolbarItem<T>, action: string, event: MouseEvent) {
@@ -1746,13 +1964,13 @@
 	}
 
 	// Built-in toolbar presets: icon, text (tooltip), danger styling. Your item fields win.
-	const toolbarPresets: Record<RowToolbarAction, Partial<ResolvedActionItem<RowToolbarAction>>> = {
-		add: { icon: 'add', text: 'Add row below' },
-		delete: { icon: 'delete', text: 'Delete row', isDanger: true },
-		duplicate: { icon: 'copy', text: 'Duplicate row' },
-		'move-up': { icon: 'arrow_up', text: 'Move row up' },
-		'move-down': { icon: 'arrow_down', text: 'Move row down' }
-	}
+	const toolbarPresets: Record<RowToolbarAction, Partial<ResolvedActionItem<RowToolbarAction>>> = $derived({
+		add: { icon: 'add', text: labels.addRow },
+		delete: { icon: 'delete', text: labels.deleteRow, isDanger: true },
+		duplicate: { icon: 'copy', text: labels.duplicateRow },
+		'move-up': { icon: 'arrow_up', text: labels.moveRowUp },
+		'move-down': { icon: 'arrow_down', text: labels.moveRowDown }
+	})
 
 	function toolbarDefaults(item: ActionItem<RowContext<T>, RowToolbarAction>) {
 		return item.action && item.action !== 'custom' ? toolbarPresets[item.action] : undefined
@@ -1887,25 +2105,24 @@
 		}
 	})
 
-	// While the toolbar is open: an outside press / focus closes it, Escape closes it.
+	// While the toolbar is open: an outside press / focus closes it.
 	// Listeners exist only while it's open; the toolbar follows its row (PositioningRegion).
 	$effect(() => {
 		if (hoveredRowKey === null) return
-		const undismiss = dismissOnOutside(() => [containerRef, popupElement], () => closeRowToolbar())
-		const popLayer = pushLayer({
+		return dismissOnOutside(() => [containerRef, popupElement], () => closeRowToolbar())
+	})
+
+	// Escape closes it (closeRowToolbar returns focus). A hover-opened toolbar is no layer unless
+	// it holds focus — the pointer passing over a row (e.g. in a dialog) must not take Escape.
+	$effect(() => {
+		if (hoveredRowKey === null || (toolbarTrigger === 'hover' && !toolbarFocused)) return
+		return pushLayer({
 			onEscape: (event) => {
 				// Escape in a cell editor cancels the edit, not the toolbar
 				if ((event.target as Element | null)?.closest?.('td.editing')) return false
-				const refocus = !!popupElement?.contains(document.activeElement)
-				const row = hoveredRowElement
 				closeRowToolbar()
-				if (refocus) (row?.querySelector('.toolbar-trigger-btn, td[tabindex]') as HTMLElement | null)?.focus()
 			}
 		})
-		return () => {
-			undismiss()
-			popLayer()
-		}
 	})
 
 	// Close a popup once its anchor scrolls out of view (any scroll container or the page)
@@ -1922,10 +2139,20 @@
 
 	// Context menu handlers
 	function handleCellContextMenu(e: MouseEvent, colIndex: number, column: Column<T>, item: T) {
-		if (!contextMenu || contextMenu.length === 0) return
 		// Right-click in an editor's input keeps the native menu (copy / paste / spelling)
 		if ((e.target as Element).closest('input, textarea, select, [contenteditable]')) return
+		const cell = e.currentTarget as HTMLElement
+		const rect = cell.getBoundingClientRect()
+		if (openContextMenu(cell, colIndex, column, item, {dx: e.clientX - rect.left, dy: e.clientY - rect.top})) e.preventDefault()
+	}
 
+	// Focus to restore when the menu closes with focus inside it
+	let contextMenuReturnFocus: HTMLElement | null = null
+
+	// Opens the menu on a cell: at the pointer's offset in it, or (keyboard, `offset` null) below
+	// the cell with focus on the first item. False when it has nothing to show (native menu then).
+	function openContextMenu(cell: HTMLElement, colIndex: number, column: Column<T>, item: T, offset: {dx: number; dy: number} | null): boolean {
+		if (!contextMenu || contextMenu.length === 0) return false
 		const context: ContextMenuContext<T> = {
 			row: item,
 			...getRowIdentity(item),
@@ -1934,20 +2161,32 @@
 			cellValue: getCellRawValue(item, getRowKey(item), String(column.field))
 		}
 		// Nothing visible for this cell (e.g. tree-only built-ins on a flat grid) → native menu.
-		if (resolveMenuEntries(contextMenu, context, (item) => contextMenuDefaults(item, context)).length === 0) return
+		if (resolveMenuEntries(contextMenu, context, (item) => contextMenuDefaults(item, context)).length === 0) return false
 
-		e.preventDefault()
-
-		const cell = e.currentTarget as HTMLElement
 		const rect = cell.getBoundingClientRect()
+		const rtl = getComputedStyle(cell).direction === 'rtl'
 		contextMenuContext = context
-		contextMenuAnchor = {cell, dx: e.clientX - rect.left, dy: e.clientY - rect.top}
+		contextMenuAnchor = {cell, ...(offset ?? {dx: rtl ? rect.width : 0, dy: rect.height})}
 		contextMenuVisible = true
+		contextMenuReturnFocus = document.activeElement as HTMLElement | null
 
 		onContextMenuOpen?.(context)
+		if (!offset) {
+			void tick().then(() => requestAnimationFrame(() => {
+				contextMenuElement?.querySelector<HTMLElement>('fluent-menu-item:not([disabled])')?.focus()
+			}))
+		}
+		return true
 	}
 
-	async function handleContextMenuItemClick(item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>, action: string, event: MouseEvent) {
+	// Enter / Space on a focused item (the menu item itself only emits `change` for them)
+	function handleContextMenuItemKeyDown(item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>, action: string, disabled: boolean, event: KeyboardEvent) {
+		if (event.key !== 'Enter' && event.key !== ' ') return
+		event.preventDefault()
+		if (!disabled) void handleContextMenuItemClick(item, action, event)
+	}
+
+	async function handleContextMenuItemClick(item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>, action: string, event: MouseEvent | KeyboardEvent) {
 		const ctx = contextMenuContext
 		if (!ctx || 'divider' in item) return
 		if (item.shouldCloseOnClick !== false) closeContextMenu()
@@ -1976,13 +2215,13 @@
 		if ('divider' in item) return undefined
 		switch (item.action) {
 			case 'expand-all':
-				return { text: 'Expand all', icon: 'arrow_expand_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
+				return { text: labels.expandAll, icon: 'arrow_expand_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
 			case 'collapse-all':
-				return { text: 'Collapse all', icon: 'arrow_collapse_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
+				return { text: labels.collapseAll, icon: 'arrow_collapse_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
 			case 'expand-tree':
-				return { text: 'Expand entire tree', icon: 'arrow_expand_all', isVisible: isTreeMode && treeParentPathSet.size > 0 }
+				return { text: labels.expandTree, icon: 'arrow_expand_all', isVisible: isTreeMode && treeParentPathSet.size > 0 }
 			case 'collapse-tree':
-				return { text: 'Collapse entire tree', icon: 'arrow_collapse_all', isVisible: isTreeMode && resolvedExpandedPaths.size > 0 }
+				return { text: labels.collapseTree, icon: 'arrow_collapse_all', isVisible: isTreeMode && resolvedExpandedPaths.size > 0 }
 		}
 		return undefined
 	}
@@ -2019,9 +2258,13 @@
 	}
 
 	function closeContextMenu() {
+		const refocus = !!contextMenuElement?.contains(document.activeElement)
+		const returnTo = contextMenuReturnFocus
 		contextMenuVisible = false
 		contextMenuContext = null
 		contextMenuAnchor = null
+		contextMenuReturnFocus = null
+		if (refocus && returnTo?.isConnected) returnTo.focus()
 	}
 
 	// While the menu is open: a press outside it (a right-click elsewhere reopens it there,
@@ -2090,12 +2333,17 @@
 	<!-- Row toolbar (uses fixed positioning to float outside container) -->
 	{#if resolvedShowToolbar && hoveredRow && hoveredRowElement}
 		<PositioningRegion anchor={hoveredRowElement} visible={true} position={toolbarRegionPosition} align={toolbarAlign} matchWidth={false} style="width: auto;">
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				bind:this={popupElement}
 				class="row-toolbar"
+				role="toolbar"
+				tabindex="-1"
+				aria-label={labels.rowActions}
 				onpointerenter={handleRowActionPopupPointerEnter}
 				onpointerleave={handleRowActionPopupPointerLeave}
+				onkeydown={handleToolbarKeyDown}
+				onfocusin={() => (toolbarFocused = true)}
+				onfocusout={handleToolbarFocusOut}
 			>
 				{#if hoveredRow}
 					{@const rowCtx = {row: hoveredRow.row, ...getRowIdentity(hoveredRow.row)}}
@@ -2176,6 +2424,7 @@
 							class={[r.isDanger && "danger", r.cssClass].filter(Boolean).join(" ") || null}
 							title={r.tooltip ?? null}
 							onclick={(event: MouseEvent) => handleContextMenuItemClick(entry.item, r.action, event)}
+							onkeydown={(event: KeyboardEvent) => handleContextMenuItemKeyDown(entry.item, r.action, !!r.isDisabled, event)}
 						>
 							{#if typeof r.icon === 'string'}
 								<span slot="start"><Icon name={r.icon} size={16} /></span>
@@ -2190,10 +2439,19 @@
 		</div>
 	{/if}
 
-	<table bind:this={tableElement} class={computedClass}>
+	<div class="quickgrid-live-region" role="status" aria-live="polite">{liveMessage}</div>
+
+	<table
+		bind:this={tableElement}
+		class={computedClass}
+		role={isTreeMode ? "treegrid" : undefined}
+		aria-label={ariaLabel}
+		aria-labelledby={ariaLabelledby}
+		aria-rowcount={ariaRowCount}
+	>
 		<thead>
 			{#if filterable}
-				<tr class="filter-row">
+				<tr class="filter-row" aria-rowindex={ariaRowCount !== undefined ? 1 : undefined}>
 					{#if resolvedShowToolbar && toolbarTrigger === 'button'}
 						<th class="actions-column"></th>
 					{/if}
@@ -2204,7 +2462,8 @@
 									type="text"
 									class="filter-input"
 									class:invalid={filterValidity[String(column.field)] === false}
-									placeholder="Filter..."
+									placeholder={labels.filterPlaceholder}
+									aria-label={labels.filterAriaLabel(column.title)}
 									value={filters[String(column.field)] || ""}
 									oninput={(e) => handleFilter(String(column.field), e.currentTarget)}
 								/>
@@ -2216,38 +2475,50 @@
 					{/if}
 				</tr>
 			{/if}
-			<tr>
+			<tr aria-rowindex={ariaRowCount !== undefined ? headerRowCount : undefined}>
 				{#if resolvedShowToolbar && toolbarTrigger === 'button'}
 					<th class="actions-column"></th>
 				{/if}
 				{#each columns as column}
 					{@const sortIndex = getSortIndex(column)}
 					{@const sortState = sortIndex >= 0 ? sort[sortIndex] : undefined}
-					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					{#snippet headerContent()}
+						<span>{column.title}</span>
+						{#if column.headerInfo}
+							<span class="header-info-icon">
+								<Icon name="info" size={16} color="accent" title={column.headerInfo} />
+							</span>
+						{/if}
+						{#if isColumnSortable(column)}
+							<span class="sort-indicator" aria-hidden="true">
+								{#if sortState}
+									{sortState.direction === "asc" ? "▲" : "▼"}{#if sort.length > 1}<span class="sort-priority">{sortIndex + 1}</span>{/if}
+								{:else}
+									<span class="sort-placeholder">⬍</span>
+								{/if}
+							</span>
+						{/if}
+					{/snippet}
 					<th
 						class={`column-header ${isColumnSortable(column) ? "sortable" : ""} ${
 							sortState ? `sorted sorted-${sortState.direction}` : ""
 						}`}
 						style={getColumnHeaderStyle(column, true)}
-						onclick={(e) => handleSort(column, e)}
+						aria-sort={getAriaSort(column)}
 					>
-						<div class="column-header-content">
-							<span>{column.title}</span>
-							{#if column.headerInfo}
-								<span class="header-info-icon">
-									<Icon name="info" size={16} color="accent" title={column.headerInfo} />
-								</span>
-							{/if}
-							{#if isColumnSortable(column)}
-								<span class="sort-indicator">
-									{#if sortState}
-										{sortState.direction === "asc" ? "▲" : "▼"}{#if sort.length > 1}<span class="sort-priority">{sortIndex + 1}</span>{/if}
-									{:else}
-										<span class="sort-placeholder">⬍</span>
-									{/if}
-								</span>
-							{/if}
-						</div>
+						{#if isColumnSortable(column)}
+							<!-- Enter / Space sort; Ctrl / ⌘ adds the column in "multiple" mode -->
+							<button
+								type="button"
+								class="column-header-content column-sort-button"
+								onclick={(e) => handleSort(column, e.ctrlKey || e.metaKey)}
+								onkeydown={(e) => handleSortKeyDown(column, e)}
+							>
+								{@render headerContent()}
+							</button>
+						{:else}
+							<div class="column-header-content">{@render headerContent()}</div>
+						{/if}
 					</th>
 				{/each}
 				{#if fillerColumn}
@@ -2259,28 +2530,41 @@
 			{#if displayItems.length === 0}
 				<tr>
 					<td colspan={columns.length + (resolvedShowToolbar && toolbarTrigger === 'button' ? 1 : 0) + (fillerColumn ? 1 : 0)} class="empty-message">
-						No items to display
+						{labels.noItems}
 					</td>
 				</tr>
 			{:else}
 				{#each displayRows as {item, eachKey}, viewIndex (eachKey)}
 					{@const rowKey = getRowKey(item)}
+					{@const rowPath = isTreeMode ? getRowPath(item) : ""}
+					{@const rowIsParent = isTreeMode && (isFiltering ? filteredParentPaths.has(rowPath) : rowHasChildren(item))}
 					<tr
 						data-row-key={rowKey}
+						aria-rowindex={ariaRowCount !== undefined ? rowIndexBase + viewIndex + 1 : undefined}
+						aria-level={isTreeMode ? getRowLevel(item) - treeMinLevel + 1 : undefined}
+						aria-expanded={rowIsParent ? isFiltering || isPathExpanded(rowPath) : undefined}
 						onclick={resolvedShowToolbar && toolbarTrigger !== 'button' ? (e) => handleRowClickForActions(rowKey, viewIndex, e) : undefined}
 						onpointerdown={resolvedShowToolbar && toolbarTrigger === 'hover' ? (e) => lastRowPointerType = e.pointerType : undefined}
 						onpointerenter={resolvedShowToolbar && toolbarTrigger === 'hover' ? (e) => handleRowPointerEnter(rowKey, viewIndex, e) : undefined}
 						onpointerleave={resolvedShowToolbar && toolbarTrigger === 'hover' ? handleRowPointerLeave : undefined}
+						tabindex={rowsFocusable ? (resolvedRowTabStop === rowKey ? 0 : -1) : undefined}
+						onfocus={rowsFocusable ? (e) => { if (e.target === e.currentTarget) rowTabStop = rowKey } : undefined}
+						onkeydown={rowsFocusable ? (e) => handleRowKeyDown(rowKey, viewIndex, e) : undefined}
 					>
 						{#if resolvedShowToolbar && toolbarTrigger === 'button'}
 							<td class="actions-column">
 								<button
+									type="button"
 									class="toolbar-trigger-btn"
 									class:active={hoveredRowKey === rowKey}
 									onclick={(e) => handleToolbarButtonClick(rowKey, viewIndex, e)}
-									title="Actions"
+									title={labels.rowActions}
+									aria-label={labels.rowActions}
+									aria-haspopup="true"
+									aria-expanded={hoveredRowKey === rowKey}
+									tabindex={isNavigateMode ? -1 : undefined}
 								>
-									⋮
+									<span aria-hidden="true">⋮</span>
 								</button>
 							</td>
 						{/if}
@@ -2292,21 +2576,21 @@
 							<td
 								data-row={viewIndex}
 								data-col={colIndex}
-								tabindex={isNavigateMode ? 0 : undefined}
+								tabindex={getCellTabIndex(rowKey, colIndex)}
 								style={getColumnBodyStyle(column)}
 								class={`${isCellEditable(column, item) ? "editable-cell" : ""} ${cellInvalid ? "validation-error" : ""} ${isCellFocused(rowKey, colIndex) ? "focused" : ""} ${isEditing(rowKey, cellField) ? "editing" : ""} ${column.nowrap ? "nowrap-cell" : ""}`}
 								onclick={(e) => handleCellClick(e, colIndex, column, item)}
 								ondblclick={(e) => handleCellDblClick(e, colIndex, column, item)}
 								oncontextmenu={(e) => handleCellContextMenu(e, colIndex, column, item)}
 								onfocus={() => handleCellFocus(colIndex, column, item)}
-								onkeydown={(e) => handleNavigationKeyDown(e, viewIndex, colIndex, column, item)}
+								onkeydown={(e) => handleCellKeyDown(e, viewIndex, colIndex, column, item)}
 								title={cellError || undefined}
 							>
 								{#snippet cellContent()}
 								{#if isEditing(rowKey, cellField)}
 									{#if column.editor === "custom"}
 										<!-- Custom editor - handled via callback, show indicator -->
-										<span class="custom-editing-indicator">Editing...</span>
+										<span class="custom-editing-indicator">{labels.editing}</span>
 									{:else if editingCell}
 										{@const editToken = editingCell.token}
 										{@const isValidating = validatingToken === editToken}
@@ -2319,6 +2603,7 @@
 											{#key editToken}
 												<GridCellEditor
 													bind:this={activeEditor}
+													{labels}
 													autofocus
 													type={getEditorType(column)}
 													value={getCellRawValue(item, rowKey, cellField)}
@@ -2332,7 +2617,7 @@
 												/>
 											{/key}
 											{#if isValidating}
-												<span class="validating-indicator">...</span>
+												<span class="validating-indicator" role="img" aria-label={labels.validating} title={labels.validating}>...</span>
 											{/if}
 										</div>
 										<!-- The cell's current validation error (set by an earlier invalid commit). -->
@@ -2342,6 +2627,7 @@
 									{/if}
 								{:else if isCellEditable(column, item) && getColumnEditTrigger(column) === "always"}
 									<GridCellEditor
+										{labels}
 										type={getEditorType(column)}
 										value={getCellRawValue(item, rowKey, cellField)}
 										displayText={getEditorDisplayText(item, column, rowKey)}
@@ -2359,6 +2645,7 @@
 											<!-- Checkbox in navigate mode: either always editable or disabled display -->
 											{#if checkboxAlwaysEditable}
 												<GridCellEditor
+													{labels}
 													type="checkbox"
 													value={getCellRawValue(item, rowKey, cellField)}
 													options={getEditorOptionsForCell(column, item, rowKey)}
@@ -2378,28 +2665,29 @@
 											<span class="cell-text">{getCellValue(item, column, rowKey)}</span>
 										{/if}
 										{#if optionsLoadingEdit?.rowKey === rowKey && optionsLoadingEdit.field === cellField}
-											<span class="options-loading-indicator" aria-label="Loading options">...</span>
+											<span class="options-loading-indicator" role="img" aria-label={labels.loadingOptions} title={labels.loadingOptions}>...</span>
 										{/if}
 										{#if cellInvalid}
-											<span class="cell-error-indicator" title={cellError || "Invalid value"}>⚠</span>
+											<span class="cell-error-indicator" title={cellError || labels.invalidValue}>⚠</span>
 										{/if}
 										{#if isCellEditable(column, item) && shouldShowEditButton(column)}
 											<button
+												type="button"
 												class="cell-edit-btn"
 												onclick={(e) => handleEditButtonClick(e, colIndex, column, item)}
-												title="Edit"
+												title={labels.edit}
+												aria-label={labels.edit}
+												tabindex={isNavigateMode ? -1 : undefined}
 											>
-												✎
+												<span aria-hidden="true">✎</span>
 											</button>
 										{/if}
 									</div>
 								{/if}
 								{/snippet}
 								{#if isTreeMode && column.tree}
-									{@const _path = getRowPath(item)}
 									{@const _level = getRowLevel(item)}
-									{@const _hasChildren = isFiltering ? filteredParentPaths.has(_path) : rowHasChildren(item)}
-									{@const _expanded = isFiltering || isPathExpanded(_path)}
+									{@const _expanded = isFiltering || isPathExpanded(rowPath)}
 									<!-- svelte-ignore a11y_no_static_element_interactions -->
 									<div
 										class="tree-cell"
@@ -2409,23 +2697,24 @@
 											// a dblclick triggers — only when we're actually going to handle the
 											// dblclick as a tree-toggle. e.detail counts clicks within the dblclick
 											// interval, so > 1 == "this is the second+ click of a multi-click".
-											if (e.detail > 1 && treeDoubleClickBehavior === "toggle" && _hasChildren) {
+											if (e.detail > 1 && treeDoubleClickBehavior === "toggle" && rowIsParent) {
 												e.preventDefault()
 											}
 										}}
 									>
-										{#if _hasChildren}
-											<!-- svelte-ignore a11y_consider_explicit_label -->
+										{#if rowIsParent}
 											<button
 												type="button"
 												class="tree-chevron"
 												class:expanded={_expanded}
 												disabled={isFiltering}
-												onclick={(e) => { e.stopPropagation(); toggleExpand(_path) }}
+												onclick={(e) => { e.stopPropagation(); toggleExpand(rowPath) }}
 												ondblclick={(e) => e.stopPropagation()}
-												title={isFiltering ? "Clear the filter to collapse" : _expanded ? "Collapse" : "Expand"}
+												aria-label={_expanded ? labels.collapse : labels.expand}
+												title={isFiltering ? labels.clearFilterToCollapse : _expanded ? labels.collapse : labels.expand}
+												tabindex={isNavigateMode ? -1 : undefined}
 											>
-												▶
+												<span aria-hidden="true">▶</span>
 											</button>
 										{:else}
 											<span class="tree-leaf-spacer" aria-hidden="true"></span>
@@ -2447,7 +2736,7 @@
 	</table>
 
 	{#if pageable && (totalPages > 1 || pageSizeChoices.length > 0)}
-		<div class="pagination" aria-busy={pageChangePending || null}>
+		<nav class="pagination" aria-label={labels.pagination} aria-busy={pageChangePending || null}>
 			{#if pageSizeChoices.length > 0}
 				<label class="pagination-size">
 					<select
@@ -2460,7 +2749,7 @@
 							<option value={size}>{size}</option>
 						{/each}
 					</select>
-					per page
+					{labels.perPage}
 				</label>
 			{/if}
 
@@ -2469,13 +2758,13 @@
 				disabled={effectivePage <= 1 || pageChangePending}
 				onclick={() => goToPage(effectivePage - 1)}
 			>
-				Previous
+				{labels.previousPage}
 			</button>
 
 			<div class="pagination-info">
-				Page {effectivePage} of {totalPages}
+				{labels.pageInfo(effectivePage, totalPages)}
 				<span class="item-count">
-					({pagedTotal} item{pagedTotal !== 1 ? "s" : ""})
+					({labels.itemCount(pagedTotal)})
 				</span>
 			</div>
 
@@ -2484,9 +2773,9 @@
 				disabled={effectivePage >= totalPages || pageChangePending}
 				onclick={() => goToPage(effectivePage + 1)}
 			>
-				Next
+				{labels.nextPage}
 			</button>
-		</div>
+		</nav>
 	{/if}
 </div>
 
@@ -2499,6 +2788,7 @@
 
 	/* Row toolbar (positioned by PositioningRegion) */
 	.row-toolbar {
+		outline: none;
 		display: flex;
 		flex-direction: column;
 		gap: 0;
@@ -2634,6 +2924,39 @@
 
 	.column-header.sortable {
 		cursor: pointer;
+		padding: 0;
+	}
+
+	/* The sort button fills its header cell (the padding moves onto it) */
+	.column-sort-button {
+		all: unset;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 4px;
+		width: 100%;
+		padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
+		cursor: pointer;
+		text-align: inherit;
+	}
+
+	.column-sort-button:focus-visible {
+		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer, #0078d4);
+		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
+	}
+
+	/* Live region: read by screen readers, not shown */
+	.quickgrid-live-region {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	.column-header.sortable:hover {
@@ -2777,6 +3100,28 @@
 
 	.tree-chevron.expanded {
 		transform: rotate(90deg);
+	}
+
+	tbody tr:focus-visible {
+		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer, #0078d4);
+		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
+	}
+
+	.tree-chevron:focus-visible,
+	.toolbar-trigger-btn:focus-visible,
+	.cell-edit-btn:focus-visible,
+	.row-toolbar-btn:focus-visible {
+		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer, #0078d4);
+		outline-offset: 1px;
+	}
+
+	/* The edit button shows while focused, not only on hover */
+	.cell-edit-btn:focus-visible {
+		opacity: 1;
+	}
+
+	.tree-chevron > span {
+		display: inline-flex;
 	}
 
 	.tree-leaf-spacer {
