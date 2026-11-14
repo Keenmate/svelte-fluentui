@@ -132,7 +132,7 @@ test("no idMember but rows have id: id is the row key, so an invalid cell surviv
 
 test("row toolbar keeps working when the consumer replaces items immutably", async ({page}) => {
 	const wrap = page.locator("#bump-wrap")
-	// Scroll first: a scroll closes the toolbar, and hover's own scroll could land after mouseenter.
+	// Scroll first: hover's own scroll could land after mouseenter.
 	await wrap.scrollIntoViewIfNeeded()
 	await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
 	await wrap.locator("tbody tr", {hasText: "Banana"}).hover()

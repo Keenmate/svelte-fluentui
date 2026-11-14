@@ -203,6 +203,32 @@ not localisable (Phase 6); filter row matches the item, not a cell's pending inv
 
 Fix: `dismissOnOutside` + `pushLayer` while open, per-event `pointerType`, PositioningRegion for the menu.
 
+**Phase 5 status — done 2026-11-14.** Hover mode decides per event: row `pointerenter` / `pointerleave`
+ignore `pointerType === "touch"`; a row `pointerdown` records the type and a touch tap toggles the toolbar
+via the row click (hover mode had no tap path at all — touch users never saw it); `isTouchDevice` is gone.
+While the toolbar is open: `dismissOnOutside([container, toolbar])` + `pushLayer` (Escape declines inside a
+`td.editing` cell so the editor's cancel still runs; focus inside the toolbar returns to the row's `⋮` /
+navigable cell). Click / button mode no longer closes on the toolbar's `mouseleave` (that was its only
+mouse dismissal). Context menu: `use:portal` + floating-ui (`bottom-start`, `flip`, `shift(8)`) against a
+virtual reference = the right-clicked cell + the pointer's offset in it (`contextElement` = cell, so
+`autoUpdate` follows the grid's / page's scroll); `dismissOnOutside([container, menu])` + `pushLayer`; the
+container is "inside" (keeps the anchor-dialog focus-trap exception working), so a capture `pointerdown`
+on the container closes the menu instead — a right-click elsewhere in the grid reopens it there, on the
+header / filter row it just closes. Right-clicks on `input, textarea, select, [contenteditable]` in a cell
+keep the native menu. No close-on-scroll: toolbar (PositioningRegion) and menu follow their anchor; an
+`IntersectionObserver` on the anchor row / cell closes them once it scrolls out of view. The 4
+always-on document / window listeners and the `tick`-based viewport clamp are gone — listeners exist only
+while open. 13 new e2e tests (`e2e/quickgrid-toolbar.spec.ts`, fixture `/test/quickgrid-toolbar`), 11
+fail on the old code (the 2 regression guards: Escape in an editor with the hover toolbar open, the
+toolbar closing when its row scrolls out of view). Docs: `toolbarTrigger` and `contextMenu` rows.
+Deferred / noticed: the menu is portalled with z-index (like `ContextMenu`), not promoted to the top layer
+like PositioningRegion — inside a high-z modal it may need `--fluent-z-popover`; the hover toolbar's Escape
+layer sits above an open dialog, so Escape over a hovered row closes the toolbar first; a focus move into
+a portalled editor popup (date picker) closes an open toolbar; (fixed on review: the root capture
+handler is an effect listener, so a consumer's `onpointerdowncapture` still runs; the stale spec comment
+is updated); keyboard access to the toolbar / menu
+(Shift+F10, focus into the menu) stays Phase 6.
+
 ## Phase 6 — keyboard & accessibility
 
 - Sort headers: `<button>` inside `th`, `aria-sort`, glyphs `aria-hidden` (currently mouse-only, a11y warning silenced).
@@ -293,6 +319,10 @@ pushes an Escape layer) — fold into Phase 6 (keyboard & a11y) or fix early if 
 **Update 2026-11-14 (Phase 4):** Phase 4 done (see its status block; 176/176). Next: **Phase 5** (row
 toolbar, context menu, listeners), then 6 (keyboard & a11y — include the always-editor Escape bug,
 sort-header keyboard/`aria-sort`, localisable pager strings), then 7.
+
+**Update 2026-11-14 (Phase 5):** Phase 5 done (189/189). Next: **Phase 6** (keyboard & a11y): fold in
+the always-editor Escape bug (Phase 3), sort-header keyboard/`aria-sort` + localisable pager strings
+(Phase 4), toolbar/menu keyboard access and the hover-toolbar Escape layer above dialogs (Phase 5). Then 7.
 
 Next, in order (original list):
 1. Small commit: advanced row toolbar on `/components/quickgrid-editable` is clipped off-screen at the

@@ -17,7 +17,7 @@
 	]
 
 	const properties: PropertyRow[] = [
-		{name: "contextMenu", type: "QuickGridContextMenuConfig<T>[]", default: "undefined", description: "Right-click menu: menu items, {divider: true} entries, and built-ins (expand-all, collapse-all, expand-tree, collapse-tree)"},
+		{name: "contextMenu", type: "QuickGridContextMenuConfig<T>[]", default: "undefined", description: "Right-click menu: menu items, {divider: true} entries, and built-ins (expand-all, collapse-all, expand-tree, collapse-tree). Rendered in <body> at the pointer; follows its cell when the grid or page scrolls. Right-clicks inside an editor's input keep the browser menu"},
 		{name: "beforeActionCallback", type: "(detail: QuickGridActionDetail<T>) => unknown", default: "undefined", description: "Return false (or resolve to false) to cancel an item"},
 		{name: "onContextMenuOpen", type: "(ctx: QuickGridContextMenuContext<T>) => void", default: "undefined", description: "Fires when the context menu opens, receives the click context"}
 	]

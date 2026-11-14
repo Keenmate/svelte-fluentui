@@ -38,7 +38,7 @@
 		{name: "showRowToolbar", type: "boolean", default: "false", description: "Show floating row toolbar with action buttons"},
 		{name: "rowToolbar", type: "QuickGridRowToolbarConfig<T>[]", default: "undefined", description: 'Toolbar items — predefined strings ("add", "delete", "duplicate", "move-up", "move-down") or custom objects'},
 		{name: "toolbarAlign", type: '"center" | "top"', default: '"center"', description: "Vertical alignment of the row toolbar"},
-		{name: "toolbarTrigger", type: '"hover" | "click" | "button"', default: '"hover"', description: "How to reveal the row toolbar"},
+		{name: "toolbarTrigger", type: '"hover" | "click" | "button"', default: '"hover"', description: "How to reveal the row toolbar: hover (mouse / pen; a tap toggles it on touch), a row click, or a ⋮ button in the first column. A press outside the grid or Escape closes it; it follows its row when the grid or page scrolls and closes once the row scrolls out of view"},
 		{name: "contextMenu", type: "QuickGridContextMenuConfig<T>[]", default: "undefined", description: 'Context menu entries shown on right-click — built-in names ("expand-all", "collapse-all", "expand-tree", "collapse-tree"), menu items, or {divider: true}'},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class applied to the grid wrapper"},
 		{name: "style", type: "string", default: '""', description: "Inline CSS style applied to the grid wrapper"}

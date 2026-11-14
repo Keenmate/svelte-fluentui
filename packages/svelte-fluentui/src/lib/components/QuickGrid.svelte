@@ -13,6 +13,9 @@
 	import Icon from "./Icon.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {dismissOnOutside} from "../helpers/dismiss.js"
+	import {portal} from "../actions/portal.js"
+	import {computePosition, flip, shift, autoUpdate} from "@floating-ui/dom"
 	import {resolveMenuEntries, runAction, type ActionEventDetail, type ActionItem, type MenuDivider, type MenuEntry, type ResolvedActionItem} from "../action-items/index.js"
 
 	import type {
@@ -476,11 +479,13 @@
 	let connectorArrowDir = $state<'right' | 'left' | 'down'>('right')
 	let popupPosition = $state<'left' | 'right' | 'top'>('left')
 	let hasRowMoved = $state(false)  // Track if row has moved from original position
-	let isTouchDevice = $state(false)
+	// Pointer type of the last press on a row: hover mode opens on mouse / pen hover, on a tap for touch
+	let lastRowPointerType = ''
 
 	// Context menu state
 	let contextMenuVisible = $state(false)
-	let contextMenuPosition = $state({ x: 0, y: 0 })
+	// The cell the menu opened on and the pointer's offset in it — the menu follows the cell
+	let contextMenuAnchor = $state.raw<{cell: HTMLElement; dx: number; dy: number} | null>(null)
 	let contextMenuContext = $state<ContextMenuContext<T> | null>(null)
 	let contextMenuElement: HTMLDivElement | undefined = $state()
 
@@ -1649,10 +1654,10 @@
 		if (el && el !== hoveredRowElement) hoveredRowElement = el
 	})
 
-	// Row click handler - toggles popup (for click/button trigger modes or touch devices)
+	// Row click handler - toggles popup (click / button modes; a tap in hover mode)
 	function handleRowClickForActions(rowKey: string, viewIndex: number, event: MouseEvent) {
-		// For hover mode, only handle touch devices
-		if (toolbarTrigger === 'hover' && !isTouchDevice) return
+		// Hover mode: only a touch tap toggles (mouse / pen open it by hovering)
+		if (toolbarTrigger === 'hover' && lastRowPointerType !== 'touch') return
 
 		// Prevent default to avoid triggering other click handlers
 		event.stopPropagation()
@@ -1674,9 +1679,9 @@
 		handleRowClickForActions(rowKey, viewIndex, event)
 	}
 
-	function handleRowMouseEnter(rowKey: string, viewIndex: number, event: MouseEvent) {
-		// Only for hover mode and non-touch devices
-		if (toolbarTrigger !== 'hover' || isTouchDevice) return
+	// Hover mode, decided per event: touch-screen laptops still get hover for the mouse
+	function handleRowPointerEnter(rowKey: string, viewIndex: number, event: PointerEvent) {
+		if (event.pointerType === 'touch') return
 
 		if (rowActionHideTimeout) {
 			clearTimeout(rowActionHideTimeout)
@@ -1685,9 +1690,8 @@
 		openRowToolbar(rowKey, viewIndex, event.currentTarget as HTMLElement)
 	}
 
-	function handleRowMouseLeave() {
-		// Only for hover mode and non-touch devices
-		if (toolbarTrigger !== 'hover' || isTouchDevice) return
+	function handleRowPointerLeave(event: PointerEvent) {
+		if (event.pointerType === 'touch') return
 
 		// Delay hiding to allow mouse to reach the popup
 		rowActionHideTimeout = setTimeout(() => {
@@ -1695,7 +1699,8 @@
 		}, 200)
 	}
 
-	function handleRowActionPopupMouseEnter() {
+	function handleRowActionPopupPointerEnter(event: PointerEvent) {
+		if (event.pointerType === 'touch') return
 		if (rowActionHideTimeout) {
 			clearTimeout(rowActionHideTimeout)
 			rowActionHideTimeout = null
@@ -1703,10 +1708,11 @@
 		rowActionButtonHovered = true
 	}
 
-	function handleRowActionPopupMouseLeave() {
+	function handleRowActionPopupPointerLeave(event: PointerEvent) {
+		if (event.pointerType === 'touch') return
 		rowActionButtonHovered = false
-		// Start hide timeout when leaving the popup
-		rowActionHideTimeout = setTimeout(closeRowToolbar, 150)
+		// Start hide timeout when leaving the popup (hover mode only)
+		if (toolbarTrigger === 'hover') rowActionHideTimeout = setTimeout(closeRowToolbar, 150)
 	}
 
 	async function handleToolbarItemClick(item: RowToolbarItem<T>, action: string, event: MouseEvent) {
@@ -1881,29 +1887,44 @@
 		}
 	})
 
-	// Touch device detection and click-outside handler
-	function handleDocumentClick(event: MouseEvent) {
-		if (!isTouchDevice || !resolvedShowToolbar || hoveredRowKey === null) return
-
-		const target = event.target as HTMLElement
-		// Check if click is outside popup and table
-		if (!popupElement?.contains(target) && !tableElement?.contains(target)) {
-			closeRowToolbar()
+	// While the toolbar is open: an outside press / focus closes it, Escape closes it.
+	// Listeners exist only while it's open; the toolbar follows its row (PositioningRegion).
+	$effect(() => {
+		if (hoveredRowKey === null) return
+		const undismiss = dismissOnOutside(() => [containerRef, popupElement], () => closeRowToolbar())
+		const popLayer = pushLayer({
+			onEscape: (event) => {
+				// Escape in a cell editor cancels the edit, not the toolbar
+				if ((event.target as Element | null)?.closest?.('td.editing')) return false
+				const refocus = !!popupElement?.contains(document.activeElement)
+				const row = hoveredRowElement
+				closeRowToolbar()
+				if (refocus) (row?.querySelector('.toolbar-trigger-btn, td[tabindex]') as HTMLElement | null)?.focus()
+			}
+		})
+		return () => {
+			undismiss()
+			popLayer()
 		}
+	})
+
+	// Close a popup once its anchor scrolls out of view (any scroll container or the page)
+	function closeWhenHidden(el: Element | null | undefined, close: () => void) {
+		if (!el || typeof IntersectionObserver === 'undefined') return
+		const observer = new IntersectionObserver((entries) => {
+			if (!entries[entries.length - 1].isIntersecting) close()
+		})
+		observer.observe(el)
+		return () => observer.disconnect()
 	}
 
-	// Hide toolbar on scroll (row may have moved out of view)
-	function handleScroll() {
-		if (hoveredRowKey !== null) closeRowToolbar()
-		// Also close context menu on scroll
-		if (contextMenuVisible) {
-			closeContextMenu()
-		}
-	}
+	$effect(() => closeWhenHidden(hoveredRowKey === null ? null : hoveredRowElement, closeRowToolbar))
 
 	// Context menu handlers
 	function handleCellContextMenu(e: MouseEvent, colIndex: number, column: Column<T>, item: T) {
 		if (!contextMenu || contextMenu.length === 0) return
+		// Right-click in an editor's input keeps the native menu (copy / paste / spelling)
+		if ((e.target as Element).closest('input, textarea, select, [contenteditable]')) return
 
 		const context: ContextMenuContext<T> = {
 			row: item,
@@ -1917,8 +1938,10 @@
 
 		e.preventDefault()
 
+		const cell = e.currentTarget as HTMLElement
+		const rect = cell.getBoundingClientRect()
 		contextMenuContext = context
-		contextMenuPosition = { x: e.clientX, y: e.clientY }
+		contextMenuAnchor = {cell, dx: e.clientX - rect.left, dy: e.clientY - rect.top}
 		contextMenuVisible = true
 
 		onContextMenuOpen?.(context)
@@ -1998,82 +2021,65 @@
 	function closeContextMenu() {
 		contextMenuVisible = false
 		contextMenuContext = null
+		contextMenuAnchor = null
 	}
 
-	function handleDocumentClickForContextMenu(event: MouseEvent) {
-		if (contextMenuVisible && !contextMenuElement?.contains(event.target as HTMLElement)) {
-			closeContextMenu()
-		}
-	}
-
-	function handleDocumentContextMenuForContextMenu(event: MouseEvent) {
-		// Close this context menu if right-click happens outside our table
-		if (contextMenuVisible && !tableElement?.contains(event.target as HTMLElement)) {
-			closeContextMenu()
-		}
-	}
-
-	// Escape goes to the topmost open layer (helpers/layer-stack.ts)
+	// While the menu is open: a press outside it (a right-click elsewhere reopens it there,
+	// the header closes it) or focus leaving closes it; Escape goes to the topmost layer.
 	$effect(() => {
-		if (contextMenuVisible) return pushLayer({onEscape: () => closeContextMenu()})
+		if (!contextMenuVisible) return
+		const undismiss = dismissOnOutside(() => [containerRef, contextMenuElement], () => closeContextMenu())
+		const popLayer = pushLayer({onEscape: () => closeContextMenu()})
+		return () => {
+			undismiss()
+			popLayer()
+		}
 	})
 
-	// Adjust context menu position to keep it within viewport
+	$effect(() => closeWhenHidden(contextMenuVisible ? contextMenuAnchor?.cell : null, closeContextMenu))
+
+	// The grid counts as "inside" above (the anchor's dialog), so a press in it closes the menu here
+	function handleContainerPointerDown(event: PointerEvent) {
+		if (contextMenuVisible && !contextMenuElement?.contains(event.target as Node)) closeContextMenu()
+	}
+	// A listener, not `onpointerdowncapture`, so a consumer's own handler in `...rest` still runs
 	$effect(() => {
-		if (contextMenuVisible && contextMenuElement) {
-			// Use tick to ensure the menu has rendered
-			tick().then(() => {
-				if (!contextMenuElement) return
+		const el = containerRef
+		if (!el) return
+		el.addEventListener("pointerdown", handleContainerPointerDown, true)
+		return () => el.removeEventListener("pointerdown", handleContainerPointerDown, true)
+	})
 
-				const rect = contextMenuElement.getBoundingClientRect()
-				const viewportWidth = window.innerWidth
-				const viewportHeight = window.innerHeight
-
-				let { x, y } = contextMenuPosition
-				let needsUpdate = false
-
-				// Adjust if going off right edge
-				if (x + rect.width > viewportWidth) {
-					x = viewportWidth - rect.width - 8
-					needsUpdate = true
+	// Portalled menu placed at the pointer's spot in its cell (floating-ui keeps it in the
+	// viewport and follows the cell when the grid or the page scrolls)
+	function placeContextMenu(node: HTMLElement, anchor: {cell: HTMLElement; dx: number; dy: number}) {
+		let stop = () => {}
+		function attach({cell, dx, dy}: typeof anchor) {
+			stop()
+			const reference = {
+				contextElement: cell,
+				getBoundingClientRect() {
+					const rect = cell.getBoundingClientRect()
+					const x = rect.left + dx
+					const y = rect.top + dy
+					return {x, y, left: x, top: y, right: x, bottom: y, width: 0, height: 0}
 				}
-
-				// Adjust if going off bottom edge
-				if (y + rect.height > viewportHeight) {
-					y = viewportHeight - rect.height - 8
-					needsUpdate = true
-				}
-
-				// Ensure not going off left or top
-				if (x < 8) {
-					x = 8
-					needsUpdate = true
-				}
-				if (y < 8) {
-					y = 8
-					needsUpdate = true
-				}
-
-				if (needsUpdate) {
-					contextMenuPosition = { x, y }
-				}
+			}
+			stop = autoUpdate(reference, node, async () => {
+				const {x, y} = await computePosition(reference, node, {
+					placement: 'bottom-start',
+					strategy: 'fixed',
+					middleware: [flip(), shift({padding: 8})]
+				})
+				node.style.left = `${x}px`
+				node.style.top = `${y}px`
 			})
 		}
-	})
-
-	onMount(() => {
-		isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-		document.addEventListener('click', handleDocumentClick)
-		document.addEventListener('click', handleDocumentClickForContextMenu)
-		document.addEventListener('contextmenu', handleDocumentContextMenuForContextMenu, true)
-		window.addEventListener('scroll', handleScroll, true)  // Use capture to catch all scroll events
-	})
+		attach(anchor)
+		return {update: attach, destroy: () => stop()}
+	}
 
 	onDestroy(() => {
-		document.removeEventListener('click', handleDocumentClick)
-		document.removeEventListener('click', handleDocumentClickForContextMenu)
-		document.removeEventListener('contextmenu', handleDocumentContextMenuForContextMenu, true)
-		window.removeEventListener('scroll', handleScroll, true)
 		if (rowActionHideTimeout) clearTimeout(rowActionHideTimeout)
 	})
 
@@ -2088,8 +2094,8 @@
 			<div
 				bind:this={popupElement}
 				class="row-toolbar"
-				onmouseenter={handleRowActionPopupMouseEnter}
-				onmouseleave={handleRowActionPopupMouseLeave}
+				onpointerenter={handleRowActionPopupPointerEnter}
+				onpointerleave={handleRowActionPopupPointerLeave}
 			>
 				{#if hoveredRow}
 					{@const rowCtx = {row: hoveredRow.row, ...getRowIdentity(hoveredRow.row)}}
@@ -2149,11 +2155,13 @@
 	{/if}
 
 	<!-- Context menu -->
-	{#if contextMenu && contextMenuVisible && contextMenuContext}
+	{#if contextMenu && contextMenuVisible && contextMenuContext && contextMenuAnchor}
 		<div
+			use:portal
+			use:placeContextMenu={contextMenuAnchor}
 			bind:this={contextMenuElement}
 			class="context-menu"
-			style="position: fixed; left: {contextMenuPosition.x}px; top: {contextMenuPosition.y}px;"
+			style="position: fixed; left: 0; top: 0;"
 		>
 			<fluent-menu>
 				{#each resolveMenuEntries(contextMenu, contextMenuContext, (item) => contextMenuDefaults(item, contextMenuContext)) as entry}
@@ -2259,9 +2267,10 @@
 					{@const rowKey = getRowKey(item)}
 					<tr
 						data-row-key={rowKey}
-						onclick={resolvedShowToolbar && toolbarTrigger === 'click' ? (e) => handleRowClickForActions(rowKey, viewIndex, e) : undefined}
-						onmouseenter={resolvedShowToolbar && toolbarTrigger === 'hover' ? (e) => handleRowMouseEnter(rowKey, viewIndex, e) : undefined}
-						onmouseleave={resolvedShowToolbar && toolbarTrigger === 'hover' ? handleRowMouseLeave : undefined}
+						onclick={resolvedShowToolbar && toolbarTrigger !== 'button' ? (e) => handleRowClickForActions(rowKey, viewIndex, e) : undefined}
+						onpointerdown={resolvedShowToolbar && toolbarTrigger === 'hover' ? (e) => lastRowPointerType = e.pointerType : undefined}
+						onpointerenter={resolvedShowToolbar && toolbarTrigger === 'hover' ? (e) => handleRowPointerEnter(rowKey, viewIndex, e) : undefined}
+						onpointerleave={resolvedShowToolbar && toolbarTrigger === 'hover' ? handleRowPointerLeave : undefined}
 					>
 						{#if resolvedShowToolbar && toolbarTrigger === 'button'}
 							<td class="actions-column">

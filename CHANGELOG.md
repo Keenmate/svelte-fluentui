@@ -196,6 +196,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - QuickGrid `editTrigger="always"`: editors no longer take focus when they mount (the last one stole focus on load / paging / sorting); only an edit the user starts is focused.
 - QuickGrid autocomplete editor: typed free text commits on blur like on Enter (an exact option label commits that option; emptied → `null`) instead of being dropped; reopening shows the value's label (or the cell's `getDisplayValueCallback` text, e.g. for a value picked from `searchCallback` results) instead of an empty input.
 - QuickGrid: a custom editor superseded by another cell's edit fires `onEditCancel`; overrides / `invalidCells` entries of id-less rows replaced with new objects are dropped (they could never match again).
+- QuickGrid row toolbar: hover mode is decided per pointer (`pointerType`) — mouse / pen hover shows it on touch-screen laptops too (it was off whenever `maxTouchPoints > 0`), a tap toggles it on touch (taps did nothing); a press outside the grid or Escape closes it in every mode (outside presses only closed it on touch devices; Escape in a cell editor still cancels the edit). Click / button mode no longer closes when the pointer leaves the toolbar.
+- QuickGrid toolbar / context menu: a scroll anywhere (the grid's own horizontal scroll, an editor's dropdown list) no longer closes them — they follow their row / cell and close once it scrolls out of view.
+- QuickGrid context menu: rendered in `<body>` (was misplaced under a `transform` / `filter` ancestor) and kept in the viewport by floating-ui; a right-click on the header or filter row closes it (it stayed open); a right-click in an editor's input keeps the browser's menu.
+- QuickGrid: no document / window listeners while the toolbar and menu are closed (was 4 per grid, always attached).
 - Select: type-ahead with nothing selected no longer skips the first matching option.
 - **Textarea — `bind:value` is two-way.** Typing never wrote back to the bound value (only
   `oninput`/`onchange` saw the text); the value is now updated on `input` and `change`.
