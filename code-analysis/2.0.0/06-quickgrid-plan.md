@@ -219,6 +219,10 @@ All decisions Q-QG-1…5 recorded in `questions.md`.
 **Update 2026-11-14 (later):** items 1 and 2 done (`c7ca2e0` toolbar, Q-QG-4 idMember default),
 Phase 2 done (see its status block). Next: **Phase 3** (editors). Extra flakes seen under full-suite load:
 AppBar count badge, Combobox open-at-load (pass alone).
+Phase 3 start: read the Phase 2 status block's "Deferred" list (3.1 / 3.4 items + custom-edit
+superseded without `onEditCancel`) and fold it into the Phase 3 agent spec. Same method: one background
+agent, fail-before/pass-after per item, I review + both checks + full suite, then commit. Docs demos now
+write back `{...row, [field]: newValue}` (not `draftRow`). Branch `prod` 9 ahead of origin, not pushed.
 
 Next, in order (original list):
 1. Small commit: advanced row toolbar on `/components/quickgrid-editable` is clipped off-screen at the
