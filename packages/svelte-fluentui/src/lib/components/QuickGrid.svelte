@@ -1,32 +1,20 @@
-<script lang="ts" module>
-	import {fluentMenu, fluentMenuItem, fluentDivider} from "@fluentui/web-components"
-	import {registerFluentElements} from "../fluent-ui/register.js"
-
-	registerFluentElements(fluentMenu(), fluentMenuItem(), fluentDivider())
-</script>
-
 <script lang="ts" generics="T">
-	import type {Snippet} from "svelte"
 	import {tick, untrack, onMount, onDestroy} from "svelte"
-	import {SvelteMap} from "svelte/reactivity"
 	import GridCellEditor from "./GridCellEditor.svelte"
-	import Icon from "./Icon.svelte"
-	import PositioningRegion from "./PositioningRegion.svelte"
+	import QuickGridPager from "./quickgrid/QuickGridPager.svelte"
+	import QuickGridHeader from "./quickgrid/QuickGridHeader.svelte"
+	import QuickGridContextMenu from "./quickgrid/QuickGridContextMenu.svelte"
+	import QuickGridRowToolbar from "./quickgrid/QuickGridRowToolbar.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
-	import {portal} from "../actions/portal.js"
-	import {computePosition, flip, shift, autoUpdate} from "@floating-ui/dom"
-	import {resolveMenuEntries, runAction, type ActionEventDetail, type ActionItem, type MenuDivider, type MenuEntry, type ResolvedActionItem} from "../action-items/index.js"
+	import {resolveMenuEntries, runAction, type MenuEntry, type ResolvedActionItem} from "../action-items/index.js"
 
 	import type {
 		QuickGridColumn as Column,
 		QuickGridEditorType as EditorType,
 		QuickGridEditTrigger as EditTrigger,
-		QuickGridEditorOption as EditorOption,
-		QuickGridCustomEditorContext as CustomEditorContext,
 		QuickGridCellValidationState as CellValidationState,
 		QuickGridBeforeCommitContext as BeforeCommitContext,
-		QuickGridBeforeCommitResult as BeforeCommitResult,
 		QuickGridRowChangeDetail as RowChangeDetail,
 		QuickGridInvalidField as InvalidField,
 		QuickGridRowIdentity as RowIdentity,
@@ -34,7 +22,6 @@
 		QuickGridEditCancelContext as EditCancelContext,
 		QuickGridValidationErrorContext as ValidationErrorContext,
 		QuickGridRowToolbarAction as RowToolbarAction,
-		QuickGridRowContext as RowContext,
 		QuickGridRowToolbarItem as RowToolbarItem,
 		QuickGridRowToolbarConfig as RowToolbarConfig,
 		QuickGridContextMenuContext as ContextMenuContext,
@@ -50,8 +37,7 @@
 		QuickGridPageChangeTrigger as PageChangeTrigger,
 		QuickGridBeforePageChangeContext as BeforePageChangeContext,
 		QuickGridBeforePageChangeResult as BeforePageChangeResult,
-		QuickGridLabels,
-		GridCellEditorOptions
+		QuickGridLabels
 	} from "./QuickGrid.types.js"
 	import {defaultQuickGridLabels} from "./quickgrid/labels.js"
 	import type {RestProps} from "../types/index.js"
@@ -61,6 +47,14 @@
 		createRowComparator, createRowFilter, nextSort, sortRows, treeOrder, filterTreeRows,
 		visibleTreeRows, getPageCount, clampPage, pageSlice, type TreeAccess
 	} from "./quickgrid/pipeline.js"
+	import {
+		buildTreeInfo, getTreeRowInfo, detectTreeSeparator, compareSegments, nearestExpandedAncestor,
+		defaultExpandedPaths, isInSubtree, type TreeRowInfo, type TreeFields
+	} from "./quickgrid/tree.js"
+	import {getColumnStyles, isColumnSortable} from "./quickgrid/columns.js"
+	import {findNextEditableCell as findNextEditableCellIn} from "./quickgrid/navigation.js"
+	import {CellOverrides, cellKeyOf, normalizeValidationResult, isCheckboxChecked, toggledCheckboxValue} from "./quickgrid/editing.svelte.js"
+	import {OptionsLoader} from "./quickgrid/options.svelte.js"
 
 	// Public model types live in QuickGrid.types.ts (exported from the package root).
 
@@ -118,7 +112,6 @@
 		columnMinWidth?: string
 		class?: string
 		style?: string
-		cellTemplate?: Snippet
 		// Editing props
 		editable?: boolean
 		editTrigger?: EditTrigger
@@ -212,7 +205,6 @@
 		columnMinWidth = undefined,
 		class: className = "",
 		style = "",
-		cellTemplate = undefined,
 		// Editing props
 		editable = false,
 		editTrigger = "dblclick",
@@ -257,54 +249,11 @@
 
 	const labels = $derived<QuickGridLabels>({...defaultQuickGridLabels, ...(labelsProp ?? {})})
 
-	const resolvedShowToolbar = $derived(showRowToolbar)
 	const resolvedToolbarConfig = $derived(rowToolbar ?? (['add', 'delete', 'duplicate'] as RowToolbarConfig<T>[]))
 	const actionHost = {}
 
-	// Build inline style for a column header cell. Covers `autoWidth` (shrink-to-content trick),
-	// explicit `width`, `minWidth` / `maxWidth`, and optional text-align. Returns empty string when
-	// no width-related props and `includeAlign` is false so we don't emit a stray `style=""`.
-	function getColumnHeaderStyle(column: Column<T>, includeAlign: boolean): string {
-		const parts: string[] = []
-		if (column.autoWidth) {
-			// `width: 1%` + `white-space: nowrap` is the canonical HTML-table trick for sizing a
-			// column to its content. Browser treats the 1% as a lower bound and the nowrap forces
-			// the intrinsic min-width to be the header's no-wrap width, which wins.
-			parts.push("width: 1%", "white-space: nowrap")
-		} else {
-			if (column.width) parts.push(`width: ${column.width}`)
-			// Mirror body nowrap onto the header so a body-nowrap column doesn't end up with a
-			// wrapping header sitting above single-line cells (visually inconsistent).
-			if (column.nowrap) parts.push("white-space: nowrap")
-		}
-		// Per-column minWidth wins; otherwise fall back to the grid-level default. Skip both
-		// when the column opted into autoWidth — that mode is supposed to shrink to content
-		// and a min-width would break the trick.
-		if (column.minWidth) parts.push(`min-width: ${column.minWidth}`)
-		else if (columnMinWidth && !column.autoWidth) parts.push(`min-width: ${columnMinWidth}`)
-		if (column.maxWidth) parts.push(`max-width: ${column.maxWidth}`)
-		if (includeAlign) parts.push(`text-align: ${column.align || "start"}`)
-		return parts.join("; ")
-	}
-
-	// Build inline style for a body cell. Mirrors the column's width constraints onto every
-	// `<td>` so the column's max-width / min-width are enforced consistently — without this,
-	// only the header carried the constraints, and in HTML auto table-layout a wide body cell
-	// would drag the column past the header's max-width (and the ellipsis on a `nowrap` cell
-	// could never trigger).
-	function getColumnBodyStyle(column: Column<T>): string {
-		const parts: string[] = [`text-align: ${column.align || "start"}`]
-		if (column.autoWidth) {
-			parts.push("width: 1%", "white-space: nowrap")
-		} else {
-			if (column.width) parts.push(`width: ${column.width}`)
-			if (column.nowrap) parts.push("white-space: nowrap", "overflow: hidden", "text-overflow: ellipsis")
-		}
-		if (column.minWidth) parts.push(`min-width: ${column.minWidth}`)
-		else if (columnMinWidth && !column.autoWidth) parts.push(`min-width: ${columnMinWidth}`)
-		if (column.maxWidth) parts.push(`max-width: ${column.maxWidth}`)
-		return parts.join("; ")
-	}
+	// Inline width / align styles per column, once per `columns` change (not per cell)
+	let columnStyles = $derived(getColumnStyles(columns, columnMinWidth))
 
 	// Editing state
 	// Interaction state is keyed by row key (never a view position), so it follows its row
@@ -335,39 +284,14 @@
 		if (isCurrentEdit(token)) editingCell = null
 	}
 
-	// Drafts: per-cell overrides holding the values that failed validation (rowKey -> field ->
-	// {value, error}). A cell shows its override if it has one, else the live item value, so
-	// the consumer's changes to other fields always show. Every override has an entry in
-	// `invalidCells`; dropping the entry (e.g. `invalidCells = []`) drops the override.
-	type CellOverride = {value: unknown; error: string}
-	const overrides = new SvelteMap<string, SvelteMap<string, CellOverride>>()
-	const cellKeyOf = (rowKey: string, field: string) => `${rowKey}\u0000${field}`
-
-	function setOverride(rowKey: string, field: string, value: unknown, error: string) {
-		let row = overrides.get(rowKey)
-		if (!row) {
-			row = new SvelteMap()
-			overrides.set(rowKey, row)
-		}
-		row.set(field, {value, error})
-	}
-
-	function deleteOverride(rowKey: string, field: string) {
-		const row = overrides.get(rowKey)
-		if (!row) return
-		row.delete(field)
-		if (row.size === 0) overrides.delete(rowKey)
-	}
+	// Drafts: per-cell overrides of the values that failed validation (quickgrid/editing.svelte.ts).
+	// Every override has an entry in `invalidCells`; dropping the entry (e.g. `invalidCells = []`)
+	// drops the override.
+	const overrides = new CellOverrides()
 
 	$effect(() => {
 		const kept = new Set(invalidCells.map((c) => cellKeyOf(c.rowKey, c.field)))
-		untrack(() => {
-			for (const [rowKey, row] of overrides) {
-				for (const field of [...row.keys()]) {
-					if (!kept.has(cellKeyOf(rowKey, field))) deleteOverride(rowKey, field)
-				}
-			}
-		})
+		untrack(() => overrides.prune((rowKey, field) => kept.has(cellKeyOf(rowKey, field))))
 	})
 
 	// Rows replaced without an id get a new generated key, so their old key's overrides,
@@ -378,30 +302,21 @@
 		const keys = new Set(items.map((it) => getRowKey(it)))
 		const orphan = (rowKey: string) => rowKey.startsWith(GENERATED_KEY_PREFIX) && !keys.has(rowKey)
 		untrack(() => {
-			for (const rowKey of [...overrides.keys()]) if (orphan(rowKey)) overrides.delete(rowKey)
+			overrides.dropRows(orphan)
 			if (invalidCells.some((c) => orphan(c.rowKey))) invalidCells = invalidCells.filter((c) => !orphan(c.rowKey))
-			for (const key of [...optionsCache.keys()]) if (orphan(key.split("\u0000")[0])) optionsCache.delete(key)
+			optionsLoader.dropRows(orphan)
 		})
 	})
 
 	// The row with its overrides applied (the item itself when it has none).
 	function getDraftRow(item: T, rowKey: string = getRowKey(item)): T {
-		const row = overrides.get(rowKey)
-		if (!row || row.size === 0) return item
-		const draft = {...item} as Record<string, unknown>
-		for (const [field, override] of row) draft[field] = override.value
-		return draft as T
+		return overrides.draftRow(item, rowKey)
 	}
 
 	/** Drops the pending invalid values (and their `invalidCells` entries) of one row, or of all rows. */
 	export function discardDrafts(rowKey?: string): void {
-		if (rowKey === undefined) {
-			overrides.clear()
-			invalidCells = []
-		} else {
-			overrides.delete(rowKey)
-			invalidCells = invalidCells.filter((c) => c.rowKey !== rowKey)
-		}
+		overrides.clear(rowKey)
+		invalidCells = rowKey === undefined ? [] : invalidCells.filter((c) => c.rowKey !== rowKey)
 	}
 
 	// Generated keys for rows without idMember / treePathMember: one per row object, so
@@ -441,7 +356,7 @@
 
 	// Current position of a row in the displayed list, −1 when it isn't displayed.
 	function getViewIndex(rowKey: string): number {
-		return displayItems.findIndex((it) => getRowKey(it) === rowKey)
+		return viewIndexByKey.get(rowKey) ?? -1
 	}
 
 	// `viewIndex` / `itemIndex` / `rowKey` for an event context, resolved now (not when the
@@ -487,11 +402,7 @@
 	let rowActionHideTimeout: ReturnType<typeof setTimeout> | null = null
 	let containerRef: HTMLDivElement | undefined = $state()
 	let popupElement: HTMLDivElement | undefined = $state()
-	let connectorPath = $state<string | null>(null)
-	let connectorArrowPos = $state<{ x: number; y: number } | null>(null)
-	let connectorArrowDir = $state<'right' | 'left' | 'down'>('right')
-	let popupPosition = $state<'left' | 'right' | 'top'>('left')
-	let hasRowMoved = $state(false)  // Track if row has moved from original position
+	let toolbarSession = $state(0)  // bumped per open: the toolbar forgets that its row moved
 	// Pointer type of the last press on a row: hover mode opens on mouse / pen hover, on a tap for touch
 	let lastRowPointerType = ''
 
@@ -502,101 +413,50 @@
 	let contextMenuContext = $state<ContextMenuContext<T> | null>(null)
 	let contextMenuElement: HTMLDivElement | undefined = $state()
 
-	// Options loaded by `loadOptionsCallback`, per cell (rowKey + field), with the row object
-	// they were loaded for: a replaced row (the consumer's update) reloads.
-	type LoadedOptions = {row: T; options: EditorOption[]}
-	const optionsCache = new SvelteMap<string, LoadedOptions>()
+	// Options loaded by `loadOptionsCallback`, per cell (quickgrid/options.svelte.ts)
+	const optionsLoader = new OptionsLoader<T>()
+	$effect(() => () => optionsLoader.abortAll())
 	// The edit waiting for its options (the cell shows a loading indicator)
 	let optionsLoadingEdit = $state.raw<{token: number; rowKey: string; field: string} | null>(null)
 
-	// ============ Tree mode helpers ============
+	// ============ Tree mode (path helpers in quickgrid/tree.ts) ============
 	let isTreeMode = $derived(treePathMember !== undefined)
 
 	let resolvedTreeSeparator = $derived.by(() => {
 		if (treeSeparator) return treeSeparator
 		if (!isTreeMode) return "/"
-		// Scan items until we find a path that contains a recognizable separator —
-		// inspecting only items[0] would miss the case where the root is "1" and the
-		// first path that actually contains a separator is "1.1" (the second row).
-		for (const item of items) {
-			const p = String(item[treePathMember as keyof T] ?? "")
-			if (p.includes("/")) return "/"
-			if (p.includes("\\")) return "\\"
-			if (p.includes(".")) return "."
-		}
-		return "/"
+		return detectTreeSeparator(items.map((item) => String(item[treePathMember as keyof T] ?? "")))
 	})
 
-	function getRowPath(item: T): string {
-		if (!treePathMember) return ""
-		const raw = String(item[treePathMember] ?? "")
-		// Strip trailing separator so "C:\foo\" and "C:\foo" behave the same
-		const sep = resolvedTreeSeparator
-		return raw.endsWith(sep) ? raw.slice(0, -sep.length) : raw
-	}
+	let treeFields = $derived<TreeFields<T> | null>(treePathMember === undefined ? null : {
+		pathMember: treePathMember, levelMember: treeLevelMember, parentMember: treeParentMember, separator: resolvedTreeSeparator
+	})
 
-	function getRowLevel(item: T): number {
-		if (treeLevelMember) {
-			const v = item[treeLevelMember]
-			const n = Number(v)
-			return Number.isFinite(n) ? n : 0
-		}
-		const path = getRowPath(item)
-		if (!path) return 0
-		const sep = resolvedTreeSeparator
-		return path.split(sep).filter(Boolean).length - 1
-	}
-
-	function getRowParentPath(item: T): string {
-		if (treeParentMember) {
-			const raw = String(item[treeParentMember] ?? "")
-			const sep = resolvedTreeSeparator
-			return raw.endsWith(sep) ? raw.slice(0, -sep.length) : raw
-		}
-		const path = getRowPath(item)
-		if (!path) return ""
-		const sep = resolvedTreeSeparator
-		const idx = path.lastIndexOf(sep)
-		return idx >= 0 ? path.slice(0, idx) : ""
-	}
-
-	// Path-aware comparison: numeric segments compare numerically (so "1.2" < "1.10")
-	function compareTreePaths(a: string, b: string): number {
-		const sep = resolvedTreeSeparator
-		const aSegs = a.split(sep).filter(Boolean)
-		const bSegs = b.split(sep).filter(Boolean)
-		const min = Math.min(aSegs.length, bSegs.length)
-		for (let i = 0; i < min; i++) {
-			const aSeg = aSegs[i]
-			const bSeg = bSegs[i]
-			const aNum = Number(aSeg)
-			const bNum = Number(bSeg)
-			if (!isNaN(aNum) && !isNaN(bNum) && aSeg !== "" && bSeg !== "") {
-				if (aNum !== bNum) return aNum - bNum
-			} else if (aSeg !== bSeg) {
-				return aSeg.localeCompare(bSeg)
-			}
-		}
-		return aSegs.length - bSegs.length
-	}
+	// Path, segments, level and parent of every row, computed once per `items` change.
+	let treeInfo = $derived(treeFields ? buildTreeInfo(items, treeFields) : new Map<T, TreeRowInfo>())
 
 	// Set of every path that exists as an actual row (used to distinguish "real" ancestors
 	// from virtual roots — e.g. "C:" when only "C:\\Windows" and below are in the dataset).
-	let treePathSet = $derived.by(() => {
-		const result = new Set<string>()
-		if (!isTreeMode) return result
-		for (const item of items) result.add(getRowPath(item))
-		return result
-	})
+	let treePathSet = $derived(new Set([...treeInfo.values()].map((info) => info.path)))
+
+	const EMPTY_TREE_INFO: TreeRowInfo = {path: "", segments: [], level: 0, parentPath: "", parent: ""}
+	// A row not in `items` (an event's stale row) is computed on the spot.
+	function getTreeInfo(item: T): TreeRowInfo {
+		return treeInfo.get(item) ?? (treeFields ? getTreeRowInfo(item, treeFields, treePathSet) : EMPTY_TREE_INFO)
+	}
+
+	function getRowPath(item: T): string {
+		return getTreeInfo(item).path
+	}
+
+	function getRowLevel(item: T): number {
+		return getTreeInfo(item).level
+	}
 
 	// Set of paths that have at least one child in the dataset
 	let treeParentPathSet = $derived.by(() => {
 		const result = new Set<string>()
-		if (!isTreeMode) return result
-		for (const item of items) {
-			const parent = getRowParentPath(item)
-			if (parent) result.add(parent)
-		}
+		for (const info of treeInfo.values()) if (info.parentPath) result.add(info.parentPath)
 		return result
 	})
 
@@ -623,31 +483,14 @@
 		setExpandedPaths(next)
 	}
 
-	// Walk ancestors of `path` until we find one that is currently expanded; returns its
-	// path. Used by Ctrl+ArrowLeft to collapse the nearest expanded ancestor when the
-	// focused row is a leaf or an already-collapsed parent. Returns null when the row
-	// has no expanded ancestor (already at a root visible level).
-	function findNearestExpandedAncestor(path: string): string | null {
-		const sep = resolvedTreeSeparator
-		const idx = path.lastIndexOf(sep)
-		let parent = idx >= 0 ? path.slice(0, idx) : ""
-		while (parent) {
-			if (resolvedExpandedPaths.has(parent)) return parent
-			const i = parent.lastIndexOf(sep)
-			parent = i >= 0 ? parent.slice(0, i) : ""
-		}
-		return null
-	}
-
 	// aria-level is 1-based from the shallowest level present
 	let treeMinLevel = $derived.by(() => {
-		if (!isTreeMode) return 0
 		let min = Infinity
-		for (const item of items) min = Math.min(min, getRowLevel(item))
+		for (const info of treeInfo.values()) min = Math.min(min, info.level)
 		return Number.isFinite(min) ? min : 0
 	})
 
-	let rowByPath = $derived(isTreeMode ? new Map(items.map((it) => [getRowPath(it), it])) : new Map<string, T>())
+	let rowByPath = $derived(new Map([...treeInfo].map(([row, info]) => [info.path, row])))
 
 	// Default expansion for parents the grid hasn't seen yet — on the first non-empty `items`
 	// (unless `expandedPaths` came with a set) and for new parents arriving later; parents seen
@@ -666,30 +509,17 @@
 				if (current !== undefined) return  // the consumer's initial set wins
 			}
 			if (fresh.length === 0 && current !== undefined) return
-			let minLevel = Infinity
-			for (const item of items) minLevel = Math.min(minLevel, getRowLevel(item))
-			if (!Number.isFinite(minLevel)) minLevel = 0
-			const next = new Set(current ?? [])
-			for (const path of fresh) {
+			const levelOf = (path: string) => {
 				const row = rowByPath.get(path)
-				const level = (row ? getRowLevel(row) : path.split(resolvedTreeSeparator).filter(Boolean).length - 1) - minLevel
-				if (defaultExpandDepth === undefined || level < defaultExpandDepth) next.add(path)
+				return row ? getRowLevel(row) : path.split(resolvedTreeSeparator).filter(Boolean).length - 1
 			}
+			const next = new Set(current ?? [])
+			for (const path of defaultExpandedPaths(fresh, levelOf, treeMinLevel, defaultExpandDepth)) next.add(path)
 			if (current === undefined || next.size !== current.size) setExpandedPaths(next)
 		})
 	})
 
-	// Nearest ancestor that is a row ("" = none): virtual ancestors (not in `items`) never gate.
-	function getRowParent(item: T): string {
-		const sep = resolvedTreeSeparator
-		let parent = getRowParentPath(item)
-		while (parent && !treePathSet.has(parent)) {
-			const i = parent.lastIndexOf(sep)
-			parent = i >= 0 ? parent.slice(0, i) : ""
-		}
-		return parent
-	}
-	const treeAccess: TreeAccess<T> = {getPath: (row) => getRowPath(row), getParent: (row) => getRowParent(row)}
+	const treeAccess: TreeAccess<T> = {getPath: (row) => getTreeInfo(row).path, getParent: (row) => getTreeInfo(row).parent}
 
 	// ============ Display chain: filter → sort → tree visibility → page (quickgrid/pipeline.ts) ============
 
@@ -730,7 +560,7 @@
 		if (!isTreeMode) return sortRows(rowFilter ? items.filter(rowFilter) : items, rowComparator)
 		const rows = rowFilter ? filterTreeRows(items, treeAccess, rowFilter) : items
 		if (treeDataSorted) return rows
-		const byPath = (a: T, b: T) => compareTreePaths(getRowPath(a), getRowPath(b))
+		const byPath = (a: T, b: T) => compareSegments(getTreeInfo(a).segments, getTreeInfo(b).segments)
 		const compare = rowComparator
 		return treeOrder(rows, treeAccess, compare ? (a, b) => compare(a, b) || byPath(a, b) : byPath)
 	})
@@ -740,7 +570,7 @@
 	let visibleItems = $derived(isTreeMode && !isFiltering ? visibleTreeRows(orderedItems, treeAccess, isPathExpanded) : orderedItems)
 
 	// While filtering: the rows that have a matching child.
-	let filteredParentPaths = $derived(isTreeMode && isFiltering ? new Set(visibleItems.map((it) => getRowParent(it)).filter(Boolean)) : NO_PATHS)
+	let filteredParentPaths = $derived(isTreeMode && isFiltering ? new Set(visibleItems.map((it) => getTreeInfo(it).parent).filter(Boolean)) : NO_PATHS)
 
 	// What the pager counts: the visible rows, or the server's `totalItems`.
 	let pagedTotal = $derived(isServerPaging ? (totalItems ?? items.length) : visibleItems.length)
@@ -772,11 +602,20 @@
 	let displayRows = $derived.by(() => {
 		const seen = new Map<string, number>()
 		return displayItems.map((item) => {
-			const key = getRowKey(item)
-			const n = seen.get(key) ?? 0
-			seen.set(key, n + 1)
-			return {item, eachKey: n === 0 ? key : `${key}#${n}`}
+			const rowKey = getRowKey(item)
+			const n = seen.get(rowKey) ?? 0
+			seen.set(rowKey, n + 1)
+			return {item, rowKey, eachKey: n === 0 ? rowKey : `${rowKey}#${n}`}
 		})
+	})
+
+	// First view position of every displayed row key.
+	let viewIndexByKey = $derived.by(() => {
+		const map = new Map<string, number>()
+		displayRows.forEach(({rowKey}, i) => {
+			if (!map.has(rowKey)) map.set(rowKey, i)
+		})
+		return map
 	})
 
 	function requestData(trigger: DataRequestTrigger) {
@@ -866,48 +705,22 @@
 	)
 	let rowIndexBase = $derived(headerRowCount + (pageable || isServerPaging ? (effectivePage - 1) * pageSize : 0))
 
-	function changePageSize(select: HTMLSelectElement) {
-		const size = Number(select.value)
-		if (!(size > 0) || size === pageSize) return
-		void guardPageChange("page-size", 1, (p) => {
+	// The pager's page-size select; resolves false when refused (the select reverts).
+	function changePageSize(size: number): Promise<boolean> {
+		return guardPageChange("page-size", 1, (p) => {
 			pageSize = size
 			onPageSizeChange?.({pageSize: size})
 			setPage(p, "page-size")
-		}).then((applied) => {
-			if (!applied) select.value = String(pageSize)
 		})
 	}
 
 	// The pager's size choices (the current size included).
 	let pageSizeChoices = $derived(pageSizes?.length ? [...new Set([...pageSizes, pageSize])].sort((a, b) => a - b) : [])
 
-	function isColumnSortable(column: Column<T>): boolean {
-		return sortMode !== "none" && column.sortable !== false
-	}
-
-	function getSortIndex(column: Column<T>): number {
-		return sort.findIndex((s) => s.column === String(column.field))
-	}
-
 	// Header click / Enter / Space: asc → desc → unsorted; "multiple" mode: Ctrl / ⌘ (`additive`)
 	// adds the column. Back to page 1; in server mode that goes through beforePageChangeCallback first.
-	function handleSortKeyDown(column: Column<T>, event: KeyboardEvent) {
-		// Ctrl / ⌘ + Enter / Space mirrors Ctrl + click (the button's own click has no modifier)
-		if ((event.key === "Enter" || event.key === " ") && (event.ctrlKey || event.metaKey)) {
-			event.preventDefault()
-			handleSort(column, true)
-		}
-	}
-
-	// `aria-sort` goes on the primary sorted column only (ARIA: one header at a time)
-	function getAriaSort(column: Column<T>): "ascending" | "descending" | undefined {
-		const primary = sort[0]
-		if (!primary || primary.column !== String(column.field) || !isColumnSortable(column)) return undefined
-		return primary.direction === "asc" ? "ascending" : "descending"
-	}
-
 	function handleSort(column: Column<T>, additive: boolean) {
-		if (!isColumnSortable(column)) return
+		if (!isColumnSortable(column, sortMode)) return
 		const field = String(column.field)
 		const next = nextSort(sort, field, sortMode, additive)
 		const apply = (page: number) => {
@@ -922,9 +735,9 @@
 		else apply(1)
 	}
 
-	function handleFilter(field: string, input: HTMLInputElement) {
-		const value = input.value
-		if ((filters[field] ?? "") === value) return
+	// A filter input changed; resolves false when beforePageChangeCallback refused (the input reverts).
+	function handleFilter(field: string, value: string): boolean | Promise<boolean> {
+		if ((filters[field] ?? "") === value) return true
 		const apply = (page: number) => {
 			const next = {...filters}
 			if (value) next[field] = value
@@ -935,11 +748,9 @@
 			requestData("filter")
 			announceCount()
 		}
-		if (isServerPaging && pageable) {
-			void guardPageChange("filter", 1, apply).then((applied) => {
-				if (!applied) input.value = filters[field] ?? ""
-			})
-		} else apply(1)
+		if (isServerPaging && pageable) return guardPageChange("filter", 1, apply)
+		apply(1)
+		return true
 	}
 
 	// A value as the cell shows it: getDisplayValueCallback, else a Date as a local date, else the text.
@@ -951,8 +762,7 @@
 
 	// A cell's value: its pending invalid override, else the live item value.
 	function getCellRawValue(item: T, rowKey: string, field: string): unknown {
-		const override = overrides.get(rowKey)?.get(field)
-		return override ? override.value : item[field as keyof T]
+		return overrides.value(item, rowKey, field)
 	}
 
 	function getCellValue(item: T, column: Column<T>, rowKey?: string): string {
@@ -972,96 +782,20 @@
 		return formatCellValue(value, item, column)
 	}
 
-	function hasTemplate(column: Column<T>): boolean {
-		return !!column.renderCellCallback
-	}
-
-	function hasSnippet(column: Column<T>): boolean {
-		return !!column.snippet
-	}
-
-	// Dynamic options loading
-	// One in-flight load per cell; a newer load of the cell (or unmount) aborts it, and its
-	// controller is the load token — only the cell's current load may write the cache.
-	type OptionsLoad = {row: T; controller: AbortController; promise: Promise<EditorOption[]>}
-	const optionLoads = new Map<string, OptionsLoad>()
-	$effect(() => () => {
-		for (const load of optionLoads.values()) load.controller.abort()
-	})
-
-	function optionsLoadTrigger(column: Column<T>) {
-		return column.editorOptions?.optionsLoadTrigger ?? "edit-start"
-	}
-
-	// `reuse`: join an in-flight load for the same row object instead of restarting it.
-	function loadOptionsForCell(column: Column<T>, row: T, rowKey: string, reuse = false): Promise<EditorOption[]> {
-		const load = column.editorOptions?.loadOptionsCallback
-		if (!load) return Promise.resolve(column.editorOptions?.options || [])
-		const field = String(column.field)
-		const key = cellKeyOf(rowKey, field)
-		const inFlight = optionLoads.get(key)
-		if (reuse && inFlight?.row === row) return inFlight.promise
-		inFlight?.controller.abort()
-
-		const controller = new AbortController()
-		const entry: OptionsLoad = {row, controller, promise: Promise.resolve([])}
-		optionLoads.set(key, entry)
-		entry.promise = (async () => {
-			try {
-				const options = await load({row, column, signal: controller.signal})
-				// Superseded or unmounted: a stale response never overwrites a newer one.
-				if (controller.signal.aborted || optionLoads.get(key) !== entry) return optionsCache.get(key)?.options ?? []
-				optionsCache.set(key, {row, options})
-				return options
-			} catch (error) {
-				if (!controller.signal.aborted) console.error(`Failed to load options for ${field}:`, error)
-				return []
-			} finally {
-				if (optionLoads.get(key) === entry) optionLoads.delete(key)
-			}
-		})()
-		return entry.promise
-	}
-
 	// "immediate": load for every displayed row whose cell is editable (the rows the user can
 	// see and edit), once per row object — a page / sort / filter loads the newly shown rows.
 	$effect(() => {
 		for (const column of columns) {
-			if (!column.editorOptions?.loadOptionsCallback || optionsLoadTrigger(column) !== "immediate") continue
+			if (!column.editorOptions?.loadOptionsCallback || OptionsLoader.trigger(column) !== "immediate") continue
 			for (const item of displayItems) {
 				if (!isCellEditable(column, item)) continue
 				const rowKey = getRowKey(item)
-				const key = cellKeyOf(rowKey, String(column.field))
 				untrack(() => {
-					if (optionsCache.get(key)?.row !== item) void loadOptionsForCell(column, item, rowKey, true)
+					if (optionsLoader.cachedRow(rowKey, column) !== item) void optionsLoader.load(column, item, rowKey, true)
 				})
 			}
 		}
 	})
-
-	function getOptionsForCell(column: Column<T>, rowKey: string): EditorOption[] {
-		return optionsCache.get(cellKeyOf(rowKey, String(column.field)))?.options ?? column.editorOptions?.options ?? []
-	}
-
-	// Build editor options for GridCellEditor, wrapping callbacks with row context
-	function getEditorOptionsForCell(column: Column<T>, row: T, rowKey: string = getRowKey(row)): GridCellEditorOptions {
-		const {loadOptionsCallback: _load, searchCallback: _search, ...shared} = column.editorOptions ?? {}
-		const baseOptions: GridCellEditorOptions = {
-			...shared,
-			options: getOptionsForCell(column, rowKey)
-		}
-
-		// Adapt the public callbacks to GridCellEditor's internal (positional) ones
-		const searchCallback = column.editorOptions?.searchCallback
-		if (searchCallback) {
-			baseOptions.onSearch = (term: string, signal?: AbortSignal) => searchCallback({term, row, column, signal})
-		}
-		if (column.editorOptions?.loadOptionsCallback) {
-			baseOptions.loadOptions = () => loadOptionsForCell(column, row, rowKey)
-		}
-
-		return baseOptions
-	}
 
 	// Editing functions
 	function isEditing(rowKey: string, field: string): boolean {
@@ -1129,14 +863,13 @@
 		}
 
 		// Load options first: "edit-start" on every edit, "immediate" when this row's aren't in yet.
-		const trigger = optionsLoadTrigger(column)
-		const cached = optionsCache.get(cellKeyOf(rowKey, columnField))
+		const trigger = OptionsLoader.trigger(column)
 		if (
 			column.editorOptions?.loadOptionsCallback &&
-			(trigger === "edit-start" || (trigger === "immediate" && cached?.row !== item))
+			(trigger === "edit-start" || (trigger === "immediate" && optionsLoader.cachedRow(rowKey, column) !== item))
 		) {
 			optionsLoadingEdit = {token, rowKey, field: columnField}
-			await loadOptionsForCell(column, item, rowKey, trigger === "immediate")
+			await optionsLoader.load(column, item, rowKey, trigger === "immediate")
 			if (optionsLoadingEdit?.token === token) optionsLoadingEdit = null
 			// A newer edit started while the options loaded: this one is stale.
 			if (token !== editSeq) return
@@ -1160,7 +893,7 @@
 	$effect(() => {
 		const cell = editingCell
 		if (cell === null) return
-		if (displayItems.some((it) => getRowKey(it) === cell.rowKey)) return
+		if (viewIndexByKey.has(cell.rowKey)) return
 		untrack(() => cancelEdit(cell.token))
 	})
 
@@ -1179,33 +912,15 @@
 		invalidCells = invalidCells.filter(c => !(c.rowKey === rowKey && c.field === field))
 	}
 
-	function getCellValidationError(rowKey: string, field: string): string | null {
-		const cell = invalidCells.find(c => c.rowKey === rowKey && c.field === field)
-		return cell?.error || null
-	}
-
-	function isCellInvalid(rowKey: string, field: string): boolean {
-		return invalidCells.some(c => c.rowKey === rowKey && c.field === field)
-	}
-
-	// Normalize validation result from various return types
-	function normalizeValidationResult(result: BeforeCommitResult, value: unknown): { valid: boolean; message?: string; finalValue: unknown } {
-		if (result === null || result === undefined || result === true) {
-			return { valid: true, finalValue: value }
+	// Error per invalid cell (rowKey + field), built once per `invalidCells` change; the first entry wins.
+	let invalidByKey = $derived.by(() => {
+		const map = new Map<string, string>()
+		for (const c of invalidCells) {
+			const key = cellKeyOf(c.rowKey, c.field)
+			if (!map.has(key)) map.set(key, c.error)
 		}
-		if (result === false) {
-			return { valid: false, message: "Validation failed", finalValue: value }
-		}
-		if (typeof result === "string") {
-			return { valid: false, message: result, finalValue: value }
-		}
-		// ValidationResult object
-		return {
-			valid: result.valid,
-			message: result.message,
-			finalValue: result.transformedValue !== undefined ? result.transformedValue : value
-		}
-	}
+		return map
+	})
 
 	// Latest commit per cell: a commit superseded by a newer one of the same cell (while its
 	// validation was pending) is dropped.
@@ -1273,11 +988,11 @@
 		// A valid value replaces the item's (the consumer writes it back); an invalid one is
 		// kept as this cell's override so the user sees and can fix it.
 		if (isValid) {
-			deleteOverride(rowKey, field)
+			overrides.delete(rowKey, field)
 			removeInvalidCell(rowKey, field)
 		} else {
 			const error = validationErrorMsg || "Invalid value"
-			setOverride(rowKey, field, finalValue, error)
+			overrides.set(rowKey, field, finalValue, error)
 			addInvalidCell(rowKey, field, error)
 			onValidationError?.({row: item, ...getRowIdentity(item, rowKey), field, column, error})
 		}
@@ -1354,16 +1069,6 @@
 		startEdit(String(column.field), item, column, colIndex)
 	}
 
-	// Checkbox state of a value: `trueValue` (default `true`), or plain `true`.
-	function isCheckboxChecked(column: Column<T>, value: unknown): boolean {
-		return value === (column.editorOptions?.trueValue ?? true) || value === true
-	}
-
-	// Space toggle: the other of `trueValue` / `falseValue`.
-	function toggledCheckboxValue(column: Column<T>, value: unknown): unknown {
-		return isCheckboxChecked(column, value) ? (column.editorOptions?.falseValue ?? false) : (column.editorOptions?.trueValue ?? true)
-	}
-
 	function getEditorType(column: Column<T>): EditorType {
 		return column.editor || "text"
 	}
@@ -1379,41 +1084,11 @@
 			.filter(({ column }) => isCellEditable(column, row))
 	}
 
-	// Walk in `direction` from (fromRowIndex, fromColEditableIndex) until we find another
-	// editable cell. `fromColEditableIndex` is the cursor's index within the *current* row's
-	// editable column list — pass -1 for "step into this row from outside" (e.g. forward
-	// arrival on a fresh row should land on the first editable col).
-	//
-	// In heterogeneous trees only some rows have editable columns at all (e.g. team rows
-	// have zero, employees have two), so the next row's editable layout can differ from
-	// the current row's. We re-compute editable columns per row and skip rows that have
-	// none — otherwise Tab from the last employee before a team row falls on a `<td>` that
-	// has no `tabindex` and focus drops to body. Returns null when no further cell exists
-	// in that direction (caller can let Tab bubble out of the grid normally).
-	function findNextEditableCell(
-		fromRowIndex: number,
-		fromColEditableIndex: number,
-		direction: 1 | -1
-	): { viewIndex: number; colIndex: number } | null {
-		const items = displayItems
-		const currentRow = items[fromRowIndex]
-		if (currentRow !== undefined) {
-			const currentCols = getEditableColumns(currentRow)
-			const next = fromColEditableIndex + direction
-			if (next >= 0 && next < currentCols.length) {
-				return { viewIndex: fromRowIndex, colIndex: currentCols[next].index }
-			}
-		}
-		let r = fromRowIndex + direction
-		while (r >= 0 && r < items.length) {
-			const cols = getEditableColumns(items[r])
-			if (cols.length > 0) {
-				const target = direction === 1 ? cols[0] : cols[cols.length - 1]
-				return { viewIndex: r, colIndex: target.index }
-			}
-			r += direction
-		}
-		return null
+	// Tab / Shift+Tab target (quickgrid/navigation.ts), null = leave the grid.
+	function findNextEditableCell(fromRowIndex: number, fromColEditableIndex: number, direction: 1 | -1) {
+		const rows = displayItems
+		const editableAt = (r: number) => getEditableColumns(rows[r]).map((c) => c.index)
+		return findNextEditableCellIn(rows.length, editableAt, fromRowIndex, fromColEditableIndex, direction)
 	}
 
 	function isCellFocused(rowKey: string, colIndex: number): boolean {
@@ -1427,7 +1102,7 @@
 	let resolvedTabStop = $derived.by(() => {
 		if (!isNavigateMode || displayItems.length === 0) return null
 		const stop = tabStop
-		if (stop && stop.colIndex < columns.length && displayItems.some((it) => getRowKey(it) === stop.rowKey)) return stop
+		if (stop && stop.colIndex < columns.length && viewIndexByKey.has(stop.rowKey)) return stop
 		return { rowKey: getRowKey(displayItems[0]), colIndex: 0 }
 	})
 
@@ -1492,7 +1167,7 @@
 			if (openContextMenu(cell, colIndex, column, item, null)) e.preventDefault()
 			return
 		}
-		if (!inInput && e.key === "F10" && e.altKey && resolvedShowToolbar) {
+		if (!inInput && e.key === "F10" && e.altKey && showRowToolbar) {
 			e.preventDefault()
 			const row = cell.closest('tr') as HTMLElement | null
 			if (row) openToolbarFromKeyboard(getRowKey(item), viewIndex, row)
@@ -1527,7 +1202,7 @@
 					if (rowHasChildren(item) && isPathExpanded(path)) {
 						toggleExpand(path)
 					} else {
-						const ancestor = findNearestExpandedAncestor(path)
+						const ancestor = nearestExpandedAncestor(path, resolvedTreeSeparator, resolvedExpandedPaths)
 						if (ancestor) {
 							toggleExpand(ancestor)
 							const ancestorRowIndex = displayItems.findIndex(it => getRowPath(it) === ancestor)
@@ -1747,7 +1422,7 @@
 		hoveredRowKey = rowKey
 		hoveredAnchorViewIndex = viewIndex
 		hoveredRowElement = anchor
-		hasRowMoved = false  // Reset movement tracking for new row
+		toolbarSession++
 	}
 
 	function closeRowToolbar() {
@@ -1785,38 +1460,14 @@
 		focusToolbar()
 	}
 
-	function handleToolbarKeyDown(event: KeyboardEvent) {
-		const buttons = [...(popupElement?.querySelectorAll<HTMLElement>('.row-toolbar-btn:not(:disabled)') ?? [])]
-		const index = buttons.indexOf(document.activeElement as HTMLElement)
-		const rtl = !!popupElement && getComputedStyle(popupElement).direction === 'rtl'
-		let next: number
-		switch (event.key) {
-			case 'ArrowRight': next = index + (rtl ? -1 : 1); break
-			case 'ArrowLeft': next = index + (rtl ? 1 : -1); break
-			case 'ArrowDown': next = index + 1; break
-			case 'ArrowUp': next = index - 1; break
-			case 'Home': next = 0; break
-			case 'End': next = buttons.length - 1; break
-			case 'Tab':
-				// The toolbar is portalled: Tab would leave for the end of the page
-				event.preventDefault()
-				closeRowToolbar()
-				return
-			default: return
-		}
-		event.preventDefault()
-		if (buttons.length === 0) return
-		buttons[(next + buttons.length) % buttons.length].focus()
-	}
-
 	// Without navigate mode, rows with a hover / click toolbar are focusable (one tab stop):
 	// ↑ / ↓ / Home / End move between them, Enter or Alt+F10 opens the toolbar.
-	let rowsFocusable = $derived(resolvedShowToolbar && toolbarTrigger !== 'button' && !isNavigateMode)
+	let rowsFocusable = $derived(showRowToolbar && toolbarTrigger !== 'button' && !isNavigateMode)
 	let rowTabStop = $state<string | null>(null)
 	let resolvedRowTabStop = $derived.by(() => {
 		if (!rowsFocusable || displayItems.length === 0) return null
 		const stop = rowTabStop
-		if (stop !== null && displayItems.some((it) => getRowKey(it) === stop)) return stop
+		if (stop !== null && viewIndexByKey.has(stop)) return stop
 		return getRowKey(displayItems[0])
 	})
 
@@ -1843,10 +1494,6 @@
 		}
 		event.preventDefault()
 		rows[next]?.focus()
-	}
-
-	function handleToolbarFocusOut(event: FocusEvent) {
-		if (!popupElement?.contains(event.relatedTarget as Node | null)) toolbarFocused = false
 	}
 
 	// The toolbar's row, resolved by key against the current view (null once it's gone).
@@ -1972,139 +1619,6 @@
 		'move-down': { icon: 'arrow_down', text: labels.moveRowDown }
 	})
 
-	function toolbarDefaults(item: ActionItem<RowContext<T>, RowToolbarAction>) {
-		return item.action && item.action !== 'custom' ? toolbarPresets[item.action] : undefined
-	}
-
-	// Split toolbar entries into lines (`toolbarRow`, default 1), furthest line first.
-	// A divider belongs to the line of the item before it.
-	const toolbarLines = $derived.by(() => {
-		const lines = new Map<number, RowToolbarConfig<T>[]>()
-		let currentLine = 1
-		for (const entry of resolvedToolbarConfig) {
-			if (typeof entry !== 'string' && !('divider' in entry && entry.divider)) {
-				currentLine = (entry as RowToolbarItem<T>).toolbarRow ?? 1
-			} else if (typeof entry === 'string') {
-				currentLine = 1
-			}
-			if (!lines.has(currentLine)) lines.set(currentLine, [])
-			lines.get(currentLine)!.push(entry)
-		}
-		return [...lines.entries()].sort((a, b) => b[0] - a[0]).map(([, entries]) => entries)
-	})
-
-	// popupPosition is a physical side (decided from the space around the table);
-	// PositioningRegion takes logical start/end and flips them for RTL itself.
-	const toolbarRegionPosition = $derived.by(() => {
-		if (popupPosition === 'top') return 'top' as const
-		const rtl = !!hoveredRowElement && getComputedStyle(hoveredRowElement).direction === 'rtl'
-		return (popupPosition === 'left') !== rtl ? 'start' as const : 'end' as const
-	})
-
-	// Determine popup position based on available space
-	// Priority: 1. left, 2. right, 3. top
-	$effect(() => {
-		if (!tableElement || !hoveredRowElement) return
-
-		const tableRect = tableElement.getBoundingClientRect()
-		const viewportWidth = window.innerWidth
-		// The side needs room for the whole toolbar (measured once it has rendered —
-		// popupElement re-runs this effect), or a wide toolbar ends up off-screen.
-		const minSpace = Math.max(100, (popupElement?.offsetWidth ?? 0) + 8)
-
-		if (tableRect.left >= minSpace) {
-			popupPosition = 'left'
-		} else if (viewportWidth - tableRect.right >= minSpace) {
-			popupPosition = 'right'
-		} else {
-			popupPosition = 'top'
-		}
-	})
-
-	// Calculate bracket-shaped connector path when row has moved from original position
-	$effect(() => {
-		if (!hoveredRow || !hoveredRowElement || !popupElement || !tableElement) {
-			connectorPath = null
-			connectorArrowPos = null
-			return
-		}
-
-		// Find current row element for the tracked row
-		const rows = tableElement.querySelectorAll(':scope > tbody > tr')
-		const currentRowEl = rows[hoveredRow.viewIndex] as HTMLElement | undefined
-		if (!currentRowEl) {
-			connectorPath = null
-			connectorArrowPos = null
-			return
-		}
-
-		// Check if row is at its original position (adjacent to popup)
-		const isAdjacent = currentRowEl === hoveredRowElement
-
-		// Track if row has ever moved
-		if (!isAdjacent) {
-			hasRowMoved = true
-		}
-
-		// If row has never moved, no connector needed
-		if (!hasRowMoved) {
-			connectorPath = null
-			connectorArrowPos = null
-			return
-		}
-
-		const popupRect = popupElement.getBoundingClientRect()
-		const rowRect = currentRowEl.getBoundingClientRect()
-		const tableRect = tableElement.getBoundingClientRect()
-		const isRTL = document.dir === 'rtl' || document.documentElement.dir === 'rtl'
-
-		// Determine relative position for 'top' popup position
-		const popupCenterY = popupRect.top + popupRect.height / 2
-		const rowCenterY = rowRect.top + rowRect.height / 2
-		const isOverlapping = !(rowRect.bottom < popupRect.top || rowRect.top > popupRect.bottom)
-
-		// For all positions, use a bracket shape that goes to the left side of the table (in LTR)
-		// or right side (in RTL), then points at the row
-		const cornerX = isRTL ? tableRect.right + 15 : tableRect.left - 15
-		const endX = isRTL ? rowRect.right + 8 : rowRect.left - 8
-		const endY = rowRect.top + rowRect.height / 2
-
-		if (popupPosition === 'left') {
-			// Popup is to the left of the table - connect from right side of popup
-			const startX = popupRect.right
-			const startY = popupRect.top + popupRect.height / 2
-			// Go right a bit, then down/up to row, then right to row edge
-			connectorPath = `M ${startX} ${startY} H ${cornerX} V ${endY} H ${endX}`
-			connectorArrowPos = { x: endX, y: endY }
-			connectorArrowDir = isRTL ? 'left' : 'right'
-		} else if (popupPosition === 'right') {
-			// Popup is to the right of the table - connect from left side of popup
-			const startX = popupRect.left
-			const startY = popupRect.top + popupRect.height / 2
-			// Go left to corner, then down/up to row, then to row edge
-			connectorPath = `M ${startX} ${startY} H ${cornerX} V ${endY} H ${endX}`
-			connectorArrowPos = { x: endX, y: endY }
-			connectorArrowDir = isRTL ? 'left' : 'right'
-		} else {
-			// Position: 'top' - popup is above the table
-			if (isOverlapping && !isAdjacent) {
-				// Overlapping (but not adjacent) - back-loop pointing to itself
-				const startY = rowRect.top + rowRect.height * 0.75
-				const loopEndY = rowRect.top + rowRect.height * 0.25
-				connectorPath = `M ${endX} ${startY} H ${cornerX} V ${loopEndY} H ${endX}`
-				connectorArrowPos = { x: endX, y: loopEndY }
-				connectorArrowDir = isRTL ? 'left' : 'right'
-			} else {
-				// Row below or above popup - bracket shape from left (LTR) or right (RTL) side
-				const startX = isRTL ? popupRect.right : popupRect.left
-				const startY = popupRect.top + popupRect.height / 2
-				connectorPath = `M ${startX} ${startY} H ${cornerX} V ${endY} H ${endX}`
-				connectorArrowPos = { x: endX, y: endY }
-				connectorArrowDir = isRTL ? 'left' : 'right'
-			}
-		}
-	})
-
 	// While the toolbar is open: an outside press / focus closes it.
 	// Listeners exist only while it's open; the toolbar follows its row (PositioningRegion).
 	$effect(() => {
@@ -2179,13 +1693,6 @@
 		return true
 	}
 
-	// Enter / Space on a focused item (the menu item itself only emits `change` for them)
-	function handleContextMenuItemKeyDown(item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>, action: string, disabled: boolean, event: KeyboardEvent) {
-		if (event.key !== 'Enter' && event.key !== ' ') return
-		event.preventDefault()
-		if (!disabled) void handleContextMenuItemClick(item, action, event)
-	}
-
 	async function handleContextMenuItemClick(item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>, action: string, event: MouseEvent | KeyboardEvent) {
 		const ctx = contextMenuContext
 		if (!ctx || 'divider' in item) return
@@ -2233,19 +1740,17 @@
 			case 'expand-all': {
 				// Expand the right-clicked row and every descendant that has children.
 				const root = getRowPath(ctx.row)
-				const prefix = root + resolvedTreeSeparator
 				const next = new Set(resolvedExpandedPaths)
 				for (const it of items) {
 					const p = getRowPath(it)
-					if ((p === root || p.startsWith(prefix)) && treeParentPathSet.has(p)) next.add(p)
+					if (isInSubtree(p, root, resolvedTreeSeparator) && treeParentPathSet.has(p)) next.add(p)
 				}
 				setExpandedPaths(next)
 				break
 			}
 			case 'collapse-all': {
 				const root = getRowPath(ctx.row)
-				const prefix = root + resolvedTreeSeparator
-				setExpandedPaths(new Set([...resolvedExpandedPaths].filter(p => p !== root && !p.startsWith(prefix))))
+				setExpandedPaths(new Set([...resolvedExpandedPaths].filter(p => !isInSubtree(p, root, resolvedTreeSeparator))))
 				break
 			}
 			case 'expand-tree':
@@ -2293,35 +1798,6 @@
 		return () => el.removeEventListener("pointerdown", handleContainerPointerDown, true)
 	})
 
-	// Portalled menu placed at the pointer's spot in its cell (floating-ui keeps it in the
-	// viewport and follows the cell when the grid or the page scrolls)
-	function placeContextMenu(node: HTMLElement, anchor: {cell: HTMLElement; dx: number; dy: number}) {
-		let stop = () => {}
-		function attach({cell, dx, dy}: typeof anchor) {
-			stop()
-			const reference = {
-				contextElement: cell,
-				getBoundingClientRect() {
-					const rect = cell.getBoundingClientRect()
-					const x = rect.left + dx
-					const y = rect.top + dy
-					return {x, y, left: x, top: y, right: x, bottom: y, width: 0, height: 0}
-				}
-			}
-			stop = autoUpdate(reference, node, async () => {
-				const {x, y} = await computePosition(reference, node, {
-					placement: 'bottom-start',
-					strategy: 'fixed',
-					middleware: [flip(), shift({padding: 8})]
-				})
-				node.style.left = `${x}px`
-				node.style.top = `${y}px`
-			})
-		}
-		attach(anchor)
-		return {update: attach, destroy: () => stop()}
-	}
-
 	onDestroy(() => {
 		if (rowActionHideTimeout) clearTimeout(rowActionHideTimeout)
 	})
@@ -2331,112 +1807,34 @@
 
 <div {...rest} bind:this={containerRef} class="quickgrid-container" {style} onfocusout={handleGridFocusOut}>
 	<!-- Row toolbar (uses fixed positioning to float outside container) -->
-	{#if resolvedShowToolbar && hoveredRow && hoveredRowElement}
-		<PositioningRegion anchor={hoveredRowElement} visible={true} position={toolbarRegionPosition} align={toolbarAlign} matchWidth={false} style="width: auto;">
-			<div
-				bind:this={popupElement}
-				class="row-toolbar"
-				role="toolbar"
-				tabindex="-1"
-				aria-label={labels.rowActions}
-				onpointerenter={handleRowActionPopupPointerEnter}
-				onpointerleave={handleRowActionPopupPointerLeave}
-				onkeydown={handleToolbarKeyDown}
-				onfocusin={() => (toolbarFocused = true)}
-				onfocusout={handleToolbarFocusOut}
-			>
-				{#if hoveredRow}
-					{@const rowCtx = {row: hoveredRow.row, ...getRowIdentity(hoveredRow.row)}}
-					{#each toolbarLines as line}
-						<div class="row-toolbar-row">
-							{#each resolveMenuEntries(line, rowCtx, toolbarDefaults) as entry}
-								{#if entry.kind === 'divider'}
-									<div class="row-toolbar-divider"></div>
-								{:else}
-									{@const r = entry.resolved}
-									<button
-										class="row-toolbar-btn {r.cssClass}"
-										class:danger={r.isDanger}
-										title={r.tooltip ?? r.text}
-										aria-label={r.text}
-										aria-pressed={r.isToggle ? r.isToggled : undefined}
-										disabled={r.isDisabled}
-										onclick={(event) => handleToolbarItemClick(entry.item as RowToolbarItem<T>, r.action, event)}
-									>
-										{#if typeof r.icon === 'string'}
-											<Icon name={r.icon} size={16} />
-										{:else if r.icon}
-											{@render r.icon()}
-										{/if}
-										{#if (entry.item as RowToolbarItem<T>).isTextVisible}
-											<span class="row-toolbar-label">{r.text}</span>
-										{/if}
-									</button>
-								{/if}
-							{/each}
-						</div>
-					{/each}
-				{/if}
-			</div>
-		</PositioningRegion>
-		<!-- L-shaped connector line when row has moved -->
-		{#if connectorPath && connectorArrowPos}
-			<svg class="row-connector" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: var(--fluent-z-dropdown, 1000);">
-				<path
-					d={connectorPath}
-					stroke="var(--accent-fill-rest, #0078d4)"
-					stroke-width="2"
-					fill="none"
-				/>
-				<!-- Arrow head pointing at the row -->
-				<polygon
-					points={
-						connectorArrowDir === 'down' ? '-4,0 4,0 0,8' :
-						connectorArrowDir === 'left' ? '0,-4 -8,0 0,4' :
-						'0,-4 8,0 0,4'
-					}
-					fill="var(--accent-fill-rest, #0078d4)"
-					transform="translate({connectorArrowPos.x}, {connectorArrowPos.y})"
-				/>
-			</svg>
-		{/if}
+	{#if showRowToolbar && hoveredRow && hoveredRowElement && tableElement}
+		<QuickGridRowToolbar
+			bind:element={popupElement}
+			bind:focused={toolbarFocused}
+			anchor={hoveredRowElement}
+			table={tableElement}
+			target={hoveredRow}
+			session={toolbarSession}
+			align={toolbarAlign}
+			{labels}
+			entries={resolvedToolbarConfig}
+			rowContext={{row: hoveredRow.row, ...getRowIdentity(hoveredRow.row)}}
+			presets={toolbarPresets}
+			onItemClick={({item, action, event}) => handleToolbarItemClick(item, action, event)}
+			onCloseRequest={closeRowToolbar}
+			onpointerenter={handleRowActionPopupPointerEnter}
+			onpointerleave={handleRowActionPopupPointerLeave}
+		/>
 	{/if}
 
 	<!-- Context menu -->
 	{#if contextMenu && contextMenuVisible && contextMenuContext && contextMenuAnchor}
-		<div
-			use:portal
-			use:placeContextMenu={contextMenuAnchor}
-			bind:this={contextMenuElement}
-			class="context-menu"
-			style="position: fixed; left: 0; top: 0;"
-		>
-			<fluent-menu>
-				{#each resolveMenuEntries(contextMenu, contextMenuContext, (item) => contextMenuDefaults(item, contextMenuContext)) as entry}
-					{#if entry.kind === 'divider'}
-						<fluent-divider></fluent-divider>
-					{:else}
-						{@const r = entry.resolved}
-						<!-- svelte-ignore a11y_click_events_have_key_events -->
-						<!-- svelte-ignore a11y_no_static_element_interactions -->
-						<fluent-menu-item
-							{...(r.isDisabled ? { disabled: true } : {})}
-							class={[r.isDanger && "danger", r.cssClass].filter(Boolean).join(" ") || null}
-							title={r.tooltip ?? null}
-							onclick={(event: MouseEvent) => handleContextMenuItemClick(entry.item, r.action, event)}
-							onkeydown={(event: KeyboardEvent) => handleContextMenuItemKeyDown(entry.item, r.action, !!r.isDisabled, event)}
-						>
-							{#if typeof r.icon === 'string'}
-								<span slot="start"><Icon name={r.icon} size={16} /></span>
-							{:else if r.icon}
-								<span slot="start">{@render r.icon()}</span>
-							{/if}
-							{r.text}
-						</fluent-menu-item>
-					{/if}
-				{/each}
-			</fluent-menu>
-		</div>
+		<QuickGridContextMenu
+			bind:element={contextMenuElement}
+			anchor={contextMenuAnchor}
+			entries={resolveMenuEntries(contextMenu, contextMenuContext, (item) => contextMenuDefaults(item, contextMenuContext))}
+			onItemSelect={({item, action, event}) => handleContextMenuItemClick(item, action, event)}
+		/>
 	{/if}
 
 	<div class="quickgrid-live-region" role="status" aria-live="polite">{liveMessage}</div>
@@ -2449,93 +1847,30 @@
 		aria-labelledby={ariaLabelledby}
 		aria-rowcount={ariaRowCount}
 	>
-		<thead>
-			{#if filterable}
-				<tr class="filter-row" aria-rowindex={ariaRowCount !== undefined ? 1 : undefined}>
-					{#if resolvedShowToolbar && toolbarTrigger === 'button'}
-						<th class="actions-column"></th>
-					{/if}
-					{#each columns as column}
-						<th style={getColumnHeaderStyle(column, false)}>
-							{#if column.filterable !== false}
-								<input
-									type="text"
-									class="filter-input"
-									class:invalid={filterValidity[String(column.field)] === false}
-									placeholder={labels.filterPlaceholder}
-									aria-label={labels.filterAriaLabel(column.title)}
-									value={filters[String(column.field)] || ""}
-									oninput={(e) => handleFilter(String(column.field), e.currentTarget)}
-								/>
-							{/if}
-						</th>
-					{/each}
-					{#if fillerColumn}
-						<th class="filler-column"></th>
-					{/if}
-				</tr>
-			{/if}
-			<tr aria-rowindex={ariaRowCount !== undefined ? headerRowCount : undefined}>
-				{#if resolvedShowToolbar && toolbarTrigger === 'button'}
-					<th class="actions-column"></th>
-				{/if}
-				{#each columns as column}
-					{@const sortIndex = getSortIndex(column)}
-					{@const sortState = sortIndex >= 0 ? sort[sortIndex] : undefined}
-					{#snippet headerContent()}
-						<span>{column.title}</span>
-						{#if column.headerInfo}
-							<span class="header-info-icon">
-								<Icon name="info" size={16} color="accent" title={column.headerInfo} />
-							</span>
-						{/if}
-						{#if isColumnSortable(column)}
-							<span class="sort-indicator" aria-hidden="true">
-								{#if sortState}
-									{sortState.direction === "asc" ? "▲" : "▼"}{#if sort.length > 1}<span class="sort-priority">{sortIndex + 1}</span>{/if}
-								{:else}
-									<span class="sort-placeholder">⬍</span>
-								{/if}
-							</span>
-						{/if}
-					{/snippet}
-					<th
-						class={`column-header ${isColumnSortable(column) ? "sortable" : ""} ${
-							sortState ? `sorted sorted-${sortState.direction}` : ""
-						}`}
-						style={getColumnHeaderStyle(column, true)}
-						aria-sort={getAriaSort(column)}
-					>
-						{#if isColumnSortable(column)}
-							<!-- Enter / Space sort; Ctrl / ⌘ adds the column in "multiple" mode -->
-							<button
-								type="button"
-								class="column-header-content column-sort-button"
-								onclick={(e) => handleSort(column, e.ctrlKey || e.metaKey)}
-								onkeydown={(e) => handleSortKeyDown(column, e)}
-							>
-								{@render headerContent()}
-							</button>
-						{:else}
-							<div class="column-header-content">{@render headerContent()}</div>
-						{/if}
-					</th>
-				{/each}
-				{#if fillerColumn}
-					<th class="filler-column column-header"></th>
-				{/if}
-			</tr>
-		</thead>
+		<QuickGridHeader
+			{columns}
+			{columnStyles}
+			{labels}
+			{sortMode}
+			{sort}
+			{filterable}
+			{filters}
+			{filterValidity}
+			actionsColumn={showRowToolbar && toolbarTrigger === 'button'}
+			{fillerColumn}
+			headerRowIndex={ariaRowCount !== undefined ? headerRowCount : undefined}
+			onSortRequest={({column, additive}) => handleSort(column, additive)}
+			filterChangeCallback={({field, value}) => handleFilter(field, value)}
+		/>
 		<tbody>
 			{#if displayItems.length === 0}
 				<tr>
-					<td colspan={columns.length + (resolvedShowToolbar && toolbarTrigger === 'button' ? 1 : 0) + (fillerColumn ? 1 : 0)} class="empty-message">
+					<td colspan={columns.length + (showRowToolbar && toolbarTrigger === 'button' ? 1 : 0) + (fillerColumn ? 1 : 0)} class="empty-message">
 						{labels.noItems}
 					</td>
 				</tr>
 			{:else}
-				{#each displayRows as {item, eachKey}, viewIndex (eachKey)}
-					{@const rowKey = getRowKey(item)}
+				{#each displayRows as {item, rowKey, eachKey}, viewIndex (eachKey)}
 					{@const rowPath = isTreeMode ? getRowPath(item) : ""}
 					{@const rowIsParent = isTreeMode && (isFiltering ? filteredParentPaths.has(rowPath) : rowHasChildren(item))}
 					<tr
@@ -2543,15 +1878,15 @@
 						aria-rowindex={ariaRowCount !== undefined ? rowIndexBase + viewIndex + 1 : undefined}
 						aria-level={isTreeMode ? getRowLevel(item) - treeMinLevel + 1 : undefined}
 						aria-expanded={rowIsParent ? isFiltering || isPathExpanded(rowPath) : undefined}
-						onclick={resolvedShowToolbar && toolbarTrigger !== 'button' ? (e) => handleRowClickForActions(rowKey, viewIndex, e) : undefined}
-						onpointerdown={resolvedShowToolbar && toolbarTrigger === 'hover' ? (e) => lastRowPointerType = e.pointerType : undefined}
-						onpointerenter={resolvedShowToolbar && toolbarTrigger === 'hover' ? (e) => handleRowPointerEnter(rowKey, viewIndex, e) : undefined}
-						onpointerleave={resolvedShowToolbar && toolbarTrigger === 'hover' ? handleRowPointerLeave : undefined}
+						onclick={showRowToolbar && toolbarTrigger !== 'button' ? (e) => handleRowClickForActions(rowKey, viewIndex, e) : undefined}
+						onpointerdown={showRowToolbar && toolbarTrigger === 'hover' ? (e) => lastRowPointerType = e.pointerType : undefined}
+						onpointerenter={showRowToolbar && toolbarTrigger === 'hover' ? (e) => handleRowPointerEnter(rowKey, viewIndex, e) : undefined}
+						onpointerleave={showRowToolbar && toolbarTrigger === 'hover' ? handleRowPointerLeave : undefined}
 						tabindex={rowsFocusable ? (resolvedRowTabStop === rowKey ? 0 : -1) : undefined}
 						onfocus={rowsFocusable ? (e) => { if (e.target === e.currentTarget) rowTabStop = rowKey } : undefined}
 						onkeydown={rowsFocusable ? (e) => handleRowKeyDown(rowKey, viewIndex, e) : undefined}
 					>
-						{#if resolvedShowToolbar && toolbarTrigger === 'button'}
+						{#if showRowToolbar && toolbarTrigger === 'button'}
 							<td class="actions-column">
 								<button
 									type="button"
@@ -2570,15 +1905,17 @@
 						{/if}
 						{#each columns as column, colIndex}
 							{@const cellField = String(column.field)}
-							{@const cellInvalid = isCellInvalid(rowKey, cellField)}
-							{@const cellError = getCellValidationError(rowKey, cellField)}
+							{@const cellInvalid = invalidByKey.has(cellKeyOf(rowKey, cellField))}
+							{@const cellError = invalidByKey.get(cellKeyOf(rowKey, cellField)) || null}
+							{@const cellEditable = isCellEditable(column, item)}
+							{@const cellEditing = isEditing(rowKey, cellField)}
 							<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_noninteractive_element_interactions -->
 							<td
 								data-row={viewIndex}
 								data-col={colIndex}
 								tabindex={getCellTabIndex(rowKey, colIndex)}
-								style={getColumnBodyStyle(column)}
-								class={`${isCellEditable(column, item) ? "editable-cell" : ""} ${cellInvalid ? "validation-error" : ""} ${isCellFocused(rowKey, colIndex) ? "focused" : ""} ${isEditing(rowKey, cellField) ? "editing" : ""} ${column.nowrap ? "nowrap-cell" : ""}`}
+								style={columnStyles[colIndex].body}
+								class={`${cellEditable ? "editable-cell" : ""} ${cellInvalid ? "validation-error" : ""} ${isCellFocused(rowKey, colIndex) ? "focused" : ""} ${cellEditing ? "editing" : ""} ${column.nowrap ? "nowrap-cell" : ""}`}
 								onclick={(e) => handleCellClick(e, colIndex, column, item)}
 								ondblclick={(e) => handleCellDblClick(e, colIndex, column, item)}
 								oncontextmenu={(e) => handleCellContextMenu(e, colIndex, column, item)}
@@ -2587,7 +1924,7 @@
 								title={cellError || undefined}
 							>
 								{#snippet cellContent()}
-								{#if isEditing(rowKey, cellField)}
+								{#if cellEditing}
 									{#if column.editor === "custom"}
 										<!-- Custom editor - handled via callback, show indicator -->
 										<span class="custom-editing-indicator">{labels.editing}</span>
@@ -2608,7 +1945,7 @@
 													type={getEditorType(column)}
 													value={getCellRawValue(item, rowKey, cellField)}
 													displayText={getEditorDisplayText(item, column, rowKey)}
-													options={getEditorOptionsForCell(column, item, rowKey)}
+													options={optionsLoader.editorOptionsFor(column, item, rowKey)}
 													initialSearchQuery={editingCell.initialSearchQuery}
 													onCommit={({value: newValue}) => commitEdit(item, column, newValue, colIndex, editToken)}
 													onCancel={() => cancelEdit(editToken)}
@@ -2625,21 +1962,22 @@
 											<div class="validation-error-message">{cellError}</div>
 										{/if}
 									{/if}
-								{:else if isCellEditable(column, item) && getColumnEditTrigger(column) === "always"}
+								{:else if cellEditable && getColumnEditTrigger(column) === "always"}
 									<GridCellEditor
 										{labels}
 										type={getEditorType(column)}
 										value={getCellRawValue(item, rowKey, cellField)}
 										displayText={getEditorDisplayText(item, column, rowKey)}
-										options={getEditorOptionsForCell(column, item, rowKey)}
+										options={optionsLoader.editorOptionsFor(column, item, rowKey)}
 										onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
 										onCancel={() => {}}
 									/>
 								{:else}
 									<div class="cell-content">
-										{#if hasSnippet(column)}
-											{@render column.snippet?.(item)}
-										{:else if hasTemplate(column)}
+										{#if column.snippet}
+											{@render column.snippet(item)}
+										{:else if column.renderCellCallback}
+											<!-- Unsanitised HTML: renderCellCallback must escape any user data (see its JSDoc) -->
 											{@html getCellValue(item, column, rowKey)}
 										{:else if isNavigateMode && column.editor === "checkbox"}
 											<!-- Checkbox in navigate mode: either always editable or disabled display -->
@@ -2648,7 +1986,7 @@
 													{labels}
 													type="checkbox"
 													value={getCellRawValue(item, rowKey, cellField)}
-													options={getEditorOptionsForCell(column, item, rowKey)}
+													options={optionsLoader.editorOptionsFor(column, item, rowKey)}
 													onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
 													onCancel={() => {}}
 												/>
@@ -2670,7 +2008,7 @@
 										{#if cellInvalid}
 											<span class="cell-error-indicator" title={cellError || labels.invalidValue}>⚠</span>
 										{/if}
-										{#if isCellEditable(column, item) && shouldShowEditButton(column)}
+										{#if cellEditable && shouldShowEditButton(column)}
 											<button
 												type="button"
 												class="cell-edit-btn"
@@ -2736,165 +2074,34 @@
 	</table>
 
 	{#if pageable && (totalPages > 1 || pageSizeChoices.length > 0)}
-		<nav class="pagination" aria-label={labels.pagination} aria-busy={pageChangePending || null}>
-			{#if pageSizeChoices.length > 0}
-				<label class="pagination-size">
-					<select
-						class="pagination-size-select"
-						value={pageSize}
-						disabled={pageChangePending}
-						onchange={(e) => changePageSize(e.currentTarget)}
-					>
-						{#each pageSizeChoices as size (size)}
-							<option value={size}>{size}</option>
-						{/each}
-					</select>
-					{labels.perPage}
-				</label>
-			{/if}
-
-			<button
-				class="pagination-btn"
-				disabled={effectivePage <= 1 || pageChangePending}
-				onclick={() => goToPage(effectivePage - 1)}
-			>
-				{labels.previousPage}
-			</button>
-
-			<div class="pagination-info">
-				{labels.pageInfo(effectivePage, totalPages)}
-				<span class="item-count">
-					({labels.itemCount(pagedTotal)})
-				</span>
-			</div>
-
-			<button
-				class="pagination-btn"
-				disabled={effectivePage >= totalPages || pageChangePending}
-				onclick={() => goToPage(effectivePage + 1)}
-			>
-				{labels.nextPage}
-			</button>
-		</nav>
+		<QuickGridPager
+			{labels}
+			page={effectivePage}
+			pageCount={totalPages}
+			itemCount={pagedTotal}
+			{pageSize}
+			pageSizes={pageSizeChoices}
+			busy={pageChangePending}
+			onPageRequest={({page}) => goToPage(page)}
+			pageSizeChangeCallback={({pageSize: size}) => changePageSize(size)}
+		/>
 	{/if}
 </div>
 
 <style>
+	/* Theme hooks: --fluent-quickgrid-* variables (docs: QuickGrid → CSS variables); each falls back
+	   to the FluentUI design token, so light / dark follow `baseLayerLuminance` without overrides. */
 	.quickgrid-container {
 		position: relative;
 		width: 100%;
 		overflow-x: auto;
 	}
 
-	/* Row toolbar (positioned by PositioningRegion) */
-	.row-toolbar {
-		outline: none;
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-		padding: 0;
-		background: var(--neutral-layer-floating, #ffffff);
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: var(--control-corner-radius, 4px);
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-	}
-
-	.row-toolbar-row {
-		display: flex;
-		gap: 2px;
-		align-items: center;
-		/* Match grid row height: vertical padding (design-unit * 2 * 2) + line-height (~21px) */
-		height: calc(var(--design-unit, 4) * 4px + 21px);
-		padding: 0 4px;
-	}
-
-	.row-toolbar-divider {
-		width: 1px;
-		height: 16px;
-		background: var(--neutral-stroke-rest, #d1d1d1);
-		margin: 0 2px;
-	}
-
-	.row-toolbar-btn {
-		min-width: 24px;
-		height: 100%;
-		border: none;
-		border-radius: var(--control-corner-radius, 4px);
-		background: transparent;
-		color: var(--neutral-foreground-rest, #242424);
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 4px;
-		font-size: 14px;
-		font-weight: 500;
-		transition: background 0.1s ease;
-		padding: 0 4px;
-	}
-
-	.row-toolbar-btn:hover {
-		background: var(--neutral-fill-secondary-hover, #f0f0f0);
-	}
-
-	.row-toolbar-btn:active {
-		background: var(--neutral-fill-secondary-active, #e0e0e0);
-	}
-
-	.row-toolbar-btn:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.row-toolbar-btn:disabled:hover {
-		background: transparent;
-	}
-
-	.row-toolbar-btn.danger:hover {
-		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
-		color: var(--fluent-color-danger-foreground, #d13438);
-	}
-
-	.row-toolbar-label {
-		font-size: 12px;
-		white-space: nowrap;
-	}
-
-	:global([data-theme="dark"]) .row-toolbar {
-		background: var(--neutral-layer-floating, #2b2b2b);
-		border-color: var(--neutral-stroke-rest, #5a5a5a);
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-	}
-
-	:global([data-theme="dark"]) .row-toolbar-divider {
-		background: var(--neutral-stroke-rest, #5a5a5a);
-	}
-
-	:global([data-theme="dark"]) .row-toolbar-btn {
-		color: var(--neutral-foreground-rest, #e0e0e0);
-	}
-
-	:global([data-theme="dark"]) .row-toolbar-btn:hover {
-		background: var(--neutral-fill-secondary-hover, #3a3a3a);
-	}
-
-	/* Legacy class aliases for backwards compatibility */
-	.row-action-popup { /* alias for .row-toolbar */
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		padding: 4px;
-		background: var(--neutral-layer-floating, #ffffff);
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: var(--control-corner-radius, 4px);
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-	}
-
 	.quickgrid {
 		width: 100%;
 		border-collapse: collapse;
-		border: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		background: var(--neutral-layer-1, #ffffff);
+		border: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+		background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
 		font-size: var(--type-ramp-base-font-size, 14px);
 		line-height: var(--type-ramp-base-line-height, 20px);
 	}
@@ -2904,46 +2111,11 @@
 	   of stretching. `width: 100%` is the classic absorb-leftover trick in auto
 	   table-layout — other columns claim their content/defined widths first and the
 	   filler swallows whatever remains, instead of an arbitrary unspecified column
-	   ballooning to fill the table. */
+	   ballooning to fill the table. (The header's copy is in QuickGridHeader.svelte.) */
 	.filler-column {
 		width: 100%;
 		padding: 0;
 		background: transparent;
-	}
-
-	.column-header {
-		background: var(--fluent-quickgrid-header-bg, var(--neutral-layer-2, #f5f5f5));
-		color: var(--neutral-foreground-rest, #242424);
-		font-weight: var(--font-weight-semibold, 600);
-		padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
-		border-bottom: 2px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		text-align: start;
-		user-select: none;
-		position: relative;
-	}
-
-	.column-header.sortable {
-		cursor: pointer;
-		padding: 0;
-	}
-
-	/* The sort button fills its header cell (the padding moves onto it) */
-	.column-sort-button {
-		all: unset;
-		box-sizing: border-box;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 4px;
-		width: 100%;
-		padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
-		cursor: pointer;
-		text-align: inherit;
-	}
-
-	.column-sort-button:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer, #0078d4);
-		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
 	}
 
 	/* Live region: read by screen readers, not shown */
@@ -2959,94 +2131,13 @@
 		border: 0;
 	}
 
-	.column-header.sortable:hover {
-		background: var(--fluent-quickgrid-header-hover-bg, var(--neutral-layer-3, #ebebeb));
-	}
-
-	.column-header-content {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		justify-content: space-between;
-	}
-
-	.sort-indicator {
-		font-size: 10px;
-		opacity: 0.8;
-		min-width: 12px;
-		text-align: center;
-		color: var(--accent-fill-rest, currentColor);
-	}
-
-	.sort-priority {
-		font-size: 9px;
-		margin-inline-start: 1px;
-		vertical-align: super;
-	}
-
-	.sort-placeholder {
-		color: var(--neutral-foreground-rest, currentColor);
-		opacity: 0.3;
-	}
-
-	.header-info-icon {
-		font-size: 12px;
-		color: var(--accent-fill-rest, #0078d4);
-		cursor: help;
-		opacity: 0.7;
-		margin-inline-start: 2px;
-	}
-
-	.header-info-icon:hover {
-		opacity: 1;
-	}
-
-	.column-header.sorted {
-		background: var(--fluent-quickgrid-header-sorted-bg, var(--neutral-layer-3, #ebebeb));
-	}
-
-	.filter-row th {
-		padding: calc(var(--design-unit) * 1px) calc(var(--design-unit) * 2px);
-		background: var(--neutral-layer-1, #ffffff);
-		border-bottom: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-	}
-
-	.filter-input {
-		width: 100%;
-		padding: 4px 8px;
-		border: 1px solid var(--neutral-stroke-input-rest, #d1d1d1);
-		border-radius: var(--control-corner-radius, 4px);
-		background: var(--neutral-layer-1, #ffffff);
-		color: var(--neutral-foreground-rest, #242424);
-		font-size: 12px;
-		box-sizing: border-box;
-	}
-
-	.filter-input:focus {
-		outline: none;
-		border-color: var(--accent-fill-rest, #0078d4);
-		box-shadow: 0 0 0 1px var(--accent-fill-rest, #0078d4);
-	}
-
-	/* Invalid state — surfaced when a column's `filter` callback returned null on the
-	   probe row (i.e. user typed something syntactically incomplete like `>`). Themes
-	   that override `--fluent-color-danger-foreground` get the right red (dark theme included). */
-	.filter-input.invalid {
-		border-color: var(--fluent-color-danger-foreground, #d13438);
-	}
-
-	.filter-input.invalid:focus {
-		border-color: var(--fluent-color-danger-foreground, #d13438);
-		box-shadow: 0 0 0 1px var(--fluent-color-danger-foreground, #d13438);
-	}
-
 	tbody tr {
-		border-bottom: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
+		border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
 	}
 
 	tbody td {
 		padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
-		color: var(--neutral-foreground-rest, #242424);
+		color: var(--fluent-quickgrid-text, var(--neutral-foreground-rest, #242424));
 	}
 
 	.quickgrid.striped tbody tr:nth-child(even) {
@@ -3103,15 +2194,14 @@
 	}
 
 	tbody tr:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer, #0078d4);
+		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
 		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
 	}
 
 	.tree-chevron:focus-visible,
 	.toolbar-trigger-btn:focus-visible,
-	.cell-edit-btn:focus-visible,
-	.row-toolbar-btn:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer, #0078d4);
+	.cell-edit-btn:focus-visible {
+		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
 		outline-offset: 1px;
 	}
 
@@ -3131,104 +2221,9 @@
 		flex-shrink: 0;
 	}
 
-	:global([data-theme="dark"]) .tree-chevron {
-		color: var(--neutral-foreground-hint, #a0a0a0);
-	}
-
-	:global([data-theme="dark"]) .tree-chevron:hover {
-		background: var(--neutral-fill-secondary-hover, #3a3a3a);
-		color: var(--neutral-foreground-rest, #e0e0e0);
-	}
-
-	.pagination {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 16px;
-		padding: calc(var(--design-unit) * 3px);
-		border-top: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		background: var(--neutral-layer-1, #ffffff);
-	}
-
-	.pagination-btn {
-		padding: 6px 16px;
-		background: var(--neutral-layer-1, #ffffff);
-		border: 1px solid var(--neutral-stroke-input-rest, #d1d1d1);
-		border-radius: var(--control-corner-radius, 4px);
-		color: var(--neutral-foreground-rest, #242424);
-		font-size: var(--type-ramp-base-font-size, 14px);
-		cursor: pointer;
-		transition: all 0.1s ease;
-	}
-
-	.pagination-btn:hover:not(:disabled) {
-		background: var(--neutral-layer-2, #f5f5f5);
-		border-color: var(--neutral-stroke-input-hover, #a0a0a0);
-	}
-
-	.pagination-btn:active:not(:disabled) {
-		background: var(--neutral-layer-3, #ebebeb);
-	}
-
-	.pagination-btn:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-
-	.pagination-size {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 12px;
-		color: var(--neutral-foreground-hint, #707070);
-	}
-
-	.pagination-size-select {
-		padding: 4px 6px;
-		background: var(--neutral-layer-1, #ffffff);
-		border: 1px solid var(--neutral-stroke-input-rest, #d1d1d1);
-		border-radius: var(--control-corner-radius, 4px);
-		color: var(--neutral-foreground-rest, #242424);
-		font: inherit;
-	}
-
 	.tree-chevron:disabled {
 		cursor: default;
 		opacity: 0.5;
-	}
-
-	.pagination-info {
-		font-size: var(--type-ramp-base-font-size, 14px);
-		color: var(--neutral-foreground-rest, #242424);
-	}
-
-	.item-count {
-		font-size: 12px;
-		color: var(--neutral-foreground-hint, #707070);
-		margin-inline-start: 4px;
-	}
-
-	/* Dark mode support */
-	:global([data-theme="dark"]) .quickgrid {
-		background: var(--neutral-layer-1, #1f1f1f);
-		border-color: var(--neutral-stroke-layer-rest, #3d3d3d);
-	}
-
-	:global([data-theme="dark"]) .column-header {
-		background: var(--fluent-quickgrid-header-bg, var(--neutral-layer-2, #2b2b2b));
-		color: var(--neutral-foreground-rest, #e0e0e0);
-	}
-
-	:global([data-theme="dark"]) tbody td {
-		color: var(--neutral-foreground-rest, #e0e0e0);
-	}
-
-	:global([data-theme="dark"]) .quickgrid.striped tbody tr:nth-child(even) {
-		background: var(--fluent-quickgrid-stripe-bg, var(--neutral-layer-2, #262626));
-	}
-
-	:global([data-theme="dark"]) .quickgrid.hoverable tbody tr:hover {
-		background: var(--fluent-quickgrid-row-hover-bg, var(--neutral-layer-3, #333333));
 	}
 
 	/* Editable cell styles */
@@ -3238,24 +2233,16 @@
 	}
 
 	.quickgrid.editable .editable-cell:hover {
-		background: var(--neutral-fill-secondary-hover, #f0f0f0);
+		background: var(--fluent-quickgrid-editable-hover-bg, var(--neutral-fill-secondary-hover, #f0f0f0));
 	}
 
 	.quickgrid.editable .editable-cell:hover::after {
 		content: "";
 		position: absolute;
 		inset: 2px;
-		border: 1px dashed var(--neutral-stroke-input-rest, #d1d1d1);
+		border: 1px dashed var(--fluent-quickgrid-editable-hover-border, var(--neutral-stroke-input-rest, #d1d1d1));
 		border-radius: var(--fluent-border-radius-sm);
 		pointer-events: none;
-	}
-
-	:global([data-theme="dark"]) .quickgrid.editable .editable-cell:hover {
-		background: var(--neutral-fill-secondary-hover, #3a3a3a);
-	}
-
-	:global([data-theme="dark"]) .quickgrid.editable .editable-cell:hover::after {
-		border-color: var(--neutral-stroke-input-rest, #5a5a5a);
 	}
 
 	/* Cell content with edit button */
@@ -3279,31 +2266,13 @@
 		display: block;
 	}
 
-	/* Actions column (for button trigger mode) */
+	/* Actions column (for button trigger mode; the header's copy is in QuickGridHeader.svelte) */
 	.actions-column {
 		width: 32px;
 		min-width: 32px;
 		max-width: 32px;
 		padding: 0 !important;
 		text-align: center;
-	}
-
-	thead .actions-column {
-		background: var(--fluent-quickgrid-header-bg, var(--neutral-layer-2, #f5f5f5));
-		border-bottom: 2px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-	}
-
-	.filter-row .actions-column {
-		background: var(--neutral-layer-1, #ffffff);
-		border-bottom: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-	}
-
-	:global([data-theme="dark"]) thead .actions-column {
-		background: var(--fluent-quickgrid-header-bg, var(--neutral-layer-2, #2b2b2b));
-	}
-
-	:global([data-theme="dark"]) .filter-row .actions-column {
-		background: var(--neutral-layer-1, #1f1f1f);
 	}
 
 	/* Toolbar trigger button (for button mode) */
@@ -3323,16 +2292,6 @@
 	.toolbar-trigger-btn.active {
 		background: var(--neutral-fill-secondary-hover, #f0f0f0);
 		color: var(--neutral-foreground-rest, #242424);
-	}
-
-	:global([data-theme="dark"]) .toolbar-trigger-btn {
-		color: var(--neutral-foreground-hint, #a0a0a0);
-	}
-
-	:global([data-theme="dark"]) .toolbar-trigger-btn:hover,
-	:global([data-theme="dark"]) .toolbar-trigger-btn.active {
-		background: var(--neutral-fill-secondary-hover, #3a3a3a);
-		color: var(--neutral-foreground-rest, #e0e0e0);
 	}
 
 	.cell-edit-btn {
@@ -3369,7 +2328,7 @@
 	.validation-error-message {
 		font-size: 11px;
 		color: var(--fluent-color-danger-foreground, #d13438);
-		margin-top: 2px;
+		margin-block-start: 2px;
 	}
 
 	/* Cell error indicator (shows when cell is invalid but not editing) */
@@ -3412,17 +2371,6 @@
 		font-style: italic;
 	}
 
-	/* Dark mode for new styles */
-	:global([data-theme="dark"]) .cell-edit-btn {
-		background: var(--neutral-layer-2, #2b2b2b);
-		border-color: var(--neutral-stroke-input-rest, #5a5a5a);
-		color: var(--neutral-foreground-rest, #e0e0e0);
-	}
-
-	:global([data-theme="dark"]) .cell-edit-btn:hover {
-		background: var(--neutral-layer-3, #333333);
-	}
-
 	/* Navigate mode styles. All cells are focusable so the focus indicator applies to
 	   any td.focused, not only `.editable-cell` — read-only cells still need the indicator
 	   so the user can see where their selection is when traversing the tree column or
@@ -3437,28 +2385,20 @@
 	}
 
 	.quickgrid.navigate-mode tbody td.focused {
-		outline: 2px solid var(--accent-fill-rest, #0078d4);
+		outline: 2px solid var(--fluent-quickgrid-focused-cell-stroke, var(--accent-fill-rest, #0078d4));
 		outline-offset: -2px;
-		background: var(--neutral-fill-secondary-hover, #f0f0f0);
+		background: var(--fluent-quickgrid-focused-cell-bg, var(--neutral-fill-secondary-hover, #f0f0f0));
 	}
 
 	.quickgrid.navigate-mode tbody td.focused::after {
 		display: none;
 	}
 
-	:global([data-theme="dark"]) .quickgrid.navigate-mode tbody td.focused {
-		background: var(--neutral-fill-secondary-hover, #3a3a3a);
-	}
-
-	/* Editing cell - prominent white background */
+	/* Editing cell - prominent background */
 	.quickgrid .editable-cell.editing {
-		background: var(--neutral-layer-1, #ffffff) !important;
-		outline: 2px solid var(--accent-fill-rest, #0078d4);
+		background: var(--fluent-quickgrid-editing-bg, var(--neutral-layer-1, #ffffff)) !important;
+		outline: 2px solid var(--fluent-quickgrid-editing-stroke, var(--accent-fill-rest, #0078d4));
 		outline-offset: -2px;
-	}
-
-	:global([data-theme="dark"]) .quickgrid .editable-cell.editing {
-		background: var(--neutral-layer-1, #1f1f1f) !important;
 	}
 
 	/* Editing cell styles - seamless input */
@@ -3478,17 +2418,13 @@
 
 	/* When a cell is being edited, show the accent border on the cell itself */
 	tbody td:has(.editor-wrapper) {
-		outline: 2px solid var(--accent-fill-rest, #0078d4);
+		outline: 2px solid var(--fluent-quickgrid-editing-stroke, var(--accent-fill-rest, #0078d4));
 		outline-offset: -2px;
-		background: var(--neutral-layer-1, #ffffff);
+		background: var(--fluent-quickgrid-editing-bg, var(--neutral-layer-1, #ffffff));
 	}
 
 	tbody td:has(.editor-wrapper)::after {
 		display: none;
-	}
-
-	:global([data-theme="dark"]) tbody td:has(.editor-wrapper) {
-		background: var(--neutral-layer-1, #1f1f1f);
 	}
 
 	/* Checkbox display in navigate mode (read-only visual) */
@@ -3497,30 +2433,5 @@
 		height: 18px;
 		pointer-events: none;
 		accent-color: var(--accent-fill-rest, #0078d4);
-	}
-
-	/* Context menu styles. Wrapper is transparent + rounded so the inner
-	 * `<fluent-menu>`'s rounded corners don't reveal gray pixels behind
-	 * them (the wrapper would otherwise be a rectangular surface). */
-	.context-menu {
-		z-index: var(--fluent-z-popover, 1060);
-		background: transparent;
-		border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
-		/* Popover elevation — paint shadow on the wrapper so the menu reads
-		 * as a distinct surface on dark themes (fluent-menu's own shadow is
-		 * too subtle there). Matches ContextMenu's elevation. */
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
-	}
-
-	.context-menu fluent-menu {
-		min-width: 160px;
-	}
-
-	.context-menu fluent-menu-item.danger {
-		color: var(--fluent-color-danger-foreground, #d13438);
-	}
-
-	.context-menu fluent-menu-item.danger:hover {
-		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
 	}
 </style>

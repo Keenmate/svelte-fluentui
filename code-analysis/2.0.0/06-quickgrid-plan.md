@@ -280,11 +280,51 @@ editor-level Tab in dblclick / click mode at the last cell still ends without mo
 - `renderCellCallback` goes through `{@html}` unsanitised — document the XSS risk (or require a snippet).
 - Cleanup: unused `cellTemplate` prop, `containerRef`, dead draft helpers, `resolvedShowToolbar` /
   `displayItems` aliases, `.row-action-popup` CSS, `filteredOptions = $derived(() => …)`.
-- **Split** (do incrementally, each phase extracts what it touches):
-  `quickgrid/pipeline.svelte.ts` (Phase 4) · `quickgrid/tree.ts` · `quickgrid/editing.svelte.ts` (Phase 2) ·
-  `quickgrid/navigation.ts` (Phase 6) · `QuickGridHeader.svelte` · `QuickGridCell.svelte` ·
-  `QuickGridRowToolbar.svelte` + `QuickGridContextMenu.svelte` (Phase 5) · `QuickGridPager.svelte`
-  (or reuse `Paginator`) → `QuickGrid.svelte` ≈ 400 lines.
+- **Split** — done in Phase 7 (`components/quickgrid/`, internal, not exported): `pipeline.ts` (Phase 4),
+  `labels.ts` (Phase 6), `tree.ts` (path / level / parent per row, separator detection, path order,
+  ancestor walks, default expansion), `columns.ts` (header / filter / body style strings, `isColumnSortable`),
+  `navigation.ts` (`findNextEditableCell`), `editing.svelte.ts` (`CellOverrides` drafts class, `cellKeyOf`,
+  `normalizeValidationResult`, checkbox values — **not** the edit session), `options.svelte.ts`
+  (`OptionsLoader`: cache, per-cell load tokens, editor options), `QuickGridHeader.svelte` (thead: filter row +
+  sort buttons), `QuickGridPager.svelte` (own markup, `Paginator` not reused), `QuickGridRowToolbar.svelte`
+  (toolbar + side choice + connector), `QuickGridContextMenu.svelte` (portalled menu + placement + item keys).
+  `QuickGrid.svelte` 3526 → 2437 lines (≈400 was aspirational). Not extracted: `QuickGridCell.svelte`, the
+  edit session state machine (startEdit / commitEdit / tokens) and the keyboard handlers.
+
+**Phase 7 status — done 2026-11-14.** Refactor; behaviour unchanged except the dark-theme header fix below.
+7.1 perf: `invalidByKey` (Map `rowKey\0field` → error, first entry wins) replaces two `invalidCells` scans per
+cell; `columnStyles` (three style strings per column, once per `columns` change) replaces per-cell string
+building; `treeInfo` (`Map<row, {path, segments, level, parentPath, parent}>`, once per `items` change) replaces
+per-call path splitting (path-order comparator uses the cached segments; ancestor walk per row done once);
+`viewIndexByKey` (from `displayRows`, which now carries `rowKey`) replaces `displayItems.findIndex/some(getRowKey)`
+in `getViewIndex`, tab stops and the edit-row check; `isCellEditable` (→ `getIsRowEditableCallback` /
+`getIsEditableCallback`) and `isEditing` evaluated once per cell instead of 3× / 2×. The pipeline already hoisted
+`columns.find`. 7.2: QuickGrid's and GridCellEditor's `[data-theme="dark"]` blocks are gone (all but the toolbar
+shadow only repeated the FAST token with a dark fallback hex); new `--fluent-quickgrid-*` variables (bg / border /
+text, focus-stroke, focused-cell-stroke / -bg, editable-hover-bg / -border, editing-bg / -stroke, toolbar-bg /
+-border / -text / -hover-bg / -shadow (theme.scss light/dark), connector-stroke, menu-shadow, dropdown-bg / -border
+/ -highlight-bg), each falling back to the token; connector stroke/fill moved from SVG attributes to CSS with
+`--fluent-quickgrid-connector-stroke` → `--accent-fill-rest` → `--fluent-accent-primary` (no `#0078d4`);
+`margin-top` / `border-top` / `border-bottom` → logical. Screenshots (Playwright, light + dark: `/components/quickgrid`,
+`/components/quickgrid-tree`, navigate focus / editing, button toolbar, context menu, editable hover, moved-row
+connector vs the old file) are pixel-identical except dark `/components/quickgrid`: sorted / hovered headers now
+show `--fluent-quickgrid-header-sorted-bg` / `-hover-bg` (the old dark `.column-header` rule out-specified them —
+a bug, logged as Fixed). 7.3: `renderCellCallback` JSDoc + docs column table warn about `{@html}` XSS and point
+to `snippet` (behaviour unchanged). 7.4: removed `cellTemplate` (BREAKING, logged + release-notes row; docs Slots
+tables dropped, quickgrid's became a CSS-variables table), `resolvedShowToolbar` alias, `.row-action-popup` CSS,
+`hasTemplate` / `hasSnippet`, the never-set `'down'` connector arrow, unused imports; `filteredOptions` is a
+`$derived.by` value. `containerRef` is used (outside-dismiss, capture listener) and `displayItems` is the paged
+slice, not an alias — both kept. 7.5: see the Split bullet. 206/206 full suite, both checks clean (docs: the 6
+pre-existing warnings).
+Deferred / noticed: windowing (> ~500 rows) not done; `QuickGridCell.svelte` and an edit-session class
+(`startEdit` / `commitEdit` / `cancelEdit` + tokens + keyboard handlers) not extracted — they share focus,
+navigation, the row-identity helpers and every edit event, so a split needs a context object or many callbacks and
+is better done together with the GridCellEditor → Select / Combobox / Autocomplete step; `getCellValue` /
+`getEditorDisplayText` still call `getDisplayValueCallback` per render per cell (no memo — values can change
+without `items` changing); the filter pipeline formats each cell on every filter keystroke; toolbar / menu /
+dropdown variables must be set on `:root` or a theme selector (portalled, they don't inherit from the grid); the
+`.cell-edit-btn` glyph has no colour of its own (UA button text — follows `color-scheme`); the moved-row connector
+is still computed in viewport coordinates and the toolbar's side is decided from the table's physical edges.
 
 ## Test coverage to add (none of this is covered today)
 
@@ -357,6 +397,9 @@ the always-editor Escape bug (Phase 3), sort-header keyboard/`aria-sort` + local
 
 **Update 2026-11-14 (Phase 6):** Phase 6 done (206/206). Next: **Phase 7** (performance, styling,
 split, cleanup), then the GridCellEditor → Select/Combobox/Autocomplete reuse step (after Phase 3).
+
+**Update 2026-11-14 (Phase 7):** Phase 7 done (206/206; see its status block). Next: the GridCellEditor →
+Select/Combobox/Autocomplete reuse step (fold in the QuickGridCell / edit-session extraction).
 
 Next, in order (original list):
 1. Small commit: advanced row toolbar on `/components/quickgrid-editable` is clipped off-screen at the

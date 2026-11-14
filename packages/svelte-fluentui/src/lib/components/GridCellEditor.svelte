@@ -145,7 +145,7 @@
 	if (type === "autocomplete") filterText = labelFor(value)
 
 	// Filtered options for combobox (filters based on filterText only when user is actively typing)
-	let filteredOptions = $derived(() => {
+	let filteredOptions = $derived.by(() => {
 		// Only filter when user is actively typing, not when displaying selected value
 		if (!isUserFiltering || !filterText.trim()) {
 			return effectiveOptions
@@ -157,7 +157,7 @@
 
 	// Rows the keyboard cursor walks: the filtered list for combobox, else the dropdown list.
 	function navigableOptions(): EditorOption[] {
-		return type === "combobox" ? filteredOptions() : dropdownOptions
+		return type === "combobox" ? filteredOptions : dropdownOptions
 	}
 
 	// Keyboard cursor; `-1` = none (for select with allowEmpty, the empty row).
@@ -727,7 +727,7 @@
 			<!-- svelte-ignore a11y_interactive_supports_focus -->
 			<div bind:this={dropdownElement} class="cell-dropdown" role="listbox" onmousedown={(e) => e.preventDefault()}>
 				{#if type === "combobox"}
-					{@const opts = filteredOptions()}
+					{@const opts = filteredOptions}
 					{#each opts as opt, index}
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<!-- svelte-ignore a11y_interactive_supports_focus -->
@@ -932,8 +932,8 @@
 
 	/* Dropdown styles */
 	.cell-dropdown {
-		background: var(--neutral-layer-1, #ffffff);
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+		background: var(--fluent-quickgrid-dropdown-bg, var(--neutral-layer-1, #ffffff));
+		border: 1px solid var(--fluent-quickgrid-dropdown-border, var(--neutral-stroke-rest, #d1d1d1));
 		border-radius: var(--fluent-border-radius-md);
 		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
 		max-height: 200px;
@@ -959,7 +959,7 @@
 
 	.cell-dropdown-option:hover,
 	.cell-dropdown-option.highlighted {
-		background: var(--neutral-fill-secondary-hover, #f0f0f0);
+		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-secondary-hover, #f0f0f0));
 	}
 
 	.cell-dropdown-empty {
@@ -972,36 +972,5 @@
 	@keyframes pulse {
 		0%, 100% { opacity: 1; }
 		50% { opacity: 0.4; }
-	}
-
-	/* Dark mode */
-	:global([data-theme="dark"]) .cell-input,
-	:global([data-theme="dark"]) .cell-select-trigger,
-	:global([data-theme="dark"]) .cell-combobox-input,
-	:global([data-theme="dark"]) .cell-autocomplete-input {
-		color: var(--neutral-foreground-rest, #e0e0e0);
-	}
-
-	:global([data-theme="dark"]) .cell-input::placeholder,
-	:global([data-theme="dark"]) .cell-autocomplete-input::placeholder {
-		color: var(--neutral-foreground-hint, #a0a0a0);
-	}
-
-	:global([data-theme="dark"]) .cell-dropdown {
-		background: var(--neutral-layer-1, #2d2d2d);
-		border-color: var(--neutral-stroke-rest, #404040);
-	}
-
-	:global([data-theme="dark"]) .cell-dropdown-option {
-		color: var(--neutral-foreground-rest, #e0e0e0);
-	}
-
-	:global([data-theme="dark"]) .cell-dropdown-option:hover,
-	:global([data-theme="dark"]) .cell-dropdown-option.highlighted {
-		background: var(--neutral-fill-secondary-hover, #3d3d3d);
-	}
-
-	:global([data-theme="dark"]) .cell-dropdown-empty {
-		color: var(--neutral-foreground-hint, #a0a0a0);
 	}
 </style>

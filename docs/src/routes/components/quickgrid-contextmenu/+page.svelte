@@ -27,10 +27,6 @@
 		{name: "onAction", type: "(detail: QuickGridActionDetail<T>) => void", default: "—", description: "Fires after a menu item ran: {action, id, item, source: \"context-menu\", row, viewIndex, itemIndex, rowKey, column, columnIndex, cellValue}"}
 	]
 
-	const slots: PropertyRow[] = [
-		{name: "cellTemplate", type: "Snippet", default: "—", description: "Custom cell rendering snippet, available on the column definition via column.snippet"}
-	]
-
 	type ContextMenuItemRow = {
 		name: string
 		type: string
@@ -391,12 +387,6 @@
 			<Card>
 				<h2>Callbacks</h2>
 				<QuickGrid items={callbacks} columns={propertyColumns} sortMode="single" filterable striped />
-			</Card>
-		</GridItem>
-		<GridItem xs={12} xl={6} xxl={4}>
-			<Card>
-				<h2>Slots</h2>
-				<QuickGrid items={slots} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>

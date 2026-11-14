@@ -64,8 +64,34 @@
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to the root <div> (.quickgrid-container)"}
 	]
 
-	const slots: Property[] = [
-		{name: "cellTemplate", type: "Snippet", default: "undefined", description: "Custom cell content snippet. Replaces default cell rendering for all cells. Receives the current row as argument via Column.snippet per column"}
+	// Theme hooks; each falls back to the FluentUI token in "default", so light / dark follow the design system.
+	// The row toolbar, context menu and editor dropdowns are portalled: set their variables on :root / a theme selector.
+	const cssVariables: Property[] = [
+		{name: "--fluent-quickgrid-bg", type: "color", default: "--neutral-layer-1", description: "Grid, filter row and pager background"},
+		{name: "--fluent-quickgrid-border", type: "color", default: "--neutral-stroke-layer-rest", description: "Outer border, row separators, header and pager borders"},
+		{name: "--fluent-quickgrid-text", type: "color", default: "--neutral-foreground-rest", description: "Cell, header and filter input text"},
+		{name: "--fluent-quickgrid-header-bg", type: "color", default: "theme.scss (light / dark)", description: "Header row background"},
+		{name: "--fluent-quickgrid-header-hover-bg", type: "color", default: "theme.scss (light / dark)", description: "Sortable header on hover"},
+		{name: "--fluent-quickgrid-header-sorted-bg", type: "color", default: "theme.scss (light / dark)", description: "Sorted column header"},
+		{name: "--fluent-quickgrid-stripe-bg", type: "color", default: "theme.scss (light / dark)", description: "Every other row (striped)"},
+		{name: "--fluent-quickgrid-row-hover-bg", type: "color", default: "theme.scss (light / dark)", description: "Row on hover (hoverable)"},
+		{name: "--fluent-quickgrid-focus-stroke", type: "color", default: "--focus-stroke-outer", description: "Focus ring: sort buttons, focusable rows, chevrons, ⋮ / edit / toolbar buttons"},
+		{name: "--fluent-quickgrid-focused-cell-stroke", type: "color", default: "--accent-fill-rest", description: "Navigate mode: focused cell outline"},
+		{name: "--fluent-quickgrid-focused-cell-bg", type: "color", default: "--neutral-fill-secondary-hover", description: "Navigate mode: focused cell background"},
+		{name: "--fluent-quickgrid-editable-hover-bg", type: "color", default: "--neutral-fill-secondary-hover", description: "Editable cell on hover"},
+		{name: "--fluent-quickgrid-editable-hover-border", type: "color", default: "--neutral-stroke-input-rest", description: "Editable cell's dashed hover frame"},
+		{name: "--fluent-quickgrid-editing-bg", type: "color", default: "--neutral-layer-1", description: "Cell with an open editor"},
+		{name: "--fluent-quickgrid-editing-stroke", type: "color", default: "--accent-fill-rest", description: "Outline of the cell being edited"},
+		{name: "--fluent-quickgrid-toolbar-bg", type: "color", default: "--neutral-layer-floating", description: "Row toolbar background"},
+		{name: "--fluent-quickgrid-toolbar-border", type: "color", default: "--neutral-stroke-rest", description: "Row toolbar border and dividers"},
+		{name: "--fluent-quickgrid-toolbar-text", type: "color", default: "--neutral-foreground-rest", description: "Row toolbar buttons"},
+		{name: "--fluent-quickgrid-toolbar-hover-bg", type: "color", default: "--neutral-fill-secondary-hover", description: "Row toolbar button on hover"},
+		{name: "--fluent-quickgrid-toolbar-shadow", type: "box-shadow", default: "theme.scss (light / dark)", description: "Row toolbar elevation"},
+		{name: "--fluent-quickgrid-connector-stroke", type: "color", default: "--accent-fill-rest", description: "Line + arrow from the toolbar to its row after a move"},
+		{name: "--fluent-quickgrid-menu-shadow", type: "box-shadow", default: "0 8px 16px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12)", description: "Context menu elevation"},
+		{name: "--fluent-quickgrid-dropdown-bg", type: "color", default: "--neutral-layer-1", description: "Select / combobox / autocomplete editor dropdown"},
+		{name: "--fluent-quickgrid-dropdown-border", type: "color", default: "--neutral-stroke-rest", description: "Editor dropdown border"},
+		{name: "--fluent-quickgrid-dropdown-highlight-bg", type: "color", default: "--neutral-fill-secondary-hover", description: "Editor dropdown: hovered / keyboard-highlighted option"}
 	]
 
 	const propertyColumns = [
@@ -351,8 +377,9 @@
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card>
-				<h2>Slots</h2>
-				<QuickGrid items={slots} columns={propertyColumns} sortMode="single" filterable striped />
+				<h2>CSS variables</h2>
+				<p>Theme hooks; "default" is the FluentUI token each falls back to. The row toolbar, context menu and editor dropdowns are portalled — set their variables on <code>:root</code> or a theme selector, not on the grid.</p>
+				<QuickGrid items={cssVariables} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>
 	</Grid>
@@ -459,6 +486,18 @@
 					<td>(&#123;value, row, column&#125;) =&gt; string</td>
 					<td>undefined</td>
 					<td>Custom cell formatter</td>
+				</tr>
+				<tr>
+					<td>snippet</td>
+					<td>Snippet&lt;[T]&gt;</td>
+					<td>undefined</td>
+					<td>Renders the cell with a Svelte snippet (receives the row; output is escaped). The safe way to put markup in a cell</td>
+				</tr>
+				<tr>
+					<td>renderCellCallback</td>
+					<td>(&#123;row, column&#125;) =&gt; string</td>
+					<td>undefined</td>
+					<td>Renders the cell as an HTML string via <code>&#123;@html&#125;</code>. <strong>Not sanitised — XSS risk:</strong> never put user or server data in it unescaped; prefer <code>snippet</code></td>
 				</tr>
 				<tr>
 					<td>editable / getIsEditableCallback</td>

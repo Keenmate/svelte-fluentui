@@ -61,6 +61,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **QuickGrid rowToolbar items:** `{id, icon, iconSnippet, title, label, row, group, type, danger, disabled(row, index), onclick({row, rowIndex})}` → action items `{id, action, icon (name or snippet), text, tooltip, isTextVisible, toolbarRow, isDanger, isDisabled / getIsDisabledCallback({row, itemIndex}), onClick(detail)}`; groups are `{divider: true}` entries
 - **QuickGrid contextMenu items:** `{id, label (string or fn), icon (text glyph), disabled, visible, danger, dividerBefore, type, onclick(ctx)}` → menu entries `{id, action, text / getTextCallback, icon (Fluent name or snippet), isDisabled / getIsDisabledCallback, isVisible / getIsVisibleCallback, isDanger, onClick(detail)}` + `{divider: true}`; built-ins by name
 - **QuickGrid:** `showRowActions`, `rowActions` (deprecated aliases) → removed — use `showRowToolbar`, `rowToolbar`
+- **QuickGrid:** `cellTemplate` prop → removed (it was declared but never rendered) — use a column's `snippet`
 - **QuickGrid context ctx:** `colIndex` → `columnIndex`
 - **QuickGrid event / callback contexts** (`onRowChange`, `onEditStart`, `onEditCancel`, `onValidationError`, `onAction`, `beforeActionCallback`, `onContextMenuOpen`, `beforeCommitCallback`, `editCallback`, toolbar / menu item callbacks): `rowIndex` → `viewIndex` (position in the displayed list), plus new `itemIndex` (index in `items`, −1 if gone) and `rowKey`; write back with `items[itemIndex]`
 - **QuickGrid `idMember`** defaults to `"id"` when the rows have an `id` field (outside tree mode), so `rowKey` / `invalidCells[].rowKey` become that id and edit state survives immutable updates; rows with neither keep the per-object key and the console warning
@@ -180,6 +181,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - QuickGrid keyboard: Shift+F10 / ContextMenu key opens the context menu at the focused cell (focus on the first item, arrows, Enter / Space, Escape returns focus); Alt+F10 opens the row toolbar from a cell and focuses it (arrows / Home / End, Escape or Tab return); rows of a hover / click toolbar grid without navigate mode are one tab stop (↑ / ↓ / Home / End, Enter opens the toolbar); Enter on the ⋮ trigger moves focus into the toolbar.
 - QuickGrid accessibility: `aria-rowcount` / `aria-rowindex` on paged and server grids (server: from `totalItems`), filter inputs named after their column, a polite live region announcing the row count after filtering, the page after paging and the sort after a header change; tree mode is a `treegrid` with `aria-level` / `aria-expanded` rows; the ⋮ trigger has `aria-label` / `aria-haspopup` / `aria-expanded`, the toolbar `role="toolbar"`.
 
+- QuickGrid CSS variables (theme hooks, each falling back to the FluentUI token): `--fluent-quickgrid-bg` / `-border` / `-text`, `-focus-stroke`, `-focused-cell-stroke` / `-focused-cell-bg`, `-editable-hover-bg` / `-editable-hover-border`, `-editing-bg` / `-editing-stroke`, `-toolbar-bg` / `-toolbar-border` / `-toolbar-text` / `-toolbar-hover-bg` / `-toolbar-shadow` (light / dark in theme.scss), `-connector-stroke` (was a hard-coded `#0078d4` fallback), `-menu-shadow`, `-dropdown-bg` / `-dropdown-border` / `-dropdown-highlight-bg` (cell editor dropdowns). They replace QuickGrid's and GridCellEditor's `[data-theme="dark"]` selector blocks — a theme overrides variables, not selectors.
+
 ### Fixed
 - QuickGrid: one `onRowChange` per edit (dropdown/date picks fired twice); after a valid edit the grid shows your items again instead of a stale draft row.
 - QuickGrid: removed unimplemented `editorOptions.multiple` / `maxSelections`.
@@ -259,7 +262,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   `div[dragged-over]` (move cursor, blinking grey). Removed; QuickGrid and InputFile keep the
   bits they relied on in their own styles.
 
+- QuickGrid dark theme: sorted and hovered sortable headers show `--fluent-quickgrid-header-sorted-bg` / `--fluent-quickgrid-header-hover-bg` (the dark-theme header rule overrode both with the plain header background).
+
 ### Internal
+- QuickGrid split into `components/quickgrid/`: `QuickGridHeader`, `QuickGridPager`, `QuickGridRowToolbar`, `QuickGridContextMenu` (internal, not exported) and `tree.ts`, `columns.ts`, `navigation.ts`, `editing.svelte.ts`, `options.svelte.ts`; QuickGrid.svelte 3526 → ~2440 lines. Per-render lookups instead of per-cell scans (invalid cells by key, column styles per column, tree path / level / parent per row, view index by row key). `renderCellCallback`'s `{@html}` XSS risk documented (JSDoc, docs: prefer the column `snippet`).
 - Docs app type-checks against the library source (`kit.alias`), not the stale `dist/` typings.
 - `CalendarDay` is exported as a type (it is the argument of the Calendar / DatePicker `day` snippet).
 - `lib/contexts.ts`: every parent→child context (Accordion, Select/Combobox/Listbox→Option, Grid,

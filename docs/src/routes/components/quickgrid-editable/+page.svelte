@@ -29,10 +29,6 @@
 		{name: "onValidationError", type: "(ctx: { row, viewIndex, itemIndex, rowKey, field, column, error }) => void", default: "undefined", description: "Called when a value fails validation"}
 	]
 
-	const editableSlots: Property[] = [
-		{name: "cellTemplate", type: "Snippet", default: "undefined", description: "Custom cell template for rendering cell content (applies to all columns unless overridden by column.snippet)"}
-	]
-
 	const propertyColumns = [
 		{field: "name", title: "Name", sortable: true, filterable: true},
 		{field: "type", title: "Type", sortable: true, filterable: true},
@@ -1460,9 +1456,6 @@ function clearError(rowKey, field) {
 		</GridItem>
 		<GridItem xs={12} xl={6} xxl={4}>
 			<Card><h2>Callbacks</h2><QuickGrid items={editableCallbacks} columns={propertyColumns} sortMode="single" filterable striped /></Card>
-		</GridItem>
-		<GridItem xs={12} xl={6} xxl={4}>
-			<Card><h2>Slots</h2><QuickGrid items={editableSlots} columns={propertyColumns} sortMode="single" filterable striped /></Card>
 		</GridItem>
 	</Grid>
 

@@ -56,6 +56,7 @@ $quickgrid-header-hover-bg-light: $neutral-gray-30 !default;
 $quickgrid-header-sorted-bg-light: $neutral-gray-30 !default;
 $quickgrid-stripe-bg-light: $neutral-gray-10 !default;
 $quickgrid-row-hover-bg-light: $neutral-gray-30 !default;
+$quickgrid-toolbar-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.15) !default;
 
 // ===== DARK THEME DEFAULTS =====
 
@@ -107,6 +108,7 @@ $quickgrid-header-hover-bg-dark: $neutral-gray-110 !default;
 $quickgrid-header-sorted-bg-dark: $neutral-gray-110 !default;
 $quickgrid-stripe-bg-dark: $neutral-gray-130 !default;
 $quickgrid-row-hover-bg-dark: $neutral-gray-110 !default;
+$quickgrid-toolbar-shadow-dark: 0 2px 8px rgba(0, 0, 0, 0.4) !default;
 
 // ===== COMPONENT-SPECIFIC VARIABLES =====
 

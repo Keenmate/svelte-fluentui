@@ -204,8 +204,15 @@ export type QuickGridColumn<T = any> = {
 	align?: "start" | "center" | "end"
 	/** Formats the cell's value for display. */
 	getDisplayValueCallback?: (ctx: {value: any; row: T; column: QuickGridColumn<T>}) => string
-	/** Renders the whole cell as an HTML string (takes precedence over getDisplayValueCallback). */
+	/**
+	 * Renders the whole cell as an HTML string (takes precedence over getDisplayValueCallback).
+	 *
+	 * **XSS risk:** the string is inserted with `{@html}` and is **not sanitised**. Never interpolate
+	 * user-supplied or server data into it unescaped (a name like `<img src=x onerror=…>` runs script).
+	 * Prefer `snippet` — Svelte escapes its output — and keep this for trusted, static markup.
+	 */
 	renderCellCallback?: (ctx: {row: T; column: QuickGridColumn<T>}) => string
+	/** Renders the cell with a Svelte snippet (receives the row; output is escaped). Wins over `renderCellCallback`. */
 	snippet?: Snippet<[T]>
 	/**
 	 * Custom filter predicate, replacing the built-in substring match for this column. Called once
