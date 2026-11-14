@@ -56,6 +56,38 @@
 	let checkRows = $state([{id: 1, name: "Task", done: false}])
 	let checkLog = $state<string[]>([])
 
+	// ---- Phase 3: editors ----
+	const pad = (n: number) => String(n).padStart(2, "0")
+	const localDay = (v: unknown) => v instanceof Date ? `${v.getFullYear()}-${pad(v.getMonth() + 1)}-${pad(v.getDate())}` : String(v)
+	const json = (v: unknown) => v instanceof Date ? `date(${localDay(v)})` : JSON.stringify(v)
+
+	let numRows = $state([{id: 1, price: 2.5}, {id: 2, price: 7}])
+	let numLog = $state<string[]>([])
+
+	// Local-midnight Date (created in the browser's timezone) + an ISO-output column.
+	let dateRows = $state([{id: 1, start: new Date(2024, 2, 15) as Date | null, due: null as string | null}])
+	let dateLog = $state<string[]>([])
+
+	let boolRows = $state([{id: 1, name: "Task", status: "no"}])
+	let boolLog = $state<string[]>([])
+
+	let lazyRows = $state([{id: 1, team: "web"}])
+	let lazyLog = $state<string[]>([])
+
+	let immediateRows = $state([{id: 1, team: "web"}, {id: 2, team: "db"}])
+	let immediateLog = $state<string[]>([])
+
+	let queryRows = $state([{id: 1, fruit: "apple"}])
+
+	const cities = [{value: "PRG", label: "Prague"}, {value: "BRN", label: "Brno"}, {value: "OSL", label: "Oslo"}]
+	let acRows = $state([{id: 1, city: "PRG"}])
+	let acLog = $state<string[]>([])
+
+	let alwaysPagedRows = $state([{id: 1, name: "One"}, {id: 2, name: "Two"}, {id: 3, name: "Three"}, {id: 4, name: "Four"}, {id: 5, name: "Five"}])
+
+	let orphanRows = $state([{name: "Alpha"}, {name: "Bravo"}])
+	let orphanInvalid = $state<QuickGridCellValidationState[]>([])
+
 	const columns = [
 		{field: "name", title: "Name", editable: true, editor: "text" as const,
 			beforeCommitCallback: ({value}: {value: unknown}) => String(value).length < 2 ? "Too short" : null},
@@ -228,6 +260,102 @@
 			if (isValid) checkRows[itemIndex] = {...row, [field]: newValue}
 		}} />
 	<output id="check-log">{checkLog.join(" | ")}</output>
+</div>
+
+<!-- Phase 3: editors -->
+<div id="num-wrap">
+	<QuickGrid items={numRows} idMember="id" editable editTrigger="navigate" onEditCancel={({field}) => numLog.push(`cancel:${field}`)}
+		columns={[{field: "price", title: "Price", editable: true, editor: "number" as const, editorOptions: {decimalPlaces: 2}}]}
+		onRowChange={({itemIndex, row, field, newValue}) => {
+			numLog.push(`${field}:${json(newValue)}`)
+			numRows[itemIndex] = {...row, [field]: newValue}
+		}} />
+	<output id="num-log">{numLog.join(" | ")}</output>
+</div>
+
+<div id="date-wrap">
+	<QuickGrid items={dateRows} idMember="id" editable editTrigger="navigate" onEditCancel={({field}) => dateLog.push(`cancel:${field}`)}
+		columns={[
+			{field: "start", title: "Start", editable: true, editor: "date" as const,
+				editorOptions: {minDate: new Date(2024, 0, 10)}, getDisplayValueCallback: ({value}) => value ? localDay(value) : ""},
+			{field: "due", title: "Due", editable: true, editor: "date" as const, editorOptions: {outputFormat: "iso" as const}},
+			{field: "id", title: "Id"}
+		]}
+		onRowChange={({itemIndex, row, field, newValue}) => {
+			dateLog.push(`${field}:${json(newValue)}`)
+			dateRows[itemIndex] = {...row, [field]: newValue}
+		}} />
+	<output id="date-log">{dateLog.join(" | ")}</output>
+</div>
+
+<div id="bool-wrap">
+	<QuickGrid items={boolRows} idMember="id" editable editTrigger="navigate" onEditCancel={({field}) => boolLog.push(`cancel:${field}`)}
+		columns={[
+			{field: "name", title: "Name"},
+			{field: "status", title: "Status", editable: true, editor: "checkbox" as const, editorOptions: {trueValue: "yes", falseValue: "no"}}
+		]}
+		onRowChange={({itemIndex, row, field, newValue}) => {
+			boolLog.push(`${field}:${json(newValue)}`)
+			boolRows[itemIndex] = {...row, [field]: newValue}
+		}} />
+	<output id="bool-log">{boolLog.join(" | ")}</output>
+</div>
+
+<div id="lazy-opts-wrap">
+	<QuickGrid items={lazyRows} idMember="id" editable editTrigger="dblclick"
+		columns={[{field: "team", title: "Team", editable: true, editor: "select" as const,
+			editorOptions: {optionsLoadTrigger: "dropdown-open" as const, loadOptionsCallback: async ({row}) => {
+				lazyLog.push(`load:${row.id}`)
+				await sleep(300)
+				return [{value: "web", label: "Web"}, {value: "api", label: "API"}]
+			}}}, {field: "id", title: "Id"}]} />
+	<output id="lazy-log">{lazyLog.join(" | ")}</output>
+</div>
+
+<div id="immediate-wrap">
+	<QuickGrid items={immediateRows} idMember="id" editable editTrigger="dblclick"
+		columns={[{field: "team", title: "Team", editable: true, editor: "select" as const,
+			editorOptions: {optionsLoadTrigger: "immediate" as const, loadOptionsCallback: async ({row}) => {
+				await sleep(100)
+				immediateLog.push(`load:${row.id}`)
+				return row.id === 1 ? [{value: "web", label: "web"}, {value: "api", label: "api"}] : [{value: "db", label: "db"}, {value: "ops", label: "ops"}]
+			}}}, {field: "id", title: "Id"}]} />
+	<output id="immediate-log">{immediateLog.join(" | ")}</output>
+</div>
+
+<div id="query-wrap">
+	<QuickGrid items={queryRows} idMember="id" editable editTrigger="navigate" dropdownShowOnFocus={false}
+		columns={[{field: "fruit", title: "Fruit", editable: true, editor: "select" as const,
+			editorOptions: {options: [{value: "apple", label: "Apple"}, {value: "banana", label: "Banana"}, {value: "cherry", label: "Cherry"}]}}, {field: "id", title: "Id"}]} />
+</div>
+
+<div id="ac-wrap">
+	<QuickGrid items={acRows} idMember="id" editable editTrigger="dblclick" onEditCancel={({field}) => acLog.push(`cancel:${field}`)}
+		columns={[{field: "city", title: "City", editable: true, editor: "autocomplete" as const,
+			getDisplayValueCallback: ({value}) => cities.find((c) => c.value === value)?.label ?? String(value ?? ""),
+			editorOptions: {debounceMs: 50, searchCallback: async ({term}) => {
+				await sleep(20)
+				return cities.filter((c) => c.label.toLowerCase().includes(term.toLowerCase()))
+			}}}]}
+		onRowChange={({itemIndex, row, field, newValue}) => {
+			acLog.push(`${field}:${json(newValue)}`)
+			acRows[itemIndex] = {...row, [field]: newValue}
+		}} />
+	<button type="button" id="ac-outside">Outside</button>
+	<output id="ac-log">{acLog.join(" | ")}</output>
+</div>
+
+<!-- "always" editors on a paged grid: paging mounts new editors. -->
+<div id="always-paged-wrap">
+	<QuickGrid items={alwaysPagedRows} idMember="id" editable editTrigger="always" pageable pageSize={2}
+		columns={[{field: "name", title: "Name", editable: true, editor: "text" as const}]} />
+</div>
+
+<!-- Rows without any id: replacing them must drop their orphaned invalid cells. -->
+<div id="orphan-wrap">
+	<QuickGrid items={orphanRows} columns={[nameColumn]} editable editTrigger="dblclick" bind:invalidCells={orphanInvalid} />
+	<button type="button" id="orphan-replace" onclick={() => (orphanRows = orphanRows.map((r) => ({...r})))}>Replace rows</button>
+	<output id="orphan-count">{orphanInvalid.length}</output>
 </div>
 
 <output id="log">{log.join(" | ")}</output>

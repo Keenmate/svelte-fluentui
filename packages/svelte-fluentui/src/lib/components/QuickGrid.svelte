@@ -255,6 +255,7 @@
 		initialSearchQuery?: string
 	}
 	let editingCell = $state.raw<EditSession | null>(null)
+	let activeEditor = $state.raw<{commit: () => Promise<void>} | null>(null)  // the open edit's GridCellEditor
 	let editSeq = 0                                    // last token handed out by startEdit
 	const cancelledEdits = new Set<number>()           // tokens whose late commits are dropped
 	let validatingToken = $state<number | null>(null)  // the open edit is waiting for its validation
@@ -303,6 +304,20 @@
 		})
 	})
 
+	// Rows replaced without an id get a new generated key, so their old key's overrides,
+	// `invalidCells` entries and loaded options can never match again: drop them. Only
+	// generated keys — an id-keyed row missing from `items` may come back (server-side
+	// filtering / paging), so its state is kept.
+	$effect(() => {
+		const keys = new Set(items.map((it) => getRowKey(it)))
+		const orphan = (rowKey: string) => rowKey.startsWith(GENERATED_KEY_PREFIX) && !keys.has(rowKey)
+		untrack(() => {
+			for (const rowKey of [...overrides.keys()]) if (orphan(rowKey)) overrides.delete(rowKey)
+			if (invalidCells.some((c) => orphan(c.rowKey))) invalidCells = invalidCells.filter((c) => !orphan(c.rowKey))
+			for (const key of [...optionsCache.keys()]) if (orphan(key.split("\u0000")[0])) optionsCache.delete(key)
+		})
+	})
+
 	// The row with its overrides applied (the item itself when it has none).
 	function getDraftRow(item: T, rowKey: string = getRowKey(item)): T {
 		const row = overrides.get(rowKey)
@@ -325,6 +340,7 @@
 
 	// Generated keys for rows without idMember / treePathMember: one per row object, so
 	// state never leaks between rows that happen to share a view position.
+	const GENERATED_KEY_PREFIX = "__quickgrid-row-"
 	const generatedRowKeys = new WeakMap<object, string>()
 	let generatedRowKeyCount = 0
 
@@ -349,7 +365,7 @@
 		if (item !== null && typeof item === "object") {
 			let key = generatedRowKeys.get(item)
 			if (key === undefined) {
-				key = `__quickgrid-row-${++generatedRowKeyCount}`
+				key = `${GENERATED_KEY_PREFIX}${++generatedRowKeyCount}`
 				generatedRowKeys.set(item, key)
 			}
 			return key
@@ -418,23 +434,12 @@
 	let contextMenuContext = $state<ContextMenuContext<T> | null>(null)
 	let contextMenuElement: HTMLDivElement | undefined = $state()
 
-	// Dynamic options cache (for "immediate" load trigger)
-	let dynamicOptionsCache = $state<Record<string, EditorOption[]>>({})
-	let loadingOptions = $state<Record<string, boolean>>({})
-
-	// Load options with "immediate" trigger on mount
-	$effect(() => {
-		columns.forEach(column => {
-			const field = String(column.field)
-			if (
-				column.editorOptions?.loadOptionsCallback &&
-				column.editorOptions?.optionsLoadTrigger === "immediate" &&
-				!dynamicOptionsCache[field]
-			) {
-				loadOptionsForColumn(column, items[0], field)
-			}
-		})
-	})
+	// Options loaded by `loadOptionsCallback`, per cell (rowKey + field), with the row object
+	// they were loaded for: a replaced row (the consumer's update) reloads.
+	type LoadedOptions = {row: T; options: EditorOption[]}
+	const optionsCache = new SvelteMap<string, LoadedOptions>()
+	// The edit waiting for its options (the cell shows a loading indicator)
+	let optionsLoadingEdit = $state.raw<{token: number; rowKey: string; field: string} | null>(null)
 
 	// ============ Tree mode helpers ============
 	let isTreeMode = $derived(treePathMember !== undefined)
@@ -786,6 +791,12 @@
 		return String(value ?? "")
 	}
 
+	// The cell's text for an editor (autocomplete shows it when no option has the value).
+	function getEditorDisplayText(item: T, column: Column<T>, rowKey: string): string {
+		const value = getCellRawValue(item, rowKey, String(column.field))
+		return column.getDisplayValueCallback ? column.getDisplayValueCallback({value, row: item, column}) : String(value ?? "")
+	}
+
 	function hasTemplate(column: Column<T>): boolean {
 		return !!column.renderCellCallback
 	}
@@ -795,53 +806,74 @@
 	}
 
 	// Dynamic options loading
-	// One in-flight load per column; a newer load (or unmount) aborts the previous one.
-	const optionLoads = new Map<string, AbortController>()
+	// One in-flight load per cell; a newer load of the cell (or unmount) aborts it, and its
+	// controller is the load token — only the cell's current load may write the cache.
+	type OptionsLoad = {row: T; controller: AbortController; promise: Promise<EditorOption[]>}
+	const optionLoads = new Map<string, OptionsLoad>()
 	$effect(() => () => {
-		for (const controller of optionLoads.values()) controller.abort()
+		for (const load of optionLoads.values()) load.controller.abort()
 	})
 
-	async function loadOptionsForColumn(column: Column<T>, row: T, field: string): Promise<EditorOption[]> {
-		if (!column.editorOptions?.loadOptionsCallback) return column.editorOptions?.options || []
-
-		const cacheKey = field
-		optionLoads.get(cacheKey)?.abort()
-		const controller = new AbortController()
-		optionLoads.set(cacheKey, controller)
-		loadingOptions[cacheKey] = true
-
-		try {
-			const options = await column.editorOptions.loadOptionsCallback({row, column, signal: controller.signal})
-			if (controller.signal.aborted) return []
-			dynamicOptionsCache[cacheKey] = options
-			return options
-		} catch (error) {
-			if (!controller.signal.aborted) console.error(`Failed to load options for ${field}:`, error)
-			return []
-		} finally {
-			if (optionLoads.get(cacheKey) === controller) {
-				optionLoads.delete(cacheKey)
-				loadingOptions[cacheKey] = false
-			}
-		}
+	function optionsLoadTrigger(column: Column<T>) {
+		return column.editorOptions?.optionsLoadTrigger ?? "edit-start"
 	}
 
-	function getOptionsForColumn(column: Column<T>): EditorOption[] {
+	// `reuse`: join an in-flight load for the same row object instead of restarting it.
+	function loadOptionsForCell(column: Column<T>, row: T, rowKey: string, reuse = false): Promise<EditorOption[]> {
+		const load = column.editorOptions?.loadOptionsCallback
+		if (!load) return Promise.resolve(column.editorOptions?.options || [])
 		const field = String(column.field)
-		// Return cached dynamic options if available
-		if (dynamicOptionsCache[field]) {
-			return dynamicOptionsCache[field]
+		const key = cellKeyOf(rowKey, field)
+		const inFlight = optionLoads.get(key)
+		if (reuse && inFlight?.row === row) return inFlight.promise
+		inFlight?.controller.abort()
+
+		const controller = new AbortController()
+		const entry: OptionsLoad = {row, controller, promise: Promise.resolve([])}
+		optionLoads.set(key, entry)
+		entry.promise = (async () => {
+			try {
+				const options = await load({row, column, signal: controller.signal})
+				// Superseded or unmounted: a stale response never overwrites a newer one.
+				if (controller.signal.aborted || optionLoads.get(key) !== entry) return optionsCache.get(key)?.options ?? []
+				optionsCache.set(key, {row, options})
+				return options
+			} catch (error) {
+				if (!controller.signal.aborted) console.error(`Failed to load options for ${field}:`, error)
+				return []
+			} finally {
+				if (optionLoads.get(key) === entry) optionLoads.delete(key)
+			}
+		})()
+		return entry.promise
+	}
+
+	// "immediate": load for every displayed row whose cell is editable (the rows the user can
+	// see and edit), once per row object — a page / sort / filter loads the newly shown rows.
+	$effect(() => {
+		for (const column of columns) {
+			if (!column.editorOptions?.loadOptionsCallback || optionsLoadTrigger(column) !== "immediate") continue
+			for (const item of displayItems) {
+				if (!isCellEditable(column, item)) continue
+				const rowKey = getRowKey(item)
+				const key = cellKeyOf(rowKey, String(column.field))
+				untrack(() => {
+					if (optionsCache.get(key)?.row !== item) void loadOptionsForCell(column, item, rowKey, true)
+				})
+			}
 		}
-		// Otherwise return static options
-		return column.editorOptions?.options || []
+	})
+
+	function getOptionsForCell(column: Column<T>, rowKey: string): EditorOption[] {
+		return optionsCache.get(cellKeyOf(rowKey, String(column.field)))?.options ?? column.editorOptions?.options ?? []
 	}
 
 	// Build editor options for GridCellEditor, wrapping callbacks with row context
-	function getEditorOptionsForCell(column: Column<T>, row: T): GridCellEditorOptions {
+	function getEditorOptionsForCell(column: Column<T>, row: T, rowKey: string = getRowKey(row)): GridCellEditorOptions {
 		const {loadOptionsCallback: _load, searchCallback: _search, ...shared} = column.editorOptions ?? {}
 		const baseOptions: GridCellEditorOptions = {
 			...shared,
-			options: getOptionsForColumn(column)
+			options: getOptionsForCell(column, rowKey)
 		}
 
 		// Adapt the public callbacks to GridCellEditor's internal (positional) ones
@@ -850,7 +882,7 @@
 			baseOptions.onSearch = (term: string, signal?: AbortSignal) => searchCallback({term, row, column, signal})
 		}
 		if (column.editorOptions?.loadOptionsCallback) {
-			baseOptions.loadOptions = () => loadOptionsForColumn(column, row, String(column.field))
+			baseOptions.loadOptions = () => loadOptionsForCell(column, row, rowKey)
 		}
 
 		return baseOptions
@@ -882,7 +914,10 @@
 	async function startEdit(field: string, item: T, column: Column<T>, colIndex?: number, initialSearchQuery?: string) {
 		const columnField = String(column.field)
 		const rowKey = getRowKey(item)
+		// A custom editor's UI doesn't blur away: superseding it ends it as a cancel.
+		if (editingCell?.column.editor === "custom") cancelEdit(editingCell.token)
 		const token = ++editSeq
+		optionsLoadingEdit = null
 
 		const open = () => {
 			editingCell = {token, rowKey, field, item, column, initialSearchQuery}
@@ -918,12 +953,16 @@
 			return
 		}
 
-		// Load options if needed ("edit-start" trigger)
+		// Load options first: "edit-start" on every edit, "immediate" when this row's aren't in yet.
+		const trigger = optionsLoadTrigger(column)
+		const cached = optionsCache.get(cellKeyOf(rowKey, columnField))
 		if (
 			column.editorOptions?.loadOptionsCallback &&
-			(column.editorOptions?.optionsLoadTrigger === "edit-start" || !column.editorOptions?.optionsLoadTrigger)
+			(trigger === "edit-start" || (trigger === "immediate" && cached?.row !== item))
 		) {
-			await loadOptionsForColumn(column, item, columnField)
+			optionsLoadingEdit = {token, rowKey, field: columnField}
+			await loadOptionsForCell(column, item, rowKey, trigger === "immediate")
+			if (optionsLoadingEdit?.token === token) optionsLoadingEdit = null
 			// A newer edit started while the options loaded: this one is stale.
 			if (token !== editSeq) return
 		}
@@ -1140,6 +1179,16 @@
 		startEdit(String(column.field), item, column, colIndex)
 	}
 
+	// Checkbox state of a value: `trueValue` (default `true`), or plain `true`.
+	function isCheckboxChecked(column: Column<T>, value: unknown): boolean {
+		return value === (column.editorOptions?.trueValue ?? true) || value === true
+	}
+
+	// Space toggle: the other of `trueValue` / `falseValue`.
+	function toggledCheckboxValue(column: Column<T>, value: unknown): unknown {
+		return isCheckboxChecked(column, value) ? (column.editorOptions?.falseValue ?? false) : (column.editorOptions?.trueValue ?? true)
+	}
+
 	function getEditorType(column: Column<T>): EditorType {
 		return column.editor || "text"
 	}
@@ -1313,7 +1362,7 @@
 				// cells with a checkbox-editor column shouldn't toggle.
 				if (column.editor === "checkbox" && isCellEditable(column, item)) {
 					e.preventDefault()
-					const newValue = !getCellRawValue(item, rowKey, String(column.field))
+					const newValue = toggledCheckboxValue(column, getCellRawValue(item, rowKey, String(column.field)))
 					commitEdit(item, column, newValue, colIndex)
 				}
 				break
@@ -1335,6 +1384,15 @@
 		}
 	}
 
+	// Tab / Enter / arrows leave the cell: the editor commits what it holds through its own
+	// parse path (number, date outputFormat, autocomplete free text; unchanged → cancel).
+	// A checkbox already committed on toggle; a dropdown pick already committed (the editor
+	// then just returns that commit).
+	async function commitFromKeyboard(column: Column<T>, token: number | undefined) {
+		if (column.editor === "checkbox" || !activeEditor) endEdit(token)
+		else await activeEditor.commit()
+	}
+
 	async function handleEditorKeyDown(e: KeyboardEvent, viewIndex: number, colIndex: number, column: Column<T>, item: T) {
 		const rowKey = getRowKey(item)
 		const token = editingCell?.token
@@ -1353,19 +1411,7 @@
 			e.stopPropagation()  // Prevent bubbling to handleNavigationKeyDown
 			isCommittingFromKeyboard = true
 
-			// Commit current edit first (for text/number inputs)
-			const input = e.target as HTMLInputElement
-			const isDropdownEditor = column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
-			if (column.editor === "checkbox") {
-				// Checkbox already committed on change, just clear editing state
-				endEdit(token)
-			} else if (isDropdownEditor) {
-				// Dropdown editors handle their own commit via selectDropdownOption
-				// Just exit edit mode without committing (preserves original value if no selection made)
-				endEdit(token)
-			} else if (input?.value !== undefined) {
-				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value, undefined, token)
-			}
+			await commitFromKeyboard(column, token)
 
 			isCommittingFromKeyboard = false
 			if (!stillOurs()) return
@@ -1418,18 +1464,7 @@
 			e.stopPropagation()  // Prevent bubbling to handleNavigationKeyDown
 			isCommittingFromKeyboard = true
 
-			const input = e.target as HTMLInputElement
-			const isDropdownEditor = column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
-			if (column.editor === "checkbox") {
-				// Checkbox already committed on change, just clear editing state
-				endEdit(token)
-			} else if (isDropdownEditor) {
-				// Dropdown editors handle their own commit via selectDropdownOption
-				// Just exit edit mode without committing (preserves original value if no selection made)
-				endEdit(token)
-			} else if (input?.value !== undefined) {
-				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value, undefined, token)
-			}
+			await commitFromKeyboard(column, token)
 
 			isCommittingFromKeyboard = false
 			if (!stillOurs()) return
@@ -1442,14 +1477,13 @@
 			// Space toggles checkbox while in edit mode
 			e.preventDefault()
 			e.stopPropagation()
-			const newValue = !getCellRawValue(item, rowKey, String(column.field))
+			const newValue = toggledCheckboxValue(column, getCellRawValue(item, rowKey, String(column.field)))
 			await commitEdit(item, column, newValue, colIndex, token)
 		} else if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
 			// NOTE: Dropdown editors (select, combobox, autocomplete) handle their own arrow keys
 			// when dropdown is OPEN (via stopPropagation). When dropdown is CLOSED, events bubble
 			// here for cell navigation, allowing users to navigate away with arrow keys.
 
-			const input = e.target as HTMLInputElement
 			const isTextEditor = column.editor === "text" || column.editor === "number"
 
 			// For text-based editors, ArrowLeft/ArrowRight only move cursor, never navigate cells
@@ -1463,16 +1497,7 @@
 			e.stopPropagation()
 			isCommittingFromKeyboard = true
 
-			// Commit current edit first (or just exit for dropdown editors with closed dropdown)
-			const isDropdownEditor = column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
-			if (column.editor === "checkbox") {
-				endEdit(token)
-			} else if (isDropdownEditor) {
-				// For dropdown editors, just exit edit mode (dropdown was closed, no value to commit)
-				endEdit(token)
-			} else if (input?.value !== undefined) {
-				await commitEdit(item, column, column.editor === "number" ? Number(input.value) : input.value, undefined, token)
-			}
+			await commitFromKeyboard(column, token)
 
 			isCommittingFromKeyboard = false
 			if (!stillOurs()) return
@@ -2190,9 +2215,12 @@
 										>
 											{#key editToken}
 												<GridCellEditor
+													bind:this={activeEditor}
+													autofocus
 													type={getEditorType(column)}
 													value={getCellRawValue(item, rowKey, cellField)}
-													options={getEditorOptionsForCell(column, item)}
+													displayText={getEditorDisplayText(item, column, rowKey)}
+													options={getEditorOptionsForCell(column, item, rowKey)}
 													initialSearchQuery={editingCell.initialSearchQuery}
 													onCommit={({value: newValue}) => commitEdit(item, column, newValue, colIndex, editToken)}
 													onCancel={() => cancelEdit(editToken)}
@@ -2213,7 +2241,8 @@
 									<GridCellEditor
 										type={getEditorType(column)}
 										value={getCellRawValue(item, rowKey, cellField)}
-										options={getEditorOptionsForCell(column, item)}
+										displayText={getEditorDisplayText(item, column, rowKey)}
+										options={getEditorOptionsForCell(column, item, rowKey)}
 										onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
 										onCancel={() => {}}
 									/>
@@ -2229,7 +2258,7 @@
 												<GridCellEditor
 													type="checkbox"
 													value={getCellRawValue(item, rowKey, cellField)}
-													options={getEditorOptionsForCell(column, item)}
+													options={getEditorOptionsForCell(column, item, rowKey)}
 													onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
 													onCancel={() => {}}
 												/>
@@ -2237,13 +2266,16 @@
 												<input
 													type="checkbox"
 													class="cell-checkbox-display"
-													checked={!!getCellRawValue(item, rowKey, cellField)}
+													checked={isCheckboxChecked(column, getCellRawValue(item, rowKey, cellField))}
 													disabled
 													tabindex={-1}
 												/>
 											{/if}
 										{:else}
 											<span class="cell-text">{getCellValue(item, column, rowKey)}</span>
+										{/if}
+										{#if optionsLoadingEdit?.rowKey === rowKey && optionsLoadingEdit.field === cellField}
+											<span class="options-loading-indicator" aria-label="Loading options">...</span>
 										{/if}
 										{#if cellInvalid}
 											<span class="cell-error-indicator" title={cellError || "Invalid value"}>⚠</span>
@@ -2868,7 +2900,8 @@
 		pointer-events: none;
 	}
 
-	.validating-indicator {
+	.validating-indicator,
+	.options-loading-indicator {
 		font-size: 10px;
 		color: var(--neutral-foreground-hint, #707070);
 		animation: pulse 1s infinite;

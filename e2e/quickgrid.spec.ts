@@ -327,3 +327,162 @@ test("editTrigger always: an editor shows the consumer's new value when not focu
 	await page.waitForTimeout(100)
 	await expect(page.locator("#always-log")).toHaveText("")
 })
+
+// ---- Phase 3: editors ----
+
+test.describe("QuickGrid Phase 3 — editors", () => {
+	test("number: keyboard commits use the editor's parse path (no-op cancels, decimalPlaces, empty → null)", async ({page}) => {
+		const wrap = page.locator("#num-wrap")
+		const log = page.locator("#num-log")
+		const cell = wrap.locator("tbody tr").first().locator("td")
+		await cell.click()
+		await page.keyboard.press("Enter")
+		await expect(wrap.locator("td.editing input")).toBeFocused()
+		await page.keyboard.press("Enter")
+		await expect(log).toHaveText("cancel:price")
+		await cell.click()
+		await page.keyboard.press("Enter")
+		await page.keyboard.press("Control+A")
+		await page.keyboard.type("3.14159")
+		await page.keyboard.press("Tab")
+		await expect(log).toHaveText("cancel:price | price:3.14")
+		await cell.click()
+		await page.keyboard.press("Enter")
+		await page.keyboard.press("Control+A")
+		await page.keyboard.press("Delete")
+		await page.keyboard.press("ArrowDown")
+		await expect(log).toHaveText("cancel:price | price:3.14 | price:null")
+	})
+
+	test("checkbox: Space toggles between trueValue and falseValue", async ({page}) => {
+		const wrap = page.locator("#bool-wrap")
+		const cell = wrap.locator("tbody td").nth(1)
+		await expect(cell.locator("input")).not.toBeChecked()
+		await cell.click()
+		await page.keyboard.press(" ")
+		await expect(page.locator("#bool-log")).toHaveText(`status:"yes"`)
+		await expect(cell.locator("input")).toBeChecked()
+		await page.keyboard.press(" ")
+		await expect(page.locator("#bool-log")).toHaveText(`status:"yes" | status:"no"`)
+		await expect(cell.locator("input")).not.toBeChecked()
+	})
+
+	test("optionsLoadTrigger dropdown-open loads when the list opens, showing a loading state", async ({page}) => {
+		const wrap = page.locator("#lazy-opts-wrap")
+		await wrap.locator("td", {hasText: "web"}).dblclick()
+		await expect(page.locator("#lazy-log")).toHaveText("")
+		await wrap.locator(".cell-select-trigger").click()
+		await expect(page.locator(".cell-dropdown")).toContainText("Loading...")
+		await expect(page.getByRole("option", {name: "API"})).toBeVisible()
+		await expect(page.locator("#lazy-log")).toHaveText("load:1")
+	})
+
+	test("optionsLoadTrigger immediate loads per row, not items[0] for every row", async ({page}) => {
+		const wrap = page.locator("#immediate-wrap")
+		await expect(page.locator("#immediate-log")).toContainText("load:2")
+		await wrap.locator("td", {hasText: "db"}).dblclick()
+		await wrap.locator(".cell-select-trigger").click()
+		await expect(page.locator(".cell-dropdown .cell-dropdown-option")).toHaveText(["db", "ops"])
+	})
+
+	test("edit-start options: the cell shows a loading indicator until the editor opens", async ({page}) => {
+		const wrap = page.locator("#options-wrap")
+		const cell = wrap.locator("tbody tr").first().locator("td")
+		await cell.dblclick()
+		await expect(cell.locator(".options-loading-indicator")).toBeVisible()
+		await expect(cell.locator(".cell-select-trigger")).toHaveCount(1)
+		await expect(cell.locator(".options-loading-indicator")).toHaveCount(0)
+	})
+
+	test("initialSearchQuery: closing the dropdown does not reopen it", async ({page}) => {
+		const wrap = page.locator("#query-wrap")
+		await wrap.locator("td", {hasText: "apple"}).click()
+		await page.keyboard.press("b")
+		const option = page.getByRole("option", {name: "Banana"})
+		await expect(option).toHaveClass(/highlighted/)
+		await wrap.locator(".cell-select-trigger").click()
+		await page.waitForTimeout(100)
+		await expect(page.locator(".cell-dropdown")).toHaveCount(0)
+	})
+
+	test("editTrigger always: editors mounted by paging don't steal focus", async ({page}) => {
+		const wrap = page.locator("#always-paged-wrap")
+		const next = wrap.getByRole("button", {name: "Next"})
+		await next.click()
+		await expect(wrap.locator("tbody input").first()).toHaveValue("Three")
+		await page.waitForTimeout(100)
+		await expect(next).toBeFocused()
+	})
+
+	test("autocomplete: reopening shows the value's label; free text commits on blur", async ({page}) => {
+		const wrap = page.locator("#ac-wrap")
+		const log = page.locator("#ac-log")
+		const cell = wrap.locator("tbody td").first()
+		await cell.dblclick()
+		const input = wrap.locator("td.editing input")
+		await expect(input).toHaveValue("Prague")
+		await page.keyboard.press("Control+A")
+		await page.keyboard.type("Brn")
+		await page.getByRole("option", {name: "Brno"}).click()
+		await expect(log).toHaveText(`city:"BRN"`)
+		await expect(cell).toHaveText("Brno")
+		await cell.dblclick()
+		await expect(input).toHaveValue("Brno")
+		await page.keyboard.press("Control+A")
+		await page.keyboard.type("Narnia")
+		await expect(page.locator(".cell-dropdown")).toContainText("No options")
+		await page.locator("#ac-outside").click()
+		await expect(log).toHaveText(`city:"BRN" | city:"Narnia"`)
+		await expect(cell).toHaveText("Narnia")
+	})
+
+	test("a custom edit superseded by another cell's edit fires onEditCancel", async ({page}) => {
+		const wrap = page.locator("#custom-wrap")
+		await wrap.locator("td", {hasText: "Alpha"}).dblclick()
+		await wrap.locator("td", {hasText: "Bravo"}).dblclick()
+		await expect(page.locator("#custom-log")).toHaveText("start:name | open:Alpha | cancel:name | start:name | open:Bravo")
+	})
+
+	test("rows replaced without an id drop their orphaned invalid cells", async ({page}) => {
+		const wrap = page.locator("#orphan-wrap")
+		await editCell(wrap, "Alpha", "A")
+		await expect(page.locator("#orphan-count")).toHaveText("1")
+		await page.locator("#orphan-replace").click()
+		await expect(page.locator("#orphan-count")).toHaveText("0")
+	})
+})
+
+test.describe("QuickGrid Phase 3 — date editor (America/New_York)", () => {
+	test.use({timezoneId: "America/New_York"})
+
+	test("date: a typed date commits once, on Enter, in outputFormat", async ({page}) => {
+		const wrap = page.locator("#date-wrap")
+		await wrap.locator("tbody td").nth(1).click()
+		await page.keyboard.press("Enter")
+		await expect(wrap.locator("td.editing input")).toBeFocused()
+		await page.keyboard.type("03032024")  // day = month: same for mm/dd and dd/mm
+		await page.keyboard.press("Enter")
+		const iso = await page.evaluate(() => new Date(2024, 2, 3).toISOString())
+		await expect(page.locator("#date-log")).toHaveText(`due:"${iso}"`)
+	})
+
+	test("date: a picked day is stored as that local day", async ({page}) => {
+		const wrap = page.locator("#date-wrap")
+		await wrap.locator("tbody td").first().dblclick()
+		await wrap.locator("td.editing input").fill("2024-04-20")
+		await expect(page.locator("#date-log")).toHaveText("start:date(2024-04-20)")
+		await expect(wrap.locator("tbody td").first()).toHaveText("2024-04-20")
+	})
+})
+
+test.describe("QuickGrid Phase 3 — date editor (Europe/Prague)", () => {
+	test.use({timezoneId: "Europe/Prague"})
+
+	test("date: the editor shows the local day of a Date value and of minDate", async ({page}) => {
+		const wrap = page.locator("#date-wrap")
+		await wrap.locator("tbody td").first().dblclick()
+		const input = wrap.locator("td.editing input")
+		await expect(input).toHaveValue("2024-03-15")
+		await expect(input).toHaveAttribute("min", "2024-01-10")
+	})
+})

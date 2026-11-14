@@ -104,6 +104,37 @@ a superseded custom edit (another cell's `startEdit` while a custom dialog is op
 Fix: keyboard commits delegate to the editor's `commit()` (one parse path); local-date helpers in
 `helpers/date.ts`; loaders keyed by `rowKey` + field with a load token; `autofocus` prop.
 
+**Phase 3 status — done 2026-11-14.** GridCellEditor exports `commit()` — the one commit path for
+blur, Enter and QuickGrid's Tab / Enter / arrows (`commitFromKeyboard` calls it on the open edit's
+editor via `bind:this`; it returns the commit's promise, an already-committed pick returns that
+commit, unchanged → `onCancel`). Number: `parseNumber` (empty/unparsable → `null`, `decimalPlaces`).
+Date: `parseLocalDate` / `formatLocalDate` / `toLocalDateString` in `helpers/date.ts` (local midnight,
+years < 100 kept); output per `outputFormat`; a `change` after a keydown (typing — Chrome fires
+`change` per segment) waits for Enter / Tab / blur, a picker pick commits at once; same-day = unchanged.
+Space toggle maps `trueValue`/`falseValue` (`toggledCheckboxValue`), the navigate-mode display too.
+Options: `optionsCache` `SvelteMap<rowKey+field, {row, options}>`, `optionLoads` per cell (the
+controller / entry is the load token; `reuse` joins an in-flight load for the same row object);
+`"immediate"` = an effect loading every displayed editable row whose cache isn't for that row object
+(paging / replace reloads), `startEdit` awaits it if missing; `"edit-start"` cells show
+`.options-loading-indicator` (`optionsLoadingEdit`); `"dropdown-open"` loads in `openDropdown`
+(`loadOnOpen`, "Loading..." row). `initialSearchQuery` effect untracked. `autofocus` prop (only the
+startEdit editor). Autocomplete: `autocompleteTyped` → `commitTypedText` on blur / Enter (exact label →
+that option, empty → null); its input starts at `labelFor(value)` (option label, else the new
+`displayText` prop = the cell's `getDisplayValueCallback` text). D1: `startEdit` cancels an open custom
+edit (`onEditCancel`). D2: an effect drops overrides / `invalidCells` / cached options of *generated*
+row keys no longer in `items` (id keys are kept — server-side filtering may bring them back).
+13 new e2e tests (NY + Prague `timezoneId` describes for dates), all failing on the old code; 161/161
+full suite. BREAKING (logged): date values are local midnight; `"immediate"` loads per row.
+Deferred / noticed: the editing row collapses to ~0 height when its other cells are empty (the editor
+is `position: absolute`; single-column grids — fixtures got an `id` column); every GridCellEditor,
+"always" ones included, pushes an Escape layer, so the last always-editor swallows every Escape on the
+page and its `cancelledViaEscape` is never reset (it stops committing on blur); dropdown editors left
+via Tab / arrows without a pick now fire `onEditCancel` (navigate mode auto-starts them on focus, so
+arrowing through fires start/cancel pairs); `"edit-start"` never loads for `"always"` editors (no
+startEdit) — use `"immediate"` / `"dropdown-open"`; a keyboard-driven native date picker counts as
+typing; combobox reopening with a value not in its options still shows empty; the old `"immediate"`
+effect ran `loadOptionsCallback` tracked (a loader writing state looped) — gone with the rewrite.
+
 Then (separate step, after Phase 1–3 tests exist): **GridCellEditor reuses Select / Combobox /
 Autocomplete.** Needs a value↔key layer (editor values may be numbers/booleans), a grid-embedding
 keyboard mode (grid owns Enter/Tab/Escape, closed-list arrows bubble), commit-once semantics, a
@@ -223,6 +254,10 @@ Phase 3 start: read the Phase 2 status block's "Deferred" list (3.1 / 3.4 items 
 superseded without `onEditCancel`) and fold it into the Phase 3 agent spec. Same method: one background
 agent, fail-before/pass-after per item, I review + both checks + full suite, then commit. Docs demos now
 write back `{...row, [field]: newValue}` (not `draftRow`). Branch `prod` 9 ahead of origin, not pushed.
+
+**Update 2026-11-14 (Phase 3):** Phase 3 done (see its status block; 161/161 full suite). Next: **Phase 4**
+(web-grid sort/paging model, Q-QG-2). Phase 3's Deferred list has a real Escape bug (every always-editor
+pushes an Escape layer) — fold into Phase 6 (keyboard & a11y) or fix early if it blocks Phase 4 tests.
 
 Next, in order (original list):
 1. Small commit: advanced row toolbar on `/components/quickgrid-editable` is clipped off-screen at the

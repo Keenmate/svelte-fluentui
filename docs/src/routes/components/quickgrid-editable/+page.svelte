@@ -1318,9 +1318,9 @@ ${'<'}QuickGrid
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>immediate</td><td>Load once when grid mounts, cache forever</td></tr>
-				<tr><td>edit-start</td><td>Load when cell enters edit mode (default)</td></tr>
-				<tr><td>dropdown-open</td><td>Load when dropdown opens (lazy)</td></tr>
+				<tr><td>immediate</td><td>Load for every displayed, editable row (with that row) as it is shown — again when the row object is replaced. The editor opens without waiting; use it for <code>editTrigger="always"</code> selects. Memoize in the callback if the options don't depend on the row</td></tr>
+				<tr><td>edit-start</td><td>Load each time a cell enters edit mode; the cell shows a loading indicator until the editor opens (default)</td></tr>
+				<tr><td>dropdown-open</td><td>Load when the editor's dropdown first opens (lazy); the list shows "Loading..." meanwhile</td></tr>
 			</tbody>
 		</table>
 		<pre>{`const columns = [
@@ -1687,7 +1687,7 @@ function clearError(rowKey, field) {
 				<tr><td>max</td><td>number</td><td>number</td><td>Maximum value</td></tr>
 				<tr><td>step</td><td>number</td><td>number</td><td>Step increment</td></tr>
 				<tr><td>maxLength</td><td>number</td><td>text</td><td>Maximum character length</td></tr>
-				<tr><td>searchCallback</td><td>(&#123;term, row, column, signal&#125;) =&gt; Promise&lt;QuickGridEditorOption[]&gt;</td><td>autocomplete</td><td>Server-side search for the autocomplete editor</td></tr>
+				<tr><td>searchCallback</td><td>(&#123;term, row, column, signal&#125;) =&gt; Promise&lt;QuickGridEditorOption[]&gt;</td><td>autocomplete</td><td>Server-side search for the autocomplete editor. Typed text that isn't picked commits as free text on Enter / blur; reopening shows the cell's display text (<code>getDisplayValueCallback</code>) when the value isn't among the options</td></tr>
 				<tr><td>valueMember</td><td>string</td><td>select, autocomplete</td><td>Property to use as value (default: "value")</td></tr>
 				<tr><td>displayMember</td><td>string</td><td>select, autocomplete</td><td>Property to use for display (default: "label")</td></tr>
 				<tr><td>allowEmpty</td><td>boolean</td><td>select, autocomplete</td><td>Allow null/empty selection</td></tr>
@@ -1701,7 +1701,7 @@ function clearError(rowKey, field) {
 				<tr><td>falseValue</td><td>any</td><td>checkbox</td><td>Value to store when unchecked (default: false)</td></tr>
 				<tr><td>minDate</td><td>Date | string</td><td>date</td><td>Minimum selectable date</td></tr>
 				<tr><td>maxDate</td><td>Date | string</td><td>date</td><td>Maximum selectable date</td></tr>
-				<tr><td>outputFormat</td><td>"date" | "iso" | "timestamp"</td><td>date</td><td>How to store the date value</td></tr>
+				<tr><td>outputFormat</td><td>"date" | "iso" | "timestamp"</td><td>date</td><td>How to store the picked day (local midnight): a Date, its ISO string, or its timestamp</td></tr>
 			</tbody>
 		</table>
 	</Card>

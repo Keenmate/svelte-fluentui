@@ -5,6 +5,7 @@
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
 	import {AsyncSearch} from "../helpers/async-search.svelte.js"
 	import {containsText, startsWithText} from "../helpers/text.js"
+	import {parseLocalDate, toLocalDateString} from "../helpers/date.js"
 
 	import type {
 		QuickGridEditorType as EditorType,
@@ -16,13 +17,17 @@
 		type: EditorType
 		value: unknown
 		options?: EditorOptions
-		/** Commits the edited value. */
-		onCommit: (ctx: {value: unknown}) => void
+		/** Commits the edited value; may return the (validation) promise. */
+		onCommit: (ctx: {value: unknown}) => void | Promise<void>
 		/** Abandons the edit. */
 		onCancel: () => void
 		skipBlurCommit?: boolean
 		skipKeyboardCommit?: boolean
 		initialSearchQuery?: string
+		/** Focus the editor on mount (an edit the user just started). Off for "always" editors. */
+		autofocus?: boolean
+		/** What the cell shows for `value` — the autocomplete text when no option has the value. */
+		displayText?: string
 	}
 
 	let {
@@ -33,7 +38,9 @@
 		onCancel,
 		skipBlurCommit = false,
 		skipKeyboardCommit = false,
-		initialSearchQuery = ""
+		initialSearchQuery = "",
+		autofocus = false,
+		displayText = undefined
 	}: Props = $props()
 
 	// Internal state
@@ -49,7 +56,10 @@
 	$effect(() => {
 		const next = value
 		untrack(() => {
-			if (type === "checkbox" || !editorElement?.contains(document.activeElement)) internalValue = next
+			if (type === "checkbox" || !editorElement?.contains(document.activeElement)) {
+				internalValue = next
+				if (type === "autocomplete") filterText = labelFor(next)
+			}
 		})
 	})
 	// Set when Escape fires so the cascading blur (Esc removes focus from <input>
@@ -69,6 +79,7 @@
 	let dropdownOptions = $state<EditorOption[]>([])
 	let filterText = $state("")
 	let isUserFiltering = $state(false)  // True when user is actively typing to filter (vs displaying selected value)
+	let autocompleteTyped = false  // the autocomplete input holds text the user typed (not a picked label)
 	let justSelected = $state(false)  // True briefly after selection to prevent dropdown reopening on refocus
 	let inputElement: HTMLInputElement | undefined = $state()
 	let dropdownElement: HTMLDivElement | undefined = $state()
@@ -111,6 +122,19 @@
 
 	// Get effective options (static or loaded)
 	let effectiveOptions = $derived(loadedOptions.length > 0 ? loadedOptions : (options.options || []))
+	// What autocomplete lists before the user searches
+	const autocompleteInitialOptions = () => options.initialOptions || effectiveOptions
+
+	// The text for a value: its option's label, else what the cell shows (e.g. a value that
+	// came from searchCallback), else the value itself.
+	function labelFor(v: unknown): string {
+		if (v === null || v === undefined) return ""
+		const option = [...effectiveOptions, ...(options.initialOptions || [])].find(opt => getOptionValue(opt) === v)
+		if (option) return getOptionLabel(option)
+		return v === value && displayText !== undefined ? displayText : String(v)
+	}
+	// svelte-ignore state_referenced_locally
+	if (type === "autocomplete") filterText = labelFor(value)
 
 	// Filtered options for combobox (filters based on filterText only when user is actively typing)
 	let filteredOptions = $derived(() => {
@@ -140,7 +164,7 @@
 	const search = new AsyncSearch<EditorOption>({
 		delay: () => options.debounceMs ?? 300,
 		search: (query, signal) => {
-			const initialOpts = options.initialOptions || options.options || []
+			const initialOpts = autocompleteInitialOptions()
 			if (query.length < (options.minSearchLength ?? 1)) return initialOpts
 			if (!options.onSearch) {
 				return initialOpts.filter(opt => containsText(getOptionLabel(opt), query, options.searchBehavior))
@@ -174,7 +198,12 @@
 		if (dropdownOpen) return
 		dropdownOpen = true
 		nav.reset()
+		void loadOnOpen()
+		showOptions()
+	}
 
+	// Fill the open list (on open, and again when "dropdown-open" options arrive).
+	function showOptions() {
 		if (type === "select" || type === "combobox") {
 			dropdownOptions = effectiveOptions
 			// Pre-select current value
@@ -188,7 +217,7 @@
 			}
 		} else if (type === "autocomplete") {
 			// For autocomplete, show initial options if available
-			const initialOpts = options.initialOptions || options.options || []
+			const initialOpts = autocompleteInitialOptions()
 			dropdownOptions = initialOpts
 			// Initialize filter text with current display value if exists
 			if (!filterText && internalValue !== null && internalValue !== undefined) {
@@ -214,6 +243,7 @@
 		internalValue = newValue
 		filterText = getOptionLabel(option)
 		isUserFiltering = false  // Not filtering, just displaying selected value
+		autocompleteTyped = false
 		justSelected = true  // Prevent dropdown from reopening on refocus
 		closeDropdown()
 		commitValue(newValue)
@@ -252,9 +282,7 @@
 					selectDropdownOption(opts[nav.index])
 				} else if (type === "autocomplete" && filterText.trim()) {
 					// Autocomplete can commit freeform text
-					internalValue = filterText.trim()
-					closeDropdown()
-					commitValue(filterText.trim())
+					void commitTypedText()
 				}
 				break
 			case "Tab":
@@ -337,6 +365,7 @@
 	function handleAutocompleteInput(e: Event) {
 		const input = e.target as HTMLInputElement
 		filterText = input.value
+		autocompleteTyped = true
 
 		if (!dropdownOpen) {
 			// Open dropdown but don't show initial options when user is typing
@@ -363,9 +392,10 @@
 		}
 	}
 
-	// Focus the editor when mounted
+	// Focus the editor when mounted — only an edit the user just started, never "always"
+	// editors (each would steal focus on load / page / sort, the last one winning).
 	$effect(() => {
-		if (editorElement) {
+		if (editorElement && autofocus) {
 			const input = editorElement.querySelector('input, select, textarea') as HTMLElement
 			if (input) {
 				input.focus({ preventScroll: true })
@@ -385,9 +415,11 @@
 		}
 	})
 
-	// Handle initialSearchQuery for dropdown types
+	// Handle initialSearchQuery for dropdown types — once per edit: untracked, or closing the
+	// dropdown (dropdownOpen / filterText change) would re-run this and reopen it.
 	$effect(() => {
-		if (initialSearchQuery && initialSearchQuery.length > 0) {
+		const query = initialSearchQuery
+		if (query) untrack(() => {
 			if (type === "select") {
 				// Jump to option starting with the letter
 				const idx = effectiveOptions.findIndex(opt =>
@@ -407,30 +439,33 @@
 				// Open with empty options and start debounced search
 				// Don't show initial options when user started typing
 				filterText = initialSearchQuery
+				autocompleteTyped = true
 				dropdownOpen = true
 				dropdownOptions = [] // Start empty - no flash of initial options
 				nav.reset()
 				search.schedule(initialSearchQuery)
 			}
-		}
+		})
 	})
 
-	// Handle dropdown-open loading for select
-	async function handleDropdownFocus() {
+	// optionsLoadTrigger "dropdown-open": load once per edit, when the list first opens
+	async function loadOnOpen() {
 		if (
-			options.loadOptions &&
-			options.optionsLoadTrigger === "dropdown-open" &&
-			!hasLoadedOnDropdown
-		) {
-			isLoadingOptions = true
-			try {
-				loadedOptions = await options.loadOptions()
-				hasLoadedOnDropdown = true
-			} catch (error) {
-				console.error("Failed to load options:", error)
-			} finally {
-				isLoadingOptions = false
-			}
+			!options.loadOptions ||
+			options.optionsLoadTrigger !== "dropdown-open" ||
+			hasLoadedOnDropdown ||
+			isLoadingOptions
+		) return
+		isLoadingOptions = true
+		try {
+			loadedOptions = await options.loadOptions()
+			hasLoadedOnDropdown = true
+			// Refresh the open list (autocomplete only while it lists its initial options)
+			if (dropdownOpen && (type !== "autocomplete" || !autocompleteTyped)) showOptions()
+		} catch (error) {
+			console.error("Failed to load options:", error)
+		} finally {
+			isLoadingOptions = false
 		}
 	}
 
@@ -465,16 +500,21 @@
 	// this its blur would commit the same value a second time. The checkbox is exempt:
 	// with checkboxAlwaysEditable one editor instance takes many toggles.
 	let hasCommitted = false
-	function commitValue(newValue: unknown) {
-		if (hasCommitted) return
+	let lastCommit: Promise<void> | void = undefined
+	function commitValue(newValue: unknown): Promise<void> | void {
+		if (hasCommitted) return lastCommit
 		if (type !== "checkbox") hasCommitted = true
-		onCommit({value: newValue})
+		lastCommit = onCommit({value: newValue})
+		return lastCommit
 	}
 
 	// Focus coming in from outside starts a new edit: "always" cells keep one editor
 	// instance for life, so the one-commit guard must re-arm here, not only on mount.
 	function handleFocusIn(e: FocusEvent) {
-		if (!editorElement?.contains(e.relatedTarget as Node | null)) hasCommitted = false
+		if (!editorElement?.contains(e.relatedTarget as Node | null)) {
+			hasCommitted = false
+			lastCommit = undefined
+		}
 	}
 
 	function handleBlur(e: FocusEvent) {
@@ -488,19 +528,52 @@
 		}
 	}
 
-	function commit() {
-		let finalValue = internalValue
+	// Number input → number | null: empty / unparsable → null, decimalPlaces applied.
+	function parseNumber(v: unknown): number | null {
+		if (v === null || v === undefined || v === "") return null
+		const n = typeof v === "number" ? v : Number(v)
+		if (!Number.isFinite(n)) return null
+		return options.decimalPlaces !== undefined ? Number(n.toFixed(options.decimalPlaces)) : n
+	}
 
-		// Apply decimal places for number
-		if (type === "number" && options.decimalPlaces !== undefined && typeof finalValue === "number") {
-			finalValue = Number(finalValue.toFixed(options.decimalPlaces))
-		}
+	function isUnchanged(next: unknown): boolean {
+		if (next === value) return true
+		if ((next === null || next === undefined) && (value === null || value === undefined || value === "")) return true
+		// Dates compare by calendar day (a Date and its "yyyy-mm-dd" are the same value)
+		return type === "date" && next !== null && toLocalDateString(next) === toLocalDateString(value)
+	}
 
-		if (finalValue !== value) {
-			commitValue(finalValue)
-		} else {
-			onCancel()
+	/**
+	 * Commits what the editor holds — the one commit path for blur, Enter and QuickGrid's
+	 * Tab / arrow keys. An unchanged value cancels instead. Resolves when the grid's commit
+	 * (validation) settles.
+	 */
+	export async function commit(): Promise<void> {
+		if (hasCommitted) return lastCommit
+		// A checkbox commits on every toggle; nothing is pending
+		if (type === "checkbox") {
+			if (lastCommit === undefined) onCancel()
+			return lastCommit
 		}
+		if (type === "autocomplete" && autocompleteTyped) return commitTypedText()
+		const finalValue = type === "number" ? parseNumber(internalValue) : internalValue
+		if (isUnchanged(finalValue)) onCancel()
+		else return commitValue(finalValue)
+	}
+
+	// Autocomplete free text: the option whose label it is, else the text itself (empty → null).
+	function commitTypedText(): Promise<void> | void {
+		const text = filterText.trim()
+		const match = dropdownOptions.find(opt => getOptionLabel(opt) === text)
+		const next = text === "" ? null : match ? getOptionValue(match) : text
+		autocompleteTyped = false
+		closeDropdown()
+		if (isUnchanged(next)) {
+			filterText = labelFor(value)
+			return onCancel()
+		}
+		internalValue = next
+		return commitValue(next)
 	}
 
 	function handleCheckboxChange() {
@@ -511,60 +584,22 @@
 		commitValue(internalValue)
 	}
 
+	// Typing in a date input fires `change` per completed segment (year 0002 → 0020 → 0202 →
+	// 2024), so typed dates wait for Enter / Tab / blur; a picker pick commits at once.
+	let dateKeyDown = false
+
 	function handleDateChange(e: Event) {
-		const input = e.target as HTMLInputElement
-		const dateStr = input.value
-
-		if (!dateStr) {
-			internalValue = null
-			commitValue(null)
-			return
-		}
-
-		const date = new Date(dateStr)
-		const outputFormat = options.outputFormat || "date"
-
-		switch (outputFormat) {
-			case "iso":
-				internalValue = date.toISOString()
-				break
-			case "timestamp":
-				internalValue = date.getTime()
-				break
-			case "date":
-			default:
-				internalValue = date
-				break
-		}
-		commitValue(internalValue)
+		const date = parseLocalDate((e.target as HTMLInputElement).value)
+		if (!date) internalValue = null
+		else if (options.outputFormat === "iso") internalValue = date.toISOString()
+		else if (options.outputFormat === "timestamp") internalValue = date.getTime()
+		else internalValue = date
+		if (!dateKeyDown) void commit()
 	}
 
-	// Format date value for input
-	function formatDateValue(val: unknown): string {
-		if (!val) return ""
-		if (val instanceof Date) {
-			return val.toISOString().split('T')[0]
-		}
-		if (typeof val === "number") {
-			return new Date(val).toISOString().split('T')[0]
-		}
-		if (typeof val === "string") {
-			// Try parsing as date
-			const date = new Date(val)
-			if (!isNaN(date.getTime())) {
-				return date.toISOString().split('T')[0]
-			}
-		}
-		return String(val)
-	}
-
-	// Format min/max date for input
+	// min/max as the input's local "yyyy-mm-dd"
 	function formatConstraintDate(val: Date | string | undefined): string | undefined {
-		if (!val) return undefined
-		if (val instanceof Date) {
-			return val.toISOString().split('T')[0]
-		}
-		return val
+		return toLocalDateString(val) || undefined
 	}
 
 </script>
@@ -637,10 +672,13 @@
 		<input
 			type="date"
 			class="cell-input"
-			value={formatDateValue(internalValue)}
+			value={toLocalDateString(internalValue)}
 			min={formatConstraintDate(options.minDate)}
 			max={formatConstraintDate(options.maxDate)}
 			onchange={handleDateChange}
+			onkeydown={() => (dateKeyDown = true)}
+			onkeyup={() => (dateKeyDown = false)}
+			onblur={() => (dateKeyDown = false)}
 		/>
 	{:else if type === "autocomplete"}
 		<div class="cell-autocomplete-wrapper">
@@ -682,7 +720,7 @@
 						</div>
 					{/each}
 					{#if opts.length === 0}
-						<div class="cell-dropdown-empty">No matching options</div>
+						<div class="cell-dropdown-empty">{isLoadingOptions ? "Loading..." : "No matching options"}</div>
 					{/if}
 				{:else}
 					{#if options.allowEmpty && type === "select"}
@@ -714,7 +752,7 @@
 					{/each}
 					{#if dropdownOptions.length === 0}
 						<div class="cell-dropdown-empty">
-							{search.loading ? "Searching..." : "No options"}
+							{isLoadingOptions ? "Loading..." : search.loading ? "Searching..." : "No options"}
 						</div>
 					{/if}
 				{/if}
