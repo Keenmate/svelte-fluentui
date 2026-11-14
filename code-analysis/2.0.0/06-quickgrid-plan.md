@@ -185,3 +185,30 @@ Space with `trueValue`; axe scan; no listeners after unmount.
 Phase 1 → 2 → 3 (data correctness; each item test-first) → 4 → 5 → 6 → 7. Phases 1–3 touch the same
 code (editing + identity) and should be one agent; 4 and 5 are independent and can run in parallel
 once 1 lands. The GridCellEditor → real dropdowns refactor comes after Phase 3.
+
+---
+
+## Handoff — 2026-11-14 (resume here after compaction)
+
+State: Phase 1 done (`879dbb6`). Branch `prod` is ahead of origin and **not pushed** (needs the user's
+"push" in that turn; a previous push attempt was blocked by the permission classifier).
+All decisions Q-QG-1…5 recorded in `questions.md`.
+
+Next, in order:
+1. Small commit: advanced row toolbar on `/components/quickgrid-editable` is clipped off-screen at the
+   start side ("Move up" unclickable) — find why (PositioningRegion/toolbar anchoring), fix, e2e.
+2. Q-QG-4: `idMember` defaults to `"id"` when rows have an `id` field (keep warning otherwise);
+   release-notes row.
+3. **Phase 2** (editing state machine), test-first, items 2.1–2.10 above plus Phase 1 leftovers
+   (callbacks/context-menu `cellValue`/Space toggle read the item not the draft; key change mid-edit).
+   Key design: one edit token per `startEdit`; per-cell overrides of invalid values in a `SvelteMap`
+   instead of whole-row drafts; `onRowChange` gets `draftRow` (item + all overrides) + `invalidFields`
+   (`{field, error, value}[]`) + `isRowValid` (Q-QG-1); every commit path validates; export
+   `discardDrafts(rowKey?)`. Then Phase 3, then 4 (web-grid sort/paging model, Q-QG-2), 5, 6, 7.
+
+Way of working that worked: one background agent per phase with a precise spec + mandatory
+fail-before/pass-after tests; I review the diff, run both `npm run check`s and the full suite, then commit.
+Testing gotcha: the dev server (port 12900, started from repo root with `npm run dev` in the
+background) misses `git checkout` — swap file contents and confirm with
+`curl -s localhost:12900/@fs/<abs path> | grep -c <marker>`. Known flake: Autocomplete
+outside-click test under full-suite load (passes alone).

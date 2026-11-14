@@ -252,3 +252,11 @@ toolbar — exactly the pattern the docs use. Options: (a) keep the console warn
 **Q-QG-5 — next step.** Phase 2 (editing state machine: edit token, per-cell draft overrides,
 `invalidFields` / `isRowValid` per Q-QG-1, validation on every commit path) is next per the plan. Go?
 Also: fix the clipped advanced row toolbar on the editable docs page now (small, pre-existing) or in Phase 5?
+
+**Q-QG-4 decided 2026-11-14 (user: fine):** (c) + (a) — `idMember` defaults to `"id"` when the rows
+have an `id` field; keep the console warning (and docs note) for editable grids with neither.
+Breaking-ish: document in release notes. Do it at the start of Phase 2.
+
+**Q-QG-5 decided 2026-11-14 (user: ok):** go with Phase 2. Fix the clipped advanced row toolbar on the
+editable docs page as a small separate commit first (pre-existing; may move to Phase 5 if it turns out
+to need the toolbar rework).
