@@ -24,6 +24,8 @@
 	let sortedLog = $state<string[]>([])
 	let bumpRows = $state([{id: 1, name: "Apple", bumps: 0}, {id: 2, name: "Banana", bumps: 0}])
 	let bumpLog = $state<string[]>([])
+	let idRows = $state([{id: 7, name: "Alpha"}, {id: 8, name: "Bravo"}])
+	let idLog = $state<string[]>([])
 
 	const columns = [
 		{field: "name", title: "Name", editable: true, editor: "text" as const,
@@ -115,6 +117,14 @@
 			bumpRows = bumpRows.map((r) => r.id === id ? {...r, bumps: r.bumps + 1} : r)
 		}}]} />
 	<output id="bump-log">{bumpLog.join(" | ")}</output>
+</div>
+
+<!-- No idMember, but the rows have `id`: it becomes the row key, so state survives immutable updates. -->
+<div id="default-id-wrap">
+	<QuickGrid items={idRows} columns={[nameColumn]} editable editTrigger="dblclick"
+		onRowChange={({rowKey}) => idLog.push(rowKey)} />
+	<button type="button" onclick={() => (idRows = idRows.map((r) => ({...r})))}>Replace rows</button>
+	<output id="default-id-log">{idLog.join(" | ")}</output>
 </div>
 
 <!-- A toolbar wider than the space beside the grid: must go on top, not off-screen. -->

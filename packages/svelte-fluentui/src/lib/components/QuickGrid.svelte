@@ -86,9 +86,10 @@
 		/** Fires when the cell context menu opens. */
 		onContextMenuOpen?: (ctx: ContextMenuContext<T>) => void
 		/** Field that uniquely identifies a row; becomes `rowKey` and keys drafts, invalid cells,
-		 *  the edited / focused cell and the row toolbar. Without it the grid uses `treePathMember`
-		 *  (tree mode), else the row object's identity — which resets that state for rows you
-		 *  replace with new objects (`items.map(...)`). */
+		 *  the edited / focused cell and the row toolbar. Defaults to `"id"` when the rows have an
+		 *  `id` field. Without either the grid uses `treePathMember` (tree mode), else the row
+		 *  object's identity — which resets that state for rows you replace with new objects
+		 *  (`items.map(...)`). */
 		idMember?: keyof T
 		// Tree mode (ltree-style path hierarchy)
 		treePathMember?: keyof T              // Required to enable tree mode — field holding the path string ("1.2.3", "/1/2/3", "C:\\foo\\bar")
@@ -254,10 +255,18 @@
 	const generatedRowKeys = new WeakMap<object, string>()
 	let generatedRowKeyCount = 0
 
-	// Stable key for a row: idMember → treePathMember → row object identity.
+	// idMember, else `"id"` when the rows have an `id` field (and no treePathMember identifies them).
+	const rowIdMember = $derived.by((): keyof T | undefined => {
+		if (idMember !== undefined) return idMember
+		if (treePathMember !== undefined) return undefined
+		const first = items[0]
+		return first !== null && typeof first === "object" && "id" in first ? "id" as keyof T : undefined
+	})
+
+	// Stable key for a row: idMember (or `id`) → treePathMember → row object identity.
 	function getRowKey(item: T): string {
-		if (idMember !== undefined) {
-			const v = item[idMember]
+		if (rowIdMember !== undefined) {
+			const v = item[rowIdMember]
 			if (v !== undefined && v !== null) return String(v)
 		}
 		if (treePathMember !== undefined) {
@@ -294,13 +303,13 @@
 	$effect(() => {
 		if (idWarningEmitted) return
 		if (!editable) return
-		if (idMember !== undefined || treePathMember !== undefined) return
+		if (items.length === 0 || rowIdMember !== undefined || treePathMember !== undefined) return
 		// eslint-disable-next-line no-console
 		console.warn(
-			"[QuickGrid] No `idMember` was provided while `editable` is enabled. Row state " +
+			"[QuickGrid] No `idMember` was provided and the rows have no `id` field while `editable` is enabled. Row state " +
 			"(drafts, invalid cells, in-progress edits) is keyed by row object identity, so it " +
 			"is dropped for rows you replace with new objects (e.g. `items = items.map(...)`). " +
-			"Pass `idMember=\"id\"` (or any field that uniquely identifies a row) to keep it. " +
+			"Pass `idMember` (any field that uniquely identifies a row) to keep it. " +
 			"In tree mode, `treePathMember` is also accepted as the identity."
 		)
 		idWarningEmitted = true

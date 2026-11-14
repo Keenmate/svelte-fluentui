@@ -63,6 +63,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **QuickGrid:** `showRowActions`, `rowActions` (deprecated aliases) → removed — use `showRowToolbar`, `rowToolbar`
 - **QuickGrid context ctx:** `colIndex` → `columnIndex`
 - **QuickGrid event / callback contexts** (`onRowChange`, `onEditStart`, `onEditCancel`, `onValidationError`, `onAction`, `beforeActionCallback`, `onContextMenuOpen`, `beforeCommitCallback`, `editCallback`, toolbar / menu item callbacks): `rowIndex` → `viewIndex` (position in the displayed list), plus new `itemIndex` (index in `items`, −1 if gone) and `rowKey`; write back with `items[itemIndex]`
+- **QuickGrid `idMember`** defaults to `"id"` when the rows have an `id` field (outside tree mode), so `rowKey` / `invalidCells[].rowKey` become that id and edit state survives immutable updates; rows with neither keep the per-object key and the console warning
 - **TopNav:** per-item `onClick()` only → item `onClick(detail)` + `onAction` + `beforeActionCallback` (can veto links)
 - **TopNav items:** `{label, href, icon (text glyph), onClick()}` → action item `{text, href?, icon (Fluent name or snippet), isDisabled, onClick(detail)}` (type `TopNavItem`)
 - **Toast:** `ontopactionclick()`, `onprimaryactionclick()`, `onsecondaryactionclick()` → one `onAction(detail)` (`detail.id` says which) + `beforeActionCallback`

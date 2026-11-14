@@ -72,7 +72,7 @@
 		{name: "row", type: "T", description: "The full data object for the right-clicked row"},
 		{name: "viewIndex", type: "number", description: "Position of the row in the displayed list (after filter, sort, tree collapse and paging) — not an index into items"},
 		{name: "itemIndex", type: "number", description: "Index of the row in items (−1 if it is no longer there) — use this to update your data"},
-		{name: "rowKey", type: "string", description: "Stable row key: idMember, else treePathMember, else a key generated per row object"},
+		{name: "rowKey", type: "string", description: "Stable row key: idMember (default \"id\" when rows have one), else treePathMember, else a key generated per row object"},
 		{name: "columnIndex", type: "number", description: "Zero-based index of the clicked column"},
 		{name: "column", type: "QuickGridColumn<T>", description: "The column definition object for the clicked cell"},
 		{name: "cellValue", type: "unknown", description: "The raw value of the clicked cell"}

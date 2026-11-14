@@ -1634,7 +1634,7 @@ function clearError(rowKey, field) {
 				<tr><td>source</td><td>"row-toolbar" | "context-menu"</td><td>Where it was clicked</td></tr>
 				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
 				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
-				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, else a generated per-object key)</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, default <code>"id"</code> when rows have one, else a generated per-object key)</td></tr>
 				<tr><td>row</td><td>T</td><td>The row data</td></tr>
 				<tr><td>column / columnIndex / cellValue</td><td></td><td>The right-clicked cell (context menu only)</td></tr>
 			</tbody>
@@ -1657,7 +1657,7 @@ function clearError(rowKey, field) {
 				<tr><td>row</td><td>T</td><td>Full row data</td></tr>
 				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
 				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
-				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, else a generated per-object key)</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, default <code>"id"</code> when rows have one, else a generated per-object key)</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name being edited</td></tr>
 				<tr><td>commit</td><td>(newValue) =&gt; void</td><td>Call to save new value (fires onRowChange)</td></tr>
 				<tr><td>cancel</td><td>() =&gt; void</td><td>Call to cancel editing</td></tr>
@@ -1721,7 +1721,7 @@ function clearError(rowKey, field) {
 				<tr><td>draftRow</td><td>T</td><td>Draft row with user's changes (including invalid values)</td></tr>
 				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
 				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
-				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, else a generated per-object key)</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, default <code>"id"</code> when rows have one, else a generated per-object key)</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name that changed</td></tr>
 				<tr><td>oldValue</td><td>any</td><td>Previous value</td></tr>
 				<tr><td>newValue</td><td>any</td><td>New value (may be transformed)</td></tr>
@@ -1749,7 +1749,7 @@ function clearError(rowKey, field) {
 				<tr><td>row</td><td>T</td><td>Full row data</td></tr>
 				<tr><td>viewIndex</td><td>number</td><td>Position in the displayed list (after filter, sort, tree collapse, paging)</td></tr>
 				<tr><td>itemIndex</td><td>number</td><td>Index of the row in <code>items</code> (−1 if gone) — use it to update your data</td></tr>
-				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, else a generated per-object key)</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable row key (<code>idMember</code>, default <code>"id"</code> when rows have one, else a generated per-object key)</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name being edited</td></tr>
 			</tbody>
 		</table>
@@ -1788,7 +1788,7 @@ function clearError(rowKey, field) {
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>rowKey</td><td>string</td><td>Stable key of the invalid cell's row (idMember / tree path / generated per row object) — the same rowKey events carry</td></tr>
+				<tr><td>rowKey</td><td>string</td><td>Stable key of the invalid cell's row (idMember or <code>id</code> / tree path / generated per row object) — the same rowKey events carry</td></tr>
 				<tr><td>field</td><td>string</td><td>Field name of the invalid cell</td></tr>
 				<tr><td>error</td><td>string</td><td>Validation error message</td></tr>
 			</tbody>

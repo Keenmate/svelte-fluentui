@@ -121,6 +121,15 @@ test("no idMember: an invalid draft on page 1 does not show on page 2", async ({
 	await expect(wrap.locator("tbody td.validation-error")).toHaveCount(1)
 })
 
+test("no idMember but rows have id: id is the row key, so an invalid cell survives an immutable update", async ({page}) => {
+	const wrap = page.locator("#default-id-wrap")
+	await editCell(wrap, "Alpha", "A")
+	await expect(page.locator("#default-id-log")).toHaveText("7")
+	await expect(wrap.locator("tbody td.validation-error")).toHaveCount(1)
+	await wrap.getByRole("button", {name: "Replace rows"}).click()
+	await expect(wrap.locator("tbody td.validation-error")).toHaveCount(1)
+})
+
 test("row toolbar keeps working when the consumer replaces items immutably", async ({page}) => {
 	const wrap = page.locator("#bump-wrap")
 	// Scroll first: a scroll closes the toolbar, and hover's own scroll could land after mouseenter.

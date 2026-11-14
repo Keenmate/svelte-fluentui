@@ -16,7 +16,7 @@ export type QuickGridRowIdentity = {
 	viewIndex: number
 	/** Index of the row object in `items`, or −1 when it is no longer there. */
 	itemIndex: number
-	/** Stable row key: `idMember`, else `treePathMember`, else a key generated per row object.
+	/** Stable row key: `idMember` (default `"id"` when rows have one), else `treePathMember`, else a key generated per row object.
 	 * The same key `invalidCells` uses. */
 	rowKey: string
 }
