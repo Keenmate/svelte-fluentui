@@ -25,9 +25,12 @@ Monorepo: the library lives in `packages/svelte-fluentui/`, the docs/demo site i
 
 - `packages/svelte-fluentui/src/lib/` - Main library code that gets packaged
 - `packages/svelte-fluentui/src/lib/components/` - Svelte components (custom and FluentUI wrappers)
-- `packages/svelte-fluentui/src/lib/components/index.ts` - Main component exports
+- `packages/svelte-fluentui/src/lib/index.ts` - The single public entry point (all component, type and helper exports)
 - `packages/svelte-fluentui/src/lib/action-items/` - Shared ActionItem model (menus, toolbars, dialog/palette actions)
-- `packages/svelte-fluentui/src/lib/helpers/` - Shared helpers (`layer-stack.ts` Escape routing, `attrs.ts`, `locale.ts`, `date.ts`)
+- `packages/svelte-fluentui/src/lib/helpers/` - Shared helpers: `layer-stack.ts` (Escape routing), `dismiss.ts` (`dismissOnOutside` light dismiss), `listbox-nav.svelte.ts` (`ListNav` keyboard cursor), `text.ts` (`searchBehavior` matching), `debounce.ts`, `async-search.svelte.ts`, `option-dom.ts` / `option-groups.ts`, `chip-nav.ts`, `button-like.ts`, `attrs.ts`, `locale.ts`, `date.ts`
+- `packages/svelte-fluentui/src/lib/actions/portal.ts` - `portal` / `portalHost` (popups portal into the anchor's `fluent-dialog`, else `<body>`)
+- Large components are split into internal folders: `components/quickgrid/`, `components/inputfile/`, `components/tabs/`, `components/layout/multi-splitter/` (not exported; the entry `.svelte` file stays the public component)
+- Built-in user-facing strings go through a `labels` prop (`Partial<XLabels>` merged over an exported `defaultXLabels`, in `X.labels.ts`)
 - `docs/src/routes/` - Demo/showcase pages for development and testing
 
 ### Component Organization
@@ -36,7 +39,7 @@ Monorepo: the library lives in `packages/svelte-fluentui/`, the docs/demo site i
 - Navigation components: `packages/svelte-fluentui/src/lib/components/nav/` (AppBar, NavMenu, NavItem, etc.)
 - Data components: QuickGrid (custom grid with sorting, filtering, pagination)
 - Icons: `packages/svelte-fluentui/src/lib/components/icons/`
-- FluentUI utilities: `packages/svelte-fluentui/src/lib/fluent-ui/` (calendar utilities, constants, setup)
+- FluentUI utilities: `packages/svelte-fluentui/src/lib/fluent-ui/` (calendar utilities, constants, element registration)
 
 ### Styling
 - Uses SCSS for component-specific styling
@@ -45,10 +48,12 @@ Monorepo: the library lives in `packages/svelte-fluentui/`, the docs/demo site i
 - Main styles: `packages/svelte-fluentui/src/lib/main.scss`
 - Component styles: `packages/svelte-fluentui/src/lib/assets/styles/components.scss`
 - FluentUI-specific styles: `packages/svelte-fluentui/src/lib/assets/styles/fluent-ui/`
+- Shared style primitives: `assets/styles/components/_primitives.scss` (`.fluent-field-control`, `.fluent-popup-surface`, `.fluent-required-indicator`, `.fluent-focus-ring`, danger menu items, `fluent-spin` / `fluent-pulse`) — use these instead of copying field/popup/focus styles
+- Reboot (element normalisation) is opt-in since 2.0: `import "svelte-fluentui/reboot.css"` (`src/lib/reboot.css`), not part of the main bundle
+- Colours come from the `--fluent-color-<name>(-foreground|-contrast|-tint)` palette; z-index from the `--fluent-z-*` scale (no numeric fallbacks)
 
 ### Key Files
-- `packages/svelte-fluentui/src/lib/index.ts` - Main library entry point (exports from components/index.js)
-- `packages/svelte-fluentui/src/lib/components/index.ts` - All component exports
+- `packages/svelte-fluentui/src/lib/index.ts` - Main library entry point (every public export)
 - Package exports to `dist/` directory for publishing
 
 ## Dependencies
@@ -84,6 +89,7 @@ These are built from scratch using Svelte, styled with FluentUI design tokens:
 - **Label** - Lighter tag-style indicator (tinted fill + coloured border, medium weight); `outline` variant, six semantic colours (primary/secondary/success/warning/danger/info), extra-small–extra-large size scale, `icon` slot. Colours resolve from the shared `--fluent-color-<name>-*` palette (see fluent-blazor-compat.scss).
 - **CompositeBadge** - Three-section `[icon][label][button]` chip (notification pills, status + count, dismissible chips). Base `color` applies to all sections; `labelColor`/`buttonColor` override the middle/right sections independently. `onLabelClick`/`onButtonClick` events, default `×` button glyph.
 - **BadgeGroup** - Flex-wrap container that hides child badges past a per-instance `maxVisibleBadgeCount` (default 5), always keeping the last child visible for a "+N more" tail (hidden badges stay in the DOM); `showAll` reveals everything. Limit applied via an effect + `MutationObserver`.
+- **Chip** - Removable tag (the selection chip Combobox / Autocomplete multi-select render); public since 2.0. `text`, `showRemove`, `removeFocusable` (× in the Tab order for standalone chips), `onRemove({sourceEvent})`, `labels`; styled via `--fluent-chip-*`.
 - **Toast** - Notification/toast component (uses fluent-anchor but custom layout)
 - **Calendar** - Date picker with custom FluentUI calendar implementation
 - **DatePicker** - Date selection with calendar popup (inspired by FluentUI Blazor)

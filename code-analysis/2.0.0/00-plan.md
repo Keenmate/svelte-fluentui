@@ -204,3 +204,44 @@ commit with CHANGELOG + `release-notes/2.0.0-rc01.md` rows for breaking changes.
 `npm run dev` from repo root on port 12900 (watcher misses git checkout — swap file contents and
 confirm with `curl -s localhost:12900/@fs/<abs path> | grep -c <marker>`). Known flakes under load
 (pass alone): Autocomplete outside-click, AppBar count badge, Combobox open-at-load.
+
+## Handoff — 2026-11-15 evening (unattended run; resume here)
+
+Done today (commits 104deb1 … abc8054, all on `prod`, **not pushed**; full e2e 389 passing + 2 opt-in perf
+tests skipped; both checks clean):
+- Phase 3: popups on `dismissOnOutside` (pickers, menus, Tabs overflow, InputFile), MenuButton/ContextMenu
+  keyboard, Tabs RTL, CommandPalette `searchBehavior`; a11y pass (listbox ARIA, Calendar APG grid,
+  picker dialogs, Tooltip, CommandPalette, keyboard-operable clickable badges/NavItem); popups portal
+  into the anchor's `fluent-dialog` (`portalHost`); context-menu key closes ContextMenu.
+- Phase 4 leftovers (Q25): `searchDelay`, `closeOnSelect`, `emptyText`/`empty`, one `Orientation`.
+- Phase 5: fluent-components.scss deleted, compat trimmed, reboot opt-in (`svelte-fluentui/reboot.css`),
+  palette/z-index scale, CSS var prefix renames, shared primitives (`_primitives.scss`) + FieldLabel.
+- Phase 6: InputFile/Tabs/MultiSplitter split; JSDoc on every public prop; dead code; README What's New;
+  no-op props fixed or removed; Chip exported; `labels` on every component with built-in text.
+- QuickGrid: editors reuse Select/Combobox; perf (stable display rows, `virtualize`); fast arrows,
+  PageUp/Down, Ctrl+Home/End.
+
+**Questions for the user (collected overnight):**
+1. Fold the single-string props into `labels` (breaking): DatePicker/TimePicker `openCalendarIconAriaLabel` /
+   `openClockIconAriaLabel` / `popupAriaLabel`, Combobox `loadingText`, BadgeGroup `moreLabel`/`lessLabel`,
+   Chip `removeLabel`? (Today they win over `labels`.)
+2. AppBar vertical active indicator never rendered (rules keyed on a non-existent attribute; removed).
+   Restore it on `data-orientation` (visible change) or leave it gone?
+3. Stores → runes (decided in principle, Q7): which API shape?
+4. Q5 Prettier pass over the package — yes/no?
+5. Popup surfaces: Autocomplete/pickers/menus keep `--neutral-layer-1` + 16px shadow (`.fluent-popup--layer`);
+   unify on `--neutral-layer-floating` + flyout shadow (needs Autocomplete highlighted-row recolour in dark)?
+6. `PositioningRegion availableHeight` documents the private `--_available-height`; make it public
+   (`--fluent-positioning-available-height`) or keep?
+7. Export `portal` / `portalHost` publicly?
+8. Combobox/Autocomplete `closeOnSelect={false}` in single mode still closes — OK?
+9. Badge keeps `brand` / `important` / `informative` as aliases of primary/dark/light — keep or drop?
+10. Housekeeping: delete `C:\tmp_qg` (blocked for me), old `/tmp/gce*`, `/tmp/qg*`, repo-root
+    `probe*.tmp.mjs` / `shot.tmp.mjs` (Nov 11, git-excluded); `.claude/commands/publish.md` got a
+    release-notes gate (local only — `.claude` is gitignored); its Section 7 still says "no e2e harness".
+11. Push (`prod` is 31+ ahead) and version bump to 2.0.0-rc01 via /publish when ready.
+
+Deferred (see 06-quickgrid-plan.md for QuickGrid ones): per-row deriveds in QuickGrid for non-virtual
+teardown cost; variable row heights with `virtualize`; NavMenu menuitem+link double tab stop (needs a
+tree redesign); Tooltip `aria-describedby` on FAST hosts can't cross shadow DOM; axe scans (no
+@axe-core/playwright installed — install?); InputFile popover still portalled to body.
