@@ -2693,12 +2693,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	.options-loading-indicator {
 		font-size: 10px;
 		color: var(--neutral-foreground-hint, #707070);
-		animation: pulse 1s infinite;
-	}
-
-	@keyframes pulse {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.4; }
+		animation: fluent-pulse 1s infinite;
 	}
 
 	/* Custom editing indicator */

@@ -46,3 +46,18 @@ test("ContextMenu: leaf, submenu and expandable section", async ({page}) => {
 	await page.locator(".fluent-context-menu button", {hasText: "Inner"}).click()
 	await expect(page.locator("#log")).toContainText("cm:inner | cm-action:inner:true")
 })
+
+test("MenuButton: a danger item is painted in the danger colour (shared primitive)", async ({page}) => {
+	await page.locator("fluent-button", {hasText: "Actions"}).click()
+	const item = page.locator(".fluent-menu-button-menu fluent-menu-item", {hasText: "Delete"})
+	const color = await item.evaluate(el => getComputedStyle(el).color)
+	const expected = await item.evaluate(el => {
+		const probe = document.createElement("span")
+		probe.style.color = "var(--fluent-color-danger-foreground, #d13438)"
+		el.parentElement!.append(probe)
+		const c = getComputedStyle(probe).color
+		probe.remove()
+		return c
+	})
+	expect(color).toBe(expected)
+})

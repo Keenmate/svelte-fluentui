@@ -115,11 +115,5 @@
 		min-width: 160px;
 	}
 
-	.context-menu fluent-menu-item.danger {
-		color: var(--fluent-color-danger-foreground, #d13438);
-	}
-
-	.context-menu fluent-menu-item.danger:hover {
-		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
-	}
+	/* danger items: _primitives.scss */
 </style>

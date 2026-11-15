@@ -383,11 +383,5 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 	}
 
 	/* Dark theme is handled by the palette tokens (re-declared under [data-theme="dark"]). */
-	.fluent-menu-button-menu :global(fluent-menu-item.danger) {
-		color: var(--fluent-color-danger-foreground, #d13438);
-	}
-
-	.fluent-menu-button-menu :global(fluent-menu-item.danger:hover) {
-		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
-	}
+	/* danger items: _primitives.scss */
 </style>

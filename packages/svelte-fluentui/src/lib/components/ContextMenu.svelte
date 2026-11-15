@@ -744,11 +744,5 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	}
 
 	/* Dark theme is handled by the palette tokens (re-declared under [data-theme="dark"]). */
-	.fluent-context-menu-item.danger {
-		color: var(--fluent-color-danger-foreground, #d13438);
-	}
-
-	.fluent-context-menu-item.danger:hover:not(:disabled) {
-		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
-	}
+	/* danger items: _primitives.scss */
 </style>
