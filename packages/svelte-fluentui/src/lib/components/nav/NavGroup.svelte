@@ -105,6 +105,7 @@
 <style>
 	.fluent-collapsible-region-container {
 		height: auto;
+		overflow: hidden;
 	}
 
 	.fluent-nav-menu {

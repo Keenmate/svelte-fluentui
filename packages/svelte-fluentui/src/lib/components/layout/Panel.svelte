@@ -146,7 +146,7 @@
 		position: fixed;
 		inset-block: var(--panel-top, 0) 0;
 		inset-inline: 0;
-		z-index: var(--fluent-z-modal, 1050);
+		z-index: var(--fluent-z-modal);
 		// Never block the page — only the overlay and the panel surface
 		// (re-enabled below) capture pointer events.
 		pointer-events: none;
@@ -159,7 +159,7 @@
 		cursor: pointer;
 		pointer-events: none;
 		transition: background-color 0.25s ease;
-		z-index: var(--fluent-z-modal-backdrop, 1040);
+		z-index: var(--fluent-z-modal-backdrop);
 	}
 
 	.fluent-panel {
@@ -174,7 +174,7 @@
 		pointer-events: none;
 		transition: transform 0.25s ease, visibility 0.25s ease;
 		visibility: hidden;
-		z-index: calc(var(--fluent-z-modal, 1050) + 1);
+		z-index: calc(var(--fluent-z-modal) + 1);
 	}
 
 	// Closed-state per-side transforms — declared BEFORE the --open rule so
@@ -239,11 +239,18 @@
 		align-self: stretch;
 		box-shadow: none;
 		border-inline-end: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		z-index: var(--fluent-z-panel-pinned, 1);
+		z-index: var(--fluent-z-panel-pinned);
 	}
 
 	.fluent-panel--pinned-end {
 		border-inline-end: none;
 		border-inline-start: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.fluent-panel,
+		.fluent-panel-overlay {
+			transition: none;
+		}
 	}
 </style>

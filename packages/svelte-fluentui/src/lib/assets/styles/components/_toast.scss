@@ -11,7 +11,7 @@
 // Fixed container for toast notifications
 .fluent-toast-container {
 	position: fixed;
-	z-index: var(--fluent-z-toast, #{$z-index-toast});
+	z-index: var(--fluent-z-toast);
 	pointer-events: none;
 	display: flex;
 	flex-direction: column;
@@ -74,6 +74,46 @@
 }
 
 // ===== TOAST ITEM =====
+
+// Base surface shared by the inline <Toast> and the service toasts rendered by
+// <ToastContainer> (moved from the Blazor dump fluent-components.scss in 2.0;
+// the `.fluent-toast` rule below refines it for the service toasts).
+.fluent-toast {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	flex-grow: initial;
+	margin-bottom: 10px;
+	padding: 12px;
+	position: relative;
+	min-width: 292px;
+	max-width: 500px;
+	min-height: 44px;
+	font-family: var(--body-font);
+	background-color: var(--neutral-layer-floating);
+	box-shadow: var(--elevation-shadow-tooltip);
+	border-radius: calc(var(--control-corner-radius) * 1px);
+	color: var(--neutral-foreground-rest);
+	overflow-wrap: break-word;
+	word-break: break-word;
+	hyphens: auto;
+	user-select: none;
+	overflow: hidden;
+	pointer-events: auto;
+	animation-name: fluent-toast-fadein;
+	animation-duration: 0.5s;
+	animation-delay: 0s;
+}
+
+@keyframes fluent-toast-fadein {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
 
 .fluent-toast {
 	background-color: var(--neutral-layer-1);
@@ -235,57 +275,74 @@
 
 // Success toast
 .fluent-toast--success {
-	border-inline-start: 4px solid var(--fluent-color-success-foreground, #{$color-success});
+	border-inline-start: 4px solid var(--fluent-color-success-foreground);
 
 	.fluent-toast__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-success-foreground, #{$color-success}) 10%, transparent);
-		color: var(--fluent-color-success-foreground, #{$color-success});
+		background-color: color-mix(in srgb, var(--fluent-color-success-foreground) 10%, transparent);
+		color: var(--fluent-color-success-foreground);
 	}
 
 	.fluent-toast__progress {
-		color: var(--fluent-color-success-foreground, #{$color-success});
+		color: var(--fluent-color-success-foreground);
 	}
 }
 
 // Error toast
 .fluent-toast--error {
-	border-inline-start: 4px solid var(--fluent-color-danger-foreground, #{$color-error});
+	border-inline-start: 4px solid var(--fluent-color-danger-foreground);
 
 	.fluent-toast__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-danger-foreground, #{$color-error}) 10%, transparent);
-		color: var(--fluent-color-danger-foreground, #{$color-error});
+		background-color: color-mix(in srgb, var(--fluent-color-danger-foreground) 10%, transparent);
+		color: var(--fluent-color-danger-foreground);
 	}
 
 	.fluent-toast__progress {
-		color: var(--fluent-color-danger-foreground, #{$color-error});
+		color: var(--fluent-color-danger-foreground);
 	}
 }
 
 // Warning toast
 .fluent-toast--warning {
-	border-inline-start: 4px solid var(--fluent-color-warning-foreground, #{$color-warning});
+	border-inline-start: 4px solid var(--fluent-color-warning-foreground);
 
 	.fluent-toast__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-warning-foreground, #{$color-warning}) 10%, transparent);
-		color: var(--fluent-color-warning-foreground, #{$color-warning});
+		background-color: color-mix(in srgb, var(--fluent-color-warning-foreground) 10%, transparent);
+		color: var(--fluent-color-warning-foreground);
 	}
 
 	.fluent-toast__progress {
-		color: var(--fluent-color-warning-foreground, #{$color-warning});
+		color: var(--fluent-color-warning-foreground);
 	}
 }
 
 // Info toast
 .fluent-toast--info {
-	border-inline-start: 4px solid var(--fluent-color-info-foreground, #{$color-info});
+	border-inline-start: 4px solid var(--fluent-color-info-foreground);
 
 	.fluent-toast__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-info-foreground, #{$color-info}) 10%, transparent);
-		color: var(--fluent-color-info-foreground, #{$color-info});
+		background-color: color-mix(in srgb, var(--fluent-color-info-foreground) 10%, transparent);
+		color: var(--fluent-color-info-foreground);
 	}
 
 	.fluent-toast__progress {
-		color: var(--fluent-color-info-foreground, #{$color-info});
+		color: var(--fluent-color-info-foreground);
+	}
+}
+
+// ===== REDUCED MOTION =====
+
+// No fade / slide: toasts appear and leave in place. The countdown bar keeps
+// running — it conveys the remaining time, not decoration.
+@media (prefers-reduced-motion: reduce) {
+	.fluent-toast,
+	.fluent-toast-container .fluent-toast {
+		animation: none;
+		transition: none;
+		transform: none;
+	}
+
+	.fluent-toast.fluent-toast--hide {
+		transform: none;
 	}
 }
 

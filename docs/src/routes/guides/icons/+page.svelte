@@ -254,7 +254,7 @@ export const icons = [{ name: 'history', sizes: [16] }]`}</code></pre>
 			{#snippet trashIcon()}
 				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 					<path d="M2.5 4h11M6 4V2.8h4V4M4 4l.6 8.4a1 1 0 0 0 1 .9h4.8a1 1 0 0 0 1-.9L12 4M6.4 6.5v4.5M9.6 6.5v4.5"
-						stroke="var(--error, #c50f1f)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+						stroke="var(--fluent-color-danger-foreground)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
 				</svg>
 			{/snippet}
 

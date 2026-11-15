@@ -13,6 +13,11 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 ### Changed — BREAKING
 - CSS: Alert / Toast `warning` use Fluent 2 orange via `--fluent-color-warning-foreground` (`#bc4b09`, dark `#faa06b`) instead of the v8 yellow `#ffb900`.
 - CSS: logical properties throughout (RTL mirrors correctly); undefined `--error-*` / `--success-*` variables replaced by the `--fluent-color-*` palette (error red is now `#d13438`).
+- CSS: reboot (element reset) removed from `svelte-fluentui/styles` — opt in with `import "svelte-fluentui/reboot"`; its dark rules now match `[data-theme]` on `<html>`.
+- CSS: Blazor dump `fluent-components.scss` deleted (live rules moved into Calendar, AppBarItem, Paginator, Toast, Tabs, BodyContent, ContentRegion, `nav.scss`, `layout.scss`); `fluent-blazor-compat.scss` trimmed to real `<fluent-*>` overrides; demo classes (`.components`, `.component-section`, `.component-title`, `.grid`) and the `dhl` theme removed from the package.
+- CSS: Badge colours read `--fluent-color-<name>` / `-contrast` (was `--badge-fill-<name>` / `--badge-color-<name>`); Badge also accepts the Label palette names, `brand` / `important` / `informative` alias `primary` / `dark` / `light`; `warning` text is `#242424`.
+- CSS: Icon `warning` / `info` / `error` / `success` use `--fluent-color-*-foreground` (`info` is now blue); `--error` / `--warning` / `--success` / `--info` and SCSS `$color-*` tokens removed.
+- CSS: `--fluent-z-raised` / `--fluent-z-panel-pinned` added; z-index uses the `--fluent-z-*` variables without numeric fallbacks; `prefers-reduced-motion` disables Accordion, Tabs indicator, Panel and Toast animations.
 - **AppBarItem (`rel`):** explicit prop → native attribute through `...rest` (typed anchor attributes)
 - **Alert (`intent`):** `"danger"` (class `.fluent-alert--danger`) → `"error"` (class `.fluent-alert--error`), Microsoft Fluent naming
 - **Tabs:** `{#snippet childContent()}` around the `<Tab>`s → `children`: put `<Tab>`s directly between the tags
@@ -192,6 +197,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - QuickGrid keyboard: Shift+F10 / ContextMenu key opens the context menu at the focused cell (focus on the first item, arrows, Enter / Space, Escape returns focus); Alt+F10 opens the row toolbar from a cell and focuses it (arrows / Home / End, Escape or Tab return); rows of a hover / click toolbar grid without navigate mode are one tab stop (↑ / ↓ / Home / End, Enter opens the toolbar); Enter on the ⋮ trigger moves focus into the toolbar.
 - QuickGrid accessibility: `aria-rowcount` / `aria-rowindex` on paged and server grids (server: from `totalItems`), filter inputs named after their column, a polite live region announcing the row count after filtering, the page after paging and the sort after a header change; tree mode is a `treegrid` with `aria-level` / `aria-expanded` rows; the ⋮ trigger has `aria-label` / `aria-haspopup` / `aria-expanded`, the toolbar `role="toolbar"`.
 
+- Select: `placeholder`, `valueText` (trigger text for a value no option has), `selectValueOnTab`, `dropdownClass`, `embedded` (borderless, closed-list arrows left to the host). Combobox: `valueText`, `openOnFocus`, `selectValueOnTab`, `freeText` (typed text survives closing the list; Escape reverts), `dropdownClass`, `embedded`. QuickGrid editor options take a `group` (option groups in the select / combobox / autocomplete editors).
+- QuickGrid dropdown editors are the library's components: `select` → `Select`, `combobox` and `autocomplete` → `Combobox` (embedded). Shared with them: multi-letter type-ahead, Home / End / PageUp / PageDown in the list, option groups, `searchBehavior`, light dismiss, listbox styling (selected row bold, rounded rows, chevron glyph). Behaviour changes: the combobox / autocomplete input selects its text on focus (typing replaces it); Escape on an open autocomplete list reverts the typed text (it used to keep it and commit it on blur); the list aligns with the editor's content box instead of the cell edges; the page no longer stops wheel-scrolling while a list is open (the list follows its cell).
 - QuickGrid CSS variables (theme hooks, each falling back to the FluentUI token): `--fluent-quickgrid-bg` / `-border` / `-text`, `-focus-stroke`, `-focused-cell-stroke` / `-focused-cell-bg`, `-editable-hover-bg` / `-editable-hover-border`, `-editing-bg` / `-editing-stroke`, `-toolbar-bg` / `-toolbar-border` / `-toolbar-text` / `-toolbar-hover-bg` / `-toolbar-shadow` (light / dark in theme.scss), `-connector-stroke` (was a hard-coded `#0078d4` fallback), `-menu-shadow`, `-dropdown-bg` / `-dropdown-border` / `-dropdown-highlight-bg` (cell editor dropdowns). They replace QuickGrid's and GridCellEditor's `[data-theme="dark"]` selector blocks — a theme overrides variables, not selectors.
 
 ### Fixed
@@ -278,6 +285,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   `div[dragged-over]` (move cursor, blinking grey). Removed; QuickGrid and InputFile keep the
   bits they relied on in their own styles.
 
+- QuickGrid navigate mode: a double-click on a dropdown cell (whose edit the first click had already started) threw `Cannot read properties of null (reading 'token')` and left the cell without a working editor — the replaced editor's blur cancelled the new edit. GridCellEditor now reports the edit it was opened for.
+- QuickGrid combobox editor: a value that isn't among the options shows the cell's display text instead of an empty input.
 - QuickGrid dark theme: sorted and hovered sortable headers show `--fluent-quickgrid-header-sorted-bg` / `--fluent-quickgrid-header-hover-bg` (the dark-theme header rule overrode both with the plain header background).
 
 ### Internal

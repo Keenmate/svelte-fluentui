@@ -198,7 +198,7 @@
 	 * margin, centered `inset`, opaque background) so our Floating-UI `left`/`top`
 	 * drive the position and the wrapper stays visually transparent. */
 	.positioning-region-floating {
-		z-index: var(--fluent-z-popover, 1060);
+		z-index: var(--fluent-z-popover);
 		inset: auto;
 		margin: 0;
 		border: 0;

@@ -23,7 +23,10 @@
 <style lang="scss">
 	.body-content {
 		margin: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
 		align-items: flex-start;
+		height: 100%;
 		width: 100%;
 		font-family: var(--body-font);
 		font-weight: normal;

@@ -183,7 +183,7 @@
 
 	/* drag-expand overlay — centred on the selector, expands symmetrically */
 	.drag-overlay {
-		z-index: var(--fluent-z-popover, 1060);
+		z-index: var(--fluent-z-popover);
 		background: var(--neutral-layer-2);
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 		border-color: var(--accent-fill-rest);
@@ -294,7 +294,7 @@
 		border-radius: var(--fluent-border-radius-lg);
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
 		padding: 0.75rem;
-		z-index: var(--fluent-z-popover, 1060);
+		z-index: var(--fluent-z-popover);
 		overflow-y: auto;
 		overscroll-behavior: contain;
 
@@ -319,7 +319,7 @@
 			position: sticky;
 			top: -0.75rem;
 			background: var(--neutral-layer-1, white);
-			z-index: 1;
+			z-index: var(--fluent-z-raised);
 			/* Negative margins + matching padding extend the sticky background to
 			   the popover's inner edge so rows scrolling underneath are hidden. */
 			margin: -0.75rem -0.75rem 0;
@@ -331,7 +331,7 @@
 			margin: 0 -0.75rem -0.75rem;
 			padding: 0.5rem 0.75rem 0.75rem;
 			background: var(--neutral-layer-1, white);
-			z-index: 1;
+			z-index: var(--fluent-z-raised);
 			border-top: 1px solid var(--neutral-stroke-rest);
 		}
 	}

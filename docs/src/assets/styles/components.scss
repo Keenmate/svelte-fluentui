@@ -43,3 +43,17 @@
 .content h3:first-of-type {
 	margin-top: 0.5rem;
 }
+
+// Customer demo theme (moved out of the library theme.scss in 2.0). `:root` raises the
+// specificity so it still beats the library `:root` defaults, which load after this file.
+:root[data-theme="dhl"] {
+	color-scheme: light;
+
+	// Override sidebar link padding to match Microsoft FluentUI exactly (no padding)
+	--fluent-sidebar-link-padding: 0;
+
+	// You can add other DHL-specific theme overrides here
+	// Example:
+	// --fluent-accent-primary: #ffcc00; // DHL yellow
+	// --fluent-accent-hover: #e6b800;
+}

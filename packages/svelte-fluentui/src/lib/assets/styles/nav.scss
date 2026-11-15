@@ -3,6 +3,154 @@
  * Uses FluentUI design tokens
  */
 
+// -----------------------------------------------------------------------------
+// NavMenu / NavGroup / NavItem / NavLink base — moved from the Blazor dump
+// (fluent-components.scss) in 2.0. These span several components (a NavGroup
+// nests NavMenu > NavItem > NavLink > ContentRegion), so they stay global here,
+// ahead of the overrides below.
+// -----------------------------------------------------------------------------
+
+.fluent-nav-link.notactive:focus-within {
+	outline-offset: 1px;
+}
+
+.fluent-nav-group.disabled {
+	color: var(--neutral-fill-secondary-rest) !important;
+	pointer-events: none;
+}
+
+.fluent-nav-group.disabled .fluent-nav-icon {
+	fill: var(--neutral-stroke-rest) !important;
+}
+
+// Group expand/collapse chevron
+.expand-collapse-button {
+	position: absolute;
+	inset-inline-end: calc(var(--design-unit) * 2px);
+	border-radius: calc(var(--control-corner-radius) * 1px);
+	width: calc((((var(--base-height-multiplier) / 2) * var(--design-unit)) + ((var(--design-unit) * var(--density)) / 2) + (var(--design-unit) * 2)) * 1px);
+	height: calc((((var(--base-height-multiplier) / 2) * var(--design-unit)) + ((var(--design-unit) * var(--density)) / 2) + (var(--design-unit) * 2)) * 1px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+
+	&:hover {
+		background: var(--tree-item-expand-collapse-hover);
+	}
+
+	svg {
+		transition: transform 0.1s linear 0s;
+		pointer-events: none;
+	}
+}
+
+[dir="rtl"] * .expand-collapse-button svg {
+	transform: rotate(180deg);
+}
+
+.rotate.expand-collapse-button svg {
+	transform: rotate(90deg);
+}
+
+.fluent-nav-link.disabled:not(fluent-menu-item, a) {
+	color: var(--neutral-foreground-rest) !important;
+	opacity: var(--disabled-opacity);
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+a.fluent-nav-link.disabled .content-region {
+	opacity: var(--disabled-opacity);
+}
+
+.fluent-nav-link.disabled .fluent-nav-icon {
+	fill: var(--neutral-foreground-rest) !important;
+	opacity: var(--disabled-opacity);
+}
+
+.fluent-nav-menu {
+	padding: 0 2px;
+}
+
+.fluent-nav-item.expander:focus-within {
+	outline-offset: 1px;
+}
+
+.fluent-nav-item {
+	margin: calc(var(--design-unit) * 1px) 0;
+	user-select: none;
+}
+
+// Active item indicator
+.fluent-nav-item a.active .positioning-region::before {
+	content: "";
+	display: block;
+	position: absolute;
+	width: 3px;
+	height: calc(((var(--base-height-multiplier) + var(--density)) * var(--design-unit) / 2) * 1px);
+	background: var(--accent-fill-rest);
+	border-radius: calc(var(--control-corner-radius) * 1px);
+	margin: calc(var(--design-unit) * 2px) 2px;
+	z-index: 5;
+}
+
+.fluent-nav-item .positioning-region {
+	display: flex;
+	width: 100%;
+	position: relative;
+	align-items: center;
+	box-sizing: border-box;
+	background: var(--neutral-fill-stealth-rest);
+	border: calc(var(--stroke-width) * 1px) solid transparent;
+	border-radius: calc(var(--control-corner-radius) * 1px);
+	min-height: calc(((var(--base-height-multiplier) + var(--density)) * var(--design-unit) + 1) * 1px);
+}
+
+.fluent-nav-group .fluent-nav-item:last-of-type,
+.fluent-nav-menu .fluent-nav-item:last-of-type {
+	margin-bottom: 2px;
+}
+
+// Level indenting
+.fluent-collapsible-region-container > .fluent-nav-menu > .fluent-nav-item .content-region {
+	padding-inline-start: 24px;
+}
+
+.fluent-collapsible-region-container .fluent-collapsible-region-container > .fluent-nav-menu > .fluent-nav-item .content-region {
+	padding-inline-start: 48px;
+}
+
+.fluent-collapsible-region-container .fluent-collapsible-region-container .fluent-collapsible-region-container > .fluent-nav-menu > .fluent-nav-item .content-region {
+	padding-inline-start: 72px;
+}
+
+.fluent-collapsible-region-container .fluent-collapsible-region-container .fluent-collapsible-region-container .fluent-collapsible-region-container > .fluent-nav-menu > .fluent-nav-item .content-region {
+	padding-inline-start: 96px;
+}
+
+.fluent-nav-text {
+	margin-inline-start: calc(var(--design-unit) * 2px + 2px);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: calc(100% - 70px);
+}
+
+// Collapsed NavMenu (icon rail)
+.fluent-nav-menu.collapsed {
+	.fluent-nav-text,
+	.expand-collapse-button,
+	.fluent-nav-group .fluent-nav-menu > .fluent-nav-item {
+		display: none;
+	}
+}
+
+@media (max-width: 600px) {
+	.fluent-nav-menu.collapsed .fluent-nav-text {
+		display: block;
+	}
+}
+
 .fluent-nav-menu {
 	background-color: var(--neutral-layer-2);
 	color: var(--neutral-foreground-rest);

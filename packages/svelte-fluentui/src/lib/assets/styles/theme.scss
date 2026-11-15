@@ -95,9 +95,13 @@
 	--fluent-transition: #{$component-transition};
 
 	// Z-index scale (theme-independent — kept here so authors can use var() in any component).
-	// Order matters: dropdown < sticky < fixed < modal-backdrop < modal < popover < tooltip < toast.
+	// Order matters: raised < dropdown < sticky < fixed < modal-backdrop < modal < popover < tooltip < toast.
+	// "raised" lifts an element above its in-flow siblings only (local stacking); a pinned
+	// Panel uses it too (it only needs its own stacking context, not to cover the page).
 	// "popover" is intentionally above modal so dropdowns/calendars opened from inside a modal
 	// render on top of the modal.
+	--fluent-z-raised:          #{$z-index-raised};
+	--fluent-z-panel-pinned:    var(--fluent-z-raised);
 	--fluent-z-dropdown:        #{$z-index-dropdown};
 	--fluent-z-sticky:          #{$z-index-sticky};
 	--fluent-z-fixed:           #{$z-index-fixed};
@@ -160,18 +164,6 @@
 	--fluent-quickgrid-stripe-bg: #{$quickgrid-stripe-bg-dark};
 	--fluent-quickgrid-row-hover-bg: #{$quickgrid-row-hover-bg-dark};
 	--fluent-quickgrid-toolbar-shadow: #{$quickgrid-toolbar-shadow-dark};
-}
-
-[data-theme="dhl"] {
-	color-scheme: light;
-
-	// Override sidebar link padding to match Microsoft FluentUI exactly (no padding)
-	--fluent-sidebar-link-padding: 0;
-
-	// You can add other DHL-specific theme overrides here
-	// Example:
-	// --fluent-accent-primary: #ffcc00; // DHL yellow
-	// --fluent-accent-hover: #e6b800;
 }
 
 // Apply FluentUI design tokens to body for smooth transitions

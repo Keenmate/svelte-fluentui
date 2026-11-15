@@ -94,6 +94,61 @@
 </div>
 
 <style>
+	/* Item box, link, label and hover (moved from the global Blazor compat CSS in 2.0).
+	   `--appbar-item-size` is set on the parent `.fluent-appbar`. */
+	.fluent-appbar-item {
+		width: calc(var(--appbar-item-size, 68) * 1px);
+		--appbar-active-indicator-width: calc(var(--design-unit) * 0.5px);
+		height: calc(var(--appbar-item-size, 68) * 1px - 20px);
+	}
+
+	.fluent-appbar-item:hover {
+		background-color: var(--neutral-fill-secondary-rest);
+	}
+
+	.fluentui-counterbadge-container {
+		display: inline;
+		position: relative;
+		height: 100%;
+	}
+
+	a {
+		color: inherit;
+		text-decoration: none;
+		font-size: var(--type-ramp-minus-2-font-size);
+		line-height: var(--type-ramp-minus-2-line-height);
+		position: relative;
+		display: inline-block;
+		height: 100%;
+		width: 100%;
+	}
+
+	a :global(.stack-vertical) {
+		padding: calc(var(--design-unit) * 1px) calc(var(--appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
+		height: 100%;
+	}
+
+	div[part="label"] {
+		color: var(--neutral-foreground-rest);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		width: 100%;
+		text-align: center;
+	}
+
+	/* Rest/active icon pair: an icon snippet may hold two SVGs marked `part="icon-rest"` and
+	   `part="icon-active"`; the active one shows on hover and while the item is active. */
+	.fluent-appbar-item:hover :global(svg[part="icon-rest"]),
+	.fluent-appbar-item:not(:hover):not(.active) :global(svg[part="icon-active"]),
+	.fluent-appbar-item:not(:hover) a.active :global(svg[part="icon-rest"]) {
+		display: none;
+	}
+
+	.fluent-appbar-item:not(:hover) .active :global(svg[part="icon-active"]) {
+		display: block;
+	}
+
 	.fluent-appbar-item-icon {
 		position: relative;
 		display: inline-flex;
@@ -112,7 +167,7 @@
 		/* Numbers read the same in RTL: keep "99+" from turning into "+99". */
 		direction: ltr;
 		unicode-bidi: isolate;
-		z-index: 1;
+		z-index: var(--fluent-z-raised);
 		box-sizing: border-box;
 		min-inline-size: var(--fluent-appbar-count-size, 16px);
 		block-size: var(--fluent-appbar-count-size, 16px);

@@ -626,7 +626,7 @@
 		position: fixed;
 		top: 0;
 		left: 0;
-		z-index: var(--fluent-z-popover, 1060);
+		z-index: var(--fluent-z-popover);
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		min-width: 200px;

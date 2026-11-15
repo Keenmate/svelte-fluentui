@@ -98,7 +98,7 @@
 		<h2>Examples</h2>
 
 		<h3>Built-in Colors</h3>
-		<p>Pre-defined colors: brand, danger, important, informative, severe, subtle, success, warning</p>
+		<p>Pre-defined colors: brand, danger, important, informative, severe, subtle, success, warning (brand / important / informative are aliases of the shared palette names primary / dark / light; secondary and info also work)</p>
 		<Stack orientation="horizontal" gap="0.5rem" style="flex-wrap: wrap;">
 			<Badge color="brand">brand</Badge>
 			<Badge color="danger">danger</Badge>
@@ -166,31 +166,31 @@
 		</Grid>
 
 		<h3>Custom Colors</h3>
-		<p>Custom colors using CSS variables <code>--badge-fill-[name]</code> and <code>--badge-color-[name]</code>:</p>
+		<p>Custom colors using CSS variables <code>--fluent-color-[name]</code> (fill) and <code>--fluent-color-[name]-contrast</code> (text):</p>
 		<Stack orientation="horizontal" gap="0.5rem" style="flex-wrap: wrap;">
 			<Badge
-				style="--badge-fill-custom1: red; --badge-color-custom1: white;"
+				style="--fluent-color-custom1: red; --fluent-color-custom1-contrast: white;"
 				fill="custom1"
 				color="custom1"
 			>
 				Red/White
 			</Badge>
 			<Badge
-				style="--badge-fill-custom2: #ffd800; --badge-color-custom2: #000;"
+				style="--fluent-color-custom2: #ffd800; --fluent-color-custom2-contrast: #000;"
 				fill="custom2"
 				color="custom2"
 			>
 				Highlight
 			</Badge>
 			<Badge
-				style="--badge-fill-custom3: #000; --badge-color-custom3: #fff;"
+				style="--fluent-color-custom3: #000; --fluent-color-custom3-contrast: #fff;"
 				fill="custom3"
 				color="custom3"
 			>
 				Lowlight
 			</Badge>
 			<Badge
-				style="--badge-fill-custom4: linear-gradient(90deg, #ff0000, #0000ff); --badge-color-custom4: white;"
+				style="--fluent-color-custom4: linear-gradient(90deg, #ff0000, #0000ff); --fluent-color-custom4-contrast: white;"
 				fill="custom4"
 				color="custom4"
 			>

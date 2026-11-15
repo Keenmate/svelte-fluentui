@@ -126,7 +126,10 @@
 	.paginator {
 		display: flex;
 		flex-direction: column;
+		align-items: center;
 		gap: 0.5rem;
+		margin-top: 0.5rem;
+		padding: 0.25rem 0;
 	}
 
 	.summary {
@@ -137,6 +140,9 @@
 		display: flex;
 		align-items: center;
 		gap: 0.25rem;
+		padding: 0;
+		margin-inline-start: auto;
+		margin-inline-end: 0;
 	}
 
 	.pagination-text {

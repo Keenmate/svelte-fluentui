@@ -675,29 +675,509 @@
 </div>
 
 <style>
-	/* Visual treatment for the host-level disabled state. Per-cell `aria-disabled` (e.g. dates filtered
-	   out by minDate/maxDate/getIsDateDisabledCallback) already has its own strikethrough rule in
-	   fluent-components.scss — these selectors only target the WHOLE-control disabled state
-	   (`.fluent-calendar[aria-disabled="true"]`, etc., set when the consumer passes `disabled`). */
-	:global(.fluent-calendar[aria-disabled="true"]),
-	:global(.fluent-month[aria-disabled="true"]),
-	:global(.fluent-year[aria-disabled="true"]) {
+	/* Days / months / years views (moved from the Blazor dump fluent-components.scss in 2.0). */
+	/*
+	    "Days" View
+	*/
+	.fluent-calendar {
+		--calendar-cell-size: 28px;
+		--calendar-gap: 2px;
+		--multi-select-opacity: 0.2;
+		font-family: var(--body-font);
+		font-size: var(--type-ramp-base-font-size);
+		line-height: var(--type-ramp-base-line-height);
+		color: var(--neutral-foreground-rest);
+		width: calc((var(--calendar-cell-size) + 2 * var(--calendar-gap)) * 7);
+		user-select: none;
+	}
+
+	/* Header: month name and month navigation */
+	.fluent-calendar .title {
+		display: flex;
+		padding: calc(var(--design-unit) * 2px);
+		font-weight: 600;
+		width: 100%;
+		height: calc(var(--calendar-cell-size) + 4 * var(--calendar-gap));
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
+	.fluent-calendar .title > .label {
+		vertical-align: middle;
+		cursor: pointer;
+		width: 100%;
+	}
+
+	.fluent-calendar .change-period {
+		float: inline-end;
+		display: flex;
+		margin-inline-end: -6px;
+	}
+
+	.fluent-calendar .change-period > .previous,
+	.fluent-calendar .change-period > .next {
+		width: var(--calendar-cell-size);
+		height: var(--calendar-cell-size);
+		margin-inline-start: calc(2 * var(--calendar-gap));
+		text-align: center;
+		cursor: pointer;
+	}
+
+	.fluent-calendar .change-period > .previous:not([aria-disabled="true"]):hover,
+	.fluent-calendar .change-period > .next:not([aria-disabled="true"]):hover {
+		background: var(--neutral-fill-stealth-hover);
+	}
+
+	.fluent-calendar .change-period > .previous svg,
+	.fluent-calendar .change-period > .next svg {
+		width: 16px;
+		fill: var(--neutral-fill-strong-focus);
+	}
+
+	/* List of days */
+	.fluent-calendar .days {
+		text-align: center;
+	}
+
+	.fluent-calendar .week-days,
+	.fluent-calendar .week {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		grid-gap: var(--calendar-gap);
+		border: 0px;
+		padding: 0px;
+	}
+
+	.fluent-calendar .day,
+	.fluent-calendar .week-day {
+		border: 1px solid transparent;
+		width: var(--calendar-cell-size);
+		height: var(--calendar-cell-size);
+		line-height: var(--calendar-cell-size);
+		padding: 0px;
+		box-sizing: initial;
+	}
+
+	/* Week names */
+	.fluent-calendar .week-day {
+		font-weight: 600;
+	}
+
+	/* Days */
+	.fluent-calendar .day {
+		border: calc(var(--stroke-width) * 1px) solid transparent;
+		border-radius: calc(var(--control-corner-radius) * 1px);
+		cursor: pointer;
+	}
+
+	.fluent-calendar[aria-readonly="true"] .day {
+		cursor: default;
+	}
+
+	.fluent-calendar:not([aria-readonly="true"]) .day:not([aria-disabled="true"]):not([data-inactive="true"]):not([data-today="true"]):hover {
+		background: var(--neutral-fill-stealth-hover);
+	}
+
+	/* Inactive and Disabled */
+	.fluent-calendar .day[data-inactive="true"] {
+		color: var(--neutral-stroke-focus);
+		cursor: default;
+	}
+
+	.fluent-calendar .day[aria-disabled="true"] {
+		color: var(--neutral-stroke-focus);
+		cursor: default;
+	}
+
+	.fluent-calendar .day[aria-disabled="true"]::before { /* strikethrough */
+		transform: translate(-4px, 0px) rotate(45deg);
+		content: "";
+		display: inline-block;
+		width: calc(var(--calendar-cell-size) * .8);
+		height: calc(var(--stroke-width) * 1px);
+		background: currentcolor;
+		position: absolute;
+		margin-top: calc(var(--calendar-cell-size) / 2);
+		transform-origin: center center;
+		z-index: var(--fluent-z-raised);
+	}
+
+	/* Today */
+	.fluent-calendar .day:not([aria-selected="true"]):not([data-multi-day="true"])[data-today="true"] {
+		color: var(--foreground-on-accent-rest);
+		background: var(--accent-fill-rest);
+		border-radius: 50%;
+		position: relative;
+	}
+
+	/* Selected */
+	.fluent-calendar .day[aria-selected="true"] {
+		color: var(--accent-fill-rest);
+		border: 1px solid var(--accent-fill-rest);
+		background: var(--fill-color);
+	}
+
+	/* Selected Multiple Days */
+	.fluent-calendar .day[data-multi-day="true"],
+	.fluent-calendar .day[data-multi-start="true"],
+	.fluent-calendar .day[data-multi-end="true"] {
+		position: relative;
+	}
+
+	.fluent-calendar .day[data-multi-day="true"]::before,
+	.fluent-calendar .day[data-multi-start="true"]::before,
+	.fluent-calendar .day[data-multi-end="true"]::before {
+		content: "";
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		inset-inline-start: 0;
+		background: var(--accent-fill-rest);
+		opacity: var(--multi-select-opacity);
+	}
+
+	.fluent-calendar .day[data-multi-start="true"]::before {
+		border-start-start-radius: 50%;
+		border-end-start-radius: 50%;
+	}
+
+	.fluent-calendar .day[data-multi-end="true"]::before {
+		border-start-end-radius: 50%;
+		border-end-end-radius: 50%;
+	}
+
+	.fluent-calendar .day[data-multi-day-over="true"] {
+		background: var(--neutral-fill-stealth-hover);
+	}
+
+	/* Animations */
+	.fluent-calendar .animation-running-down {
+		animation: 0.2s fluent-calendar-text-down ease-out;
+	}
+
+	.fluent-calendar .animation-running-up {
+		animation: 0.2s fluent-calendar-text-up ease-out;
+	}
+
+	.fluent-calendar .animation-none {
+		animation: none;
+	}
+
+	:global([dir="rtl"]) .fluent-calendar .day[aria-disabled="true"]::before {
+		transform: translate(4px, 0px) rotate(45deg);
+	}
+
+	/*
+	    "Months" View
+	*/
+	.fluent-month {
+		--month-cell-size: 28px;
+		--month-cell-height: 48px;
+		--month-gap: 2px;
+		font-family: var(--body-font);
+		font-size: var(--type-ramp-base-font-size);
+		line-height: var(--type-ramp-base-line-height);
+		color: var(--neutral-foreground-rest);
+		min-width: 220px;
+		max-width: calc((var(--month-cell-size) + 2 * var(--month-gap)) * 7);
+		user-select: none;
+	}
+
+	/* Header: Year name and navigation arrows */
+	.fluent-month .title {
+		display: flex;
+		padding: calc(var(--design-unit) * 2px);
+		font-weight: 600;
+		width: 100%;
+		height: calc(var(--month-cell-size) + 4 * var(--month-gap));
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
+	.fluent-month .title > .label {
+		vertical-align: middle;
+		cursor: pointer;
+		width: 100%;
+	}
+
+	.fluent-month .change-period {
+		float: inline-end;
+		display: flex;
+		margin-inline-end: -6px;
+	}
+
+	.fluent-month .change-period > .previous,
+	.fluent-month .change-period > .next {
+		width: var(--month-cell-size);
+		height: var(--month-cell-size);
+		margin-inline-start: calc(2 * var(--month-gap));
+		text-align: center;
+		cursor: pointer;
+	}
+
+	.fluent-month .change-period > .previous:not([aria-disabled="true"]):hover,
+	.fluent-month .change-period > .next:not([aria-disabled="true"]):hover {
+		background: var(--neutral-fill-stealth-hover);
+	}
+
+	.fluent-month .change-period > .previous svg,
+	.fluent-month .change-period > .next svg {
+		width: 16px;
+		fill: var(--neutral-fill-strong-focus);
+	}
+
+	/* List of months */
+	.fluent-month .months {
+		text-align: center;
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		grid-gap: var(--month-gap);
+		width: 100%;
+	}
+
+	.fluent-month .month {
+		display: flex;
+		height: var(--month-cell-height);
+		border: calc(var(--stroke-width) * 1px) solid transparent;
+		border-radius: calc(var(--control-corner-radius) * 1px);
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+	}
+
+	.fluent-month[aria-readonly="true"] .month {
+		cursor: default;
+	}
+
+	.fluent-month:not([aria-readonly="true"]) .month:not([aria-disabled="true"]):hover {
+		background: var(--neutral-fill-stealth-hover);
+	}
+
+	.fluent-month .month.selected {
+		color: var(--accent-fill-rest);
+		border: 1px solid var(--accent-fill-rest);
+		background: var(--fill-color);
+	}
+
+	.fluent-month .month[aria-disabled="true"] {
+		color: var(--neutral-stroke-focus);
+		cursor: default;
+		position: relative;
+	}
+
+	.fluent-month .month[aria-disabled="true"]::before { /* strikethrough */
+		transform: rotate(-12deg);
+		content: "";
+		display: inline-block;
+		width: 60%;
+		height: calc(var(--stroke-width) * 1px);
+		background: currentcolor;
+		position: absolute;
+		inset-inline-start: 20%;
+		top: 50%;
+		transform-origin: center center;
+		z-index: var(--fluent-z-raised);
+	}
+
+	/* Animations */
+	.fluent-month .animation-running-down {
+		animation: 0.2s fluent-calendar-text-down ease-out;
+	}
+
+	.fluent-month .animation-running-up {
+		animation: 0.2s fluent-calendar-text-up ease-out;
+	}
+
+	.fluent-month .animation-none {
+		animation: none;
+	}
+
+	/*
+	    "Years" View
+	*/
+	.fluent-year {
+		--year-cell-size: 28px;
+		--year-cell-height: 48px;
+		--year-gap: 2px;
+		font-family: var(--body-font);
+		font-size: var(--type-ramp-base-font-size);
+		line-height: var(--type-ramp-base-line-height);
+		color: var(--neutral-foreground-rest);
+		min-width: 220px;
+		max-width: calc((var(--year-cell-size) + 2 * var(--year-gap)) * 7);
+		user-select: none;
+	}
+
+	/* Header: Multiple years and navigation arrows */
+	.fluent-year .title {
+		display: flex;
+		padding: calc(var(--design-unit) * 2px);
+		font-weight: 600;
+		width: 100%;
+		height: calc(var(--year-cell-size) + 4 * var(--year-gap));
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
+	.fluent-year .title > .label {
+		vertical-align: middle;
+	}
+
+	.fluent-year .change-period {
+		float: inline-end;
+		display: flex;
+		margin-inline-end: -6px;
+	}
+
+	.fluent-year .change-period > .previous,
+	.fluent-year .change-period > .next {
+		width: var(--year-cell-size);
+		height: var(--year-cell-size);
+		margin-inline-start: calc(2 * var(--year-gap));
+		text-align: center;
+		cursor: pointer;
+	}
+
+	.fluent-year .change-period > .previous:not([aria-disabled="true"]):hover,
+	.fluent-year .change-period > .next:not([aria-disabled="true"]):hover {
+		background: var(--neutral-fill-stealth-hover);
+	}
+
+	.fluent-year .change-period > .previous svg,
+	.fluent-year .change-period > .next svg {
+		width: 16px;
+		fill: var(--neutral-fill-strong-focus);
+	}
+
+	/* List of years */
+	.fluent-year .years {
+		text-align: center;
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		grid-gap: var(--year-gap);
+		width: 100%;
+	}
+
+	.fluent-year .year {
+		display: flex;
+		height: var(--year-cell-height);
+		border: calc(var(--stroke-width) * 1px) solid transparent;
+		border-radius: calc(var(--control-corner-radius) * 1px);
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+	}
+
+	.fluent-year[aria-readonly="true"] .year {
+		cursor: default;
+	}
+
+	.fluent-year:not([aria-readonly="true"]) .year:not([aria-disabled="true"]):hover {
+		background: var(--neutral-fill-stealth-hover);
+	}
+
+	.fluent-year .year.selected {
+		color: var(--accent-fill-rest);
+		border: 1px solid var(--accent-fill-rest);
+		background: var(--fill-color);
+	}
+
+	.fluent-year .year[aria-disabled="true"] {
+		color: var(--neutral-stroke-focus);
+		cursor: default;
+		position: relative;
+	}
+
+	.fluent-year .year[aria-disabled="true"]::before { /* strikethrough */
+		transform: rotate(-12deg);
+		content: "";
+		display: inline-block;
+		width: 60%;
+		height: calc(var(--stroke-width) * 1px);
+		background: currentcolor;
+		position: absolute;
+		inset-inline-start: 20%;
+		top: 50%;
+		transform-origin: center center;
+		z-index: var(--fluent-z-raised);
+	}
+
+	/* Animations */
+	.fluent-year .animation-running-down {
+		animation: 0.2s fluent-calendar-text-down ease-out;
+	}
+
+	.fluent-year .animation-running-up {
+		animation: 0.2s fluent-calendar-text-up ease-out;
+	}
+
+	.fluent-year .animation-none {
+		animation: none;
+	}
+
+	@keyframes fluent-calendar-text-up {
+		0% {
+			opacity: 0;
+			transform: translateY(80%);
+		}
+
+		20% {
+			opacity: 0;
+		}
+
+		80% {
+			opacity: 1;
+			transform: translateY(0%);
+		}
+
+		100% {
+			opacity: 1;
+			transform: translateY(0%);
+		}
+	}
+
+	@keyframes fluent-calendar-text-down {
+		0% {
+			opacity: 0;
+			transform: translateY(-80%);
+		}
+
+		20% {
+			opacity: 0;
+		}
+
+		80% {
+			opacity: 1;
+			transform: translateY(0%);
+		}
+
+		100% {
+			opacity: 1;
+			transform: translateY(0%);
+		}
+	}
+
+	/* Host-level disabled state (consumer passes `disabled`). Per-cell `aria-disabled` (dates
+	   filtered out by minDate/maxDate/getIsDateDisabledCallback) has its own strikethrough above. */
+	.fluent-calendar[aria-disabled="true"],
+	.fluent-month[aria-disabled="true"],
+	.fluent-year[aria-disabled="true"] {
 		opacity: var(--disabled-opacity, 0.5);
 		cursor: not-allowed;
 	}
 
-	:global(.fluent-calendar[aria-disabled="true"] .day),
-	:global(.fluent-calendar[aria-disabled="true"] .title > .label),
-	:global(.fluent-calendar[aria-disabled="true"] .change-period > .previous),
-	:global(.fluent-calendar[aria-disabled="true"] .change-period > .next),
-	:global(.fluent-month[aria-disabled="true"] .month),
-	:global(.fluent-month[aria-disabled="true"] .title > .label),
-	:global(.fluent-month[aria-disabled="true"] .change-period > .previous),
-	:global(.fluent-month[aria-disabled="true"] .change-period > .next),
-	:global(.fluent-year[aria-disabled="true"] .year),
-	:global(.fluent-year[aria-disabled="true"] .title > .label),
-	:global(.fluent-year[aria-disabled="true"] .change-period > .previous),
-	:global(.fluent-year[aria-disabled="true"] .change-period > .next) {
+	.fluent-calendar[aria-disabled="true"] .day,
+	.fluent-calendar[aria-disabled="true"] .title > .label,
+	.fluent-calendar[aria-disabled="true"] .change-period > .previous,
+	.fluent-calendar[aria-disabled="true"] .change-period > .next,
+	.fluent-month[aria-disabled="true"] .month,
+	.fluent-month[aria-disabled="true"] .title > .label,
+	.fluent-month[aria-disabled="true"] .change-period > .previous,
+	.fluent-month[aria-disabled="true"] .change-period > .next,
+	.fluent-year[aria-disabled="true"] .year,
+	.fluent-year[aria-disabled="true"] .title > .label,
+	.fluent-year[aria-disabled="true"] .change-period > .previous,
+	.fluent-year[aria-disabled="true"] .change-period > .next {
 		cursor: not-allowed;
 		pointer-events: none;
 	}

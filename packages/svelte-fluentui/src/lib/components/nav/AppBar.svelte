@@ -36,3 +36,9 @@
 >
 	{@render children?.()}
 </nav>
+
+<style>
+	.fluent-appbar {
+		--appbar-item-size: 68;
+	}
+</style>

@@ -1204,14 +1204,17 @@
 		display: inline-flex;
 		align-items: center;
 		flex-shrink: 0;
+		min-width: 18px;
+		max-width: 18px;
+		fill: var(--neutral-fill-strong-active);
 	}
 
 	.fluent-tab-close {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 16px;
-		height: 16px;
+		width: 12px;
+		height: 12px;
 		border-radius: var(--fluent-border-radius-md);
 		color: var(--neutral-foreground-hint);
 		cursor: pointer;
@@ -1338,5 +1341,11 @@
 
 	.fluent-tabs-vertical .fluent-tab-panel {
 		padding: 0 1rem;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.fluent-tabs-active-indicator {
+			transition: none;
+		}
 	}
 </style>

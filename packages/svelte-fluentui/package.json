@@ -52,6 +52,8 @@
 		},
 		"./styles": "./dist/main.css",
 		"./styles.scss": "./dist/main.scss",
+		"./reboot": "./dist/reboot.css",
+		"./reboot.css": "./dist/reboot.css",
 		"./main": "./dist/main.scss",
 		"./fluent-ui": "./dist/assets/styles/fluent-ui/main.scss",
 		"./theme": "./dist/assets/styles/theme.scss",

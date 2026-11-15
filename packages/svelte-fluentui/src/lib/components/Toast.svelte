@@ -89,6 +89,44 @@
 </script>
 
 <style>
+	.fluent-toast-title {
+		flex-grow: 1;
+		font-weight: 600;
+		font-size: 14px;
+	}
+
+	.fluent-toast-action {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 8px;
+		width: 48px;
+		min-width: 48px;
+		height: 20px;
+		font-weight: 400;
+	}
+
+	.fluent-toast-action:has(.timestamp) {
+		cursor: initial;
+		width: auto;
+	}
+
+	.fluent-toast-small {
+		font-size: 12px;
+		line-height: 16px;
+	}
+
+	.fluent-toast-actions {
+		display: flex;
+		align-items: flex-end;
+		gap: 16px;
+		height: 28px;
+		width: calc(100% - 12px);
+		justify-content: flex-start;
+		padding-inline-start: 24px;
+		margin-top: 0.5rem;
+	}
+
 	.toast-header {
 		display: flex;
 		align-items: center;
@@ -111,10 +149,6 @@
 	.toast-action-link {
 		font-size: 14px;
 		font-weight: 400;
-	}
-
-	.fluent-toast-actions {
-		margin-top: 0.5rem;
 	}
 
 	.primary-action {

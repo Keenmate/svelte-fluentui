@@ -38,11 +38,8 @@ $accent-blue-hover: #106ebe;
 $accent-blue-active: #005a9e;
 $accent-blue-dark: #0086f0;
 
-// Semantic colors
-$color-success: #107c10;
-$color-warning: #bc4b09; // Fluent 2 colorStatusWarningForeground1 (orange.shade20)
-$color-error: #d13438;
-$color-info: #0078d4;
+// Semantic (status) colours live at runtime in the --fluent-color-* palette
+// (fluent-blazor-compat.scss), so themes can swap them; there are no SCSS tokens for them.
 
 // Typography scale
 $font-size-xs: 10px;
@@ -73,6 +70,7 @@ $shadow-md: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 
 $shadow-lg: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
 
 // Z-index scale
+$z-index-raised: 1;
 $z-index-dropdown: 1000;
 $z-index-sticky: 1020;
 $z-index-fixed: 1030;

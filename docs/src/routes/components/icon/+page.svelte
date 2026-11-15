@@ -158,22 +158,22 @@ export default defineConfig({
 					</tr>
 					<tr>
 						<td>warning</td>
-						<td><code>var(--warning)</code></td>
+						<td><code>var(--fluent-color-warning-foreground)</code></td>
 						<td><Icon name="alert" size={24} color="warning" /> <Icon name="alert" size={24} color="warning" variant="filled" /></td>
 					</tr>
 					<tr>
 						<td>info</td>
-						<td><code>var(--info)</code></td>
+						<td><code>var(--fluent-color-info-foreground)</code></td>
 						<td><Icon name="alert" size={24} color="info" /> <Icon name="alert" size={24} color="info" variant="filled" /></td>
 					</tr>
 					<tr>
 						<td>error</td>
-						<td><code>var(--error)</code></td>
+						<td><code>var(--fluent-color-danger-foreground)</code></td>
 						<td><Icon name="alert" size={24} color="error" /> <Icon name="alert" size={24} color="error" variant="filled" /></td>
 					</tr>
 					<tr>
 						<td>success</td>
-						<td><code>var(--success)</code></td>
+						<td><code>var(--fluent-color-success-foreground)</code></td>
 						<td><Icon name="alert" size={24} color="success" /> <Icon name="alert" size={24} color="success" variant="filled" /></td>
 					</tr>
 					<tr>

@@ -289,4 +289,11 @@
 		cursor: not-allowed;
 		opacity: 0.6;
 	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.fluent-accordion-item__chevron,
+		.fluent-accordion-item__region-wrapper {
+			transition: none;
+		}
+	}
 </style>

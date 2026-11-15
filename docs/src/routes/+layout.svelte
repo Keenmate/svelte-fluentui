@@ -1,5 +1,7 @@
 <script lang="ts">
 	import "../assets/styles/demo-pages.scss"
+	// Opt-in element normalisation (not part of the main stylesheet since 2.0); load it first.
+	import "svelte-fluentui/reboot.css"
 	import "svelte-fluentui/styles.scss"
 	import {Layout, Footer, BodyContent, Button, NavMenu, NavGroup, NavLinkItem, ToastContainer, Icon, TopNav, CommandPalette, CommandPaletteTrigger} from "svelte-fluentui"
 	import type {CommandPaletteItem} from "svelte-fluentui"

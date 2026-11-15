@@ -4,14 +4,24 @@
 	/**
 	 * Custom Badge Component - FluentUI styled
 	 *
-	 * Color system uses CSS variables:
-	 * - --badge-fill-[color]: background color
-	 * - --badge-color-[color]: text color
+	 * Colours come from the shared `--fluent-color-<name>` palette (same as Label /
+	 * CompositeBadge):
+	 * - --fluent-color-[fill]: background colour
+	 * - --fluent-color-[color]-contrast: text colour
 	 *
-	 * Built-in colors: brand, danger, important, informative, severe, subtle, success, warning
+	 * Built-in colours: primary, secondary, success, warning, danger, info, light, dark,
+	 * severe, subtle. The Fluent badge names brand / important / informative are accepted
+	 * as aliases of primary / dark / light. Any other name reads
+	 * `--fluent-color-<name>` / `--fluent-color-<name>-contrast` (define them yourself).
 	 */
 
-	type BadgeColor = "brand" | "danger" | "important" | "informative" | "severe" | "subtle" | "success" | "warning" | (string & {})
+	type BadgeColor =
+		| "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark"
+		| "severe" | "subtle" | "brand" | "important" | "informative" | (string & {})
+
+	// Fluent badge colour names → shared palette names.
+	const colorAliases: Record<string, string> = {brand: "primary", important: "dark", informative: "light"}
+	const paletteName = (name: string) => colorAliases[name] ?? name
 	type BadgeAppearance = "accent" | "lightweight" | "neutral" | "outline" | "tint" | (string & {})
 	type BadgeSize = "extra-small" | "small" | "medium" | "large" | "extra-large"
 
@@ -82,10 +92,10 @@
 		if (!color && !effectiveFill) return ""
 		let styles = ""
 		if (effectiveFill) {
-			styles += `background-color: var(--badge-fill-${effectiveFill});`
+			styles += `background-color: var(--fluent-color-${paletteName(effectiveFill)});`
 		}
 		if (color) {
-			styles += `color: var(--badge-color-${color});`
+			styles += `color: var(--fluent-color-${paletteName(color)}-contrast);`
 		}
 		return styles
 	})

@@ -92,9 +92,7 @@
 		fluent-text-field::part(root),
 		fluent-number-field::part(root),
 		fluent-search::part(root),
-		fluent-text-area::part(control),
-		fluent-select::part(control),
-		fluent-combobox::part(control) {
+		fluent-text-area::part(control) {
 			border-bottom-color: var(--fluent-field-state-color);
 			box-shadow: inset 0 -1px 0 0 var(--fluent-field-state-color);
 		}

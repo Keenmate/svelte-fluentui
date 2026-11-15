@@ -67,7 +67,7 @@
 	.option-group-label {
 		position: sticky;
 		top: 0;
-		z-index: 1;
+		z-index: var(--fluent-z-raised);
 		padding: calc(var(--design-unit, 4) * 1.25 * 1px) calc(var(--design-unit, 4) * 2 * 1px);
 		background: var(--neutral-fill-secondary-rest, #f0f0f0);
 		border-top: 1px solid var(--neutral-stroke-divider-rest, #e0e0e0);
