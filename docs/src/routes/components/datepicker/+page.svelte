@@ -35,7 +35,7 @@
 	const properties: Property[] = [
 		{name: "id", type: "string", default: "undefined", description: "Id of the input (also the label's for)."},
 		{name: "value", type: "Date | null", default: "null", description: "The currently selected date. Supports two-way binding with bind:value."},
-		{name: "placeholder", type: "string", default: '"Select a date"', description: "Placeholder text shown in the text field when no date is selected."},
+		{name: "placeholder", type: "string", default: '"Select a date"', description: "Placeholder text shown in the text field when no date is selected. Wins over labels.placeholder."},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the date picker, preventing interaction."},
 		{name: "readonly", type: "boolean", default: "false", description: "Makes the date picker read-only; calendar cannot be opened."},
 		{name: "required", type: "boolean", default: "false", description: "Marks the field as required, showing a * indicator next to the label."},
@@ -58,11 +58,12 @@
 		{name: "closeOnSelect", type: "boolean", default: "true", description: "When true, the popup closes immediately after a date is picked."},
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the calendar popup (matching FluentUI Blazor). Set false to require clicking the calendar icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the calendar popup."},
-		{name: "openCalendarIconAriaLabel", type: "string", default: '"Open calendar"', description: "ARIA label for the calendar trigger button."},
-		{name: "popupAriaLabel", type: "string", default: '"Choose date"', description: "Accessible name of the calendar popup (role=\"dialog\"). Opening it from the keyboard (Enter / Space on the button, ArrowDown on the input) moves focus onto the calendar's focused date; closing from inside returns focus to the button."},
+		{name: "openCalendarIconAriaLabel", type: "string", default: '"Open calendar"', description: "ARIA label for the calendar trigger button. Wins over labels.openCalendar."},
+		{name: "popupAriaLabel", type: "string", default: '"Choose date"', description: "Accessible name of the calendar popup (role=\"dialog\"). Opening it from the keyboard (Enter / Space on the button, ArrowDown on the input) moves focus onto the calendar's focused date; closing from inside returns focus to the button. Wins over labels.popup."},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip (title) on the input."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names applied to the root element."},
 		{name: "style", type: "string", default: '""', description: "Inline styles applied to the root element."},
+		{name: "labels", type: "Partial<DatePickerLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultDatePickerLabels. Keys: placeholder, openCalendar, popup, clear, plus the CalendarLabels keys (previousPeriod, nextPeriod, maxSelectedDayCountExceeded), forwarded to the popup Calendar. The placeholder / openCalendarIconAriaLabel / popupAriaLabel props win when set."},
 	]
 
 	const callbacks: Property[] = [

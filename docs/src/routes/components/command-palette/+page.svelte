@@ -13,16 +13,17 @@
 	const properties: Property[] = [
 		{name: "items", type: "CommandPaletteItem[]", default: "required", description: "Searchable entries. Each is either navigation (href) or an action (onClick)"},
 		{name: "open", type: "boolean", default: "false", description: "Controlled, bindable open state. Drive it from your own trigger with bind:open"},
-		{name: "placeholder", type: "string", default: '"Search…"', description: "Input placeholder text"},
+		{name: "placeholder", type: "string", default: '"Search…"', description: "Input placeholder text Wins over labels.placeholder."},
 		{name: "homeItems", type: "CommandPaletteItem[]", default: "items", description: "Items shown on the idle screen (before typing), grouped by `group`. Defaults to the first maxResultCount of items"},
 		{name: "maxResultCount", type: "number", default: "50", description: "Maximum number of results rendered for a query"},
 		{name: "shortcut", type: "string", default: '"mod+k"', description: "Global shortcut that toggles the palette. mod = ⌘ on Mac, Ctrl elsewhere"},
 		{name: "enableShortcut", type: "boolean", default: "true", description: "Register the built-in global shortcut listener. Disable to drive open yourself"},
 		{name: "closeOnSelect", type: "boolean", default: "true", description: "Close the palette after an item is selected"},
-		{name: "emptyText", type: "string", default: "undefined", description: "Text shown when nothing matches (used when no empty snippet is given). Defaults to the built-in No matches / No items message"},
+		{name: "emptyText", type: "string", default: "undefined", description: "Text shown when nothing matches (used when no empty snippet is given). Defaults to the built-in No matches / No items message Wins over labels.noMatches / labels.noItems."},
 		{name: "filterCallback", type: "({items, term}) => CommandPaletteItem[]", default: "undefined", description: "Override the built-in fuzzy scorer with app-specific search (server-side, scopes, weighting)"},
 		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How the built-in scorer compares text: normalized ignores case and diacritics (cafe finds Café), case-insensitive ignores case only, exact matches both. Also drives the match highlight; no effect on filterCallback"},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the palette panel (role=dialog)"}
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the palette panel (role=dialog)"},
+		{name: "labels", type: "Partial<CommandPaletteLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultCommandPaletteLabels. Keys: dialog, placeholder, results, escapeHint, noMatches(query), noItems, navigateHint, selectHint, toggleHint. The placeholder / emptyText props and an aria-label attribute win."},
 	]
 
 	const itemShape: Property[] = [

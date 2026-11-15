@@ -43,7 +43,8 @@
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessible name (aria-label on fluent-dialog, mirrored to its inner role=dialog)"},
 		{name: "class", type: "string", default: "undefined", description: "Extra class on fluent-dialog"},
 		{name: "style", type: "string", default: "undefined", description: "Inline style on fluent-dialog"},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-dialog"}
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-dialog"},
+		{name: "labels", type: "Partial<DialogLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultDialogLabels. Keys: close (× button name), dismiss (dismissible button text)."},
 	]
 
 	const actions: Property[] = [

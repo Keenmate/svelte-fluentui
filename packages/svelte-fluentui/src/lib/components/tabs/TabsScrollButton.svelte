@@ -1,18 +1,21 @@
 <!-- Internal (Tabs): start / end scroll-arrow button overlaid on the tab strip edge (responsive="scroll"). Not exported from the package. -->
 
 <script lang="ts">
+	import type {TabsLabels} from "../Tabs.labels.js"
+
 	type Props = {
 		side: "start" | "end"
 		horizontal: boolean
 		rtl: boolean
+		labels: TabsLabels
 		onclick: () => void
 	}
 
-	let {side, horizontal, rtl, onclick}: Props = $props()
+	let {side, horizontal, rtl, labels, onclick}: Props = $props()
 
 	const ariaLabel = $derived(side === "start"
-		? (horizontal ? (rtl ? "Scroll tabs right" : "Scroll tabs left") : "Scroll tabs up")
-		: (horizontal ? (rtl ? "Scroll tabs left" : "Scroll tabs right") : "Scroll tabs down"))
+		? (horizontal ? (rtl ? labels.scrollRight : labels.scrollLeft) : labels.scrollUp)
+		: (horizontal ? (rtl ? labels.scrollLeft : labels.scrollRight) : labels.scrollDown))
 </script>
 
 <button

@@ -31,6 +31,7 @@ items collapse into a hamburger-toggled drawer (`Panel`).
 	import NavLinkItem from "../nav/NavLinkItem.svelte"
 	import DismissIcon from "../icons/DismissIcon.svelte"
 	import type {RestProps} from "../../types/index.js"
+	import {defaultTopNavLabels, type TopNavLabels} from "./TopNav.labels.js"
 
 	type NavGroupItem = {
 		title: string
@@ -67,6 +68,8 @@ items collapse into a hamburger-toggled drawer (`Panel`).
 		menuToggleSize?: number
 		/** Replaces the hamburger button; receives `{open, toggle}`. */
 		menuToggleTemplate?: Snippet<[{open: boolean; toggle: () => void}]>
+		/** User-facing strings; merged over `defaultTopNavLabels`. */
+		labels?: Partial<TopNavLabels>
 		/** Extra CSS classes on the root `<nav>`. */
 		class?: string
 		/** Inline style appended after the computed height. */
@@ -94,12 +97,15 @@ items collapse into a hamburger-toggled drawer (`Panel`).
 		height = 60,
 		menuToggleSize = 42,
 		menuToggleTemplate = undefined,
+		labels: labelsProp = undefined,
 		class: className = "",
 		style = "",
 		onAction = undefined,
 		beforeActionCallback = undefined,
 		...rest
 	}: Props = $props()
+
+	const labels = $derived<TopNavLabels>({...defaultTopNavLabels, ...(labelsProp ?? {})})
 
 	let mobileMenuOpen = $state(false)
 
@@ -205,7 +211,7 @@ items collapse into a hamburger-toggled drawer (`Panel`).
 						type="button"
 						class="mobile-menu-toggle"
 						onclick={toggleMobileMenu}
-						aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+						aria-label={mobileMenuOpen ? labels.closeMenu : labels.openMenu}
 						aria-expanded={mobileMenuOpen}
 					>
 						{#if mobileMenuOpen}

@@ -23,6 +23,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	import {getLargest, getSmallest} from "../helpers/array.js"
 	import {defaultLocale} from "../helpers/locale.js"
 	import type {RestProps} from "../types/index.js"
+	import {defaultCalendarLabels, type CalendarLabels} from "./Calendar.labels.js"
 
 	type OwnProps = {
 		/** Selected date in single mode. Bindable. Default: today. */
@@ -77,6 +78,8 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		onDayHover?: (ctx: {date: Date | null}) => void
 		/** Custom day-cell content; receives the `CalendarDay`. */
 		day?: Snippet<[day: CalendarDay]>
+		/** User-facing strings; merged over `defaultCalendarLabels`. Month and weekday names follow `culture`. */
+		labels?: Partial<CalendarLabels>
 		/** Extra classes for the root `<div>`. */
 		class?: string
 		/** Inline style for the root `<div>` (appended after the size variables). */
@@ -113,10 +116,13 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		    onPickerMonthChange             = undefined,
 		    onDayHover                      = undefined,
 		    day: daySnippet                 = undefined,
+		    labels: labelsProp              = undefined,
 		    class: className                = undefined,
 		    style                           = undefined,
 		    ...rest
 	    }: Props = $props()
+
+	const labels = $derived<CalendarLabels>({...defaultCalendarLabels, ...(labelsProp ?? {})})
 
 	let _rangeSelector                      = $state(new RangeOfDates())
 	let _rangeSelectorMouseOver             = $state(new RangeOfDates())
@@ -211,7 +217,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	function fireMaxExceeded(attempted: Date[]) {
 		onSelectionReject?.({
 			code:      "max-selected-day-count-exceeded",
-			message:   `You can select a maximum of ${maxSelectedDayCount} day${maxSelectedDayCount === 1 ? "" : "s"}. Delete a day to select a new one.`,
+			message:   labels.maxSelectedDayCountExceeded(maxSelectedDayCount as number),
 			attempted,
 			current:   selectedDates,
 			max:       maxSelectedDayCount as number
@@ -692,9 +698,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 						<div class="previous" aria-hidden="true" aria-disabled="true"></div>
 					{:else}
 						<div
-							class="previous" title="{titles.previousTitle}"
+							class="previous" title={labels.previousPeriod(titles.previousTitle, titles.view)}
 							role="button" tabindex={disabled ? null : 0}
-							aria-label={titles.previousTitle}
+							aria-label={labels.previousPeriod(titles.previousTitle, titles.view)}
 							onclick={onPreviousButtonClicked}
 							onkeydown={(ev) => activateOnKey(ev, () => onPreviousButtonClicked(ev as unknown as MouseEvent))}
 						>
@@ -705,9 +711,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 						<div class="next" aria-hidden="true" aria-disabled="true"></div>
 					{:else}
 						<div
-							class="next" title="{titles.nextTitle}"
+							class="next" title={labels.nextPeriod(titles.nextTitle, titles.view)}
 							role="button" tabindex={disabled ? null : 0}
-							aria-label={titles.nextTitle}
+							aria-label={labels.nextPeriod(titles.nextTitle, titles.view)}
 							onclick={onNextButtonHandlerAsync}
 							onkeydown={(ev) => activateOnKey(ev, () => onNextButtonHandlerAsync(ev as unknown as MouseEvent))}
 						>

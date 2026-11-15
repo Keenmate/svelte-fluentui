@@ -1,6 +1,6 @@
 <!-- @component
 Renders the toasts queued through the `toast` store (`toast.success(…)`, `toast.error(…)`, …) at their positions,
-in the browser top layer. Takes no props; mount it once, e.g. in the root layout.
+in the browser top layer. Mount it once, e.g. in the root layout; its only prop is `labels`.
 
 ```svelte
 <ToastContainer />
@@ -12,6 +12,14 @@ in the browser top layer. Takes no props; mount it once, e.g. in the root layout
 	import {onDestroy} from "svelte"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 	import {portal} from "../actions/portal.js"
+	import {defaultToastContainerLabels, type ToastContainerLabels} from "./ToastContainer.labels.js"
+
+	let {
+		/** User-facing strings; merged over `defaultToastContainerLabels`. */
+		labels: labelsProp = undefined
+	}: {labels?: Partial<ToastContainerLabels>} = $props()
+
+	const labels = $derived<ToastContainerLabels>({...defaultToastContainerLabels, ...(labelsProp ?? {})})
 
 	// Promote the toast container into the browser top layer via the Popover API.
 	// The top layer paints above ALL z-indexed content — including elements that
@@ -125,7 +133,7 @@ in the browser top layer. Takes no props; mount it once, e.g. in the root layout
 					</div>
 					<button
 						class="fluent-toast__close"
-						aria-label="Close"
+						aria-label={labels.close}
 						onclick={(e) => {
 							e.stopPropagation()
 							handleDismiss(toastItem.id)

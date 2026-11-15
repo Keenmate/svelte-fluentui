@@ -22,7 +22,8 @@
 		{name: "currentPageIndex", type: "number", default: "0", description: "Current page (0-based, bindable)"},
 		{name: "lastPageIndex", type: "number", default: "0", description: "Last page (0-based)"},
 		{name: "canGoBack", type: "boolean", default: "currentPageIndex > 0", description: "Allow navigating backwards"},
-		{name: "canGoForwards", type: "boolean", default: "currentPageIndex < lastPageIndex", description: "Allow navigating forwards"}
+		{name: "canGoForwards", type: "boolean", default: "currentPageIndex < lastPageIndex", description: "Allow navigating forwards"},
+		{name: "labels", type: "Partial<PaginatorLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultPaginatorLabels. Keys: pagination (nav name), firstPage, previousPage, nextPage, lastPage, pageInfo(page, pageCount), itemCount(count). Digit runs in pageInfo / itemCount render bold."},
 	]
 
 	const callbacks: Property[] = [

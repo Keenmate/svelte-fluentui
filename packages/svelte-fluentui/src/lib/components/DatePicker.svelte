@@ -27,13 +27,14 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	import {isAfterDay, isBeforeDay} from "../helpers/date.js"
 	import type {CalendarDay} from "../fluent-ui/calendar/calendar-day.js"
 	import type {RestProps} from "../types/index.js"
+	import {defaultDatePickerLabels, type DatePickerLabels} from "./DatePicker.labels.js"
 
 	type OwnProps = {
 		/** Id of the input (also the label's `for`). */
 		id?: string
 		/** Selected date (`null` when empty). Bindable. */
 		value?: Date | null
-		/** Input placeholder. Default: "Select a date". */
+		/** Input placeholder. Default: `labels.placeholder` ("Select a date"). */
 		placeholder?: string
 		/** Disable the input and the popup. */
 		disabled?: boolean
@@ -81,10 +82,12 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		openOnInputClick?: boolean
 		/** Bindable open state of the calendar popup. */
 		open?: boolean
-		/** Accessible name of the calendar icon button. Default: "Open calendar". */
+		/** Accessible name of the calendar icon button. Default: `labels.openCalendar` ("Open calendar"). */
 		openCalendarIconAriaLabel?: string
-		/** Accessible name of the calendar popup (`role="dialog"`). Default: "Choose date". */
+		/** Accessible name of the calendar popup (`role="dialog"`). Default: `labels.popup` ("Choose date"). */
 		popupAriaLabel?: string
+		/** User-facing strings (also the popup Calendar's); merged over `defaultDatePickerLabels`. Explicit `placeholder` / `openCalendarIconAriaLabel` / `popupAriaLabel` props win. */
+		labels?: Partial<DatePickerLabels>
 		/** Tooltip (`title`) on the input. */
 		title?: string
 		/** Extra class on the root. */
@@ -107,7 +110,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	let {
 		id = undefined,
 		value = $bindable(null),
-		placeholder = "Select a date",
+		placeholder = undefined,
 		disabled = false,
 		readonly = false,
 		required = false,
@@ -131,8 +134,9 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		closeOnSelect = true,
 		openOnInputClick = true,
 		open = $bindable(false),
-		openCalendarIconAriaLabel = "Open calendar",
-		popupAriaLabel = "Choose date",
+		openCalendarIconAriaLabel = undefined,
+		popupAriaLabel = undefined,
+		labels: labelsProp = undefined,
 		title = undefined,
 		class: className = "",
 		style = "",
@@ -142,6 +146,8 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		onPickerMonthChange = undefined,
 		...rest
 	}: Props = $props()
+
+	const labels = $derived<DatePickerLabels>({...defaultDatePickerLabels, ...(labelsProp ?? {})})
 
 	let inputValue = $state("")
 	// Bridge `open` prop with internal logic so $effect and bindable prop stay consistent.
@@ -297,7 +303,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		<TextField
 			{id}
 			value={inputValue}
-			{placeholder}
+			placeholder={placeholder ?? labels.placeholder}
 			{disabled}
 			readonly={true}
 			{required}
@@ -316,7 +322,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 					class="calendar-button"
 					onclick={handleInputClick}
 					disabled={disabled}
-					aria-label={openCalendarIconAriaLabel}
+					aria-label={openCalendarIconAriaLabel ?? labels.openCalendar}
 					aria-haspopup="dialog"
 					aria-expanded={isOpen ? "true" : "false"}
 					aria-controls={isOpen ? popupId : null}
@@ -332,7 +338,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 						type="button"
 						class="clear-button"
 						onclick={handleClear}
-						aria-label="Clear date"
+						aria-label={labels.clear}
 					>
 						<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
 							<path d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"/>
@@ -351,7 +357,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 				style="z-index: var(--fluent-z-popover); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);"
 			>
 				<!-- Padding lives here, not on the region, so a press anywhere on the popup is "inside". -->
-				<div class="datepicker-popup" bind:this={popupElement} id={popupId} role="dialog" aria-label={popupAriaLabel}>
+				<div class="datepicker-popup" bind:this={popupElement} id={popupId} role="dialog" aria-label={popupAriaLabel ?? labels.popup}>
 					<Calendar
 						value={value || new Date()}
 						pickerMonth={value || new Date()}
@@ -369,6 +375,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 						onChange={({value}) => handleDateSelected(value as Date)}
 						{onPickerMonthChange}
 						day={daySnippet}
+						{labels}
 					/>
 				</div>
 			</PositioningRegion>

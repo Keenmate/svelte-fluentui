@@ -42,6 +42,8 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
 	import {debounce} from "../helpers/debounce.js"
 	import {groupSegments} from "../helpers/option-groups.js"
+	import {chipNavFromChip, chipNavFromInput, type ChipNavOptions} from "../helpers/chip-nav.js"
+	import {defaultComboboxLabels, type ComboboxLabels} from "./Combobox.labels.js"
 	import {normalizeForSearch, startsWithText, type SearchBehavior} from "../helpers/text.js"
 	import {
 		OPTION_SELECTOR,
@@ -131,7 +133,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		tagsPosition?: "inline" | "top" | "bottom"
 		/** Minimum typed characters before the dropdown opens / filters (and `onSearch` fires). Default: no minimum. */
 		minSearchLength?: number
-		/** Text shown inside the dropdown when the filter matches no options. Default: "No results found". */
+		/** Text shown inside the dropdown when the filter matches no options. Default: `labels.emptyText` ("No results found"). */
 		emptyText?: string
 		/** Custom content shown when the filter matches no options; overrides `emptyText`. */
 		empty?: Snippet
@@ -150,8 +152,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		/** Parent-controlled loading flag (for async `onSearch`). While true the
 		 * dropdown shows `loadingText` instead of the empty-state message. */
 		loading?: boolean
-		/** Text shown while `loading` is true. Default: "Searching…". */
+		/** Text shown while `loading` is true. Default: `labels.loadingText` ("Searching…"). */
 		loadingText?: string
+		/** User-facing strings; merged over `defaultComboboxLabels`. Explicit `emptyText` / `loadingText` props win. */
+		labels?: Partial<ComboboxLabels>
 		/** Single-select: text the input shows for a `value` no rendered option has (e.g. a
 		 * result of an earlier async search). Default: empty. */
 		valueText?: string
@@ -211,14 +215,15 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		closeOnSelect = undefined,
 		tagsPosition = "inline",
 		minSearchLength = undefined,
-		emptyText = "No results found",
+		emptyText = undefined,
 		empty = undefined,
 		onSearch = undefined,
 		searchDelay = 250,
 		searchBehavior = "normalized",
 		filterCallback = undefined,
 		loading = undefined,
-		loadingText = "Searching…",
+		loadingText = undefined,
+		labels: labelsProp = undefined,
 		valueText = undefined,
 		openOnFocus = false,
 		selectValueOnTab = false,
@@ -320,7 +325,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	// doesn't flash before results arrive — even if the parent doesn't drive `loading`.
 	let searchPending = $state(false)
 
+	const labels = $derived<ComboboxLabels>({...defaultComboboxLabels, ...(labelsProp ?? {})})
+
 	let inputEl: HTMLInputElement | undefined = $state()
+	let mainEl: HTMLElement | undefined = $state()
 	let listEl: HTMLDivElement | undefined = $state()
 	// Hidden mirror of the options, always mounted, so display text resolves
 	// from `value` even while the portalled listbox is closed/unmounted.
@@ -578,13 +586,24 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		afterSelect(val)
 	}
 
-	// Remove a selected value (chip × button, or Backspace on an empty filter).
-	function removeValue(val: string, ev?: MouseEvent) {
+	// Remove a selected value (chip × button, Backspace on an empty filter, or
+	// Backspace / Delete on a focused chip — which keeps focus on the chips).
+	function removeValue(val: string, ev?: MouseEvent, refocus = true) {
 		ev?.stopPropagation()
 		if (disabled || readonly) return
 		selectionState.value = selectionState.value.filter(v => v !== val)
 		emitChange()
-		inputEl?.focus()
+		if (refocus) inputEl?.focus()
+	}
+
+	// Keyboard access to the inline chips (see helpers/chip-nav.ts).
+	const chipNav: ChipNavOptions = {
+		chips: () => inlineTags ? Array.from(mainEl?.querySelectorAll<HTMLElement>(".fluent-chip-remove") ?? []) : [],
+		input: () => inputEl,
+		remove: (index) => {
+			const val = selectionState.value[index]
+			if (val !== undefined) removeValue(val, undefined, false)
+		}
 	}
 
 	// Debounced server-side search notification. The parent updates `options`
@@ -638,6 +657,8 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 
 	function handleKeydown(ev: KeyboardEvent) {
 		if (disabled || readonly) return
+		// Multi-select: ArrowLeft at the start of the filter moves onto the chips.
+		if (multiple && chipNavFromInput(ev, chipNav)) return
 		// Multi-select: Backspace on an empty filter removes the last chip.
 		if (ev.key === "Backspace" && multiple && typed === "" && selectionState.value.length > 0) {
 			removeValue(selectionState.value[selectionState.value.length - 1])
@@ -752,7 +773,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				variant="external"
 				removeFocusable
 				showRemove={!disabled && !readonly}
-				removeLabel={`Remove ${chipLabel(val)}`}
+				removeLabel={labels.removeChip(chipLabel(val))}
 				onRemove={({sourceEvent: e}) => removeValue(val, e)}
 			/>
 		{/each}
@@ -825,7 +846,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		     indicator stays a separate box at the end — that lets the indicator span
 		     the control's full height once chips wrap onto multiple rows, matching
 		     Autocomplete's toggle. -->
-		<div class="combobox-main">
+		<!-- Keydown here only handles the inline chips' × buttons (arrow keys,
+		     Backspace / Delete); the input's own keys go to handleKeydown. -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="combobox-main" bind:this={mainEl} onkeydown={(ev) => { if (ev.target !== inputEl && !disabled && !readonly) chipNavFromChip(ev, chipNav) }}>
 			<!-- Inline tags: selected values render as removable chips before the input. -->
 			{#if inlineTags}
 				{#each selectionState.value as val (val)}
@@ -834,7 +858,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 						variant="inline"
 						contrast={readonly || appearance === "filled"}
 						showRemove={!disabled && !readonly}
-						removeLabel={`Remove ${chipLabel(val)}`}
+						removeLabel={labels.removeChip(chipLabel(val))}
 						onRemove={({sourceEvent: e}) => removeValue(val, e)}
 					/>
 				{/each}
@@ -912,11 +936,11 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				{#if displayedCount === 0}
 					<div class="combobox-no-data">
 						{#if loading || searchPending}
-							{loadingText}
+							{loadingText ?? labels.loadingText}
 						{:else if empty}
 							{@render empty()}
 						{:else}
-							{emptyText}
+							{emptyText ?? labels.emptyText}
 						{/if}
 					</div>
 				{/if}

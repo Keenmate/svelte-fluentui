@@ -16,6 +16,7 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
+	import {defaultPaginatorLabels, type PaginatorLabels} from "./Paginator.labels.js"
 
 	type OwnProps = {
 		/** Extra CSS class on the root `<div>`. */
@@ -40,6 +41,8 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 		summaryTemplate?: Snippet
 		/** Replaces the default "Page X of Y" text. */
 		paginationTextTemplate?: Snippet
+		/** User-facing strings; merged over `defaultPaginatorLabels`. */
+		labels?: Partial<PaginatorLabels>
 	}
 
 	/** Other native attributes and events go to the root `<div>`. */
@@ -57,8 +60,16 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 		onPageChange = undefined,
 		summaryTemplate = undefined,
 		paginationTextTemplate = undefined,
+		labels: labelsProp = undefined,
 		...rest
 	}: Props = $props()
+
+	const labels = $derived<PaginatorLabels>({...defaultPaginatorLabels, ...(labelsProp ?? {})})
+
+	// Label text split into digit runs (rendered bold) and the words around them.
+	function numberParts(text: string): {text: string; isNumber: boolean}[] {
+		return text.split(/(\d+)/).filter(Boolean).map((part) => ({text: part, isNumber: /^\d+$/.test(part)}))
+	}
 
 	const backEnabled = $derived(canGoBack ?? currentPageIndex > 0)
 	const forwardsEnabled = $derived(canGoForwards ?? currentPageIndex < lastPageIndex)
@@ -71,23 +82,27 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 	}
 </script>
 
+{#snippet boldNumbers(text: string)}
+	{#each numberParts(text) as part, i (i)}{#if part.isNumber}<strong>{part.text}</strong>{:else}{part.text}{/if}{/each}
+{/snippet}
+
 <div {...rest} class="paginator {className}" {style}>
 	{#if totalItemCount !== undefined}
 		<div class="summary">
 			{#if summaryTemplate}
 				{@render summaryTemplate?.()}
 			{:else}
-				<strong>{totalItemCount}</strong> items
+				{@render boldNumbers(labels.itemCount(totalItemCount))}
 			{/if}
 		</div>
 	{/if}
 
-	<nav class="paginator-nav" aria-label="Pagination">
+	<nav class="paginator-nav" aria-label={labels.pagination}>
 		<fluent-button
 			onclick={() => goTo(0)}
 			{...(!backEnabled || disabled ? { disabled: true } : {})}
-			title="Go to first page"
-			aria-label="Go to first page"
+			title={labels.firstPage}
+			aria-label={labels.firstPage}
 		>
 			<span>&laquo;</span>
 		</fluent-button>
@@ -95,8 +110,8 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 		<fluent-button
 			onclick={() => goTo(currentPageIndex - 1)}
 			{...(!backEnabled || disabled ? { disabled: true } : {})}
-			title="Go to previous page"
-			aria-label="Go to previous page"
+			title={labels.previousPage}
+			aria-label={labels.previousPage}
 		>
 			<span>&lsaquo;</span>
 		</fluent-button>
@@ -106,15 +121,15 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 			{#if paginationTextTemplate}
 				{@render paginationTextTemplate?.()}
 			{:else}
-				Page <strong>{currentPageIndex + 1}</strong> of <strong>{lastPageIndex + 1}</strong>
+				{@render boldNumbers(labels.pageInfo(currentPageIndex + 1, lastPageIndex + 1))}
 			{/if}
 		</div>
 
 		<fluent-button
 			onclick={() => goTo(currentPageIndex + 1)}
 			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}
-			title="Go to next page"
-			aria-label="Go to next page"
+			title={labels.nextPage}
+			aria-label={labels.nextPage}
 		>
 			<span>&rsaquo;</span>
 		</fluent-button>
@@ -122,8 +137,8 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 		<fluent-button
 			onclick={() => goTo(lastPageIndex)}
 			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}
-			title="Go to last page"
-			aria-label="Go to last page"
+			title={labels.lastPage}
+			aria-label={labels.lastPage}
 		>
 			<span>&raquo;</span>
 		</fluent-button>

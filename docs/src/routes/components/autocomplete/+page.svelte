@@ -164,7 +164,7 @@
 	const properties: Property[] = [
 		{name: "value", type: "T[]", default: "[]", description: "Array of selected values (bindable)"},
 		{name: "options", type: "OptionItem[]", default: "[]", description: "Available options for selection"},
-		{name: "placeholder", type: "string", default: '"Type to search..."', description: "Placeholder text for input"},
+		{name: "placeholder", type: "string", default: '"Type to search..."', description: "Placeholder text for input Wins over labels.placeholder."},
 		{name: "label", type: "string", default: "undefined", description: "Label text above component"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disable the component"},
 		{name: "readonly", type: "boolean", default: "false", description: "Read-only mode"},
@@ -181,7 +181,7 @@
 		{name: "showInitialOptions", type: "boolean", default: "false", description: "Show options on focus when empty"},
 		{name: "initialOptionsCount", type: "number", default: "maxResultCount", description: "Initial options count limit"},
 		{name: "closeOnSelect", type: "boolean", default: "!multiple", description: "Close the dropdown after a pick. Multi-select defaults to false (stays open so several can be chosen in a row); set true to close on each selection. Single-select always closes."},
-		{name: "emptyText", type: "string", default: "\"No results found\"", description: "Text shown in the dropdown when the search matches no options (with showOverlayOnEmptyResults)"},
+		{name: "emptyText", type: "string", default: "\"No results found\"", description: "Text shown in the dropdown when the search matches no options (with showOverlayOnEmptyResults) Wins over labels.emptyText."},
 		{name: "selectValueOnTab", type: "boolean", default: "true", description: "Select highlighted option on Tab key"},
 		{name: "tagsPosition", type: '"inline" | "top" | "bottom"', default: '"inline"', description: "Position of selected tags: inside input (inline), above input, or below input"},
 		{name: "searchDelay", type: "number", default: "0", description: "Debounce delay in ms before search"},
@@ -196,7 +196,8 @@
 		{name: "showSearchIcon", type: "boolean", default: "true", description: "Built-in magnifier in the end slot when nothing higher-priority (clear button, spinner, custom end) occupies it"},
 		{name: "initialSearchQuery", type: "string", default: '""', description: "Text to prefill and search with on mount (opens the dropdown)"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
-		{name: "style", type: "string", default: '""', description: "Inline styles"}
+		{name: "style", type: "string", default: '""', description: "Inline styles"},
+		{name: "labels", type: "Partial<AutocompleteLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultAutocompleteLabels. Keys: placeholder, emptyText, loading, clearSelection, showOptions, closeOptions, removeChip(label), maxSelectionReached(max). The placeholder / emptyText props win when set."},
 	]
 
 	const callbacks: Property[] = [
@@ -880,6 +881,24 @@ ${'<'}Autocomplete
     </div>
   {/snippet}
 </Autocomplete>`}</code></pre>
+	</Card>
+
+	<Card>
+		<h2>Keyboard: selected-value chips</h2>
+		<p>
+			In multiple mode with inline chips (<code>tagsPosition="inline"</code>, the default), every chip can be reached and removed from the keyboard.
+			The chips' × buttons stay out of the <kbd>Tab</kbd> order; focus moves onto them with the arrow keys.
+		</p>
+		<ul>
+			<li><kbd>ArrowLeft</kbd> with the caret at the start of the input — focus the last chip (<kbd>ArrowRight</kbd> in right-to-left).</li>
+			<li><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd> on a chip — previous / next chip; past the last chip, back to the input.</li>
+			<li><kbd>Home</kbd> — first chip; <kbd>End</kbd> — back to the input.</li>
+			<li><kbd>Backspace</kbd> — remove the focused chip and focus the previous one; <kbd>Delete</kbd> — remove it and focus the next one (the input when none is left).</li>
+			<li><kbd>Enter</kbd> / <kbd>Space</kbd> — remove the focused chip and return to the input.</li>
+			<li>Typing a character — back to the input, which receives it.</li>
+			<li><kbd>Backspace</kbd> in an empty input still removes the last chip.</li>
+		</ul>
+		<p>Each × is named by <code>labels.removeChip(label)</code> (default <code>"Remove &lt;label&gt;"</code>).</p>
 	</Card>
 
 	<Grid spacing={3}>

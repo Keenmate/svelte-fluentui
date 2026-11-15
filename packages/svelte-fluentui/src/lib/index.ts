@@ -137,6 +137,28 @@ export {default as Field} from "./components/Field.svelte"
 export type {FieldValidationState} from "./components/Field.svelte"
 export {default as ValidationSummary} from "./components/ValidationSummary.svelte"
 
+// Localisable labels: each component's `labels` prop takes a partial of its type,
+// merged over the exported English defaults.
+export {defaultAlertLabels, type AlertLabels} from "./components/Alert.labels.js"
+export {defaultAutocompleteLabels, type AutocompleteLabels} from "./components/Autocomplete.labels.js"
+export {defaultBadgeGroupLabels, type BadgeGroupLabels} from "./components/BadgeGroup.labels.js"
+export {defaultCalendarLabels, type CalendarLabels} from "./components/Calendar.labels.js"
+export {defaultChipLabels, type ChipLabels} from "./components/Chip.labels.js"
+export {defaultComboboxLabels, type ComboboxLabels} from "./components/Combobox.labels.js"
+export {defaultCommandPaletteLabels, type CommandPaletteLabels} from "./components/CommandPalette.labels.js"
+export {defaultCompositeBadgeLabels, type CompositeBadgeLabels} from "./components/CompositeBadge.labels.js"
+export {defaultDatePickerLabels, type DatePickerLabels} from "./components/DatePicker.labels.js"
+export {defaultDialogLabels, type DialogLabels} from "./components/Dialog.labels.js"
+export {DEFAULT_LABELS as defaultInputFileLabels} from "./components/InputFile.utils.js"
+export {defaultPaginatorLabels, type PaginatorLabels} from "./components/Paginator.labels.js"
+export {defaultPanelLabels, type PanelLabels} from "./components/layout/Panel.labels.js"
+export {defaultSiteSettingsLabels, type SiteSettingsLabels} from "./components/SiteSettings.labels.js"
+export {defaultTabsLabels, type TabsLabels} from "./components/Tabs.labels.js"
+export {defaultTimePickerLabels, type TimePickerLabels} from "./components/TimePicker.labels.js"
+export {defaultToastLabels, type ToastLabels} from "./components/Toast.labels.js"
+export {defaultToastContainerLabels, type ToastContainerLabels} from "./components/ToastContainer.labels.js"
+export {defaultTopNavLabels, type TopNavLabels} from "./components/layout/TopNav.labels.js"
+
 // Actions
 export {portal} from "./actions/portal.js"
 export type {PortalTarget} from "./actions/portal.js"

@@ -26,7 +26,8 @@
 		{name: "closeOnEscape", type: "boolean", default: "true", description: "Close the panel when Escape is pressed"},
 		{name: "pinned", type: "boolean", default: "false", description: "Render in place as a static <aside> (no portal, overlay, Escape or outside-click handling)"},
 		{name: "class", type: "string", default: "undefined", description: "Additional CSS class on the root"},
-		{name: "style", type: "string", default: "undefined", description: "Inline style appended on the panel surface"}
+		{name: "style", type: "string", default: "undefined", description: "Inline style appended on the panel surface"},
+		{name: "labels", type: "Partial<PanelLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultPanelLabels. Keys: close (overlay name)."},
 	]
 
 	const panelCallbacks: Property[] = [

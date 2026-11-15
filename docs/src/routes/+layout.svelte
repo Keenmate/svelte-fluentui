@@ -267,6 +267,7 @@
 			items: [
 				{label: "Getting Started", href: "/getting-started"},
 				{label: "Working with Icons", href: "/guides/icons"},
+				{label: "Localisation", href: "/guides/localisation"},
 				{label: "Layout Example", href: "/layout-example"}
 			]
 		},

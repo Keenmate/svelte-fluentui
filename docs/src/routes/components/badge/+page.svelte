@@ -43,20 +43,22 @@
 		{name: "label", type: "Snippet", default: "undefined", description: "Middle label section content."},
 		{name: "button", type: "Snippet", default: "× glyph", description: "Right button section content."},
 		{name: "showButton", type: "boolean", default: "true", description: "Render the button section."},
-		{name: "buttonTitle", type: "string", default: "undefined", description: "Accessible title/tooltip for the button."},
+		{name: "buttonTitle", type: "string", default: "undefined", description: "Tooltip of the button; with the built-in × also its accessible name (default labels.dismiss)."},
 		{name: "onLabelClick", type: "(ctx: {sourceEvent}) => void", default: "undefined", description: "Label click handler (adds pointer/hover)."},
 		{name: "onButtonClick", type: "(ctx: {sourceEvent}) => void", default: "undefined", description: "Button click handler."},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the CompositeBadge root div"}
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the CompositeBadge root div"},
+		{name: "labels", type: "Partial<CompositeBadgeLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultCompositeBadgeLabels. Keys: dismiss (accessible name of the built-in × button). buttonTitle wins when set."},
 	]
 
 	const groupProps: Property[] = [
 		{name: "maxVisibleBadgeCount", type: "number", default: "5", description: "Max badges shown before overflow is hidden."},
 		{name: "showAll", type: "boolean", default: "false", description: "Reveal all children, ignoring maxVisibleBadgeCount. Bindable: in expandable mode the built-in toggle writes it, so bind:showAll tracks the expanded state."},
 		{name: "expandable", type: "boolean", default: "false", description: "Render a built-in clickable +N more / Show less toggle (don't supply a manual tail)."},
-		{name: "moreLabel", type: "(hiddenCount: number) => string", default: "n => `+${n} more`", description: "Label for the collapsed toggle."},
-		{name: "lessLabel", type: "string", default: '"Show less"', description: "Label for the expanded toggle."},
+		{name: "moreLabel", type: "(hiddenCount: number) => string", default: "n => `+${n} more`", description: "Label for the collapsed toggle. Wins over labels.more."},
+		{name: "lessLabel", type: "string", default: '"Show less"', description: "Label for the expanded toggle. Wins over labels.less."},
 		{name: "gap", type: "string", default: '"0.5rem"', description: "Gap between badges (any CSS length)."},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the BadgeGroup root div"}
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the BadgeGroup root div"},
+		{name: "labels", type: "Partial<BadgeGroupLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultBadgeGroupLabels. Keys: more(hiddenCount), less. The moreLabel / lessLabel props win when set."},
 	]
 
 	const callbacks: Property[] = [

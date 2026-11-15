@@ -24,6 +24,7 @@ For queued, auto-dismissing toasts use `ToastContainer` with the toast service.
 	import DismissIcon from "./icons/DismissIcon.svelte"
 	import {resolveActionItem, runAction} from "../action-items/index.js"
 	import type {RestProps} from "../types/index.js"
+	import {defaultToastLabels, type ToastLabels} from "./Toast.labels.js"
 
 	type OwnProps = {
 		/** Id of the root element. */
@@ -48,6 +49,8 @@ For queued, auto-dismissing toasts use `ToastContainer` with the toast service.
 		beforeActionCallback?: (detail: ToastActionDetail) => unknown
 		/** Body content between the header and the footer links. */
 		children?: Snippet
+		/** User-facing strings; merged over `defaultToastLabels`. */
+		labels?: Partial<ToastLabels>
 	}
 
 	/** Other native attributes and events (`class`, `style`, `role`, `aria-*`, …) go to the root `<div>`. */
@@ -65,9 +68,12 @@ For queued, auto-dismissing toasts use `ToastContainer` with the toast service.
 		onAction,
 		beforeActionCallback,
 		children,
+		labels: labelsProp = undefined,
 		class: className = undefined,
 		...rest
 	}: Props = $props()
+
+	const labels = $derived<ToastLabels>({...defaultToastLabels, ...(labelsProp ?? {})})
 
 	function handleDismiss(event: MouseEvent) {
 		onDismiss?.({sourceEvent: event})
@@ -194,7 +200,7 @@ For queued, auto-dismissing toasts use `ToastContainer` with the toast service.
 
 		<div class="fluent-toast-action">
 			{#if topCTAType === 'dismiss'}
-				<button title="Close" onclick={handleDismiss} aria-label="Dismiss" class="dismiss-button">
+				<button title={labels.dismissTitle} onclick={handleDismiss} aria-label={labels.dismiss} class="dismiss-button">
 					<DismissIcon size={14} />
 				</button>
 			{:else if topCTAType === 'timestamp' && timestamp}

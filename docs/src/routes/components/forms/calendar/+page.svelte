@@ -107,7 +107,8 @@
 		{name: "disabled", type: "boolean", default: "false", description: "Blocks interaction AND visually de-emphasizes the whole calendar (reduced opacity, not-allowed cursor on interactive cells). ARIA: sets aria-disabled on the host."},
 		{name: "getDatesToHighlightCallback", type: "(ctx: {date: Date}) => Date[]", default: "undefined", description: "Hover preview — returns the dates to highlight when the cursor is over a day"},
 		{name: "getDatesToSelectCallback", type: "(ctx: {date: Date}) => Date[]", default: "undefined", description: "Click selection — returns the dates to select on click. Multiple mode unions with existing; range mode replaces"},
-		{name: "maxSelectedDayCount", type: "number", default: "undefined", description: "Upper bound on selected dates (multiple/range). Exceeding fires onSelectionReject and leaves the selection untouched"}
+		{name: "maxSelectedDayCount", type: "number", default: "undefined", description: "Upper bound on selected dates (multiple/range). Exceeding fires onSelectionReject and leaves the selection untouched"},
+		{name: "labels", type: "Partial<CalendarLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultCalendarLabels. Keys: previousPeriod(title, view) / nextPeriod(title, view) (arrow names; default: the localised target month / year / range), maxSelectedDayCountExceeded(max) (onSelectionReject message). Month and weekday names follow culture."},
 	]
 
 	const actions: Property[] = []

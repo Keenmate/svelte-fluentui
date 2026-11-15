@@ -10,6 +10,7 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
 	import {buttonLike} from "../helpers/button-like.js"
+	import {defaultCompositeBadgeLabels, type CompositeBadgeLabels} from "./CompositeBadge.labels.js"
 	/**
 	 * CompositeBadge — a three-section chip: [icon][label][button].
 	 * Use for notification pills, status + count, or interactive/dismissible
@@ -38,8 +39,10 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 		button?: Snippet
 		/** Render the button section. Default: `true`. */
 		showButton?: boolean
-		/** Accessible title/tooltip for the button. */
+		/** Tooltip of the button; with the built-in × also its accessible name (default `labels.dismiss`). */
 		buttonTitle?: string
+		/** User-facing strings; merged over `defaultCompositeBadgeLabels`. An explicit `buttonTitle` wins. */
+		labels?: Partial<CompositeBadgeLabels>
 		/** Fires when the user clicks the label section (makes it look clickable). */
 		onLabelClick?: (ctx: {sourceEvent: MouseEvent}) => void
 		/** Fires when the user clicks the button section. */
@@ -64,10 +67,15 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 		buttonTitle = undefined,
 		onLabelClick = undefined,
 		onButtonClick = undefined,
+		labels: labelsProp = undefined,
 		class: className = "",
 		style = "",
 		...rest
 	}: Props = $props()
+
+	const labels = $derived<CompositeBadgeLabels>({...defaultCompositeBadgeLabels, ...(labelsProp ?? {})})
+	// The built-in × glyph needs a name; custom `button` content names itself.
+	const buttonAriaLabel = $derived(button ? null : (buttonTitle || labels.dismiss))
 
 	let classes = $derived.by(() => {
 		let cls = ["composite-badge", `composite-badge-${color}`]
@@ -84,7 +92,7 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 	<!-- With `onLabelClick` the label becomes role="button" + tab stop + Enter / Space (buttonLike). -->
 	<span {...buttonLike(!!onLabelClick)} class="composite-badge-label" onclick={onLabelClick ? (event) => onLabelClick({sourceEvent: event}) : undefined}>{@render label?.()}</span>
 	{#if showButton}
-		<button class="composite-badge-button" type="button" title={buttonTitle || null} onclick={(event) => onButtonClick?.({sourceEvent: event})}>
+		<button class="composite-badge-button" type="button" title={buttonTitle || null} aria-label={buttonAriaLabel} onclick={(event) => onButtonClick?.({sourceEvent: event})}>
 			{#if button}{@render button()}{:else}&times;{/if}
 		</button>
 	{/if}

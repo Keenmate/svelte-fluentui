@@ -72,7 +72,8 @@
 		{name: "menuToggleTemplate", type: "Snippet<[{open, toggle}]>", default: "undefined", description: "Replaces the default hamburger button"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class"},
 		{name: "style", type: "string", default: '""', description: "Inline style appended after the computed height"},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root nav"}
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root nav"},
+		{name: "labels", type: "Partial<TopNavLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultTopNavLabels. Keys: openMenu, closeMenu (mobile menu toggle names)."},
 	]
 
 	const topNavCallbacks: Property[] = []

@@ -137,6 +137,7 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {resolveActionItem, runAction} from "../action-items/index.js"
 	import type {RestProps} from "../types/index.js"
+	import {defaultDialogLabels, type DialogLabels} from "./Dialog.labels.js"
 
 
 	type OwnProps = {
@@ -171,7 +172,7 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 		secondaryAction?: DialogAction
 		/** Extra footer content rendered before the Dismiss / action buttons. Ignored when `footer` is set. */
 		actions?: Snippet
-		/** Label of the `dismissible` button. Default: "Dismiss". */
+		/** Label of the `dismissible` button. Default: `labels.dismiss` ("Dismiss"). */
 		dismissButtonText?: Snippet
 		/** Fires when the dialog opens or closes. */
 		onOpenChange?: (ctx: {open: boolean}) => void
@@ -193,6 +194,8 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 		width?: string
 		/** CSS height; overrides the `size` height (`auto` for presets). */
 		height?: string
+		/** User-facing strings; merged over `defaultDialogLabels`. */
+		labels?: Partial<DialogLabels>
 		/** Extra class on `<fluent-dialog>`. */
 		class?: string
 		/** Inline style on `<fluent-dialog>`. */
@@ -227,10 +230,13 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 		    size = "medium",
 		    width = undefined,
 		    height = undefined,
+		    labels: labelsProp = undefined,
 		    class: className = undefined,
 		    style = undefined,
 		    ...rest
 	    }: Props = $props()
+
+	const labels = $derived<DialogLabels>({...defaultDialogLabels, ...(labelsProp ?? {})})
 
 	// Size mappings
 	const sizeMap = {
@@ -415,7 +421,7 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 				{:else}
 					<div class="dialog-title">{title}</div>
 					{#if !preventClose}
-						<Button appearance="stealth" onclick={() => requestClose("close-button")} aria-label="Close dialog">
+						<Button appearance="stealth" onclick={() => requestClose("close-button")} aria-label={labels.close}>
 							<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
 								<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
 							</svg>
@@ -428,7 +434,7 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 				type="button"
 				class="dialog-close-floating"
 				onclick={() => requestClose("close-button")}
-				aria-label="Close dialog"
+				aria-label={labels.close}
 			>
 				<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
 					<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
@@ -455,7 +461,7 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 							{#if dismissButtonText}
 								{@render dismissButtonText()}
 							{:else}
-								Dismiss
+								{labels.dismiss}
 							{/if}
 						</Button>
 					{/if}

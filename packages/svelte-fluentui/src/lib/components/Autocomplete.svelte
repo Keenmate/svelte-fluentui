@@ -20,6 +20,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	import { untrack } from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Chip from "./Chip.svelte"
+	import {chipNavFromChip, chipNavFromInput, type ChipNavOptions} from "../helpers/chip-nav.js"
+	import {defaultAutocompleteLabels, type AutocompleteLabels} from "./Autocomplete.labels.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
@@ -32,7 +34,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		value?: T[]
 		/** Local options searched as you type. */
 		options?: OptionItem<T>[]
-		/** Input placeholder. Default: `"Type to search..."`. */
+		/** Input placeholder. Default: `labels.placeholder` (`"Type to search..."`). */
 		placeholder?: string
 		/** Disable the control. */
 		disabled?: boolean
@@ -100,7 +102,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		footerContent?: Snippet
 		/** Custom option row; receives the option. */
 		optionTemplate?: Snippet<[OptionItem<T>]>
-		/** Text shown in the dropdown when the search matches no options (with `showOverlayOnEmptyResults`). Default: `"No results found"`. */
+		/** Text shown in the dropdown when the search matches no options (with `showOverlayOnEmptyResults`). Default: `labels.emptyText` (`"No results found"`). */
 		emptyText?: string
 		/** Custom content shown when the search matches no options; overrides `emptyText`. */
 		empty?: Snippet
@@ -133,6 +135,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		/** Fires on every open/close transition of the dropdown after mount (user
 		 * interaction or `bind:open`); not on initial render. */
 		onOpenChange?: (ctx: {open: boolean}) => void
+		/** User-facing strings; merged over `defaultAutocompleteLabels`. Explicit `placeholder` / `emptyText` props win. */
+		labels?: Partial<AutocompleteLabels>
 	}
 
 	/** Other native attributes and events go to the root `<div>`. */
@@ -141,7 +145,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	let {
 		value: selectedOptions = $bindable([]),
 		options = [],
-		placeholder = "Type to search...",
+		placeholder = undefined,
 		disabled = false,
 		readonly = false,
 		required = false,
@@ -172,7 +176,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		headerContent = undefined,
 		footerContent = undefined,
 		optionTemplate = undefined,
-		emptyText = "No results found",
+		emptyText = undefined,
 		empty = undefined,
 		start = undefined,
 		end = undefined,
@@ -185,8 +189,11 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		onChange = undefined,
 		open = $bindable(undefined),
 		onOpenChange = undefined,
+		labels: labelsProp = undefined,
 		...rest
 	}: Props = $props()
+
+	const labels = $derived<AutocompleteLabels>({...defaultAutocompleteLabels, ...(labelsProp ?? {})})
 
 	let searchText = $state("")
 	let isOpen = $state(false)
@@ -201,6 +208,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	let inputElement = $state<HTMLInputElement | undefined>(undefined)
 	let isFocused = $state(false)
 	let optionsListElement = $state<HTMLElement | undefined>(undefined)
+	let inputMainElement = $state<HTMLElement | undefined>(undefined)
 
 	// Keyboard cursor over the rendered option rows.
 	const nav = new ListNav({
@@ -371,6 +379,24 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		onChange?.({value: selectedOptions})
 	}
 
+	// A keyboard-activated × (Enter / Space: click with detail 0) unmounts the focused
+	// button, so hand focus back to the input; a mouse removal leaves focus alone.
+	function removeOptionFromChip(value: any, event: MouseEvent) {
+		removeOption(value, event)
+		if (event.detail === 0) inputElement?.focus()
+	}
+
+	// Keyboard access to the inline chips (see helpers/chip-nav.ts).
+	const chipNav: ChipNavOptions = {
+		chips: () => tagsPosition === "inline" && showTags
+			? Array.from(inputMainElement?.querySelectorAll<HTMLElement>(".fluent-chip-remove") ?? [])
+			: [],
+		input: () => inputElement,
+		remove: (index) => {
+			if (index < selectedOptions.length) removeOption(selectedOptions[index])
+		}
+	}
+
 	// Get display text for a selected value. Prefer the local `options` prop, then
 	// the label cached at selection time (covers async `searchCallback` results
 	// that aren't in `options`), and only then fall back to the raw value.
@@ -487,6 +513,9 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 			showAllOptions()
 			return
 		}
+
+		// ArrowLeft at the start of the input moves onto the inline chips
+		if (effectiveMultiple && !disabled && !readonly && chipNavFromInput(event, chipNav)) return
 
 		// Handle backspace to remove last chip when input is empty
 		if (event.key === "Backspace" && searchText === "" && effectiveMultiple && selectedOptions.length > 0) {
@@ -605,7 +634,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	let effectivePlaceholder = $derived(
 		(tagsPosition === 'inline' && selectedOptions.length > 0 && effectiveMultiple)
 			? ''
-			: placeholder
+			: (placeholder ?? labels.placeholder)
 	)
 
 	// Handle input change
@@ -690,6 +719,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 						variant="external"
 						removeFocusable
 						showRemove={!disabled && !readonly}
+						removeLabel={labels.removeChip(getOptionText(value))}
 						onRemove={({sourceEvent: e}) => removeOption(value, e)}
 					/>
 				{/each}
@@ -715,7 +745,13 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 				 the end, so removing/adding chips only reflows here and never moves the
 				 magnifier. In non-inline mode this wrapper is display:contents (transparent),
 				 leaving the single-line input + absolutely-placed icons untouched. -->
-			<div class="autocomplete-input-main">
+			<!-- Keydown here only handles the inline chips' × buttons (arrow keys,
+			     Backspace / Delete); the input's own keys go to handleKeyDown. -->
+			<div
+				class="autocomplete-input-main"
+				bind:this={inputMainElement}
+				onkeydown={(ev) => { if (ev.target !== inputElement && !disabled && !readonly) chipNavFromChip(ev, chipNav) }}
+			>
 				<!-- Start icon slot (e.g. search magnifying glass) -->
 				{#if start}
 					<div class="input-start">
@@ -731,7 +767,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 						variant="inline"
 						contrast={readonly || appearance === 'filled'}
 						showRemove={!disabled && !readonly}
-						onRemove={({sourceEvent: e}) => removeOption(value, e)}
+						removeLabel={labels.removeChip(getOptionText(value))}
+						onRemove={({sourceEvent: e}) => removeOptionFromChip(value, e)}
 					/>
 				{/each}
 			{/if}
@@ -775,15 +812,15 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 							type="button"
 							class="clear-button"
 							onclick={clearSingleSelection}
-							aria-label="Clear selection"
-							title="Clear selection"
+							aria-label={labels.clearSelection}
+							title={labels.clearSelection}
 						>
 							<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
 								<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
 							</svg>
 						</button>
 					{:else if showLoading}
-						<div class="loading-indicator">
+						<div class="loading-indicator" role="img" aria-label={labels.loading}>
 							<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" class="spinner">
 								<circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none" opacity="0.25"/>
 								<path d="M8 1a7 7 0 0 1 7 7" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -797,7 +834,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 							class="search-button"
 							tabindex="-1"
 							onclick={toggleDropdown}
-							aria-label={isOpen ? "Close options" : "Show options"}
+							aria-label={isOpen ? labels.closeOptions : labels.showOptions}
 							disabled={disabled || readonly}
 						>
 							<!-- FluentUI ic_fluent_search_16_regular -->
@@ -819,6 +856,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 						variant="external"
 						removeFocusable
 						showRemove={!disabled && !readonly}
+						removeLabel={labels.removeChip(getOptionText(value))}
 						onRemove={({sourceEvent: e}) => removeOption(value, e)}
 					/>
 				{/each}
@@ -866,7 +904,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 						{/each}
 					</div>
 					{#if filteredOptions.length === 0 && showOverlayOnEmptyResults}
-						<div class="no-results">{#if empty}{@render empty()}{:else}{emptyText}{/if}</div>
+						<div class="no-results">{#if empty}{@render empty()}{:else}{emptyText ?? labels.emptyText}{/if}</div>
 					{/if}
 					{#if footerContent}
 						<div class="options-footer">
@@ -880,7 +918,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		<!-- Max selections message - Don't show for single-select -->
 		{#if isMaxReached && !isSingleSelect}
 			<div class="max-message" role="status">
-				Maximum {maxSelectionCount} selection{maxSelectionCount !== 1 ? 's' : ''} reached
+				{labels.maxSelectionReached(maxSelectionCount as number)}
 			</div>
 		{/if}
 	</div>

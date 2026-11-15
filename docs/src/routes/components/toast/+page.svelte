@@ -25,7 +25,8 @@
 		{name: "topAction", type: "string | ActionItem", default: "undefined", description: "Top right action link (with topCTAType=\"action\"); a plain string gets id \"top\""},
 		{name: "primaryAction", type: "string | ActionItem", default: "undefined", description: "Primary link at the bottom; a plain string gets id \"primary\""},
 		{name: "secondaryAction", type: "string | ActionItem", default: "undefined", description: "Secondary link at the bottom; a plain string gets id \"secondary\""},
-		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
+		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"},
+		{name: "labels", type: "Partial<ToastLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultToastLabels. Keys: dismiss (× button name), dismissTitle (× tooltip)."},
 	]
 
 	const callbacks: Property[] = [

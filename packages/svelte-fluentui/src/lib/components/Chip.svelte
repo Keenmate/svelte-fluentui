@@ -19,12 +19,14 @@ Theme it with the `--fluent-chip-*` custom properties.
  *   true when the host background equals the chip's default fill (readonly / filled
  *   fields), so the chip swaps to a white fill + inset ring to stay visible.
  * removeFocusable:
- *   false (default) keeps the × out of the Tab order — Combobox/Autocomplete remove
- *   chips with Backspace from their input. Standalone chips should set it to true.
+ *   false (default) keeps the × out of the Tab order — Combobox/Autocomplete reach
+ *   their inline chips with ArrowLeft from the input (helpers/chip-nav.ts) and remove
+ *   them with Backspace / Delete. Standalone chips should set it to true.
 -->
 
 <script lang="ts">
 	import type {RestProps} from "../types/index.js"
+	import {defaultChipLabels, type ChipLabels} from "./Chip.labels.js"
 
 	type OwnProps = {
 		/** Chip text. */
@@ -35,13 +37,15 @@ Theme it with the `--fluent-chip-*` custom properties.
 		contrast?: boolean
 		/** Render the × remove button. Default: `true`. */
 		showRemove?: boolean
-		/** Accessible label/tooltip of the × button. Default: `Remove <text>`. */
+		/** Accessible label/tooltip of the × button. Default: `labels.remove(text)` (`Remove <text>`). */
 		removeLabel?: string
-		/** Put the × button in the Tab order. Default: `false` (hosts like Combobox remove chips via Backspace);
+		/** Put the × button in the Tab order. Default: `false` (hosts like Combobox move focus onto chips with the arrow keys);
 		 * set `true` for standalone chips so keyboard users can reach it. */
 		removeFocusable?: boolean
 		/** Native tooltip on the chip. */
 		title?: string
+		/** User-facing strings; merged over `defaultChipLabels`. An explicit `removeLabel` wins. */
+		labels?: Partial<ChipLabels>
 		/** Fires when the user activates the remove (×) button. */
 		onRemove?: (ctx: {sourceEvent: MouseEvent}) => void
 	}
@@ -58,9 +62,13 @@ Theme it with the `--fluent-chip-*` custom properties.
 		removeFocusable = false,
 		title = undefined,
 		onRemove = undefined,
+		labels: labelsProp = undefined,
 		class: className = "",
 		...rest
 	}: Props = $props()
+
+	const labels = $derived<ChipLabels>({...defaultChipLabels, ...(labelsProp ?? {})})
+	const effectiveRemoveLabel = $derived(removeLabel ?? labels.remove(text))
 </script>
 
 <span
@@ -76,8 +84,8 @@ Theme it with the `--fluent-chip-*` custom properties.
 			type="button"
 			class="fluent-chip-remove"
 			tabindex={removeFocusable ? 0 : -1}
-			aria-label={removeLabel ?? `Remove ${text}`}
-			title={removeLabel ?? `Remove ${text}`}
+			aria-label={effectiveRemoveLabel}
+			title={effectiveRemoveLabel}
 			onclick={(event) => onRemove?.({sourceEvent: event})}
 		>
 			<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
@@ -142,6 +150,11 @@ Theme it with the `--fluent-chip-*` custom properties.
 	.fluent-chip-remove:hover {
 		background: var(--fluent-chip-remove-bg-hover, var(--neutral-fill-secondary-hover, #e0e0e0));
 		color: var(--fluent-chip-remove-text-hover, var(--accent-fill-hover, #106ebe));
+	}
+
+	/* Keyboard focus on the × (arrow keys from a Combobox / Autocomplete input) rings the whole chip. */
+	.fluent-chip:has(.fluent-chip-remove:focus-visible) {
+		box-shadow: inset 0 0 0 1px var(--accent-fill-rest, #0078d4);
 	}
 
 	.fluent-chip-remove:focus-visible {

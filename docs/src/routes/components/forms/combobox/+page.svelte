@@ -184,14 +184,14 @@
 		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder text"},
 		{name: "autocomplete", type: '"inline" | "list" | "both" | "none"', default: "undefined", description: "Autocomplete behavior"},
 		{name: "minSearchLength", type: "number", default: "undefined", description: "Keep dropdown closed until the typed text reaches this length. Useful with large/async option sets to avoid opening on a single character."},
-		{name: "emptyText", type: "string", default: '"No results found"', description: "Text shown inside the dropdown when the filter matches no options."},
+		{name: "emptyText", type: "string", default: '"No results found"', description: "Text shown inside the dropdown when the filter matches no options. Wins over labels.emptyText."},
 		{name: "empty", type: "Snippet", default: "undefined", description: "Custom content shown when the filter matches no options; overrides emptyText."},
 		{name: "onSearch", type: "(ctx: {term: string}) => void", default: "undefined", description: "Debounced notification that the search term changed. When set, update options with the results yourself; the component skips its own client-side filtering."},
 		{name: "searchDelay", type: "number", default: "250", description: "Debounce in ms before onSearch fires. Ignored without onSearch."},
 		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How filtering and inline completion compare text: normalized ignores case and diacritics (zurich finds Zürich), case-insensitive ignores case only, exact matches both. No effect on filterCallback or onSearch."},
 		{name: "filterCallback", type: "(ctx: {term, option}) => boolean", default: "undefined", description: "Custom client-side matcher replacing the built-in substring match. Ignored when onSearch is set."},
 		{name: "loading", type: "boolean", default: "undefined", description: "Parent-controlled loading flag for async onSearch; shows loadingText instead of the empty-state message while true."},
-		{name: "loadingText", type: "string", default: '"Searching…"', description: "Text shown while loading is true."},
+		{name: "loadingText", type: "string", default: '"Searching…"', description: "Text shown while loading is true. Wins over labels.loadingText."},
 		{name: "valueText", type: "string", default: "undefined", description: "Single-select: text the input shows for a value no rendered option has (e.g. a result of an earlier async search)."},
 		{name: "openOnFocus", type: "boolean", default: "false", description: "Open the dropdown when the input receives focus from outside the control."},
 		{name: "selectValueOnTab", type: "boolean", default: "false", description: "Tab on the open list picks the highlighted option before focus moves on."},
@@ -214,7 +214,8 @@
 		{name: "maxDropdownHeight", type: "string", default: "undefined (280px cap)", description: "Cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
-		{name: "style", type: "string", default: '""', description: "Inline styles"}
+		{name: "style", type: "string", default: '""', description: "Inline styles"},
+		{name: "labels", type: "Partial<ComboboxLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultComboboxLabels. Keys: emptyText, loadingText, removeChip(label). The emptyText / loadingText props win when set."},
 	]
 
 	const callbacks: Property[] = [
@@ -284,7 +285,8 @@
 		<p>
 			Set <code>multiple</code> to select several values. Picked options render as removable chips inside
 			the control and the input stays a filter (type to narrow, click or <kbd>Enter</kbd> to toggle,
-			<kbd>Backspace</kbd> on an empty filter removes the last chip). By default the dropdown stays open after
+			<kbd>Backspace</kbd> on an empty filter removes the last chip, <kbd>ArrowLeft</kbd> moves onto the chips — see
+			<em>Keyboard: selected-value chips</em> below). By default the dropdown stays open after
 			each pick (<code>closeOnSelect</code> defaults to <code>false</code> in multiple mode) so you can choose several in a row — the
 			right-hand example sets <code>closeOnSelect={"{true}"}</code> to close on each pick.
 		</p>
@@ -649,6 +651,24 @@
 				</Stack>
 			</GridItem>
 		</Grid>
+	</Card>
+
+	<Card>
+		<h2>Keyboard: selected-value chips</h2>
+		<p>
+			In multiple mode with inline chips (<code>tagsPosition="inline"</code>, the default), every chip can be reached and removed from the keyboard.
+			The chips' × buttons stay out of the <kbd>Tab</kbd> order; focus moves onto them with the arrow keys.
+		</p>
+		<ul>
+			<li><kbd>ArrowLeft</kbd> with the caret at the start of the input — focus the last chip (<kbd>ArrowRight</kbd> in right-to-left).</li>
+			<li><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd> on a chip — previous / next chip; past the last chip, back to the input.</li>
+			<li><kbd>Home</kbd> — first chip; <kbd>End</kbd> — back to the input.</li>
+			<li><kbd>Backspace</kbd> — remove the focused chip and focus the previous one; <kbd>Delete</kbd> — remove it and focus the next one (the input when none is left).</li>
+			<li><kbd>Enter</kbd> / <kbd>Space</kbd> — remove the focused chip and return to the input.</li>
+			<li>Typing a character — back to the input, which receives it.</li>
+			<li><kbd>Backspace</kbd> in an empty input still removes the last chip.</li>
+		</ul>
+		<p>Each × is named by <code>labels.removeChip(label)</code> (default <code>"Remove &lt;label&gt;"</code>).</p>
 	</Card>
 
 	<Grid spacing={3}>

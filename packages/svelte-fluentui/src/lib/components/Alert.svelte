@@ -10,6 +10,7 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
 	import DismissIcon from "./icons/DismissIcon.svelte"
+	import {defaultAlertLabels, type AlertLabels} from "./Alert.labels.js"
 
 	type Intent = 'info' | 'success' | 'warning' | 'error'
 
@@ -30,6 +31,8 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 		icon?: Snippet
 		/** Alert body. */
 		children?: Snippet
+		/** User-facing strings; merged over `defaultAlertLabels`. */
+		labels?: Partial<AlertLabels>
 	}
 
 	/** Other native attributes and events (`id`, `role`, `aria-*`, …) go to the root `<div>`. */
@@ -44,8 +47,11 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 		onDismiss = undefined,
 		icon = undefined,
 		children = undefined,
+		labels: labelsProp = undefined,
 		...rest
 	}: Props = $props()
+
+	const labels = $derived<AlertLabels>({...defaultAlertLabels, ...(labelsProp ?? {})})
 
 	let dismissed = $state(false)
 
@@ -93,7 +99,7 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 		{#if dismissible}
 			<button
 				class="fluent-alert__dismiss"
-				aria-label="Dismiss"
+				aria-label={labels.dismiss}
 				onclick={handleDismiss}
 			>
 				<DismissIcon size={14} />
