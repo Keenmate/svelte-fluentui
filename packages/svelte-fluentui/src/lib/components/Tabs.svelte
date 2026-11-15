@@ -62,6 +62,7 @@
 	import { untrack } from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import type {RestProps} from "../types/index.js"
 
 	function toTabInfo(tab: TabEntry): TabInfo {
@@ -191,6 +192,7 @@
 	let visibleCount = $state(Number.POSITIVE_INFINITY)
 	let overflowOpen = $state(false)
 	let moreBtnRef: HTMLElement | undefined = $state()
+	let overflowMenuRef: HTMLElement | undefined = $state()
 	let shadowTablistRef: HTMLElement | undefined = $state()
 	/*
 	 * When the last tab that would otherwise overflow fits only *partially*
@@ -217,6 +219,17 @@
 
 	let tablistRef: HTMLElement | undefined = $state()
 	let indicatorStyle = $state("opacity: 0;")
+	/*
+	 * Resolved text direction of the tablist (inherited from any `dir`
+	 * ancestor). Scroll offsets and offsetLeft are physical, so the scroll
+	 * buttons, arrow keys and the vertical indicator flip on it.
+	 */
+	let isRtl = $state(false)
+
+	function readRtl(): boolean {
+		isRtl = !!tablistRef && getComputedStyle(tablistRef).direction === "rtl"
+		return isRtl
+	}
 
 	function cssIdSelector(tabId: string): string {
 		return `[data-tab-id="${CSS.escape(tabId)}"]`
@@ -249,7 +262,11 @@
 				`width: ${activeBtn.offsetWidth}px;` +
 				`height: ${thickness}px;`
 		} else {
-			const x = activeBtn.offsetLeft + activeBtn.offsetWidth - thickness
+			// The indicator sits on the tab's inline-end edge (facing the panels):
+			// the right edge in LTR, the left edge in RTL.
+			const x = readRtl()
+				? activeBtn.offsetLeft
+				: activeBtn.offsetLeft + activeBtn.offsetWidth - thickness
 			const y = activeBtn.offsetTop
 			indicatorStyle =
 				`opacity: 1;` +
@@ -286,9 +303,13 @@
 			return
 		}
 		if (isHorizontal) {
-			const { scrollLeft, clientWidth, scrollWidth } = tablistRef
-			canScrollStart = scrollLeft > 0
-			canScrollEnd = scrollWidth > clientWidth && scrollLeft + clientWidth < scrollWidth - 1
+			readRtl()
+			// RTL scrollLeft is 0 at the start and goes negative toward the end,
+			// so the distance from the start is its magnitude in both directions.
+			const { clientWidth, scrollWidth } = tablistRef
+			const scrolled = Math.abs(tablistRef.scrollLeft)
+			canScrollStart = scrolled > 0
+			canScrollEnd = scrollWidth > clientWidth && scrolled + clientWidth < scrollWidth - 1
 		} else {
 			const { scrollTop, clientHeight, scrollHeight } = tablistRef
 			canScrollStart = scrollTop > 0
@@ -328,7 +349,8 @@
 	function scrollArrow(direction: 1 | -1) {
 		if (!tablistRef) return
 		if (isHorizontal) {
-			const step = tablistRef.clientWidth * 0.8
+			// `direction` is logical (-1 = toward start); RTL scrolls start-ward with positive left.
+			const step = tablistRef.clientWidth * 0.8 * (readRtl() ? -1 : 1)
 			tablistRef.scrollBy({ left: direction * step, behavior: "smooth" })
 		} else {
 			const step = tablistRef.clientHeight * 0.8
@@ -387,8 +409,10 @@
 		const idx = orderedTabs.findIndex(t => t.id === activeId)
 		if (idx < 0) return
 
-		const prevKey = isHorizontal ? "ArrowLeft" : "ArrowUp"
-		const nextKey = isHorizontal ? "ArrowRight" : "ArrowDown"
+		// Horizontal arrows follow the reading direction: ArrowLeft is "next" in RTL.
+		const rtl = isHorizontal && readRtl()
+		const prevKey = isHorizontal ? (rtl ? "ArrowRight" : "ArrowLeft") : "ArrowUp"
+		const nextKey = isHorizontal ? (rtl ? "ArrowLeft" : "ArrowRight") : "ArrowDown"
 		let targetIdx = idx
 		let step = 0
 
@@ -670,39 +694,18 @@
 		untrack(() => onOverflowTabClick(activeId!))
 	})
 
-	// Close the overflow menu on outside click / Escape / outside scroll.
+	// Close the overflow menu on outside press / focus / scroll (the menu is
+	// portalled, so it's passed as a surface of its own) and on Escape.
+	// Scrolls inside the menu are ignored so a long overflow list can scroll.
 	$effect(() => {
 		if (!overflowOpen) return
-		function onDocClick(e: MouseEvent) {
-			const target = e.target as Node | null
-			if (!target) return
-			if (moreBtnRef?.contains(target)) return
-			// The menu renders into a portal; we check by class attribute
-			// rather than containment since the menu isn't a descendant of
-			// Tabs in the DOM tree.
-			const el = target as HTMLElement
-			if (el.closest?.(".fluent-tabs-overflow-menu")) return
-			overflowOpen = false
-		}
-		/*
-		 * Any scroll outside the menu closes it — scroll events don't
-		 * bubble so the listener uses capture to catch scroll on any
-		 * ancestor scroll container. Scrolls inside the menu itself are
-		 * ignored so users can still scroll a long overflow list.
-		 */
-		function onScroll(e: Event) {
-			const target = e.target as Node | null
-			if (target instanceof HTMLElement && target.closest?.(".fluent-tabs-overflow-menu")) return
-			overflowOpen = false
-		}
-		document.addEventListener("mousedown", onDocClick, true)
+		const close = () => { overflowOpen = false }
+		const undismiss = dismissOnOutside(() => [moreBtnRef, overflowMenuRef], close, {scroll: true})
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
-		const popLayer = pushLayer({onEscape: () => { overflowOpen = false }})
-		document.addEventListener("scroll", onScroll, true)
+		const popLayer = pushLayer({onEscape: close})
 		return () => {
-			document.removeEventListener("mousedown", onDocClick, true)
+			undismiss()
 			popLayer()
-			document.removeEventListener("scroll", onScroll, true)
 		}
 	})
 </script>
@@ -734,7 +737,7 @@
 				type="button"
 				class="fluent-tabs-scroll-btn fluent-tabs-scroll-btn-start"
 				onclick={() => scrollArrow(-1)}
-				aria-label={isHorizontal ? "Scroll tabs left" : "Scroll tabs up"}
+				aria-label={isHorizontal ? (isRtl ? "Scroll tabs right" : "Scroll tabs left") : "Scroll tabs up"}
 				tabindex="-1"
 			>
 				{#if isHorizontal}
@@ -882,7 +885,7 @@
 				type="button"
 				class="fluent-tabs-scroll-btn fluent-tabs-scroll-btn-end"
 				onclick={() => scrollArrow(1)}
-				aria-label={isHorizontal ? "Scroll tabs right" : "Scroll tabs down"}
+				aria-label={isHorizontal ? (isRtl ? "Scroll tabs left" : "Scroll tabs right") : "Scroll tabs down"}
 				tabindex="-1"
 			>
 				{#if isHorizontal}
@@ -905,7 +908,7 @@
 			matchWidth={false}
 			position={isHorizontal ? "bottom" : "end"}
 		>
-			<div class="fluent-tabs-overflow-menu context-menu">
+			<div class="fluent-tabs-overflow-menu context-menu" bind:this={overflowMenuRef}>
 				<fluent-menu>
 					{#each overflowTabs as tab (tab.id)}
 						<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
@@ -1237,6 +1240,8 @@
 	 * with a single-axis translate + static `bottom: 0`/`right: 0`, the
 	 * indicator would pin to the last row's edge regardless of where the
 	 * active tab actually is.
+	 * `left: 0` is deliberately physical (not inset-inline-start): the JS
+	 * offset is the button's physical `offsetLeft`, in both LTR and RTL.
 	 */
 	.fluent-tabs-active-indicator {
 		position: absolute;
@@ -1249,7 +1254,9 @@
 	}
 
 	.fluent-tabs-vertical .fluent-tabs-active-indicator {
-		border-radius: var(--fluent-border-radius-sm) 0 0 var(--fluent-border-radius-sm);
+		border-radius: 0;
+		border-start-start-radius: var(--fluent-border-radius-sm);
+		border-end-start-radius: var(--fluent-border-radius-sm);
 	}
 
 	/*
@@ -1284,16 +1291,20 @@
 	}
 
 	.fluent-tabs-horizontal .fluent-tabs-scroll-btn-start {
-		left: 0;
+		inset-inline-start: 0;
 	}
 
 	.fluent-tabs-horizontal .fluent-tabs-scroll-btn-end {
-		right: 0;
+		inset-inline-end: 0;
+	}
+
+	/* The chevrons point toward their side; mirror them in RTL. */
+	.fluent-tabs-horizontal .fluent-tabs-scroll-btn:dir(rtl) svg {
+		transform: scaleX(-1);
 	}
 
 	.fluent-tabs-vertical .fluent-tabs-scroll-btn {
-		left: 0;
-		right: 0;
+		inset-inline: 0;
 		height: 32px;
 	}
 

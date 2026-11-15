@@ -8,11 +8,14 @@
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import {tick} from "svelte"
 	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
 	import { SvelteMap } from "svelte/reactivity"
 	import Icon from "./Icon.svelte"
 	import { portal } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
+	import { dismissOnOutside } from "../helpers/dismiss.js"
+	import { ListNav } from "../helpers/listbox-nav.svelte.js"
 	import {getMenuChildren, resolveMenuEntries, runAction, type MenuEntry, type MenuItem, type ResolvedMenuEntry} from "../action-items/index.js"
 	import type {RestProps} from "../types/index.js"
 
@@ -77,7 +80,12 @@
 	}: Props = $props()
 
 	let open = $state(false)
+	let wrapperEl: HTMLElement | undefined = $state()
 	let menuEl: HTMLElement | undefined = $state()
+	/** Marks this instance's portalled submenus so `menuSurfaces()` can find them. */
+	const uid = $props.id()
+	/** Focus before the menu opened — restored when it closes from inside (Escape, item, Tab). */
+	let returnFocusEl: HTMLElement | null = null
 	let cursor = $state({ x: 0, y: 0 })
 
 	const menuCtx = $derived<ContextMenuContext>({x: cursor.x, y: cursor.y})
@@ -90,15 +98,20 @@
 		e.preventDefault()
 		e.stopPropagation()
 		cursor = { x: e.clientX, y: e.clientY }
+		if (!open) returnFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null
 		open = true
 		onOpenChange?.({open: true, x: e.clientX, y: e.clientY})
 	}
 
-	function closeMenu() {
+	/** Closes the menu; `restoreFocus` returns focus to where it was before opening, if it is in the menu now. */
+	function closeMenu(restoreFocus = false) {
 		if (!open) return
+		const focusWasInside = menuSurfaces().some(el => el.contains(document.activeElement))
 		open = false
 		closeAllSubmenus()
 		onOpenChange?.({open: false})
+		if (restoreFocus && focusWasInside && returnFocusEl?.isConnected) returnFocusEl.focus()
+		returnFocusEl = null
 	}
 
 	async function runItem(item: Item, action: string, event: MouseEvent) {
@@ -111,7 +124,7 @@
 			sourceEvent: event,
 			triggerElement: event.currentTarget as HTMLElement
 		}
-		if (item.shouldCloseOnClick !== false) closeMenu()
+		if (item.shouldCloseOnClick !== false) closeMenu(true)
 		await runAction({host, detail, beforeActionCallback, emitAction: (d) => onAction?.(d)})
 	}
 
@@ -187,18 +200,26 @@
 		const key = entryKey(entry, 0)
 		cancelClose(key)
 		if (openSubmenus.has(key) || openTimers.has(key)) return
-		const t = window.setTimeout(async () => {
+		const t = window.setTimeout(() => {
 			openTimers.delete(key)
-			// `getChildrenCallback` may be async (lazy submenus).
-			const children = await getMenuChildren(entry.item, menuCtx)
-			if (!open) return
-			// Close sibling submenus (same parent) before opening this one.
-			for (const [k, v] of openSubmenus) {
-				if (v.parentKey === parentKey && k !== key) closeSubmenuTree(k)
-			}
-			openSubmenus.set(key, { entries: resolveMenuEntries(children, menuCtx), triggerEl, parentKey })
+			void openSubmenu(entry, triggerEl, parentKey)
 		}, HOVER_OPEN_DELAY) as unknown as number
 		openTimers.set(key, t)
+	}
+
+	async function openSubmenu(entry: Resolved & {kind: "item"}, triggerEl: HTMLElement, parentKey: string | null) {
+		const key = entryKey(entry, 0)
+		cancelOpen(key)
+		cancelClose(key)
+		if (openSubmenus.has(key)) return
+		// `getChildrenCallback` may be async (lazy submenus).
+		const children = await getMenuChildren(entry.item, menuCtx)
+		if (!open) return
+		// Close sibling submenus (same parent) before opening this one.
+		for (const [k, v] of openSubmenus) {
+			if (v.parentKey === parentKey && k !== key) closeSubmenuTree(k)
+		}
+		openSubmenus.set(key, { entries: resolveMenuEntries(children, menuCtx), triggerEl, parentKey })
 	}
 
 	function scheduleCloseSubmenu(key: string) {
@@ -329,81 +350,133 @@
 		return cleanup
 	})
 
-	/*
-	 * Helper used by the outside-click / scroll / contextmenu listeners:
-	 * is this target inside *any* of our menu surfaces (root or any open
-	 * submenu)? Submenus are portalled to <body>, so `menuEl.contains` is
-	 * not enough — we also accept any element inside a `.fluent-context-menu`
-	 * ancestor.
-	 */
-	function isInsideAnyMenu(target: EventTarget | null): boolean {
-		if (!(target instanceof HTMLElement)) return false
-		if (menuEl?.contains(target)) return true
-		return !!target.closest(".fluent-context-menu")
+	/** Root menu + this instance's open submenus (portalled to <body>). */
+	function menuSurfaces(): HTMLElement[] {
+		const subs = document.querySelectorAll<HTMLElement>(`.fluent-context-submenu[data-menu-id="${uid}"]`)
+		return [...(menuEl ? [menuEl] : []), ...subs]
 	}
 
+	function submenuSurface(key: string): HTMLElement | null {
+		return document.querySelector<HTMLElement>(`.fluent-context-submenu[data-menu-id="${uid}"][data-submenu-key="${CSS.escape(key)}"]`)
+	}
+
+	/*
+	 * Light dismiss + Escape while open. `inside` lists the trigger zone first so
+	 * dismissOnOutside's dialog focus-trap exception sees the zone's dialog; a press
+	 * on the zone itself still closes (see `onZonePointerDown`). Scroll outside closes
+	 * too: the menu was opened at a viewport position that loses its meaning once the
+	 * content under it moves. Scrolling inside a long menu is ignored.
+	 */
 	$effect(() => {
 		if (!open) return
-		function onDocPointer(e: MouseEvent) {
-			if (isInsideAnyMenu(e.target)) return
-			closeMenu()
-		}
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts) and
 		// pops submenus one at a time before closing the root.
 		const popLayer = pushLayer({
 			onEscape: () => {
-				if (openSubmenus.size > 0) {
-					const deepest = Array.from(openSubmenus.keys()).pop()
-					if (deepest) closeSubmenuTree(deepest)
-				} else {
-					closeMenu()
-				}
+				const deepest = Array.from(openSubmenus.keys()).pop()
+				if (deepest) closeSubmenuWithFocus(deepest)
+				else closeMenu(true)
 			}
 		})
-		/*
-		 * A second right-click anywhere else should re-open the menu at
-		 * the new position, not just close the old one. The document-level
-		 * contextmenu listener below closes the existing menu; the new
-		 * contextmenu event then re-fires on whatever wrapper is under
-		 * the cursor, re-opening it. If the right-click is outside any
-		 * <ContextMenu> trigger, the browser's native menu opens
-		 * (we don't call preventDefault here).
-		 */
-		function onContext(e: MouseEvent) {
-			if (isInsideAnyMenu(e.target)) {
-				// Right-click inside our own menu — suppress the browser menu.
-				e.preventDefault()
-				return
-			}
-			closeMenu()
-		}
-		/*
-		 * Scroll-to-close. Context menus traditionally dismiss on scroll
-		 * because the menu was opened at a specific viewport position and
-		 * that position loses its meaning once the underlying content
-		 * moves. Scroll events don't bubble, so this listener uses capture
-		 * to catch scroll on any ancestor. A scroll *inside* our own menu
-		 * (e.g. a long list that's overflowing) is ignored so users can
-		 * still wheel through it.
-		 */
-		function onScroll(e: Event) {
-			if (isInsideAnyMenu(e.target)) return
-			closeMenu()
-		}
-		document.addEventListener("mousedown", onDocPointer, true)
-		document.addEventListener("contextmenu", onContext, true)
-		document.addEventListener("scroll", onScroll, true)
+		const undismiss = dismissOnOutside(() => [wrapperEl, ...menuSurfaces()], () => closeMenu(), {scroll: true})
 		return () => {
-			document.removeEventListener("mousedown", onDocPointer, true)
+			undismiss()
 			popLayer()
-			document.removeEventListener("contextmenu", onContext, true)
-			document.removeEventListener("scroll", onScroll, true)
 		}
 	})
+
+	/*
+	 * A press anywhere on the zone closes an open menu; a right-click then re-opens it
+	 * at the new position through the zone's `contextmenu`. A right-click outside every
+	 * <ContextMenu> closes through dismissOnOutside and the browser menu opens as usual.
+	 */
+	function onZonePointerDown() {
+		closeMenu()
+	}
+
+	// Right-click inside our own menu — suppress the browser menu.
+	function onSurfaceContextMenu(e: MouseEvent) {
+		e.preventDefault()
+	}
+
+	// Focus the menu on open so the keyboard works straight away (ArrowDown lands on the
+	// first item). Not inside a modal dialog: the menu is portalled outside its focus
+	// trap, which would pull focus back to the dialog's first element.
+	$effect(() => {
+		if (!open || !menuEl) return
+		if (wrapperEl?.closest("fluent-dialog")) return
+		menuEl.focus({preventScroll: true})
+	})
+
+	/*
+	 * Keyboard inside a menu surface (root or submenu). ListNav walks the surface's
+	 * enabled items — dividers, group labels and disabled items are skipped; an
+	 * expanded section's children are rows of the same surface. ArrowRight / Enter /
+	 * Space on a submenu trigger open it and focus its first item; ArrowLeft in a
+	 * submenu closes it back to its trigger (mirrored in RTL). Tab closes the menu.
+	 */
+	let navSurface: HTMLElement | null = null
+
+	function surfaceItems(surface: HTMLElement | null): HTMLElement[] {
+		return surface ? Array.from(surface.querySelectorAll<HTMLElement>(":scope > button.fluent-context-menu-item:not(:disabled)")) : []
+	}
+
+	const nav = new ListNav({count: () => surfaceItems(navSurface).length, itemAt: i => surfaceItems(navSurface)[i]})
+
+	function isRtl(el: HTMLElement) {
+		return getComputedStyle(el).direction === "rtl"
+	}
+
+	function closeSubmenuWithFocus(key: string) {
+		const triggerEl = openSubmenus.get(key)?.triggerEl
+		const focusWasInside = !!submenuSurface(key)?.contains(document.activeElement)
+		closeSubmenuTree(key)
+		if (!focusWasInside) return
+		triggerEl?.focus()
+		// The trigger's `onfocus` schedules a hover-intent open — not wanted when closing back to it.
+		cancelOpen(key)
+	}
+
+	function onSurfaceKeydown(e: KeyboardEvent & {currentTarget: HTMLElement}) {
+		const surface = e.currentTarget
+		const ownKey = surface.dataset.submenuKey ?? null
+		if (e.key === "Tab") {
+			closeMenu(true)
+			return
+		}
+		if (ownKey !== null && e.key === (isRtl(surface) ? "ArrowRight" : "ArrowLeft")) {
+			e.preventDefault()
+			closeSubmenuWithFocus(ownKey)
+			return
+		}
+		navSurface = surface
+		const items = surfaceItems(surface)
+		nav.index = items.indexOf(document.activeElement as HTMLElement)
+		if (!nav.handleKey(e)) return
+		const target = items[nav.index]
+		// Moving off a submenu trigger closes its submenu (and drops a pending focus-open);
+		// landing on one opens it through its own `onfocus`.
+		for (const k of Array.from(openTimers.keys())) cancelOpen(k)
+		for (const [k, v] of openSubmenus) {
+			if (v.parentKey === ownKey && v.triggerEl !== target) closeSubmenuTree(k)
+		}
+		target?.focus()
+	}
+
+	async function onSubmenuTriggerKeydown(e: KeyboardEvent & {currentTarget: HTMLElement}, entry: Resolved & {kind: "item"}, parentKey: string | null) {
+		const triggerEl = e.currentTarget
+		if (e.key !== (isRtl(triggerEl) ? "ArrowLeft" : "ArrowRight") && e.key !== "Enter" && e.key !== " ") return
+		e.preventDefault()
+		e.stopPropagation()
+		const key = entryKey(entry, 0)
+		await openSubmenu(entry, triggerEl, parentKey)
+		await tick()
+		surfaceItems(submenuSurface(key))[0]?.focus()
+	}
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<span {...rest} class={["fluent-context-menu-wrapper", className]} oncontextmenu={onContextMenu}>
+<span {...rest} bind:this={wrapperEl} class={["fluent-context-menu-wrapper", className]} oncontextmenu={onContextMenu} onpointerdowncapture={onZonePointerDown}>
 	{@render children?.()}
 </span>
 
@@ -465,6 +538,7 @@
 			onmouseleave={() => scheduleCloseSubmenu(entryKey(entry, index))}
 			onfocus={(e) => scheduleOpenSubmenu(entry, e.currentTarget, parentKey)}
 			onclick={(e) => scheduleOpenSubmenu(entry, e.currentTarget, parentKey)}
+			onkeydown={(e) => onSubmenuTriggerKeydown(e, entry, parentKey)}
 		>
 			{@render icon(entry)}
 			<span class="fluent-context-menu-item-label">{entry.resolved.text}</span>
@@ -495,7 +569,15 @@
 {/snippet}
 
 {#if open && entries.length > 0}
-	<div use:portal bind:this={menuEl} class="fluent-context-menu" role="menu">
+	<div
+		use:portal
+		bind:this={menuEl}
+		class="fluent-context-menu"
+		role="menu"
+		tabindex="-1"
+		onkeydown={onSurfaceKeydown}
+		oncontextmenu={onSurfaceContextMenu}
+	>
 		{#each entries as entry, i (entryKey(entry, i))}
 			{@render renderEntry(entry, i, 0, null)}
 		{/each}
@@ -510,6 +592,10 @@
 		class="fluent-context-menu fluent-context-submenu"
 		role="menu"
 		tabindex="-1"
+		data-menu-id={uid}
+		data-submenu-key={key}
+		onkeydown={onSurfaceKeydown}
+		oncontextmenu={onSurfaceContextMenu}
 		onmouseenter={() => cancelClose(key)}
 		onmouseleave={() => scheduleCloseSubmenu(key)}
 	>
@@ -553,6 +639,11 @@
 		font-family: var(--body-font);
 		font-size: var(--type-ramp-base-font-size, 14px);
 		line-height: var(--type-ramp-base-line-height, 20px);
+	}
+
+	/* The surface takes focus only to receive arrow keys; the items show the focus ring. */
+	.fluent-context-menu:focus {
+		outline: none;
 	}
 
 	.fluent-context-menu-item {

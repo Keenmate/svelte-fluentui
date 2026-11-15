@@ -34,6 +34,7 @@
 	import {computePosition, flip, shift, offset, size, autoUpdate} from "@floating-ui/dom"
 	import {portal} from "../actions/portal.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import Button from "./Button.svelte"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 	import InputFileSelectorCard from "./InputFileSelectorCard.svelte"
@@ -451,12 +452,21 @@
 		!!uploadCallback && !autoUpload && items.some((i) => i.status === "pending")
 	)
 
+	// expandOnDrag: a file drag entering the page shows the drop overlay. Only
+	// the card selector renders the overlay, so other selectors don't listen.
 	$effect(() => {
-		if (!expandOnDrag || disabled) return
+		if (!expandOnDrag || disabled || selectorAppearance !== "card") return
 		const onDragEnter = (e: DragEvent) => {
 			if (!e.dataTransfer?.types?.includes("Files")) return
 			isExternalDragActive = true
 		}
+		document.addEventListener("dragenter", onDragEnter)
+		return () => document.removeEventListener("dragenter", onDragEnter)
+	})
+
+	// While a file drag is over the page: listen for its end so the overlay goes away.
+	$effect(() => {
+		if (!isExternalDragActive) return
 		// Dismiss when the cursor leaves the viewport entirely. Browsers signal
 		// this with relatedTarget === null; Chrome also fires a final dragleave
 		// at clientX/Y 0,0 when the drag is cancelled via Esc on the OS side.
@@ -474,14 +484,12 @@
 		const dismiss = () => {
 			isExternalDragActive = false
 		}
-		document.addEventListener("dragenter", onDragEnter)
 		document.addEventListener("dragleave", onDragLeave)
 		document.addEventListener("dragend", dismiss)
 		document.addEventListener("drop", dismiss)
 		document.addEventListener("keydown", onKeyDown)
 		window.addEventListener("blur", dismiss)
 		return () => {
-			document.removeEventListener("dragenter", onDragEnter)
 			document.removeEventListener("dragleave", onDragLeave)
 			document.removeEventListener("dragend", dismiss)
 			document.removeEventListener("drop", dismiss)
@@ -490,32 +498,17 @@
 		}
 	})
 
+	// Popover: close on outside press / focus and on Escape. It follows its
+	// anchor (autoUpdate), so outside scrolls don't close it. The component root
+	// counts as inside (it holds the trigger and the hidden file input).
 	$effect(() => {
 		if (!popoverOpen) return
-		const handler = (e: MouseEvent) => {
-			// Use the event's composedPath (captured at dispatch time) rather than
-			// `popoverEl.contains(target)`. If the click triggered a state update
-			// that re-rendered the popover (remove item, retry, etc.), the click
-			// target may be a now-detached node by the time this handler runs —
-			// `contains()` would return false on a detached node and we'd dismiss
-			// the popover even though the click started inside it. The path is a
-			// snapshot of the propagation chain, immune to subsequent DOM mutations.
-			const path = e.composedPath()
-			// rootEl catches synthetic clicks from the hidden <input type="file">
-			// fired by openFileDialog() — the input is a sibling of selectorWrapEl
-			// inside the component root, so neither selectorWrapEl nor popoverEl
-			// would be in its event path, and without this check clicking the
-			// popover's "+ Add more" button would dismiss the popover.
-			if (rootEl && path.includes(rootEl)) return
-			if (selectorWrapEl && path.includes(selectorWrapEl)) return
-			if (popoverEl && path.includes(popoverEl)) return
-			popoverOpen = false
-		}
-		document.addEventListener("click", handler)
+		const close = () => { popoverOpen = false }
+		const undismiss = dismissOnOutside(() => [rootEl, selectorWrapEl, popoverEl], close)
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
-		const popLayer = pushLayer({onEscape: () => { popoverOpen = false }})
+		const popLayer = pushLayer({onEscape: close})
 		return () => {
-			document.removeEventListener("click", handler)
+			undismiss()
 			popLayer()
 		}
 	})

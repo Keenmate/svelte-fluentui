@@ -12,11 +12,14 @@
 </script>
 
 <script lang="ts">
+	import {tick} from "svelte"
 	import {attrs} from "../helpers/attrs.js"
 	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
 	import Icon from "./Icon.svelte"
 	import { portal } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
+	import { dismissOnOutside } from "../helpers/dismiss.js"
+	import { ListNav } from "../helpers/listbox-nav.svelte.js"
 	import { resolveMenuEntries, runAction } from "../action-items/index.js"
 	import type {RestProps} from "../types/index.js"
 
@@ -69,6 +72,7 @@
 		onOpenChange = undefined,
 		onAction = undefined,
 		beforeActionCallback = undefined,
+		onkeydown = undefined,
 		...rest
 	}: Props = $props()
 
@@ -79,26 +83,93 @@
 	 * span and have a real DOM node to anchor to.
 	 */
 	let anchorEl: HTMLElement | undefined = $state()
+	let triggerEl: HTMLElement | undefined = $state()
 	let menuEl: HTMLElement | undefined = $state()
 
-	function toggleMenu() {
-		if (disabled) return
-		const next = !open
+	function setMenuOpen(next: boolean) {
+		if (open === next) return
 		open = next
 		onOpenChange?.({open: next})
 	}
 
-	function closeMenu() {
+	// `detail === 0` is a keyboard click (Enter / Space on the button): move focus into the menu.
+	function toggleMenu(event: MouseEvent) {
+		if (disabled) return
+		setMenuOpen(!open)
+		if (open && event.detail === 0) void focusItem("first")
+	}
+
+	/** Closes the menu; `restoreFocus` sends focus back to the button when it was inside the menu. */
+	function closeMenu(restoreFocus = false) {
 		if (!open) return
-		open = false
-		onOpenChange?.({open: false})
+		const focusWasInside = !!menuEl?.contains(document.activeElement)
+		setMenuOpen(false)
+		if (restoreFocus && focusWasInside) triggerEl?.focus()
+	}
+
+	/*
+	 * Keyboard. `<fluent-menu>`'s own arrow handling lands on disabled items and
+	 * `<fluent-menu-item>` turns Enter / Space into a `change` event, not a click,
+	 * so our `onclick` never ran from the keyboard. The capture-phase handler below
+	 * runs before both and owns ArrowUp/Down, Home/End, PageUp/Down (enabled items
+	 * only, via ListNav), Enter / Space (click the item) and Tab (close, focus
+	 * back on the button so Tab continues from there).
+	 *
+	 * Svelte sets `disabled` as a property on the custom element and FAST reflects it to
+	 * the attribute only on its next update, so a fresh menu is filtered by the property.
+	 */
+	function enabledItems(): HTMLElement[] {
+		if (!menuEl) return []
+		return Array.from(menuEl.querySelectorAll<HTMLElement & {disabled?: boolean}>("fluent-menu-item")).filter(el => !el.disabled)
+	}
+
+	const nav = new ListNav({count: () => enabledItems().length, itemAt: i => enabledItems()[i]})
+
+	// A portalled menu is outside a modal dialog's focus trap, which would pull focus straight
+	// back into the dialog — inside one, the menu stays mouse-only (as before).
+	const inTrappingDialog = () => !!anchorEl?.closest("fluent-dialog")
+
+	async function focusItem(which: "first" | "last") {
+		await tick()
+		if (inTrappingDialog()) return
+		if (which === "first") nav.first()
+		else nav.last()
+		enabledItems()[nav.index]?.focus()
+	}
+
+	function onTriggerKeydown(event: KeyboardEvent & {currentTarget: EventTarget & HTMLElement}) {
+		onkeydown?.(event)
+		if (event.defaultPrevented || disabled || (event.key !== "ArrowDown" && event.key !== "ArrowUp")) return
+		event.preventDefault()
+		setMenuOpen(true)
+		void focusItem(event.key === "ArrowDown" ? "first" : "last")
+	}
+
+	function onMenuKeydown(event: KeyboardEvent) {
+		const items = enabledItems()
+		const current = items.indexOf(document.activeElement as HTMLElement)
+		if (event.key === "Enter" || event.key === " ") {
+			if (current < 0) return
+			event.preventDefault()
+			items[current].click()
+			return
+		}
+		if (event.key === "Tab") {
+			closeMenu(true)
+			return
+		}
+		nav.index = current
+		if (nav.handleKey(event)) {
+			event.stopPropagation()
+			items[nav.index]?.focus()
+		}
 	}
 
 	const host = {}
 	const entries = $derived(resolveMenuEntries(items, {}))
 
 	async function runItem(item: MenuEntry<object> & {divider?: undefined}, action: string, event: MouseEvent) {
-		if (item.shouldCloseOnClick !== false) closeMenu()
+		if (item.shouldCloseOnClick !== false) closeMenu(true)
 		await runAction({
 			host,
 			detail: {action, id: item.id, item, source: "menu", sourceEvent: event, triggerElement: event.currentTarget as HTMLElement},
@@ -158,22 +229,15 @@
 		return cleanup
 	})
 
-	// Close on outside click / Escape. `autoUpdate` keeps the menu stuck to
-	// its anchor during scroll, so we no longer force-close on scroll.
+	// Light dismiss (outside press, focus moving away) + Escape while open. `autoUpdate`
+	// keeps the menu stuck to its anchor during scroll, so scroll doesn't close it.
 	$effect(() => {
 		if (!open) return
-		function onDocPointer(e: MouseEvent) {
-			const target = e.target as HTMLElement | null
-			if (!target) return
-			if (anchorEl?.contains(target)) return
-			if (menuEl?.contains(target)) return
-			closeMenu()
-		}
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
-		const popLayer = pushLayer({onEscape: () => closeMenu()})
-		document.addEventListener("mousedown", onDocPointer, true)
+		const popLayer = pushLayer({onEscape: () => closeMenu(true)})
+		const undismiss = dismissOnOutside(() => [anchorEl, menuEl], () => closeMenu())
 		return () => {
-			document.removeEventListener("mousedown", onDocPointer, true)
+			undismiss()
 			popLayer()
 		}
 	})
@@ -183,12 +247,14 @@
 <span bind:this={anchorEl} class="fluent-menu-button-anchor">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<fluent-button
+		bind:this={triggerEl}
 		{...rest}
 		{...attrs({appearance, disabled, style})}
 		class={className}
 		aria-haspopup="menu"
 		aria-expanded={open}
 		onclick={toggleMenu}
+		onkeydown={onTriggerKeydown}
 	>
 		{#if start}
 			<span slot="start" class="fluent-menu-button-icon-slot">{@render start()}</span>
@@ -201,10 +267,12 @@
 </span>
 
 {#if open && entries.length > 0}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		use:portal
 		bind:this={menuEl}
 		class="fluent-menu-button-menu context-menu"
+		onkeydowncapture={onMenuKeydown}
 	>
 		<fluent-menu>
 			{#each entries as entry}

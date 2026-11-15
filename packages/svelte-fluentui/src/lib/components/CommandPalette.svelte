@@ -4,6 +4,8 @@
 	import Icon from "./Icon.svelte"
 	import {portal} from "../actions/portal.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {ListNav} from "../helpers/listbox-nav.svelte.js"
+	import {normalizeForSearch, type SearchBehavior} from "../helpers/text.js"
 	import type {CommandPaletteItem, CommandPaletteFilter, CommandPaletteActionDetail} from "./CommandPalette.types.js"
 	import {createLinkActivation, resolveActionItem, runAction} from "../action-items/index.js"
 	import type {RestProps} from "../types/index.js"
@@ -31,6 +33,10 @@
 		closeOnSelect?: boolean
 		/** Override the built-in fuzzy scorer with app-specific search. */
 		filterCallback?: CommandPaletteFilter
+		/** How the built-in search compares text: `normalized` (default) ignores case and
+		 * diacritics (`cafe` finds `Café`), `case-insensitive` ignores case only, `exact`
+		 * matches both. Applies to scoring and the match highlight; no effect on `filterCallback`. */
+		searchBehavior?: SearchBehavior
 		/** Fires after an item ran (its `onClick`, or the navigation started). */
 		onAction?: (detail: CommandPaletteActionDetail) => void
 		/** Called before an item runs or navigates; return `false` (or a Promise resolving to `false`) to cancel. */
@@ -58,6 +64,7 @@
 		enableShortcut = true,
 		closeOnSelect = true,
 		filterCallback = undefined,
+		searchBehavior = "normalized",
 		onAction = undefined,
 		beforeActionCallback = undefined,
 		onOpenChange = undefined,
@@ -69,7 +76,6 @@
 	}: Props = $props()
 
 	let query = $state("")
-	let selectedIndex = $state(0)
 	let inputEl = $state<HTMLInputElement | undefined>(undefined)
 	let listEl = $state<HTMLDivElement | undefined>(undefined)
 
@@ -89,17 +95,30 @@
 		}
 	})
 
+	const norm = (text: string) => normalizeForSearch(text, searchBehavior)
+
+	// Searchable fields, normalized once per items / searchBehavior change.
+	const searchIndex = $derived(
+		items.map((it) => ({
+			it,
+			title: norm(it.text),
+			group: norm(it.group ?? ""),
+			meta: norm(it.meta ?? ""),
+			keywords: (it.keywords ?? []).map(norm)
+		}))
+	)
+
 	// Score: higher = better match. 0 = no match. Layered so exact / prefix beat
 	// substring beat fuzzy-subsequence. Searches title, meta, group and keywords.
-	function score(it: CommandPaletteItem, needle: string): number {
-		const title = it.text.toLowerCase()
+	// All fields and the needle are normalized under `searchBehavior`.
+	function score(entry: (typeof searchIndex)[number], needle: string): number {
+		const {title, group} = entry
 		if (title === needle) return 1000
 		if (title.startsWith(needle)) return 500 - (title.length - needle.length)
-		const group = (it.group ?? "").toLowerCase()
 		if (group === needle) return 400
 		if (title.includes(needle)) return 300 - title.indexOf(needle)
-		if ((it.meta ?? "").toLowerCase().includes(needle)) return 200
-		if ((it.keywords ?? []).some((k) => k.toLowerCase().includes(needle))) return 150
+		if (entry.meta.includes(needle)) return 200
+		if (entry.keywords.some((k) => k.includes(needle))) return 150
 		if (group.includes(needle)) return 100
 		// Fuzzy: every character of needle must appear in title in order.
 		let i = 0
@@ -111,14 +130,16 @@
 	}
 
 	const trimmedQuery = $derived(query.trim())
+	const normalizedQuery = $derived(norm(trimmedQuery))
 
 	const results = $derived.by(() => {
 		const q = trimmedQuery
 		if (!q) return []
 		if (filterCallback) return filterCallback({items, term: q}).slice(0, maxResultCount)
-		const needle = q.toLowerCase()
-		return items
-			.map((it) => ({it, s: score(it, needle)}))
+		const needle = normalizedQuery
+		if (!needle) return []
+		return searchIndex
+			.map((entry) => ({it: entry.it, s: score(entry, needle)}))
 			.filter((r) => r.s > 0)
 			.sort((a, b) => b.s - a.s)
 			.slice(0, maxResultCount)
@@ -163,29 +184,59 @@
 
 	const itemCount = $derived(rows.filter((r) => r.kind === "item").length)
 
+	// Keyboard cursor over the result rows: clamped at both ends (no wrap).
+	const nav = new ListNav({
+		count: () => itemCount,
+		itemAt: (index) => listEl?.querySelector(`[data-idx="${index}"]`)
+	})
+	const selectedIndex = $derived(nav.index)
+
+	// Highlights the first row (when there is one) and scrolls it into view.
+	function resetHighlight() {
+		nav.index = 0
+		void nav.scrollIntoView()
+	}
+
 	function itemKey(it: CommandPaletteItem): string {
 		return it.id ?? it.href ?? it.text
 	}
 
 	// Split a title around the first contiguous match of the query for <mark>
 	// highlighting. Subsequence (fuzzy) matches don't highlight — only the simple
-	// substring case, which is what users actually read.
+	// substring case, which is what users actually read. Matching runs on the
+	// normalized title (so `cafe` marks `Café`); the match is mapped back to the
+	// original text through the normalized length of each prefix.
 	function highlight(title: string): {text: string; mark: boolean}[] {
-		const q = trimmedQuery
-		if (!q) return [{text: title, mark: false}]
-		const i = title.toLowerCase().indexOf(q.toLowerCase())
-		if (i < 0) return [{text: title, mark: false}]
+		const needle = normalizedQuery
+		if (!needle) return [{text: title, mark: false}]
+		const start = norm(title).indexOf(needle)
+		if (start < 0) return [{text: title, mark: false}]
+		const end = start + needle.length
+		// Code-point boundaries of the original title and their normalized offsets.
+		const bounds: {at: number; len: number}[] = [{at: 0, len: 0}]
+		let at = 0
+		for (const ch of title) {
+			at += ch.length
+			bounds.push({at, len: norm(title.slice(0, at)).length})
+		}
+		let from = 0
+		for (const b of bounds) if (b.len <= start) from = b.at
+		let toIdx = bounds.findIndex((b) => b.len >= end)
+		if (toIdx < 0) toIdx = bounds.length - 1
+		// Take trailing combining marks along (they normalize to nothing).
+		while (toIdx + 1 < bounds.length && bounds[toIdx + 1].len === bounds[toIdx].len) toIdx++
+		const to = bounds[toIdx].at
 		return [
-			{text: title.slice(0, i), mark: false},
-			{text: title.slice(i, i + q.length), mark: true},
-			{text: title.slice(i + q.length), mark: false}
+			{text: title.slice(0, from), mark: false},
+			{text: title.slice(from, to), mark: true},
+			{text: title.slice(to), mark: false}
 		].filter((s) => s.text.length > 0)
 	}
 
 	async function openPalette() {
 		open = true
 		query = ""
-		selectedIndex = 0
+		resetHighlight()
 		onOpenChange?.({open: true})
 		await tick()
 		inputEl?.focus()
@@ -251,7 +302,7 @@
 	// Reset highlighted row whenever the query changes.
 	$effect(() => {
 		query
-		selectedIndex = 0
+		untrack(resetHighlight)
 	})
 
 	// However it was opened (shortcut, trigger, or `bind:open` from the app),
@@ -262,18 +313,11 @@
 		if (isOpen && !wasOpen) {
 			untrack(() => {
 				query = ""
-				selectedIndex = 0
+				resetHighlight()
 			})
 			tick().then(() => inputEl?.focus())
 		}
 		wasOpen = isOpen
-	})
-
-	// Keep highlighted row in view during keyboard nav.
-	$effect(() => {
-		if (!open || !listEl) return
-		const target = listEl.querySelector<HTMLElement>(`[data-idx="${selectedIndex}"]`)
-		target?.scrollIntoView({block: "nearest"})
 	})
 
 	function handleGlobalKey(e: KeyboardEvent) {
@@ -286,12 +330,10 @@
 
 		if (!open) return
 
-		if (e.key === "ArrowDown") {
-			e.preventDefault()
-			selectedIndex = Math.min(selectedIndex + 1, Math.max(itemCount - 1, 0))
-		} else if (e.key === "ArrowUp") {
-			e.preventDefault()
-			selectedIndex = Math.max(selectedIndex - 1, 0)
+		// Arrows / PageUp / PageDown move the cursor (scrolled into view by ListNav).
+		// Home / End stay with the search input's caret.
+		if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "PageDown" || e.key === "PageUp") {
+			nav.handleKey(e)
 		} else if (e.key === "Enter") {
 			e.preventDefault()
 			activateSelected()
@@ -377,7 +419,7 @@
 							role="option"
 							aria-selected={row.index === selectedIndex}
 							onclickcapture={(event) => selectItem(row.item, event)}
-							onmousemove={() => (selectedIndex = row.index)}
+							onmousemove={() => (nav.index = row.index)}
 						>
 							{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}
 						</a>
@@ -392,7 +434,7 @@
 							role="option"
 							aria-selected={row.index === selectedIndex}
 							onclick={(event) => selectItem(row.item, event)}
-							onmousemove={() => (selectedIndex = row.index)}
+							onmousemove={() => (nav.index = row.index)}
 						>
 							{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}
 						</button>

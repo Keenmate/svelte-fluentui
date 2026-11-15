@@ -163,6 +163,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- CommandPalette `searchBehavior` (default `normalized`): matching and the `<mark>` highlight ignore case and diacritics ("cafe" finds "Café"); PageUp / PageDown move the cursor.
 - Docs: QuickGrid Editable "task tracker" demo using every editor type together (async autocomplete, dependent combobox via `loadOptionsCallback`, row-aware date validation, custom multi-value editor); `searchBehavior` demos on Select, Autocomplete, Combobox and QuickGrid.
 - `searchBehavior` (`normalized` default / `case-insensitive` / `exact`, as in web-multiselect) on Combobox, Select (type-ahead), Autocomplete and QuickGrid `editorOptions`; `normalizeForSearch` and `SearchBehavior` exported. **Behaviour change:** Select type-ahead, Autocomplete and the grid editors now ignore accents by default.
 - `--fluent-color-{success,warning,danger,info}-foreground` tokens with dark-theme values.
@@ -184,6 +185,11 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - QuickGrid CSS variables (theme hooks, each falling back to the FluentUI token): `--fluent-quickgrid-bg` / `-border` / `-text`, `-focus-stroke`, `-focused-cell-stroke` / `-focused-cell-bg`, `-editable-hover-bg` / `-editable-hover-border`, `-editing-bg` / `-editing-stroke`, `-toolbar-bg` / `-toolbar-border` / `-toolbar-text` / `-toolbar-hover-bg` / `-toolbar-shadow` (light / dark in theme.scss), `-connector-stroke` (was a hard-coded `#0078d4` fallback), `-menu-shadow`, `-dropdown-bg` / `-dropdown-border` / `-dropdown-highlight-bg` (cell editor dropdowns). They replace QuickGrid's and GridCellEditor's `[data-theme="dark"]` selector blocks — a theme overrides variables, not selectors.
 
 ### Fixed
+- Popups close when focus moves away (light dismiss via `dismissOnOutside`): DatePicker, TimePicker, MenuButton, ContextMenu, Tabs overflow menu, InputFile popover; listeners are attached only while open. A press on the DatePicker / TimePicker popup padding no longer closes it.
+- MenuButton keyboard: arrows / Home / End / PageUp / PageDown skip disabled items, Enter / Space run the focused item (they did nothing), ArrowDown / ArrowUp / Enter on the button open the menu with focus inside, Escape / Tab / running an item return focus to the button; a consumer `onkeydown` is chained.
+- ContextMenu keyboard: focus moves into the menu, arrows skip disabled items, ArrowRight / ArrowLeft open / leave submenus (mirrored in RTL), Escape closes the deepest submenu first, focus returns to where it was.
+- Tabs in RTL: scroll buttons sit on the correct sides and scroll the right way, chevrons are mirrored, ArrowLeft moves to the next tab, the vertical indicator is on the inline-end edge.
+- InputFile `expandOnDrag`: page-wide drag listeners only for the card selector, end-of-drag listeners only during a drag.
 - QuickGrid: one `onRowChange` per edit (dropdown/date picks fired twice); after a valid edit the grid shows your items again instead of a stale draft row.
 - QuickGrid: removed unimplemented `editorOptions.multiple` / `maxSelections`.
 - QuickGrid: rows edited / deleted on page 2, after sorting or in a collapsed tree hit the wrong row in the docs' pattern (events now carry `itemIndex`); rows without `idMember` no longer share drafts across pages (keyed by row object, not position); the row toolbar works when items are replaced immutably; the edited / focused cell follows its row (keyed rows).

@@ -13,6 +13,7 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import Button from "./Button.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
+	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
@@ -182,24 +183,15 @@
 		return isTimeDisabled(h, selectedMinute, s)
 	})
 
-	// Close on outside click / Escape
+	// Light dismiss (outside press, focus moving away) + Escape while open. The popup
+	// is portalled, so it is listed next to the wrapper as "inside".
 	$effect(() => {
 		if (!isOpen) return
-
-		function handlePointerDown(event: PointerEvent) {
-			const target = event.target as Node | null
-			if (!target) return
-			if (wrapperElement?.contains(target)) return
-			if (popupElement?.contains(target)) return
-			setOpen(false)
-		}
-
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
 		const popLayer = pushLayer({onEscape: () => setOpen(false)})
-
-		document.addEventListener("pointerdown", handlePointerDown, true)
+		const undismiss = dismissOnOutside(() => [wrapperElement, popupElement], () => setOpen(false))
 		return () => {
-			document.removeEventListener("pointerdown", handlePointerDown, true)
+			undismiss()
 			popLayer()
 		}
 	})
@@ -438,7 +430,7 @@
 				anchor={wrapperElement}
 				visible={isOpen}
 				matchWidth={false}
-				style="z-index: var(--fluent-z-popover, 1060); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); padding: 1rem; box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12); min-width: 280px;"
+				style="z-index: var(--fluent-z-popover, 1060); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12); min-width: 280px;"
 			>
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -593,10 +585,12 @@
 		margin-inline-start: 0.25rem;
 	}
 
+	/* Padding lives here, not on the region, so a press anywhere on the popup is "inside". */
 	.time-picker-panel {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+		padding: 1rem;
 	}
 
 	.time-selectors {

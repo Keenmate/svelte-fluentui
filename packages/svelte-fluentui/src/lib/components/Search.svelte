@@ -7,6 +7,7 @@
 
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
+	import {debounce} from "../helpers/debounce.js"
 	import type {Snippet} from "svelte"
 	import type {NativeEventHandler, RestProps} from "../types/index.js"
 	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
@@ -98,7 +99,8 @@
 	}: Props = $props();
 
 	let element: HTMLElement | undefined;
-	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+	// `immediate` + `immediateDelay`: onSearch fires once typing pauses for the delay.
+	const debouncedSearch = debounce((term: string) => onSearch?.({term}), () => immediateDelay);
 
 	// Expose focus method for parent components
 	export function focus(preventScroll: boolean = false) {
@@ -119,10 +121,7 @@
 
 		if (immediate && immediateDelay > 0) {
 			// Immediate mode with a delay: debounce onSearch
-			if (debounceTimer) clearTimeout(debounceTimer);
-			debounceTimer = setTimeout(() => {
-				onSearch?.({term: val});
-			}, immediateDelay);
+			debouncedSearch(val);
 		} else {
 			onSearch?.({term: val});
 		}
@@ -142,12 +141,8 @@
 		}
 	});
 
-	// Cleanup debounce timer
-	$effect(() => {
-		return () => {
-			if (debounceTimer) clearTimeout(debounceTimer);
-		};
-	});
+	// Drop a pending onSearch on unmount
+	$effect(() => () => debouncedSearch.cancel());
 
 	// Compute combined style
 	let computedStyle = $derived.by(() => {
