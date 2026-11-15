@@ -99,8 +99,8 @@ test("dragging below the snap threshold rails the pane; dragging outward again r
 	await drag(page, "h3", 0, -150)
 	await expect(pane(page, "h3", 0)).toHaveClass(/fluent-multi-splitter-pane--minimized/)
 	await expect.poll(() => sizeOf(page, "h3", 0)).toBe(40)
-	// (The snap re-fires onPaneCollapse on each further frame below the threshold.)
-	await expect(page.locator("#log")).toHaveText(/^h3:collapse:0( \| h3:collapse:0)*$/)
+	// onPaneCollapse fires exactly once, however many frames stay below the threshold.
+	await expect(page.locator("#log")).toHaveText("h3:collapse:0")
 	// Inward drag on a railed pane is inert.
 	await drag(page, "h3", 0, -30)
 	await expect.poll(() => sizeOf(page, "h3", 0)).toBe(40)
@@ -108,7 +108,7 @@ test("dragging below the snap threshold rails the pane; dragging outward again r
 	await drag(page, "h3", 0, 150)
 	await expect(pane(page, "h3", 0)).not.toHaveClass(/fluent-multi-splitter-pane--minimized/)
 	await expect.poll(() => sizeOf(page, "h3", 0)).toBe(190)
-	await expect(page.locator("#log")).toHaveText(/^h3:collapse:0( \| h3:collapse:0)* \| h3:expand:0$/)
+	await expect(page.locator("#log")).toHaveText("h3:collapse:0 | h3:expand:0")
 })
 
 test("vertical orientation: horizontal separator, ArrowDown grows the top pane by step", async ({page}) => {

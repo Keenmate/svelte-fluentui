@@ -40,7 +40,9 @@ export class GutterDrag {
 		let newPrimary = this.dragStartPrimary + (this.primarySign * delta)
 
 		// SNAP-INTO-RAIL: only after primary committed to expanded (snap gate).
-		if (primary.canMin && this.primaryCanSnap) {
+		// Skipped once railed — further frames under the threshold must not
+		// re-snap (and re-fire onPaneCollapse); it fires once per collapse.
+		if (primary.canMin && this.primaryCanSnap && !primaryHandle.state.isMin) {
 			if (newPrimary < this.snapThreshold(this.primaryMaxReached) && s.nonMinCount() > 1) {
 				s.log("SNAP-INTO-RAIL primary=" + primaryIdx)
 				const absorbers = s.computeAbsorbers(this.dragGutterIdx, primaryIdx)

@@ -289,6 +289,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - QuickGrid navigate mode: a double-click on a dropdown cell (whose edit the first click had already started) threw `Cannot read properties of null (reading 'token')` and left the cell without a working editor — the replaced editor's blur cancelled the new edit. GridCellEditor now reports the edit it was opened for.
 - QuickGrid combobox editor: a value that isn't among the options shows the cell's display text instead of an empty input.
 - QuickGrid dark theme: sorted and hovered sortable headers show `--fluent-quickgrid-header-bg-sorted` / `--fluent-quickgrid-header-bg-hover` (the dark-theme header rule overrode both with the plain header background).
+- MultiSplitter: dragging a pane into its rail fires `onPaneCollapse` once (it fired again on every animation frame while the pointer stayed under the snap threshold); dragging it back out still fires `onPaneExpand` once.
 
 ### Internal
 - QuickGrid split into `components/quickgrid/`: `QuickGridHeader`, `QuickGridPager`, `QuickGridRowToolbar`, `QuickGridContextMenu` (internal, not exported) and `tree.ts`, `columns.ts`, `navigation.ts`, `editing.svelte.ts`, `options.svelte.ts`; QuickGrid.svelte 3526 → ~2440 lines. Per-render lookups instead of per-cell scans (invalid cells by key, column styles per column, tree path / level / parent per row, view index by row key). `renderCellCallback`'s `{@html}` XSS risk documented (JSDoc, docs: prefer the column `snippet`).

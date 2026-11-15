@@ -87,6 +87,16 @@ If `WIP_VERSION` ≠ `NEW_VERSION` (e.g. the WIP is `X.Y.Z-rcN` but the user ask
   - Only proceed past step 1 once the user approves the draft (or supplies their own). On approval, insert the section directly above the current top `## What's New in vX.Y.Z` heading in `./README.md`, then continue.
   - Do not silently insert the draft without confirmation — release highlights are a writing call and the user owns the voice.
 
+### 1a. Release-notes check [per-repo]
+
+This repo ships an upgrade guide per release in `./release-notes/` (copied into the package by `post-package.js`, listed in the package `files`). Before bumping anything, verify all three of these for `NEW_VERSION`:
+
+- **Release-notes file exists** — `./release-notes/<NEW_VERSION>.md` (e.g. `release-notes/2.0.0-rc01.md`). For a `release` promotion (`X.Y.Z-rcN` → `X.Y.Z`), a file named only for the rc (`release-notes/X.Y.Z-rcN.md`) does **not** count — the user decides whether to rename, copy, or write a new one.
+- **CHANGELOG section exists** — `./CHANGELOG.md` has a `## [<version>]` heading for this release: `## [NEW_VERSION]`, or `## [WIP_VERSION]` when Section 3 will re-tag it to `NEW_VERSION`.
+- **README What's New mentions the major/minor** — `./README.md` has a `## What's New in vX.Y…` heading whose major.minor matches `NEW_VERSION` (e.g. `## What's New in v2.0.0-rc01` covers a `2.0.0` release).
+
+If **any** of them is missing, **stop** and tell the user exactly which ones (file path / heading expected). Don't create release notes or CHANGELOG sections yourself, and don't continue to Section 2 until the user has added them or explicitly says to skip this check. (A missing What's New section can be drafted via the Section 1 flow above, but only after reporting it.)
+
 ### 2. Bump version (if needed) [canonical]
 
 If `NEW_VERSION` ≠ `CURRENT_VERSION`, edit `./packages/svelte-fluentui/package.json` and change `"version": "CURRENT_VERSION"` to `"version": "NEW_VERSION"`.
@@ -164,6 +174,7 @@ From `./packages/svelte-fluentui/`, run `npm pack --dry-run` and confirm the fil
 - `README.md` (auto-synced by post-package.js from workspace root)
 - `LICENSE`
 - `package.json`
+- `release-notes/<NEW_VERSION>.md` (copied by post-package.js from the workspace root; checked in Section 1a)
 
 If anything user-facing is missing or anything private leaked in (e.g. `src/`, `tests/`, `*.spec.ts`, `tsconfig.json`, `svelte.config.js`), stop and report — the `files` field in `package.json` controls this and the leak needs fixing before publish.
 
