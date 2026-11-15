@@ -26,6 +26,9 @@
 		{name: "currentPage", type: "number", default: "1", description: "Bindable. 1-based. Brought back into range whenever the page count shrinks (rows removed, filtered, collapsed, smaller totalItems)"},
 		{name: "paginationMode", type: '"client" | "server"', default: '"client"', description: "\"server\": items is the current page, already filtered and sorted — the grid neither filters, sorts nor slices it; load pages in onDataRequest"},
 		{name: "totalItems", type: "number", default: "undefined", description: "Server mode: the total row count the pager shows and pages over. Leave it undefined until the first response — currentPage is only clamped against a known total"},
+		{name: "virtualize", type: "boolean", default: "false", description: "Render only the rows in view (plus overscanCount above / below) inside a scrolling container with a sticky header — for large client-side grids. Sorting, filtering, tree, editing and keyboard navigation work over all rows (focus moves scroll the row into view; the row being edited stays rendered); aria-rowcount / aria-rowindex count every displayed row. Ignored with pageable / server paging. Rows should be one line high (itemSize). The container scrolls up to --fluent-quickgrid-virtual-max-height (480px), or set height / max-height in style"},
+		{name: "itemSize", type: "number", default: "37", description: "virtualize: row height in px (one line of text). Rows get it as their height and the actual row pitch is measured, so a small mismatch doesn't drift — but rows much taller than this (wrapping text) make the scroll position jump"},
+		{name: "overscanCount", type: "number", default: "5", description: "virtualize: rows rendered beyond each edge of the view (smoother fast scrolling vs. fewer DOM rows)"},
 		{name: "striped", type: "boolean", default: "true", description: "Alternate row background colors"},
 		{name: "hoverable", type: "boolean", default: "true", description: "Highlight rows on mouse hover"},
 		{name: "fillerColumn", type: "boolean", default: "false", description: "Append an empty trailing column that absorbs leftover horizontal space, so preceding columns keep their defined widths instead of stretching to justify"},
@@ -75,6 +78,7 @@
 		{name: "--fluent-quickgrid-header-bg-sorted", type: "color", default: "theme.scss (light / dark)", description: "Sorted column header"},
 		{name: "--fluent-quickgrid-row-bg-stripe", type: "color", default: "theme.scss (light / dark)", description: "Every other row (striped)"},
 		{name: "--fluent-quickgrid-row-bg-hover", type: "color", default: "theme.scss (light / dark)", description: "Row on hover (hoverable)"},
+		{name: "--fluent-quickgrid-virtual-max-height", type: "length", default: "480px", description: "virtualize: max height of the scrolling container"},
 		{name: "--fluent-quickgrid-focus-stroke", type: "color", default: "--focus-stroke-outer", description: "Focus ring: sort buttons, focusable rows, chevrons, ⋮ / edit / toolbar buttons"},
 		{name: "--fluent-quickgrid-focused-cell-stroke", type: "color", default: "--accent-fill-rest", description: "Navigate mode: focused cell outline"},
 		{name: "--fluent-quickgrid-focused-cell-bg", type: "color", default: "--neutral-fill-secondary-hover", description: "Navigate mode: focused cell background"},
@@ -197,6 +201,22 @@
 	// Server-side paging: a fake server (setTimeout over a local array) answering onDataRequest.
 	type Customer = {id: number; name: string; city: string; orders: number}
 	const cities = ["Praha", "Zürich", "Oslo", "Brno", "Wien"]
+
+	// Virtualized: 5,000 generated rows
+	type Order = {id: number; customer: string; city: string; total: number}
+	const bigData: Order[] = Array.from({length: 5000}, (_, i) => ({
+		id: i + 1,
+		customer: `Customer ${String(i % 997 + 1).padStart(3, "0")}`,
+		city: ["Praha", "Zürich", "Oslo", "Brno", "Wien"][i % 5],
+		total: (i * 7919) % 100000 / 100
+	}))
+	const totalFormat = new Intl.NumberFormat("en-US", {style: "currency", currency: "EUR"})
+	const bigColumns = [
+		{field: "id" as const, title: "Order", width: "90px"},
+		{field: "customer" as const, title: "Customer"},
+		{field: "city" as const, title: "City"},
+		{field: "total" as const, title: "Total", getDisplayValueCallback: ({value}: {value: unknown}) => totalFormat.format(value as number)}
+	]
 	const serverSource: Customer[] = Array.from({length: 87}, (_, i) => ({
 		id: i + 1, name: `Customer ${i + 1}`, city: cities[i % cities.length], orders: (i * 37) % 120
 	}))
@@ -299,6 +319,15 @@
 		<p>Grid with pagination and a page-size selector (<code>pageSizes</code>); <code>bind:currentPage</code> / <code>bind:pageSize</code> track it:</p>
 		<QuickGrid items={sampleData} columns={basicColumns} pageable bind:pageSize={clientPageSize} bind:currentPage={clientPage} pageSizes={[5, 10, 15]} />
 		<p>Page <code>{clientPage}</code>, <code>{clientPageSize}</code> per page.</p>
+
+		<h3>Virtualized: 5,000 rows</h3>
+		<p>
+			<code>virtualize</code> renders only the rows in view (plus <code>overscanCount</code>) in a scrolling
+			container; spacer rows stand in for the rest. Rows are one line of text (<code>itemSize</code>, default 37px);
+			sort, filter, edit and keyboard-navigate as usual. Not combined with paging.
+		</p>
+		<QuickGrid items={bigData} columns={bigColumns} virtualize sortMode="single" filterable idMember="id"
+			style="--fluent-quickgrid-virtual-max-height: 360px" ariaLabel="Orders" />
 
 		<h3>Server-side paging, sorting and filtering</h3>
 		<p>
@@ -683,6 +712,7 @@
 			<li><kbd>Shift</kbd>+<kbd>F10</kbd> or the <kbd>ContextMenu</kbd> key on a focused cell opens the context menu below it with focus on the first item; arrows move, <kbd>Enter</kbd> / <kbd>Space</kbd> run an item, <kbd>Escape</kbd> closes it and returns focus.</li>
 			<li>Row toolbar: <kbd>Alt</kbd>+<kbd>F10</kbd> on a cell opens it for that row and focuses its first button. Without navigate mode, rows of a hover / click toolbar grid are one tab stop: <kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>Home</kbd> / <kbd>End</kbd> move between rows, <kbd>Enter</kbd> or <kbd>Alt</kbd>+<kbd>F10</kbd> opens the toolbar. In the toolbar, arrows / <kbd>Home</kbd> / <kbd>End</kbd> move, <kbd>Enter</kbd> / <kbd>Space</kbd> run, <kbd>Escape</kbd> or <kbd>Tab</kbd> close it and return focus. <code>toolbarTrigger="button"</code>: <kbd>Enter</kbd> on <kbd>⋮</kbd> (<code>aria-haspopup</code>, <code>aria-expanded</code>) does the same.</li>
 			<li>Paged and server grids set <code>aria-rowcount</code> / <code>aria-rowindex</code> (server mode from <code>totalItems</code>, <code>-1</code> while unknown). Filter inputs are named after their column; name the table with <code>ariaLabel</code> / <code>ariaLabelledby</code>. A polite live region announces the row count after filtering, the page after paging and the sort after a header change.</li>
+			<li><code>virtualize</code>: <code>aria-rowcount</code> / <code>aria-rowindex</code> count every displayed row, not just the rendered ones; keyboard focus moves (cells, rows mode, <kbd>Home</kbd> / <kbd>End</kbd>) scroll the target row into view first. Scrolling a focused cell out of the rendered window drops its focus; <kbd>Tab</kbd> back in lands on a rendered row.</li>
 			<li>Tree mode renders a <code>treegrid</code> with <code>aria-level</code> and <code>aria-expanded</code> on rows; chevrons are buttons named Expand / Collapse.</li>
 		</ul>
 	</Card>

@@ -465,3 +465,76 @@ offset override would restore cell-edge alignment; Select's trigger text is a `$
 arriving while closed show `valueText` until the next open/close); picking the current value still fires
 `onRowChange` with old = new (as before); a navigate-mode dblclick on a dropdown cell still restarts the edit
 (now harmlessly); Autocomplete itself still has its own option rows / nav (not `<Option>` / groups).
+
+**Perf step status — done 2026-11-15.** Measured first (fixture `/test/quickgrid-perf`, 2,000 rows × 8 columns, display
+callbacks on 4, filterable, `sortMode="single"`; `QG_PERF=1 npx playwright test e2e/quickgrid-perf.spec.ts`; each
+number = median of 5, `performance.now()` from the action to the frame after it, **dev server build** — absolute
+values are high, ratios are what counts; "calls" = `getDisplayValueCallback` calls during the action).
+
+| action | before | after (memo + text cache) | `virtualize` |
+|---|---|---|---|
+| initial render | 1,136 ms (8,000 calls) | ~1,100 ms (8,000) | **28 ms** (72) |
+| filter keystroke, all rows still match | 152 ms (10,000 calls) | **~30 ms** (2,000) | 14 ms |
+| filter keystroke, 2,000 → 333 rows | 288 ms | ~260 ms | 14 ms |
+| filter cleared, 333 → 2,000 rows | 862 ms | ~860 ms | 13 ms |
+| sort click | 426 ms (8,000 calls) | **~300 ms** (0) | 17 ms |
+
+Task 1 (`getCellValue` / `getEditorDisplayText` memo): the measurement showed the real cost wasn't a missing value
+memo — every pipeline run (filter keystroke, sort, page, expand) rebuilt `displayRows` with new `{item, rowKey,
+eachKey}` objects, and the keyed `{#each}` hands each row its entry through a getter (`$.get($$item).item`), so a
+new entry object re-ran **every** cell expression of every displayed row (10,000 callback calls for one keystroke).
+Fix: `displayRows` reuses a row's entry object while item, rowKey, eachKey and the `items` array are unchanged
+(non-reactive `Map<eachKey, entry>` carried between runs; a new `items` array starts fresh, so rows mutated in place
+and handed over as `items = [...items]` still re-render). A value cache keyed by row + column was rejected: Svelte's
+per-cell template effects already memoise per cell **and** track whatever the callback reads (a deep-reactive row
+field, a `$state` lookup map, `culture`, a replaced column) — a hand-made cache would lose that tracking (stale
+cells) and need guessing invalidation rules. Now a cell re-runs only when something it read changed.
+Task 2 (filter text): the texts are still formatted on every run (so `orderedItems` keeps tracking what the
+callbacks read — same staleness argument), but the term is folded once per run instead of once per row, and folded
+cell texts are memoised **by the text itself** (`SearchTextCache` in `pipeline.ts`, per `searchBehavior`, bounded
+at 50,000 entries → clear) — keyed by text it can't go stale, so no invalidation rules at all. Profiled: folding
+cost ~2.2 ms per keystroke per filtered column at 2,000 short texts uncached vs ~0.1 ms cached (≈4–8 ms for
+longer texts, linear in rows × filtered columns); in the end-to-end keystroke (~20 ms JS, mostly Svelte's effect
+traversal over 16,000 cell effects) it's within run-to-run noise — kept because it is cheap and can't be wrong.
+Remaining non-virtual cost is DOM: creating / destroying rows (Svelte's `remove_reaction` is O(reactions) per
+dependency, and every cell reads ~10 grid-wide signals, so tearing down 1,600 rows is quadratic-ish — ~320 of the
+~900 ms in the profile) and layout of a 2,000-row table on a sort (JS ~25 ms of ~300).
+Task 3 (virtualisation) — done, opt-in: `virtualize` + `itemSize` (37) + `overscanCount` (5). The container
+(`.quickgrid-container.virtualized`) scrolls (`overflow-y: auto`, `max-block-size:
+var(--fluent-quickgrid-virtual-max-height, 480px)`), `thead` is sticky (opaque background); the window is
+`renderRange` from scrollTop / clientHeight (scroll listener + ResizeObserver, only while virtual) minus the
+measured `bodyOffset` (header height), divided by the row pitch — `itemSize`, corrected by measuring the rendered
+rows after each render (pitch > 0.5px off → use the measured one). Start is rounded down to even so
+`:nth-child(even)` stripes stay on their rows. Spacer rows are separate `<tbody class="virtual-spacer"
+aria-hidden="true">` before / after the body (heights = rows × pitch), so the body's `:nth-child` and
+`:scope > tbody > tr[data-row-key]` lookups are unaffected. In virtual mode the table uses `border-collapse:
+separate` (row line drawn by the cells): Chromium doesn't move collapsed borders with a sticky header, rows showed
+through the header's border strips. `{#each renderedRows … , renderIndex}` + `{@const viewIndex = renderStart +
+renderIndex}` keeps every handler on the absolute view index. Keyboard: `focusCell` calls `scrollRowIntoView`
+(sets scrollTop and the window state synchronously, so the row exists by the focusing rAF); rows-mode
+↑ / ↓ / Home / End go through `focusRowAt(index)` (view-index based, no longer the DOM row list) with the same
+scroll; the navigate-mode / rows-mode tab stop falls back to the first rendered row when the stop row was
+scrolled out (else Tab would skip the grid). The edited row is forced into the window (range extended to it) so
+its editor isn't destroyed while scrolled away. aria: `aria-rowcount` = header rows + all displayed rows,
+`aria-rowindex` from the absolute view index; header rows get their indexes as in paged mode. The hover-toolbar
+anchor effect resolves its `<tr>` among the rendered rows (`viewIndex − renderStart`); "immediate" options loads
+iterate the rendered rows only. Ignored when `pageable` / server paging (documented). Docs example (5,000 rows) +
+API rows + `--fluent-quickgrid-virtual-max-height`; CHANGELOG Added + Internal; release notes "QuickGrid:
+virtualised rows" under New API.
+Tests: `e2e/quickgrid-cache.spec.ts` (8; fixture `/test/quickgrid-cache`): a filter keystroke doesn't re-format
+the rows it keeps (fails on the old code), in-place edits of deep-reactive rows show and re-filter, a grid edit
+updates the display while filtered + sorted, immutable replace / push, a `$state` lookup read by the callback,
+`searchBehavior` + a replaced display callback re-filter, culture re-formats and re-filters, raw rows mutated in
+place + new array. `e2e/quickgrid-virtual.spec.ts` (11; fixture `/test/quickgrid-virtual`): window + aria-rowcount
+/ rowindex, scrolling, stripes, ↓ / ↑ ×40 scroll the focused cell into view both ways, Tab back in after scrolling
+away, sort + filter over all rows, the edited row survives scrolling away (value kept, commits), tree collapse,
+rows-mode End / Home, the hover toolbar follows the hovered row after a scroll, ignored with paging.
+`e2e/quickgrid-perf.spec.ts`: a 300-row smoke test always; the timings only with `QG_PERF=1`.
+Deferred / noticed: navigate-mode arrows pressed faster than a frame repeat the move from the same cell (focus
+moves in a rAF; pre-existing, not virtual-specific — the spec presses one key per frame); a focused cell scrolled
+out of the window loses focus (to `<body>`; Tab back in works); rows taller than `itemSize` (wrapping text, an
+inline validation message) are measured on average only — variable row heights would need per-row measuring;
+virtual + `pageable` not combined (paging wins); no PageUp / PageDown / Ctrl+Home / Ctrl+End cell navigation
+(none exists without virtualisation either); the remaining non-virtual costs are DOM create / destroy and table
+layout — cutting the ~10 grid-wide signals each cell reads (`invalidByKey`, `editingCell`, focus / tab-stop,
+`columnStyles`, `labels`, …) to per-row deriveds would shrink Svelte's teardown work, not attempted.

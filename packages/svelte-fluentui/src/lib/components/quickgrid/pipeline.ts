@@ -2,7 +2,7 @@
  * QuickGrid display pipeline — pure functions, no Svelte state.
  * QuickGrid chains them: tree order → filter → sort → visibility (tree collapse) → page.
  */
-import {containsText, type SearchBehavior} from "../../helpers/text.js"
+import {normalizeForSearch, type SearchBehavior} from "../../helpers/text.js"
 import type {QuickGridColumn, QuickGridSortMode, QuickGridSortState} from "../QuickGrid.types.js"
 
 // ---------------------------------------------------------------------------
@@ -93,28 +93,70 @@ export function nextSort(current: QuickGridSortState[], field: string, mode: Qui
 // Filtering
 // ---------------------------------------------------------------------------
 
+/**
+ * Memo of `normalizeForSearch` keyed by the text itself (per behavior) — the folding is the
+ * expensive part of a filter keystroke, and the same cell texts come back on every keystroke.
+ * Keyed by the text, not the row, so it can never go stale: a changed value / culture / display
+ * callback simply produces a different text. Bounded: cleared once `limit` texts are stored.
+ */
+export class SearchTextCache {
+	readonly #byBehavior = new Map<SearchBehavior, Map<string, string>>()
+	#size = 0
+
+	constructor(readonly limit = 50_000) {}
+
+	normalize(text: string, behavior: SearchBehavior): string {
+		let map = this.#byBehavior.get(behavior)
+		if (!map) this.#byBehavior.set(behavior, (map = new Map()))
+		let folded = map.get(text)
+		if (folded === undefined) {
+			if (this.#size >= this.limit) this.clear()
+			folded = normalizeForSearch(text, behavior)
+			map.set(text, folded)
+			this.#size++
+		}
+		return folded
+	}
+
+	clear() {
+		for (const map of this.#byBehavior.values()) map.clear()
+		this.#size = 0
+	}
+}
+
 export type FilterOptions<T> = {
 	filters: Record<string, string>
 	columns: QuickGridColumn<T>[]
 	searchBehavior: SearchBehavior
-	/** The text the cell shows (what the built-in match compares against). */
+	/** The text the cell shows (what the built-in match compares against). Called on every
+	 *  filter run — not cached, so whatever it reads stays tracked by the caller's `$derived`. */
 	getText: (row: T, column: QuickGridColumn<T>) => string
+	/** Memo for the folded cell texts (default: none — every text is folded each run). */
+	textCache?: SearchTextCache
 }
 
 /** A predicate for the active filters, or null when none is active. A column's
  *  `filterCallback` returning `null` (incomplete input) leaves that filter off. */
-export function createRowFilter<T>({filters, columns, searchBehavior, getText}: FilterOptions<T>): ((row: T) => boolean) | null {
+export function createRowFilter<T>({filters, columns, searchBehavior, getText, textCache}: FilterOptions<T>): ((row: T) => boolean) | null {
 	const active = Object.entries(filters)
 		.filter(([, term]) => !!term)
 		.map(([field, term]) => ({term, column: columns.find((c) => String(c.field) === field)}))
 		.filter((f): f is {term: string; column: QuickGridColumn<T>} => f.column !== undefined)
+		.map(({term, column}) => {
+			const behavior = column.searchBehavior ?? searchBehavior
+			// The term is folded once per filter run, not once per row.
+			return {term, column, behavior, query: normalizeForSearch(term, behavior)}
+		})
 	if (active.length === 0) return null
-	return (row) => active.every(({term, column}) => {
+	const fold = textCache
+		? (text: string, behavior: SearchBehavior) => textCache.normalize(text, behavior)
+		: normalizeForSearch
+	return (row) => active.every(({term, column, behavior, query}) => {
 		if (column.filterCallback) {
 			const result = column.filterCallback({term, row, column})
 			return result === null ? true : result
 		}
-		return containsText(getText(row, column), term, column.searchBehavior ?? searchBehavior)
+		return fold(getText(row, column), behavior).includes(query)
 	})
 }
 

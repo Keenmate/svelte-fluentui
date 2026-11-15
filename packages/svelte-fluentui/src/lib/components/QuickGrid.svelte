@@ -54,7 +54,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	import {defaultLocale} from "../helpers/locale.js"
 	import {
 		createRowComparator, createRowFilter, nextSort, sortRows, treeOrder, filterTreeRows,
-		visibleTreeRows, getPageCount, clampPage, pageSlice, type TreeAccess
+		visibleTreeRows, getPageCount, clampPage, pageSlice, SearchTextCache, type TreeAccess
 	} from "./quickgrid/pipeline.js"
 	import {
 		buildTreeInfo, getTreeRowInfo, detectTreeSeparator, compareSegments, nearestExpandedAncestor,
@@ -111,6 +111,16 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		onPageSizeChange?: (ctx: {pageSize: number}) => void
 		/** Fires when the displayed data should change — load it here in server mode. */
 		onDataRequest?: (detail: DataRequestDetail) => void
+		/** Renders only the rows in view (plus `overscanCount` above and below) in a scrolling container —
+		 *  for large client-side grids. Works with sorting, filtering, tree and editing; ignored with
+		 *  `pageable` / server paging. Rows should be one line high (`itemSize`). The container scrolls
+		 *  up to `--fluent-quickgrid-virtual-max-height` (default 480px) — or give it a `height` / `max-height` in `style`. */
+		virtualize?: boolean
+		/** `virtualize`: row height in px (rows get it as their height; the actual row pitch is measured,
+		 *  so a small mismatch doesn't drift). Default: 37 (one line of text). */
+		itemSize?: number
+		/** `virtualize`: rows rendered beyond each edge of the view. Default: 5. */
+		overscanCount?: number
 		/** Alternate row background. Default: `true`. */
 		striped?: boolean
 		/** Highlight the row under the pointer. Default: `true`. */
@@ -229,6 +239,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		onCurrentPageChange = undefined,
 		onPageSizeChange = undefined,
 		onDataRequest = undefined,
+		virtualize = false,
+		itemSize = 37,
+		overscanCount = 5,
 		striped = true,
 		hoverable = true,
 		fillerColumn = false,
@@ -575,9 +588,15 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	})
 
 	// Matches the text the cell shows (getDisplayValueCallback / formatted value) under `searchBehavior`.
+	// The texts are formatted on every run (so the derived tracks what the callbacks read); their
+	// folding is memoised by text in `searchTextCache`.
+	const searchTextCache = new SearchTextCache()
 	let rowFilter = $derived(
 		filterable && filterMode === "client" && !isServerPaging
-			? createRowFilter({filters, columns, searchBehavior, getText: (row, column) => formatCellValue(row[column.field as keyof T], row, column)})
+			? createRowFilter({
+				filters, columns, searchBehavior, textCache: searchTextCache,
+				getText: (row, column) => formatCellValue(row[column.field as keyof T], row, column)
+			})
 			: null
 	)
 	let isFiltering = $derived(rowFilter !== null)
@@ -629,14 +648,32 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	// Body rows with their {#each} key: the row key, suffixed for repeats (duplicate ids, or
 	// the same object twice in items) so a keyed each never throws on them.
+	// Each entry object is reused while its row, key and `items` stay the same: the keyed each
+	// re-runs every cell of a row whose entry object changed, so a filter keystroke / sort / page
+	// would otherwise re-render (and re-format) every displayed cell. Cells still update on their
+	// own when a value they read changes (a deep-reactive row, culture, columns, overrides). A new
+	// `items` array starts fresh entries, so rows mutated in place and handed over as a new array
+	// (`items = [...items]`) still re-render.
+	type DisplayRow = {item: T; rowKey: string; eachKey: string}
+	let displayRowCache = new Map<string, DisplayRow>()
+	let displayRowCacheItems: T[] | undefined
 	let displayRows = $derived.by(() => {
 		const seen = new Map<string, number>()
-		return displayItems.map((item) => {
+		const previous = displayRowCacheItems === items ? displayRowCache : new Map<string, DisplayRow>()
+		const next = new Map<string, DisplayRow>()
+		const rows = displayItems.map((item) => {
 			const rowKey = getRowKey(item)
 			const n = seen.get(rowKey) ?? 0
 			seen.set(rowKey, n + 1)
-			return {item, rowKey, eachKey: n === 0 ? rowKey : `${rowKey}#${n}`}
+			const eachKey = n === 0 ? rowKey : `${rowKey}#${n}`
+			const cached = previous.get(eachKey)
+			const row = cached && cached.item === item && cached.rowKey === rowKey ? cached : {item, rowKey, eachKey}
+			next.set(eachKey, row)
+			return row
 		})
+		displayRowCache = next
+		displayRowCacheItems = items
+		return rows
 	})
 
 	// First view position of every displayed row key.
@@ -647,6 +684,93 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		})
 		return map
 	})
+
+	// --- Virtualisation: only the rows in view (+ overscan) are in the DOM; spacer rows above and
+	// below stand in for the rest. Positions are view indexes × the row pitch (`itemSize`, corrected
+	// by measuring the rendered rows), offset by the header (`bodyOffset`, measured).
+	let isVirtual = $derived(virtualize && !pageable && !isServerPaging)
+	let virtualScrollTop = $state(0)
+	let virtualViewportHeight = $state(0)
+	let measuredRowPitch = $state<number | null>(null)
+	let bodyOffset = $state(0)
+	let rowPitch = $derived(Math.max(1, measuredRowPitch ?? itemSize))
+	// The row being edited stays rendered (its editor would otherwise be destroyed while scrolled away).
+	let editingViewIndex = $derived(isVirtual && editingCell ? getViewIndex(editingCell.rowKey) : -1)
+	let renderRange = $derived.by(() => {
+		const count = displayRows.length
+		if (!isVirtual) return {start: 0, end: count}
+		const top = Math.max(0, virtualScrollTop - bodyOffset)
+		let start = Math.max(0, Math.floor(top / rowPitch) - overscanCount)
+		let end = Math.ceil((top + Math.max(virtualViewportHeight, rowPitch)) / rowPitch) + overscanCount
+		if (editingViewIndex >= 0) {
+			start = Math.min(start, editingViewIndex)
+			end = Math.max(end, editingViewIndex + 1)
+		}
+		start = Math.min(start - (start % 2), count)  // even: `:nth-child` stripes keep their rows
+		return {start, end: Math.min(Math.max(start, end), count)}
+	})
+	let renderStart = $derived(renderRange.start)
+	let renderedRows = $derived(isVirtual ? displayRows.slice(renderRange.start, renderRange.end) : displayRows)
+	let spacerBefore = $derived(isVirtual ? renderRange.start * rowPitch : 0)
+	let spacerAfter = $derived(isVirtual ? (displayRows.length - renderRange.end) * rowPitch : 0)
+	let bodyColumnCount = $derived(columns.length + (showRowToolbar && toolbarTrigger === 'button' ? 1 : 0) + (fillerColumn ? 1 : 0))
+
+	// Scroll position and viewport height of the scrolling container.
+	$effect(() => {
+		const el = containerRef
+		if (!isVirtual || !el) return
+		const update = () => {
+			virtualScrollTop = el.scrollTop
+			virtualViewportHeight = el.clientHeight
+		}
+		update()
+		const observer = new ResizeObserver(update)
+		observer.observe(el)
+		el.addEventListener("scroll", update, {passive: true})
+		return () => {
+			observer.disconnect()
+			el.removeEventListener("scroll", update)
+		}
+	})
+
+	// Measure the real row pitch and where the first row starts (below the header) after each render.
+	$effect(() => {
+		const table = tableElement
+		const el = containerRef
+		void renderedRows
+		void virtualViewportHeight
+		if (!isVirtual || !table || !el) return
+		untrack(() => {
+			const rows = table.querySelectorAll<HTMLElement>(":scope > tbody > tr[data-row-key]")
+			if (rows.length === 0) return
+			const first = rows[0].getBoundingClientRect()
+			if (rows.length > 1) {
+				const pitch = (rows[rows.length - 1].getBoundingClientRect().top - first.top) / (rows.length - 1)
+				if (pitch > 0 && Math.abs(pitch - rowPitch) > 0.5) measuredRowPitch = pitch
+			}
+			const offset = first.top - el.getBoundingClientRect().top + el.scrollTop - renderStart * rowPitch
+			if (Math.abs(offset - bodyOffset) > 0.5) bodyOffset = offset
+		})
+	})
+
+	// Scrolls the container so the row at `viewIndex` is in view (below the sticky header).
+	function scrollRowIntoView(viewIndex: number) {
+		const el = containerRef
+		if (!isVirtual || !el || viewIndex < 0) return
+		const rowTop = bodyOffset + viewIndex * rowPitch
+		const headerHeight = tableElement?.tHead?.offsetHeight ?? 0
+		let next = el.scrollTop
+		if (rowTop < el.scrollTop + headerHeight) next = rowTop - headerHeight
+		else if (rowTop + rowPitch > el.scrollTop + el.clientHeight) next = rowTop + rowPitch - el.clientHeight
+		if (next === el.scrollTop) return
+		el.scrollTop = next
+		virtualScrollTop = el.scrollTop  // render the row now, not on the scroll event
+	}
+
+	function isRowRendered(rowKey: string): boolean {
+		const index = getViewIndex(rowKey)
+		return index >= renderRange.start && index < renderRange.end
+	}
 
 	function requestData(trigger: DataRequestTrigger) {
 		onDataRequest?.({
@@ -726,10 +850,11 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		})
 	})
 
-	// aria-rowcount / aria-rowindex when only part of the rows is in the DOM (paged / server)
+	// aria-rowcount / aria-rowindex when only part of the rows is in the DOM (paged / server / virtualised)
 	let headerRowCount = $derived(filterable ? 2 : 1)
 	let ariaRowCount = $derived(
-		!pageable && !isServerPaging ? undefined
+		isVirtual ? headerRowCount + displayItems.length
+			: !pageable && !isServerPaging ? undefined
 			: isServerPaging && totalItems === undefined ? -1
 			: headerRowCount + pagedTotal
 	)
@@ -813,11 +938,11 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	}
 
 	// "immediate": load for every displayed row whose cell is editable (the rows the user can
-	// see and edit), once per row object — a page / sort / filter loads the newly shown rows.
+	// see and edit), once per row object — a page / sort / filter / scroll loads the newly shown rows.
 	$effect(() => {
 		for (const column of columns) {
 			if (!column.editorOptions?.loadOptionsCallback || OptionsLoader.trigger(column) !== "immediate") continue
-			for (const item of displayItems) {
+			for (const {item} of renderedRows) {
 				if (!isCellEditable(column, item)) continue
 				const rowKey = getRowKey(item)
 				untrack(() => {
@@ -1132,7 +1257,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	let resolvedTabStop = $derived.by(() => {
 		if (!isNavigateMode || displayItems.length === 0) return null
 		const stop = tabStop
-		if (stop && stop.colIndex < columns.length && viewIndexByKey.has(stop.rowKey)) return stop
+		if (stop && stop.colIndex < columns.length && viewIndexByKey.has(stop.rowKey) && isRowRendered(stop.rowKey)) return stop
+		// Virtualised and scrolled away from the stop: the first rendered row keeps a tab stop
+		if (stop && isVirtual && stop.colIndex < columns.length && renderedRows.length > 0) return { rowKey: renderedRows[0].rowKey, colIndex: stop.colIndex }
 		return { rowKey: getRowKey(displayItems[0]), colIndex: 0 }
 	})
 
@@ -1145,6 +1272,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	function focusCell(rowKey: string, colIndex: number) {
 		focusedCell = { rowKey, colIndex }
 		tabStop = { rowKey, colIndex }
+		scrollRowIntoView(getViewIndex(rowKey))  // virtualised: renders the row if it was scrolled away
 		// Focus the td element for keyboard events
 		requestAnimationFrame(() => {
 			const row = tableElement?.querySelector(`:scope > tbody > tr[data-row-key="${CSS.escape(rowKey)}"]`)
@@ -1497,20 +1625,21 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	let resolvedRowTabStop = $derived.by(() => {
 		if (!rowsFocusable || displayItems.length === 0) return null
 		const stop = rowTabStop
-		if (stop !== null && viewIndexByKey.has(stop)) return stop
+		if (stop !== null && viewIndexByKey.has(stop) && isRowRendered(stop)) return stop
+		if (stop !== null && isVirtual && renderedRows.length > 0) return renderedRows[0].rowKey
 		return getRowKey(displayItems[0])
 	})
 
 	function handleRowKeyDown(rowKey: string, viewIndex: number, event: KeyboardEvent) {
 		if (event.target !== event.currentTarget) return
 		const row = event.currentTarget as HTMLElement
-		const rows = [...(tableElement?.querySelectorAll<HTMLElement>(':scope > tbody > tr[data-row-key]') ?? [])]
+		const count = displayRows.length
 		let next = -1
 		switch (event.key) {
-			case 'ArrowDown': next = Math.min(viewIndex + 1, rows.length - 1); break
+			case 'ArrowDown': next = Math.min(viewIndex + 1, count - 1); break
 			case 'ArrowUp': next = Math.max(viewIndex - 1, 0); break
 			case 'Home': next = 0; break
-			case 'End': next = rows.length - 1; break
+			case 'End': next = count - 1; break
 			case 'Enter':
 				event.preventDefault()
 				openToolbarFromKeyboard(rowKey, viewIndex, row)
@@ -1523,7 +1652,18 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			default: return
 		}
 		event.preventDefault()
-		rows[next]?.focus()
+		focusRowAt(next)
+	}
+
+	// Focuses the row at a view position (rows mode); virtualised, scrolls it into view first.
+	function focusRowAt(viewIndex: number) {
+		const find = () => tableElement?.querySelectorAll<HTMLElement>(':scope > tbody > tr[data-row-key]')[viewIndex - renderRange.start]
+		if (!isVirtual) {
+			find()?.focus()
+			return
+		}
+		scrollRowIntoView(viewIndex)
+		void tick().then(() => find()?.focus({ preventScroll: true }))
 	}
 
 	// The toolbar's row, resolved by key against the current view (null once it's gone).
@@ -1537,8 +1677,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// after the rows re-render (keyed rows move their elements along with the data).
 	$effect(() => {
 		if (hoveredAnchorViewIndex === null || !tableElement) return
-		void displayItems
-		const el = tableElement.querySelectorAll(':scope > tbody > tr')[hoveredAnchorViewIndex] as HTMLElement | undefined
+		void renderedRows
+		const el = tableElement.querySelectorAll(':scope > tbody > tr[data-row-key]')[hoveredAnchorViewIndex - renderStart] as HTMLElement | undefined
 		if (el && el !== hoveredRowElement) hoveredRowElement = el
 	})
 
@@ -1835,7 +1975,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	let computedClass = $derived(`quickgrid ${striped ? "striped" : ""} ${hoverable ? "hoverable" : ""} ${editable ? "editable" : ""} ${isNavigateMode ? "navigate-mode" : ""} ${className}`.trim())
 </script>
 
-<div {...rest} bind:this={containerRef} class="quickgrid-container" {style} onfocusout={handleGridFocusOut}>
+<div {...rest} bind:this={containerRef} class="quickgrid-container" class:virtualized={isVirtual} {style} onfocusout={handleGridFocusOut}>
 	<!-- Row toolbar (uses fixed positioning to float outside container) -->
 	{#if showRowToolbar && hoveredRow && hoveredRowElement && tableElement}
 		<QuickGridRowToolbar
@@ -1876,6 +2016,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		aria-label={ariaLabel}
 		aria-labelledby={ariaLabelledby}
 		aria-rowcount={ariaRowCount}
+		style={isVirtual ? `--quickgrid-item-size: ${itemSize}px` : undefined}
 	>
 		<QuickGridHeader
 			{columns}
@@ -1892,15 +2033,19 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			onSortRequest={({column, additive}) => handleSort(column, additive)}
 			filterChangeCallback={({field, value}) => handleFilter(field, value)}
 		/>
+		{#if spacerBefore > 0}
+			<tbody class="virtual-spacer" aria-hidden="true"><tr><td colspan={bodyColumnCount} style="height: {spacerBefore}px"></td></tr></tbody>
+		{/if}
 		<tbody>
 			{#if displayItems.length === 0}
 				<tr>
-					<td colspan={columns.length + (showRowToolbar && toolbarTrigger === 'button' ? 1 : 0) + (fillerColumn ? 1 : 0)} class="empty-message">
+					<td colspan={bodyColumnCount} class="empty-message">
 						{labels.emptyText}
 					</td>
 				</tr>
 			{:else}
-				{#each displayRows as {item, rowKey, eachKey}, viewIndex (eachKey)}
+				{#each renderedRows as {item, rowKey, eachKey}, renderIndex (eachKey)}
+					{@const viewIndex = renderStart + renderIndex}
 					{@const rowPath = isTreeMode ? getRowPath(item) : ""}
 					{@const rowIsParent = isTreeMode && (isFiltering ? filteredParentPaths.has(rowPath) : rowHasChildren(item))}
 					<tr
@@ -2102,6 +2247,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 				{/each}
 			{/if}
 		</tbody>
+		{#if spacerAfter > 0}
+			<tbody class="virtual-spacer" aria-hidden="true"><tr><td colspan={bodyColumnCount} style="height: {spacerAfter}px"></td></tr></tbody>
+		{/if}
 	</table>
 
 	{#if pageable && (totalPages > 1 || pageSizeChoices.length > 0)}
@@ -2126,6 +2274,45 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		position: relative;
 		width: 100%;
 		overflow-x: auto;
+	}
+
+	/* virtualize: the container scrolls; the header stays on top; rows get the item size */
+	.quickgrid-container.virtualized {
+		overflow-y: auto;
+		max-block-size: var(--fluent-quickgrid-virtual-max-height, 480px);
+	}
+
+	.quickgrid-container.virtualized :global(thead) {
+		position: sticky;
+		inset-block-start: 0;
+		z-index: 1;
+		background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
+	}
+
+	.quickgrid-container.virtualized tbody tr[data-row-key] {
+		height: var(--quickgrid-item-size);
+	}
+
+	/* Collapsed borders don't move with a sticky header (rows show through them in Chromium):
+	   separate borders, the row line drawn by the cells. */
+	.quickgrid-container.virtualized .quickgrid {
+		border-collapse: separate;
+		border-spacing: 0;
+	}
+
+	.quickgrid-container.virtualized tbody tr[data-row-key] > td {
+		border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+	}
+
+	tbody.virtual-spacer tr,
+	.quickgrid.hoverable tbody.virtual-spacer tr:hover {
+		border: 0;
+		background: transparent;
+	}
+
+	tbody.virtual-spacer td {
+		padding: 0;
+		border: 0;
 	}
 
 	.quickgrid {
