@@ -89,9 +89,9 @@
 		{name: "--fluent-quickgrid-toolbar-shadow", type: "box-shadow", default: "theme.scss (light / dark)", description: "Row toolbar elevation"},
 		{name: "--fluent-quickgrid-connector-stroke", type: "color", default: "--accent-fill-rest", description: "Line + arrow from the toolbar to its row after a move"},
 		{name: "--fluent-quickgrid-menu-shadow", type: "box-shadow", default: "0 8px 16px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12)", description: "Context menu elevation"},
-		{name: "--fluent-quickgrid-dropdown-bg", type: "color", default: "--neutral-layer-1", description: "Select / combobox / autocomplete editor dropdown"},
+		{name: "--fluent-quickgrid-dropdown-bg", type: "color", default: "--neutral-layer-floating", description: "Select / combobox / autocomplete editor dropdown"},
 		{name: "--fluent-quickgrid-dropdown-border", type: "color", default: "--neutral-stroke-rest", description: "Editor dropdown border"},
-		{name: "--fluent-quickgrid-dropdown-highlight-bg", type: "color", default: "--neutral-fill-secondary-hover", description: "Editor dropdown: hovered / keyboard-highlighted option"}
+		{name: "--fluent-quickgrid-dropdown-highlight-bg", type: "color", default: "--neutral-fill-stealth-hover (selected row: --neutral-fill-secondary-hover)", description: "Editor dropdown: hovered / keyboard-highlighted option"}
 	]
 
 	const propertyColumns = [

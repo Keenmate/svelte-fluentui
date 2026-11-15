@@ -419,3 +419,49 @@ Testing gotcha: the dev server (port 12900, started from repo root with `npm run
 background) misses `git checkout` — swap file contents and confirm with
 `curl -s localhost:12900/@fs/<abs path> | grep -c <marker>`. Known flake: Autocomplete
 outside-click test under full-suite load (passes alone).
+
+**Reuse step status — done 2026-11-15.** GridCellEditor's dropdown editors are the library's components:
+`select` → `Select`, `combobox` and `autocomplete` → `Combobox` (976 → 666 lines; no own listbox, ListNav,
+wheel blocking or option rows). Autocomplete (the component) is not used: it is a chip / multi-value control —
+single mode clears the selection (`onChange([])`) on every keystroke, has no free text, hides selected options,
+caps results (`maxResultCount`), brings a clear button / search icon and renders its own non-`<Option>` rows
+(no groups, no shared ListNav) — so the free-text search editor runs `Combobox` with `onSearch` instead (an
+earlier changelog entry had already dropped Autocomplete from the grid for similar reasons). Value ↔ key:
+`quickgrid/option-keys.ts` (`OptionKeys`: typed string keys `s:` / `n:` / `b:` / `i:`, objects by identity,
+`EMPTY_KEY` for null; a key maps back on pick). Keyboard: Select / Combobox `embedded` (closed-list ArrowUp /
+ArrowDown not handled → bubble to QuickGrid; Combobox: Enter opens a closed list); keys the dropdown handled are
+`preventDefault`ed and GridCellEditor stops those, the rest (Tab, closed arrows, Enter in navigate mode) reach
+the grid; `selectValueOnTab` keeps Tab-picks-highlighted. Escape: the dropdown's own layer first, the editor's
+layer (also closes a still-open list when the layers were pushed in the other order) cancels. Commit-once:
+`pick(key)` → `commitValue` (guarded) from Select `onChange` / `<Option onclick>` (click on the current value),
+Combobox `onChange`; a capture-phase peek at the highlighted `.fluent-option` makes Enter / Space on the
+current value commit like before (Select reports only changes); a document `mousedown` preventDefault on the
+portalled list (by its id) keeps focus in the editor, so a pick never blur-commits / cancels first; focus in
+the list counts as inside. Appearance: `embedded` CSS (borderless, transparent, fills the cell, inherits font);
+`dropdownClass="cell-dropdown"`, `maxDropdownHeight="200px"`; `--fluent-quickgrid-dropdown-*` restyle the shared
+list (defaults = listbox tokens); autocomplete hides the Combobox chevron and keeps its "..." indicator.
+Loading: `"dropdown-open"` via `bind:open`; select's no-options / loading row is a child `<div>` of the Select;
+Combobox `loading` / `loadingText` / `emptyText` carry `editorLoading` / `editorSearching` / `editorEmptyText` /
+`editorFilterEmptyText`; autocomplete search: Combobox debounces (`searchDelay`), GridCellEditor's AsyncSearch
+aborts / drops stale results, below `minSearchLength` the initial options; free text via Combobox `freeText` +
+`bind:currentValue` (Escape now reverts the typed text). `initialSearchQuery` is replayed as the keystroke
+(keydown on the Select trigger / an input event on the Combobox). New props — Select: `placeholder`,
+`valueText`, `selectValueOnTab`, `dropdownClass`, `embedded`; Combobox: `valueText`, `openOnFocus`,
+`selectValueOnTab`, `freeText`, `dropdownClass`, `embedded`; `QuickGridEditorOption.group`;
+`helpers/option-groups.ts` (`groupSegments`, Combobox uses it). Bug found + fixed: in navigate mode a dblclick
+on a dropdown cell restarted its edit, the replaced editor's blur called `onCancel` → `cancelEdit(editToken)`
+with the *new* token (the `{@const}` had moved on) → `editingCell = null` → "Cannot read properties of null
+(reading 'token')" and a dead cell (pre-existing); GridCellEditor now captures `editToken` at mount and hands it
+back in `onCommit` / `onCancel`. Tests: 3 assertions changed for the old option-row DOM (`.cell-dropdown-option`
+/ `.highlighted` → `[role="option"]` / `[data-highlighted]`); new `e2e/quickgrid-editors.spec.ts` (8; 7 fail on
+the old code, the navigate-mode arrows contract passes on both). 266/266 full suite; both checks clean (docs: the
+6 pre-existing warnings). Screenshots (light + dark, `/components/quickgrid-editable` task tracker + navigate
+grid): closed editors identical except the chevron glyph; open lists take the shared listbox look (padding,
+rounded rows, bold selected row) and align with the editor's content box, not the cell edges; combobox /
+autocomplete inputs select their text on focus.
+Deferred / noticed: QuickGridCell / edit-session extraction not done (didn't fall out of this step); the list
+is narrower than the cell (anchored to the control inside the cell padding) — a PositioningRegion anchor /
+offset override would restore cell-edge alignment; Select's trigger text is a `$derived` DOM lookup (options
+arriving while closed show `valueText` until the next open/close); picking the current value still fires
+`onRowChange` with old = new (as before); a navigate-mode dblclick on a dropdown cell still restarts the edit
+(now harmlessly); Autocomplete itself still has its own option rows / nav (not `<Option>` / groups).

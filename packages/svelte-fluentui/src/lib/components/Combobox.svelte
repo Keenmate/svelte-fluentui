@@ -32,6 +32,7 @@
 	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
 	import {debounce} from "../helpers/debounce.js"
+	import {groupSegments} from "../helpers/option-groups.js"
 	import {normalizeForSearch, startsWithText, type SearchBehavior} from "../helpers/text.js"
 	import {
 		OPTION_SELECTOR,
@@ -122,6 +123,26 @@
 		loading?: boolean
 		/** Text shown while `loading` is true. */
 		loadingText?: string
+		/** Single-select: text the input shows for a `value` no rendered option has (e.g. a
+		 * result of an earlier async search). Default: empty. */
+		valueText?: string
+		/** Open the dropdown when the input receives focus from outside the control. */
+		openOnFocus?: boolean
+		/** Tab on the open list picks the highlighted option before focus moves on. */
+		selectValueOnTab?: boolean
+		/** Single-select free-text entry: when the list closes without a pick (an outside
+		 * click, Tab, the indicator) the typed text stays in the input instead of reverting to
+		 * the selected option's label; Escape still reverts it. Read it via `bind:currentValue`. */
+		freeText?: boolean
+		/** Extra class on the portalled dropdown listbox (it renders outside the component,
+		 * so a parent's scoped styles can't reach it otherwise). */
+		dropdownClass?: string
+		/** For hosting the control inside a component that owns the keyboard and draws the
+		 * frame, such as a QuickGrid cell. The control is borderless and transparent and fills
+		 * its container; ArrowUp / ArrowDown on the closed list don't open it (they bubble to
+		 * the host) and Enter does. Keys the control handles are `preventDefault`ed, so a host
+		 * can skip those. */
+		embedded?: boolean
 		/** Fires when the user changes the selection; `value` is always an array. */
 		onChange?: (ctx: {value: string[]}) => void
 		/** Fires on every open/close transition of the dropdown after mount (user or `bind:open`); not on initial render. */
@@ -169,6 +190,12 @@
 		filterCallback = undefined,
 		loading = undefined,
 		loadingText = "Searching…",
+		valueText = undefined,
+		openOnFocus = false,
+		selectValueOnTab = false,
+		freeText = false,
+		dropdownClass = undefined,
+		embedded = false,
 		onChange = undefined,
 		onOpenChange = undefined,
 		...rest
@@ -302,6 +329,7 @@
 		// Async fallback: the selected option may no longer be rendered (its query
 		// scrolled past). Use the label cached when it was chosen.
 		if (labelCache[val]) return labelCache[val]
+		if (val === selectedSingle && valueText) return valueText
 		if (val === selectedSingle && selectedLabel) return selectedLabel
 		return ""
 	}
@@ -324,6 +352,7 @@
 	let displayText = $state("")
 	$effect(() => {
 		const sel = selectedSingle // dep
+		valueText // dep
 		untrack(() => { displayText = getOptionText(sel) })
 		// Re-resolve when options render asynchronously (the option text
 		// may not exist yet at the moment `value` was first applied).
@@ -440,15 +469,19 @@
 	// Escape goes to the topmost open layer (helpers/layer-stack.ts), so inside a
 	// Dialog/Panel it closes this dropdown first and leaves the container open.
 	$effect(() => {
-		if (isOpen) return pushLayer({onEscape: () => closeDropdown()})
+		if (isOpen) return pushLayer({onEscape: () => closeDropdown(true, true)})
 	})
 
-	function closeDropdown(refocus = true) {
+	// `escape`: the user backed out — free text reverts too.
+	function closeDropdown(refocus = true, escape = false) {
 		if (!isOpen) return
 		isOpen = false
 		nav.reset()
-		isFiltering = false
-		typed = ""
+		// Free text: what was typed stays (a pick has already cleared it), except on Escape
+		if (escape || !freeText || multiple) {
+			isFiltering = false
+			typed = ""
+		}
 		displayedCount = -1 // avoid a stale empty-state flash on next open
 		searchPending = false
 		if (refocus) inputEl?.focus()
@@ -575,7 +608,11 @@
 		}
 		if (!isOpen) {
 			// Arrow / Page keys on a closed combobox open it (Home/End stay with the caret).
-			if (["ArrowDown", "ArrowUp", "PageDown", "PageUp"].includes(ev.key)) {
+			// Embedded: closed-list arrows belong to the host (a grid cell moves), Enter opens.
+			const opens = embedded
+				? ["Enter", "PageDown", "PageUp"]
+				: ["ArrowDown", "ArrowUp", "PageDown", "PageUp"]
+			if (opens.includes(ev.key)) {
 				ev.preventDefault()
 				openDropdown()
 			}
@@ -591,20 +628,28 @@
 			}
 			case "Escape":
 				ev.preventDefault()
-				closeDropdown()
+				closeDropdown(true, true)
 				break
-			case "Tab":
-				closeDropdown(false)
+			case "Tab": {
+				// No preventDefault: focus still moves on after the pick
+				const el = selectValueOnTab ? visibleOptionEls()[nav.index] : undefined
+				if (el) selectByValue(optionValue(el))
+				else closeDropdown(false)
 				break
+			}
 		}
 	}
 
-	function handleFocus() {
+	function handleFocus(ev: FocusEvent) {
 		if (disabled || readonly) return
 		// Single-select: select the display text so the first keystroke replaces it
 		// instead of appending to the selected option's label. Multi-select: the
 		// input is an empty filter, so there's nothing to select.
 		if (!multiple) queueMicrotask(() => inputEl?.select())
+		// Only focus arriving from outside: the indicator and a pick in the list hand
+		// focus back to the input, and that must not reopen it.
+		const from = ev.relatedTarget as Node | null
+		if (openOnFocus && !isOpen && !controlEl?.contains(from) && !listEl?.contains(from)) openDropdown()
 	}
 
 	// Clicking anywhere in the control's empty area — its own padding or the
@@ -652,27 +697,8 @@
 	const inputId = $derived(id ?? `fluent-combobox-${uid}`)
 	const listboxId = $derived(`${inputId}-listbox`)
 
-	// Section the `options` array in SOURCE ORDER: walk the array and start a new
-	// segment whenever the `group` value changes from the previous item. This
-	// preserves the author's exact ordering — ungrouped options stay where they
-	// sit (not hoisted), and a group that reappears simply emits its header
-	// again. null when nothing is grouped, so the flat render path is unchanged.
-	type Segment = {group: string | undefined; items: OptionItem[]}
-	const segments = $derived.by<Segment[] | null>(() => {
-		const opts = options ?? []
-		if (!opts.some(o => o.group)) return null
-		const segs: Segment[] = []
-		let cur: Segment | null = null
-		for (const o of opts) {
-			const g = o.group || undefined
-			if (!cur || cur.group !== g) {
-				cur = {group: g, items: []}
-				segs.push(cur)
-			}
-			cur.items.push(o)
-		}
-		return segs
-	})
+	// `options` sectioned by `group`, in source order (null when nothing is grouped).
+	const segments = $derived(groupSegments(options ?? []))
 </script>
 
 {#snippet optionItem(item: OptionItem)}
@@ -751,6 +777,7 @@
 		class:disabled
 		class:readonly
 		class:multiple
+		class:embedded
 		class:tags-inline={inlineTags}
 		style={controlStyle()}
 		{...attrs({title})}
@@ -834,7 +861,7 @@
 				role="listbox"
 				aria-multiselectable={multiple ? "true" : null}
 				tabindex="-1"
-				class="combobox-listbox"
+				class={["combobox-listbox", dropdownClass]}
 				style={[
 					dropdownWidth ? `width: ${dropdownWidth}` : "",
 					maxDropdownHeight ? `--combobox-listbox-max-height: ${maxDropdownHeight}` : ""
@@ -935,6 +962,33 @@
 	.combobox-control.readonly {
 		background: var(--neutral-fill-secondary-rest, #f5f5f5);
 		cursor: default;
+	}
+
+	/* Embedded (e.g. a QuickGrid cell): no frame of its own — the host draws it. */
+	.combobox-control.embedded,
+	.combobox-control.embedded:hover:not(.disabled):not(.readonly),
+	.combobox-control.embedded:focus-within:not(.disabled),
+	.combobox-control.embedded.open:not(.disabled) {
+		width: 100%;
+		height: 100%;
+		min-width: 0;
+		min-height: 0;
+		padding: 0;
+		border: none;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.combobox-control.embedded .combobox-input {
+		font: inherit;
+		color: inherit;
+	}
+
+	.combobox-control.embedded .combobox-indicator {
+		width: auto;
+		margin-inline-end: 0;
+		padding-inline-start: 4px;
 	}
 
 	/* Wrapping main box: holds the chips + input and grows/wraps internally, while

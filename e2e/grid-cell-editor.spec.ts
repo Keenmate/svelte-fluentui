@@ -15,12 +15,12 @@ test("ArrowDown keeps the highlighted option visible", async ({page}) => {
 	await expect(dropdown).toBeVisible()
 	for (let i = 0; i < 20; i++) await page.keyboard.press("ArrowDown")
 
-	const highlighted = dropdown.locator(".cell-dropdown-option.highlighted")
+	const highlighted = dropdown.locator('[role="option"][data-highlighted]')
 	await expect(highlighted).toHaveText("Option 20")
 	await expect
 		.poll(async () =>
 			dropdown.evaluate((d) => {
-				const h = d.querySelector(".cell-dropdown-option.highlighted")!.getBoundingClientRect()
+				const h = d.querySelector('[role="option"][data-highlighted]')!.getBoundingClientRect()
 				const r = d.getBoundingClientRect()
 				return h.top >= r.top && h.bottom <= r.bottom + 1
 			})
@@ -35,5 +35,5 @@ test("typing a letter on a closed select editor opens it on the matching option"
 	await page.keyboard.press("c")
 	const dropdown = page.locator(".cell-dropdown")
 	await expect(dropdown).toBeVisible()
-	await expect(dropdown.locator(".cell-dropdown-option.highlighted")).toHaveText("Cherry")
+	await expect(dropdown.locator('[role="option"][data-highlighted]')).toHaveText("Cherry")
 })

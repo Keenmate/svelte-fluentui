@@ -83,6 +83,22 @@
 		dropdownWidth?: string
 		/** Multi mode: cap visible option rows, enables internal scroll. */
 		maxVisibleOptionCount?: number
+		/** Single mode: text shown in the trigger while nothing is selected. */
+		placeholder?: string
+		/** Single mode: text shown in the trigger when `value` is set but no option has it
+		 * (e.g. options that load later). Default: nothing — the trigger shows `placeholder`. */
+		valueText?: string
+		/** Single mode: Tab on the open list picks the highlighted option before focus moves on. */
+		selectValueOnTab?: boolean
+		/** Single mode: extra class on the portalled dropdown listbox (it renders outside the
+		 * component, so a parent's scoped styles can't reach it otherwise). */
+		dropdownClass?: string
+		/** Single mode: for hosting the control inside a component that owns the keyboard and
+		 * draws the frame, such as a QuickGrid cell. The trigger is borderless and transparent
+		 * and fills its container; ArrowUp / ArrowDown on the closed trigger don't open the list
+		 * (they bubble to the host). Keys the control handles are `preventDefault`ed, so a host
+		 * can skip those. */
+		embedded?: boolean
 		labelTemplate?: Snippet
 		indicatorTemplate?: Snippet
 		children?: Snippet
@@ -118,6 +134,11 @@
 		maxDropdownHeight = undefined,
 		dropdownWidth = undefined,
 		maxVisibleOptionCount = undefined,
+		placeholder = undefined,
+		valueText = undefined,
+		selectValueOnTab = false,
+		dropdownClass = undefined,
+		embedded = false,
 		labelTemplate = undefined,
 		indicatorTemplate = undefined,
 		children = undefined,
@@ -374,6 +395,11 @@
 			switch (ev.key) {
 				case "ArrowDown":
 				case "ArrowUp":
+					// Embedded: the host (a grid cell) moves on closed-list arrows
+					if (embedded) return
+					ev.preventDefault()
+					openDropdown()
+					return
 				case "PageDown":
 				case "PageUp":
 				case "Enter":
@@ -408,7 +434,13 @@
 				break
 			}
 			case "Escape": ev.preventDefault(); closeDropdown(); break
-			case "Tab": closeDropdown(false); break
+			case "Tab": {
+				// No preventDefault: focus still moves on after the pick
+				const el = selectValueOnTab ? enabledOptionEls(listEl)[nav.index] : undefined
+				if (el) selectByValue(optionValue(el), el)
+				else closeDropdown(false)
+				break
+			}
 			default:
 				if (ev.key.length === 1 && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
 					ev.preventDefault()
@@ -477,7 +509,7 @@
 		position
 	)
 
-	const displayText = $derived(getOptionText(selectedSingle))
+	const displayText = $derived(getOptionText(selectedSingle) || (selectedSingle ? (valueText ?? "") : ""))
 
 	const hasLabel = $derived(!!(label || labelTemplate))
 
@@ -546,12 +578,13 @@
 		class="select-trigger {appearance} {className}"
 		class:open={isOpen}
 		class:readonly
+		class:embedded
 		style={(triggerStyle() ? triggerStyle() + "; " : "") + style}
 		onclick={toggleDropdown}
 		onkeydown={handleTriggerKeydown}
 	>
 		<span class="select-trigger-value" class:placeholder={!displayText}>
-			{displayText}
+			{displayText || placeholder || ""}
 		</span>
 		<span class="select-trigger-indicator" aria-hidden="true">
 			{#if indicatorTemplate}
@@ -579,7 +612,7 @@
 				id={listboxId}
 				role="listbox"
 				tabindex="-1"
-				class="select-listbox-popover"
+				class={["select-listbox-popover", dropdownClass]}
 				style={[
 					dropdownWidth ? `width: ${dropdownWidth}` : "",
 					maxDropdownHeight ? `--select-listbox-max-height: ${maxDropdownHeight}` : ""
@@ -675,6 +708,26 @@
 	.select-trigger.readonly {
 		background: var(--neutral-fill-secondary-rest, #f5f5f5);
 		cursor: default;
+	}
+
+	/* Embedded (e.g. a QuickGrid cell): no frame of its own — the host draws it. */
+	.select-trigger.embedded,
+	.select-trigger.embedded:hover:not(:disabled):not(.readonly),
+	.select-trigger.embedded:focus-visible:not(:disabled),
+	.select-trigger.embedded.open:not(:disabled) {
+		width: 100%;
+		height: 100%;
+		min-width: 0;
+		min-height: 0;
+		padding: 0;
+		gap: 4px;
+		border: none;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+		font: inherit;
+		color: inherit;
+		outline: none;
 	}
 
 	.select-trigger-value {

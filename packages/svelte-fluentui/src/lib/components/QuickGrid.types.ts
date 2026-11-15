@@ -41,6 +41,8 @@ export type QuickGridDateOutputFormat = "date" | "iso" | "timestamp"
 export type QuickGridEditorOption = {
 	value: string | number | boolean
 	label: string
+	/** Group heading: options sharing a `group` render under it (select / combobox / autocomplete editors). */
+	group?: string
 	[key: string]: unknown
 }
 

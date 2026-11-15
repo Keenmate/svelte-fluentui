@@ -1,12 +1,19 @@
 <script lang="ts">
 	import {untrack} from "svelte"
-	import PositioningRegion from "./PositioningRegion.svelte"
+	import Select from "./Select.svelte"
+	import Combobox from "./Combobox.svelte"
+	import Option from "./Option.svelte"
+	import OptionGroup from "./OptionGroup.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
-	import {ListNav} from "../helpers/listbox-nav.svelte.js"
 	import {AsyncSearch} from "../helpers/async-search.svelte.js"
-	import {containsText, startsWithText} from "../helpers/text.js"
+	import {containsText} from "../helpers/text.js"
+	import {groupSegments} from "../helpers/option-groups.js"
+	import {optionValue} from "../helpers/option-dom.js"
 	import {parseLocalDate, toLocalDateString} from "../helpers/date.js"
 	import {defaultQuickGridLabels} from "./quickgrid/labels.js"
+	import {OptionKeys, EMPTY_KEY} from "./quickgrid/option-keys.js"
+	import type {OptionItem} from "../types/index.js"
+	import type {ComboboxFilter} from "../types/combobox.js"
 
 	import type {
 		QuickGridEditorType as EditorType,
@@ -22,16 +29,20 @@
 		type: EditorType
 		value: unknown
 		options?: EditorOptions
+		/** The QuickGrid edit this editor was opened for. Captured at mount and handed back to
+		 * `onCommit` / `onCancel`: the grid's own token has moved on by the time a replaced
+		 * editor's teardown blur fires. */
+		editToken?: number
 		/** Commits the edited value; may return the (validation) promise. */
-		onCommit: (ctx: {value: unknown}) => void | Promise<void>
+		onCommit: (ctx: {value: unknown; editToken: number | undefined}) => void | Promise<void>
 		/** Abandons the edit. */
-		onCancel: () => void
+		onCancel: (ctx: {editToken: number | undefined}) => void
 		skipBlurCommit?: boolean
 		skipKeyboardCommit?: boolean
 		initialSearchQuery?: string
 		/** Focus the editor on mount (an edit the user just started). Off for "always" editors. */
 		autofocus?: boolean
-		/** What the cell shows for `value` — the autocomplete text when no option has the value. */
+		/** What the cell shows for `value` — the dropdown text when no option has the value. */
 		displayText?: string
 		/** Dropdown strings (QuickGrid passes its resolved `labels`). */
 		labels?: EditorLabels
@@ -41,6 +52,7 @@
 		type = "text",
 		value,
 		options = {},
+		editToken = undefined,
 		onCommit,
 		onCancel,
 		skipBlurCommit = false,
@@ -54,6 +66,9 @@
 	// Internal state
 	// svelte-ignore state_referenced_locally
 	let internalValue = $state(value)
+	// svelte-ignore state_referenced_locally
+	const ownToken = editToken
+	const cancel = () => onCancel({editToken: ownToken})
 
 	let editorElement: HTMLElement | undefined = $state()
 
@@ -65,8 +80,9 @@
 		const next = value
 		untrack(() => {
 			if (type === "checkbox" || !editorElement?.contains(document.activeElement)) {
+				// The autocomplete's free text would outlive the new value: start it afresh
+				if (type === "autocomplete" && next !== internalValue) comboGeneration++
 				internalValue = next
-				if (type === "autocomplete") filterText = labelFor(next)
 			}
 		})
 	})
@@ -77,45 +93,18 @@
 	let cancelledViaEscape = false
 	let loadedOptions = $state<EditorOption[]>([])
 	let isLoadingOptions = $state(false)
-	let hasLoadedOnDropdown = $state(false)
+	let hasLoadedOnDropdown = false
 
-	// Get the parent TD cell for dropdown positioning (to match cell width, not input width)
-	let cellElement = $derived(editorElement?.closest('td') as HTMLElement | undefined)
-
-	// Dropdown state (shared by select/combobox/autocomplete)
+	// ===== Dropdown editors: the library's Select (select) and Combobox (combobox, autocomplete) =====
+	// Both run `embedded` (borderless, closed-list arrows bubble to the grid) with their list
+	// portalled as `.cell-dropdown`; the grid keeps Enter / Tab / Escape semantics (see handleKeyDown).
+	const uid = $props.id()
+	const controlId = `grid-cell-editor-${uid}`
+	const listboxId = `${controlId}-listbox`
 	let dropdownOpen = $state(false)
-	let dropdownOptions = $state<EditorOption[]>([])
-	let filterText = $state("")
-	let isUserFiltering = $state(false)  // True when user is actively typing to filter (vs displaying selected value)
+	let comboText = $state("")  // the Combobox input's text (bind:currentValue)
+	let comboGeneration = $state(0)  // remounts the Combobox (drops its free text)
 	let autocompleteTyped = false  // the autocomplete input holds text the user typed (not a picked label)
-	let justSelected = $state(false)  // True briefly after selection to prevent dropdown reopening on refocus
-	let inputElement: HTMLInputElement | undefined = $state()
-	let dropdownElement: HTMLDivElement | undefined = $state()
-
-	// Block page scroll when dropdown is open
-	$effect(() => {
-		if (!dropdownOpen) return
-
-		function handleWheel(e: WheelEvent) {
-			// Allow scroll inside dropdown, block elsewhere
-			if (dropdownElement && dropdownElement.contains(e.target as Node)) {
-				// Check if dropdown can scroll in the wheel direction
-				const { scrollTop, scrollHeight, clientHeight } = dropdownElement
-				const atTop = scrollTop === 0
-				const atBottom = scrollTop + clientHeight >= scrollHeight
-
-				if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) {
-					e.preventDefault() // Block scroll at boundaries
-				}
-				// Otherwise allow scroll inside dropdown
-			} else {
-				e.preventDefault() // Block all scroll outside dropdown
-			}
-		}
-
-		document.addEventListener('wheel', handleWheel, { passive: false })
-		return () => document.removeEventListener('wheel', handleWheel)
-	})
 
 	// Helper functions for valueMember/displayMember
 	function getOptionValue(option: EditorOption): unknown {
@@ -133,278 +122,109 @@
 	// What autocomplete lists before the user searches
 	const autocompleteInitialOptions = () => options.initialOptions || effectiveOptions
 
-	// The text for a value: its option's label, else what the cell shows (e.g. a value that
-	// came from searchCallback), else the value itself.
+	// Value ↔ key: the dropdowns work with string values, a cell value may be anything.
+	const keys = new OptionKeys()
+	// One row per key (first wins), `group` passed through for option groups.
+	function keyed(list: readonly EditorOption[]): OptionItem[] {
+		const seen = new Set<string>()
+		const rows: OptionItem[] = []
+		for (const opt of list) {
+			const key = keys.keyOf(getOptionValue(opt))
+			if (seen.has(key)) continue
+			seen.add(key)
+			rows.push({value: key, label: getOptionLabel(opt), group: typeof opt.group === "string" ? opt.group : undefined})
+		}
+		return rows
+	}
+
+	// Autocomplete: async results of the latest search; null = the initial options.
+	let searchResults = $state<EditorOption[] | null>(null)
+	const autocompleteList = $derived(searchResults ?? autocompleteInitialOptions())
+	const dropdownOptions = $derived(keyed(type === "autocomplete" ? autocompleteList : effectiveOptions))
+	const selectSegments = $derived(type === "select" ? groupSegments(dropdownOptions) : null)
+	// "" = nothing selected (the dropdown shows its placeholder)
+	const currentKey = $derived(
+		internalValue === null || internalValue === undefined
+			? (type === "select" && options.allowEmpty ? EMPTY_KEY : "")
+			: keys.keyOf(internalValue)
+	)
+	// The text for a value no option has: what the cell shows (e.g. a value that came from
+	// searchCallback, or options not loaded yet), else the value itself.
+	const valueText = $derived(
+		internalValue === null || internalValue === undefined ? "" :
+			internalValue === value && displayText !== undefined ? displayText : String(internalValue)
+	)
+
+	// The text for a value: its option's label, else valueText's rule.
 	function labelFor(v: unknown): string {
 		if (v === null || v === undefined) return ""
-		const option = [...effectiveOptions, ...(options.initialOptions || [])].find(opt => getOptionValue(opt) === v)
+		const option = [...autocompleteList, ...effectiveOptions, ...(options.initialOptions || [])].find(opt => getOptionValue(opt) === v)
 		if (option) return getOptionLabel(option)
 		return v === value && displayText !== undefined ? displayText : String(v)
 	}
-	// svelte-ignore state_referenced_locally
-	if (type === "autocomplete") filterText = labelFor(value)
 
-	// Filtered options for combobox (filters based on filterText only when user is actively typing)
-	let filteredOptions = $derived.by(() => {
-		// Only filter when user is actively typing, not when displaying selected value
-		if (!isUserFiltering || !filterText.trim()) {
-			return effectiveOptions
-		}
-		return effectiveOptions.filter(opt =>
-			containsText(getOptionLabel(opt), filterText, options.searchBehavior)
-		)
-	})
-
-	// Rows the keyboard cursor walks: the filtered list for combobox, else the dropdown list.
-	function navigableOptions(): EditorOption[] {
-		return type === "combobox" ? filteredOptions : dropdownOptions
-	}
-
-	// Keyboard cursor; `-1` = none (for select with allowEmpty, the empty row).
-	const nav = new ListNav({
-		count: () => navigableOptions().length,
-		itemAt: () => dropdownElement?.querySelector(".cell-dropdown-option.highlighted")
-	})
-
-	// Autocomplete search: below minSearchLength the initial options, without
-	// `onSearch` a local filter, else the async `onSearch` (debounced, aborted
-	// when superseded or the dropdown closes; stale responses dropped).
+	// Autocomplete with `searchCallback`: below minSearchLength the initial options, else the
+	// async search — Combobox debounces (`searchDelay`), this aborts superseded / closed
+	// searches and drops stale responses.
 	const search = new AsyncSearch<EditorOption>({
-		delay: () => options.searchDelay ?? 300,
-		search: (query, signal) => {
-			const initialOpts = autocompleteInitialOptions()
-			if (query.length < (options.minSearchLength ?? 1)) return initialOpts
-			if (!options.onSearch) {
-				return initialOpts.filter(opt => containsText(getOptionLabel(opt), query, options.searchBehavior))
-			}
-			return options.onSearch(query, signal)
-		},
-		onResults: results => {
-			dropdownOptions = results
-			nav.first()
-		},
+		search: (query, signal) => options.onSearch ? options.onSearch(query, signal) : [],
+		onResults: results => (searchResults = results),
 		onError: error => {
 			console.error("Autocomplete search failed:", error)
-			dropdownOptions = []
-			nav.reset()
+			searchResults = []
 		}
 	})
 
 	$effect(() => () => search.cancel())
 
-	// Get display value for current selection (for select trigger)
-	function getCurrentDisplayValue(): string {
-		if (internalValue === null || internalValue === undefined) {
-			return options.emptyLabel || labels.editorEmptyOption
-		}
-		const selectedOption = effectiveOptions.find(opt => getOptionValue(opt) === internalValue)
-		return selectedOption ? getOptionLabel(selectedOption) : String(internalValue)
-	}
-
-	// Open dropdown and initialize options
-	function openDropdown() {
-		if (dropdownOpen) return
-		dropdownOpen = true
-		nav.reset()
-		void loadOnOpen()
-		showOptions()
-	}
-
-	// Fill the open list (on open, and again when "dropdown-open" options arrive).
-	function showOptions() {
-		if (type === "select" || type === "combobox") {
-			dropdownOptions = effectiveOptions
-			// Pre-select current value
-			const currentIdx = effectiveOptions.findIndex(opt => getOptionValue(opt) === internalValue)
-			if (currentIdx >= 0) {
-				nav.index = currentIdx
-				// For combobox, initialize filter text with current display value
-				if (type === "combobox" && !filterText) {
-					filterText = getOptionLabel(effectiveOptions[currentIdx])
-				}
-			}
-		} else if (type === "autocomplete") {
-			// For autocomplete, show initial options if available
-			const initialOpts = autocompleteInitialOptions()
-			dropdownOptions = initialOpts
-			// Initialize filter text with current display value if exists
-			if (!filterText && internalValue !== null && internalValue !== undefined) {
-				const currentOpt = initialOpts.find(opt => getOptionValue(opt) === internalValue)
-				if (currentOpt) {
-					filterText = getOptionLabel(currentOpt)
-				}
-			}
-		}
-	}
-
-	// Close dropdown
-	function closeDropdown() {
-		dropdownOpen = false
-		nav.reset()
-		// Drop a pending debounce and abort any in-flight search
-		search.cancel()
-	}
-
-	// Select an option from dropdown
-	function selectDropdownOption(option: EditorOption) {
-		const newValue = getOptionValue(option)
-		internalValue = newValue
-		filterText = getOptionLabel(option)
-		isUserFiltering = false  // Not filtering, just displaying selected value
-		autocompleteTyped = false
-		justSelected = true  // Prevent dropdown from reopening on refocus
-		closeDropdown()
-		commitValue(newValue)
-	}
-
-	// Handle keyboard navigation in dropdown
-	function handleDropdownKeyDown(e: KeyboardEvent) {
-		const opts = navigableOptions()
-
-		switch (e.key) {
-			case "ArrowDown":
-				if (!dropdownOpen) {
-					// Let it bubble to QuickGrid for cell navigation
-					return
-				}
-				e.preventDefault()
-				e.stopPropagation() // Prevent grid from handling
-				nav.move(1)
-				break
-			case "ArrowUp":
-				if (!dropdownOpen) {
-					// Let it bubble to QuickGrid for cell navigation
-					return
-				}
-				e.preventDefault()
-				e.stopPropagation() // Prevent grid from handling
-				nav.move(-1)
-				break
-			case "Enter":
-				e.preventDefault()
-				e.stopPropagation() // Prevent grid from handling
-				if (!dropdownOpen) {
-					// Open dropdown when Enter pressed and dropdown is closed
-					openDropdown()
-				} else if (opts[nav.index]) {
-					selectDropdownOption(opts[nav.index])
-				} else if (type === "autocomplete" && filterText.trim()) {
-					// Autocomplete can commit freeform text
-					void commitTypedText()
-				}
-				break
-			case "Tab":
-				if (dropdownOpen && opts[nav.index]) {
-					selectDropdownOption(opts[nav.index])
-				}
-				// Let Tab propagate for navigation
-				break
-			case " ":
-				// Space opens dropdown (like native select)
-				if (type === "select" && !dropdownOpen) {
-					e.preventDefault()
-					e.stopPropagation()
-					openDropdown()
-				}
-				break
-		}
-	}
-
-	// === SELECT HANDLERS ===
-	function handleSelectTriggerClick() {
-		if (dropdownOpen) {
-			closeDropdown()
+	function handleAutocompleteSearch({term}: {term: string}) {
+		if (term.length < (options.minSearchLength ?? 1)) {
+			search.cancel()
+			searchResults = [...autocompleteInitialOptions()]  // a new array: Combobox re-syncs on every change
 		} else {
-			openDropdown()
+			search.run(term)
 		}
 	}
 
-	function handleSelectTriggerKeyDown(e: KeyboardEvent) {
-		// Letter jumping for select
-		if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
-			const startIdx = nav.index + 1
-			const opts = effectiveOptions
+	// Autocomplete without `searchCallback` filters the initial options locally (Combobox's
+	// own filter); below minSearchLength everything shows.
+	const localFilter: ComboboxFilter | undefined = $derived(
+		(options.minSearchLength ?? 1) > 1
+			? ({term, option}) => term.length < (options.minSearchLength ?? 1) || containsText(option.label, term, options.searchBehavior)
+			: undefined
+	)
 
-			// Search from current position
-			for (let i = 0; i < opts.length; i++) {
-				const idx = (startIdx + i) % opts.length
-				if (startsWithText(getOptionLabel(opts[idx]), e.key, options.searchBehavior)) {
-					// Open first: openDropdown() re-highlights the current value.
-					if (!dropdownOpen) {
-						openDropdown()
-					}
-					nav.set(idx)
-					break
-				}
-			}
-			return
+	// A pick (click, Enter, Space, Tab) commits at once — also when it is the current value.
+	function pick(key: string) {
+		const next = keys.valueOf(key)
+		internalValue = next
+		autocompleteTyped = false
+		void commitValue(next)
+	}
+
+	// Closing the list drops a pending / in-flight search; opening it may load the options.
+	$effect(() => {
+		if (dropdownOpen) untrack(() => void loadOnOpen())
+		else untrack(() => search.cancel())
+	})
+
+	// A press in the list keeps focus in the editor (the list is portalled, outside it), so the
+	// pick doesn't blur-commit / cancel first and focus never strands in the list.
+	$effect(() => {
+		if (!dropdownOpen) return
+		const keepFocus = (e: MouseEvent) => {
+			if (document.getElementById(listboxId)?.contains(e.target as Node)) e.preventDefault()
 		}
-
-		handleDropdownKeyDown(e)
-	}
-
-	// === COMBOBOX HANDLERS ===
-	function handleComboboxInput(e: Event) {
-		const input = e.target as HTMLInputElement
-		filterText = input.value
-		isUserFiltering = true  // User is actively typing/filtering
-		if (!dropdownOpen) {
-			openDropdown()
-		}
-		// Reset highlight when filtering
-		nav.first()
-	}
-
-	function handleComboboxKeyDown(e: KeyboardEvent) {
-		handleDropdownKeyDown(e)
-	}
-
-	function handleComboboxFocus() {
-		// Don't reopen dropdown if we just selected a value (prevents immediate reopen after Enter)
-		if (justSelected) {
-			justSelected = false
-			return
-		}
-		isUserFiltering = false  // Reset filtering on focus to show all options
-		openDropdown()
-	}
-
-	// === AUTOCOMPLETE HANDLERS ===
-	function handleAutocompleteInput(e: Event) {
-		const input = e.target as HTMLInputElement
-		filterText = input.value
-		autocompleteTyped = true
-
-		if (!dropdownOpen) {
-			// Open dropdown but don't show initial options when user is typing
-			dropdownOpen = true
-			dropdownOptions = [] // Start empty to avoid FOAC
-			nav.reset()
-		}
-
-		search.schedule(filterText)
-	}
-
-	function handleAutocompleteKeyDown(e: KeyboardEvent) {
-		handleDropdownKeyDown(e)
-	}
-
-	function handleAutocompleteFocus() {
-		// Don't reopen dropdown if we just selected a value (prevents immediate reopen after Enter)
-		if (justSelected) {
-			justSelected = false
-			return
-		}
-		if (!dropdownOpen) {
-			openDropdown()
-		}
-	}
+		document.addEventListener("mousedown", keepFocus, true)
+		return () => document.removeEventListener("mousedown", keepFocus, true)
+	})
 
 	// Focus the editor when mounted — only an edit the user just started, never "always"
 	// editors (each would steal focus on load / page / sort, the last one winning).
 	$effect(() => {
 		if (editorElement && autofocus) {
-			const input = editorElement.querySelector('input, select, textarea') as HTMLElement
+			// The input, or the Select's trigger button
+			const input = editorElement.querySelector('input, select, textarea, button') as HTMLElement | null
 			if (input) {
 				input.focus({ preventScroll: true })
 				// Select all text for text/number inputs
@@ -412,46 +232,30 @@
 					input.select()
 				}
 			} else {
-				// For select trigger div, focus it directly
-				const trigger = editorElement.querySelector('.cell-select-trigger') as HTMLElement
-				if (trigger) {
-					trigger.focus({ preventScroll: true })
-				} else {
-					(editorElement as HTMLElement).focus?.({ preventScroll: true })
-				}
+				editorElement.focus?.({ preventScroll: true })
 			}
 		}
 	})
 
-	// Handle initialSearchQuery for dropdown types — once per edit: untracked, or closing the
-	// dropdown (dropdownOpen / filterText change) would re-run this and reopen it.
+	// The key that started the edit (QuickGrid swallowed it): replay it into the dropdown — a
+	// keydown on the Select (type-ahead), typing into the Combobox (filter / search). Once per
+	// edit: untracked, or closing the dropdown would re-run this and reopen it.
 	$effect(() => {
 		const query = initialSearchQuery
-		if (query) untrack(() => {
+		const element = editorElement
+		if (query && element) untrack(() => {
 			if (type === "select") {
-				// Jump to option starting with the letter
-				const idx = effectiveOptions.findIndex(opt =>
-					startsWithText(getOptionLabel(opt), initialSearchQuery, options.searchBehavior)
+				element.querySelector("button")?.dispatchEvent(
+					new KeyboardEvent("keydown", {key: query, bubbles: true, cancelable: true})
 				)
-				if (idx >= 0) {
-					// Open first: openDropdown() re-highlights the current value.
-					openDropdown()
-					nav.set(idx)
-				}
-			} else if (type === "combobox") {
-				// Open and filter with typed text
-				filterText = initialSearchQuery
-				openDropdown()
-				nav.first()
-			} else if (type === "autocomplete") {
-				// Open with empty options and start debounced search
-				// Don't show initial options when user started typing
-				filterText = initialSearchQuery
-				autocompleteTyped = true
-				dropdownOpen = true
-				dropdownOptions = [] // Start empty - no flash of initial options
-				nav.reset()
-				search.schedule(initialSearchQuery)
+			} else if (type === "combobox" || type === "autocomplete") {
+				// After the focus handler's select-all, or the next key would replace the text
+				setTimeout(() => {
+					const input = element.querySelector("input")
+					if (!input) return
+					input.value = query
+					input.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: query}))
+				})
 			}
 		})
 	})
@@ -468,8 +272,6 @@
 		try {
 			loadedOptions = await options.loadOptions()
 			hasLoadedOnDropdown = true
-			// Refresh the open list (autocomplete only while it lists its initial options)
-			if (dropdownOpen && (type !== "autocomplete" || !autocompleteTyped)) showOptions()
 		} catch (error) {
 			console.error("Failed to load options:", error)
 		} finally {
@@ -477,7 +279,31 @@
 		}
 	}
 
+	// Select: the highlighted option when Enter / Space hits the open list. Select reports only
+	// changes (onChange); picking the current value must still end the edit.
+	let keyPick: string | null = null
+	function handleKeyDownCapture(e: KeyboardEvent) {
+		keyPick = null
+		if (type !== "select" || (e.key !== "Enter" && e.key !== " ")) return
+		const highlighted = document.getElementById(listboxId)?.querySelector<HTMLElement>(".fluent-option[data-highlighted]")
+		if (highlighted) keyPick = optionValue(highlighted)
+	}
+
+	// Grid embedding: a key the dropdown handled (opening, list navigation, a pick — it calls
+	// preventDefault) stays here; closed-list arrows, Tab and the rest go on to QuickGrid.
 	function handleKeyDown(e: KeyboardEvent) {
+		if (keyPick !== null) {
+			const key = keyPick
+			keyPick = null
+			if (!hasCommitted) pick(key)
+		}
+		if (e.defaultPrevented) {
+			// Enter on an autocomplete list with nothing to pick commits the typed text
+			if (type === "autocomplete" && e.key === "Enter" && !hasCommitted && autocompleteTyped) void commitTypedText()
+			e.stopPropagation()
+			return
+		}
+
 		if (skipKeyboardCommit) {
 			return
 		}
@@ -486,6 +312,12 @@
 			e.preventDefault()
 			commit()
 		}
+	}
+
+	// Inside the editor: its own DOM or its (portalled) dropdown list.
+	function isInside(node: EventTarget | null): boolean {
+		if (!(node instanceof Node)) return false
+		return !!editorElement?.contains(node) || !!document.getElementById(listboxId)?.contains(node)
 	}
 
 	// Escape goes to the topmost open layer (helpers/layer-stack.ts): the open
@@ -500,14 +332,14 @@
 			onEscape: () => {
 				if (skipKeyboardCommit) return false
 				if (dropdownOpen) {
-					closeDropdown()
+					// Normally the dropdown's own (higher) layer gets here first
+					dropdownOpen = false
 				} else {
 					cancelledViaEscape = true
 					// "always" editors stay mounted: show the value again
 					internalValue = value
-					if (type === "autocomplete") filterText = labelFor(value)
 					autocompleteTyped = false
-					onCancel()
+					cancel()
 				}
 			}
 		})
@@ -522,7 +354,7 @@
 	function commitValue(newValue: unknown): Promise<void> | void {
 		if (hasCommitted) return lastCommit
 		if (type !== "checkbox") hasCommitted = true
-		lastCommit = onCommit({value: newValue})
+		lastCommit = onCommit({value: newValue, editToken: ownToken})
 		return lastCommit
 	}
 
@@ -530,7 +362,7 @@
 	// instance for life, so the one-commit guard must re-arm here, not only on mount.
 	function handleFocusIn(e: FocusEvent) {
 		hasFocus = true
-		if (!editorElement?.contains(e.relatedTarget as Node | null)) {
+		if (!isInside(e.relatedTarget)) {
 			hasCommitted = false
 			lastCommit = undefined
 			cancelledViaEscape = false
@@ -538,15 +370,20 @@
 	}
 
 	function handleBlur(e: FocusEvent) {
-		const relatedTarget = e.relatedTarget as HTMLElement
-		if (!editorElement?.contains(relatedTarget)) hasFocus = false
+		const inside = isInside(e.relatedTarget)
+		if (!inside) hasFocus = false
 		if (hasCommitted || skipBlurCommit || cancelledViaEscape) {
 			return
 		}
 
-		if (editorElement && !editorElement.contains(relatedTarget)) {
+		if (editorElement && !inside) {
 			commit()
 		}
+	}
+
+	function handleInput() {
+		cancelledViaEscape = false
+		if (type === "autocomplete") autocompleteTyped = true
 	}
 
 	// Number input → number | null: empty / unparsable → null, decimalPlaces applied.
@@ -573,26 +410,24 @@
 		if (hasCommitted) return lastCommit
 		// A checkbox commits on every toggle; nothing is pending
 		if (type === "checkbox") {
-			if (lastCommit === undefined) onCancel()
+			if (lastCommit === undefined) cancel()
 			return lastCommit
 		}
 		if (type === "autocomplete" && autocompleteTyped) return commitTypedText()
 		const finalValue = type === "number" ? parseNumber(internalValue) : internalValue
-		if (isUnchanged(finalValue)) onCancel()
+		if (isUnchanged(finalValue)) cancel()
 		else return commitValue(finalValue)
 	}
 
 	// Autocomplete free text: the option whose label it is, else the text itself (empty → null).
+	// The value's own label (also what Escape reverts the input to) is no change.
 	function commitTypedText(): Promise<void> | void {
-		const text = filterText.trim()
-		const match = dropdownOptions.find(opt => getOptionLabel(opt) === text)
-		const next = text === "" ? null : match ? getOptionValue(match) : text
+		const text = comboText.trim()
+		const match = autocompleteList.find(opt => getOptionLabel(opt) === text)
+		const next = text === "" ? null : match ? getOptionValue(match) : text === labelFor(value) ? value : text
 		autocompleteTyped = false
-		closeDropdown()
-		if (isUnchanged(next)) {
-			filterText = labelFor(value)
-			return onCancel()
-		}
+		dropdownOpen = false
+		if (isUnchanged(next)) return cancel()
 		internalValue = next
 		return commitValue(next)
 	}
@@ -625,14 +460,19 @@
 
 </script>
 
+{#snippet selectOption(opt: OptionItem)}
+	<Option value={opt.value} label={opt.label} onclick={() => pick(opt.value)}>{opt.label}</Option>
+{/snippet}
+
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	bind:this={editorElement}
-	class="grid-cell-editor"
+	class="grid-cell-editor {type}"
+	onkeydowncapture={handleKeyDownCapture}
 	onkeydown={handleKeyDown}
 	onfocusin={handleFocusIn}
 	onfocusout={handleBlur}
-	oninput={() => (cancelledViaEscape = false)}
+	oninput={handleInput}
 >
 	{#if type === "text"}
 		<input
@@ -662,34 +502,40 @@
 			onchange={handleCheckboxChange}
 		/>
 	{:else if type === "select"}
-		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-		<!-- svelte-ignore a11y_role_has_required_aria_props -->
-		<div
+		<Select
+			id={controlId}
 			class="cell-select-trigger"
-			tabindex="0"
-			role="combobox"
-			aria-haspopup="listbox"
-			aria-expanded={dropdownOpen}
-			onclick={handleSelectTriggerClick}
-			onkeydown={handleSelectTriggerKeyDown}
+			embedded
+			selectValueOnTab
+			dropdownClass="cell-dropdown"
+			maxDropdownHeight="200px"
+			bind:open={dropdownOpen}
+			value={currentKey}
+			placeholder={options.emptyLabel || labels.editorEmptyOption}
+			{valueText}
+			searchBehavior={options.searchBehavior}
+			onChange={({value: key}) => pick(key as string)}
 		>
-			<span class="cell-select-value">{getCurrentDisplayValue()}</span>
-			<span class="cell-select-arrow">▼</span>
-		</div>
-	{:else if type === "combobox"}
-		<div class="cell-combobox-wrapper">
-			<input
-				bind:this={inputElement}
-				type="text"
-				class="cell-combobox-input"
-				value={filterText}
-				placeholder={options.placeholder || labels.editorSelectPlaceholder}
-				oninput={handleComboboxInput}
-				onkeydown={handleComboboxKeyDown}
-				onfocus={handleComboboxFocus}
-			/>
-			<span class="cell-select-arrow">▼</span>
-		</div>
+			{#if options.allowEmpty}
+				<Option value={EMPTY_KEY} onclick={() => pick(EMPTY_KEY)}>{options.emptyLabel || labels.editorEmptyOption}</Option>
+			{/if}
+			{#if selectSegments}
+				{#each selectSegments as segment, i (i)}
+					{#if segment.group}
+						<OptionGroup label={segment.group}>
+							{#each segment.items as opt (opt.value)}{@render selectOption(opt)}{/each}
+						</OptionGroup>
+					{:else}
+						{#each segment.items as opt (opt.value)}{@render selectOption(opt)}{/each}
+					{/if}
+				{/each}
+			{:else}
+				{#each dropdownOptions as opt (opt.value)}{@render selectOption(opt)}{/each}
+			{/if}
+			{#if dropdownOptions.length === 0}
+				<div class="cell-dropdown-empty">{isLoadingOptions ? labels.editorLoading : labels.editorEmptyText}</div>
+			{/if}
+		</Select>
 	{:else if type === "date"}
 		<input
 			type="date"
@@ -702,84 +548,36 @@
 			onkeyup={() => (dateKeyDown = false)}
 			onblur={() => (dateKeyDown = false)}
 		/>
-	{:else if type === "autocomplete"}
-		<div class="cell-autocomplete-wrapper">
-			<input
-				bind:this={inputElement}
-				type="text"
-				class="cell-autocomplete-input"
-				value={filterText}
-				placeholder={options.placeholder || labels.editorSearchPlaceholder}
-				oninput={handleAutocompleteInput}
-				onkeydown={handleAutocompleteKeyDown}
-				onfocus={handleAutocompleteFocus}
+	{:else if type === "combobox" || type === "autocomplete"}
+		{@const autocomplete = type === "autocomplete"}
+		{#key comboGeneration}
+			<Combobox
+				id={controlId}
+				embedded
+				openOnFocus
+				selectValueOnTab
+				freeText={autocomplete}
+				dropdownClass="cell-dropdown"
+				maxDropdownHeight="200px"
+				bind:open={dropdownOpen}
+				bind:currentValue={comboText}
+				value={currentKey ? [currentKey] : []}
+				options={dropdownOptions}
+				{valueText}
+				placeholder={options.placeholder || (autocomplete ? labels.editorSearchPlaceholder : labels.editorSelectPlaceholder)}
+				searchBehavior={options.searchBehavior}
+				filterCallback={autocomplete ? localFilter : undefined}
+				onSearch={autocomplete && options.onSearch ? handleAutocompleteSearch : undefined}
+				searchDelay={options.searchDelay ?? 300}
+				loading={isLoadingOptions || search.loading}
+				loadingText={isLoadingOptions ? labels.editorLoading : labels.editorSearching}
+				emptyText={autocomplete ? labels.editorEmptyText : labels.editorFilterEmptyText}
+				onChange={({value: picked}) => { if (picked.length) pick(picked[0]) }}
 			/>
-			{#if search.loading}
-				<span class="cell-loading-indicator">...</span>
-			{/if}
-		</div>
-	{/if}
-
-	<!-- Dropdown overlay for select/combobox/autocomplete -->
-	{#if dropdownOpen && (type === "select" || type === "combobox" || type === "autocomplete")}
-		<PositioningRegion anchor={cellElement || editorElement} visible={dropdownOpen} position="bottom">
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<!-- svelte-ignore a11y_interactive_supports_focus -->
-			<div bind:this={dropdownElement} class="cell-dropdown" role="listbox" onmousedown={(e) => e.preventDefault()}>
-				{#if type === "combobox"}
-					{@const opts = filteredOptions}
-					{#each opts as opt, index}
-						<!-- svelte-ignore a11y_click_events_have_key_events -->
-						<!-- svelte-ignore a11y_interactive_supports_focus -->
-						<div
-							class="cell-dropdown-option"
-							class:highlighted={index === nav.index}
-							role="option"
-							aria-selected={index === nav.index}
-							onclick={() => selectDropdownOption(opt)}
-						>
-							{getOptionLabel(opt)}
-						</div>
-					{/each}
-					{#if opts.length === 0}
-						<div class="cell-dropdown-empty">{isLoadingOptions ? labels.editorLoading : labels.editorFilterEmptyText}</div>
-					{/if}
-				{:else}
-					{#if options.allowEmpty && type === "select"}
-						<!-- svelte-ignore a11y_click_events_have_key_events -->
-						<!-- svelte-ignore a11y_interactive_supports_focus -->
-						<!-- svelte-ignore a11y_role_has_required_aria_props -->
-						<div
-							class="cell-dropdown-option"
-							class:highlighted={nav.index === -1 && (internalValue === null || internalValue === undefined)}
-							role="option"
-							aria-selected={nav.index === -1 && (internalValue === null || internalValue === undefined)}
-							onclick={() => { internalValue = null; closeDropdown(); commitValue(null); }}
-						>
-							{options.emptyLabel || labels.editorEmptyOption}
-						</div>
-					{/if}
-					{#each dropdownOptions as opt, index}
-						<!-- svelte-ignore a11y_click_events_have_key_events -->
-						<!-- svelte-ignore a11y_interactive_supports_focus -->
-						<div
-							class="cell-dropdown-option"
-							class:highlighted={index === nav.index}
-							role="option"
-							aria-selected={index === nav.index}
-							onclick={() => selectDropdownOption(opt)}
-						>
-							{getOptionLabel(opt)}
-						</div>
-					{/each}
-					{#if dropdownOptions.length === 0}
-						<div class="cell-dropdown-empty">
-							{isLoadingOptions ? labels.editorLoading : search.loading ? labels.editorSearching : labels.editorEmptyText}
-						</div>
-					{/if}
-				{/if}
-			</div>
-		</PositioningRegion>
+		{/key}
+		{#if search.loading}
+			<span class="cell-loading-indicator">...</span>
+		{/if}
 	{/if}
 </div>
 
@@ -824,102 +622,9 @@
 		accent-color: var(--accent-fill-rest, #0078d4);
 	}
 
-	/* Select trigger */
-	.cell-select-trigger {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		width: 100%;
-		height: 100%;
-		cursor: pointer;
-		padding: 0;
-		background: transparent;
-		color: var(--neutral-foreground-rest, #242424);
-		font: inherit;
-	}
-
-	.cell-select-trigger:focus {
-		outline: none;
-	}
-
-	.cell-select-value {
-		flex: 1;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.cell-select-arrow {
-		font-size: 10px;
-		opacity: 0.6;
-		margin-inline-start: 4px;
-		flex-shrink: 0;
-	}
-
-	/* Combobox wrapper */
-	.cell-combobox-wrapper {
-		display: flex;
-		align-items: center;
-		width: 100%;
-		height: 100%;
-		position: relative;
-	}
-
-	.cell-combobox-input {
-		width: 100%;
-		height: 100%;
-		padding: 0;
-		padding-inline-end: 16px;
-		margin: 0;
-		border: none;
-		border-radius: 0;
-		background: transparent;
-		color: var(--neutral-foreground-rest, #242424);
-		font: inherit;
-		box-sizing: border-box;
-		outline: none;
-	}
-
-	.cell-combobox-input:focus {
-		outline: none;
-	}
-
-	.cell-combobox-wrapper .cell-select-arrow {
-		position: absolute;
-		inset-inline-end: 0;
-	}
-
-	/* Autocomplete wrapper */
-	.cell-autocomplete-wrapper {
-		display: flex;
-		align-items: center;
-		width: 100%;
-		height: 100%;
-		position: relative;
-	}
-
-	.cell-autocomplete-input {
-		width: 100%;
-		height: 100%;
-		padding: 0;
-		padding-inline-end: 20px;
-		margin: 0;
-		border: none;
-		border-radius: 0;
-		background: transparent;
-		color: var(--neutral-foreground-rest, #242424);
-		font: inherit;
-		box-sizing: border-box;
-		outline: none;
-	}
-
-	.cell-autocomplete-input:focus {
-		outline: none;
-	}
-
-	.cell-autocomplete-input::placeholder {
-		color: var(--neutral-foreground-hint, #707070);
-		opacity: 0.7;
+	/* Autocomplete: a search box, not a dropdown — no chevron (as before the Combobox reuse) */
+	.grid-cell-editor.autocomplete :global(.combobox-indicator) {
+		display: none;
 	}
 
 	.cell-loading-indicator {
@@ -930,38 +635,23 @@
 		animation: pulse 1s infinite;
 	}
 
-	/* Dropdown styles */
-	.cell-dropdown {
-		background: var(--fluent-quickgrid-dropdown-bg, var(--neutral-layer-1, #ffffff));
-		border: 1px solid var(--fluent-quickgrid-dropdown-border, var(--neutral-stroke-rest, #d1d1d1));
-		border-radius: var(--fluent-border-radius-md);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
-		max-height: 200px;
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		width: 100%;
-		box-sizing: border-box;
-		z-index: var(--fluent-z-popover, 1060);
+	/* The dropdown list (Select / Combobox `dropdownClass`): portalled, so themed via
+	   variables set on :root or a theme selector. Fallbacks = the shared listbox look. */
+	:global(.select-listbox-popover.cell-dropdown),
+	:global(.combobox-listbox.cell-dropdown) {
+		background: var(--fluent-quickgrid-dropdown-bg, var(--neutral-layer-floating, #ffffff));
+		border-color: var(--fluent-quickgrid-dropdown-border, var(--neutral-stroke-rest, #d1d1d1));
 	}
 
-	.cell-dropdown-option {
-		display: block;
-		width: 100%;
-		padding: 6px 12px;
-		border: none;
-		background: transparent;
-		text-align: start;
-		cursor: pointer;
-		color: var(--neutral-foreground-rest, #242424);
-		font: inherit;
-		box-sizing: border-box;
+	:global(.cell-dropdown[role="listbox"] .fluent-option[role="option"]:is(:hover, [data-highlighted]):not([disabled])) {
+		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-stealth-hover, #f0f0f0));
 	}
 
-	.cell-dropdown-option:hover,
-	.cell-dropdown-option.highlighted {
-		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-secondary-hover, #f0f0f0));
+	:global(.cell-dropdown[role="listbox"] .fluent-option[role="option"][aria-selected="true"]:is(:hover, [data-highlighted]):not([disabled])) {
+		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-secondary-hover, #ebebeb));
 	}
 
+	/* Status row of the select editor's list (no options / loading) */
 	.cell-dropdown-empty {
 		padding: 8px 12px;
 		color: var(--neutral-foreground-hint, #707070);

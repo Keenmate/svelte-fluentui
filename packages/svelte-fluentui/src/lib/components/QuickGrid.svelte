@@ -1946,9 +1946,10 @@
 													value={getCellRawValue(item, rowKey, cellField)}
 													displayText={getEditorDisplayText(item, column, rowKey)}
 													options={optionsLoader.editorOptionsFor(column, item, rowKey)}
-													initialSearchQuery={editingCell.initialSearchQuery}
-													onCommit={({value: newValue}) => commitEdit(item, column, newValue, colIndex, editToken)}
-													onCancel={() => cancelEdit(editToken)}
+													{editToken}
+													initialSearchQuery={editingCell?.initialSearchQuery}
+													onCommit={({value: newValue, editToken: token}) => commitEdit(item, column, newValue, colIndex, token)}
+													onCancel={({editToken: token}) => cancelEdit(token)}
 													skipBlurCommit={isCommittingFromKeyboard}
 													skipKeyboardCommit={isNavigateMode}
 												/>

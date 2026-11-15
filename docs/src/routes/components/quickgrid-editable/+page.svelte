@@ -1673,7 +1673,7 @@ function clearError(rowKey, field) {
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td>options</td><td>QuickGridEditorOption[]</td><td>select, autocomplete</td><td>Static options array</td></tr>
+				<tr><td>options</td><td>QuickGridEditorOption[]</td><td>select, combobox, autocomplete</td><td>Static options array (<code>&#123;value, label, group?&#125;</code>; options sharing a <code>group</code> render under its heading). The editors are the library's <code>Select</code> (select) and <code>Combobox</code> (combobox, autocomplete), so type-ahead, list keys (Home / End / PageUp / PageDown) and styling match them</td></tr>
 				<tr><td>loadOptionsCallback</td><td>(&#123;row, column, signal&#125;) =&gt; Promise&lt;QuickGridEditorOption[]&gt;</td><td>select, autocomplete</td><td>Dynamic options loader</td></tr>
 				<tr><td>optionsLoadTrigger</td><td>"immediate" | "edit-start" | "dropdown-open"</td><td>select, autocomplete</td><td>When to load dynamic options</td></tr>
 				<tr><td>min</td><td>number</td><td>number</td><td>Minimum value</td></tr>

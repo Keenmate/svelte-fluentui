@@ -382,7 +382,7 @@ test.describe("QuickGrid Phase 3 — editors", () => {
 		await expect(page.locator("#immediate-log")).toContainText("load:2")
 		await wrap.locator("td", {hasText: "db"}).dblclick()
 		await wrap.locator(".cell-select-trigger").click()
-		await expect(page.locator(".cell-dropdown .cell-dropdown-option")).toHaveText(["db", "ops"])
+		await expect(page.locator('.cell-dropdown [role="option"]')).toHaveText(["db", "ops"])
 	})
 
 	test("edit-start options: the cell shows a loading indicator until the editor opens", async ({page}) => {
@@ -399,7 +399,7 @@ test.describe("QuickGrid Phase 3 — editors", () => {
 		await wrap.locator("td", {hasText: "apple"}).click()
 		await page.keyboard.press("b")
 		const option = page.getByRole("option", {name: "Banana"})
-		await expect(option).toHaveClass(/highlighted/)
+		await expect(option).toHaveAttribute("data-highlighted")
 		await wrap.locator(".cell-select-trigger").click()
 		await page.waitForTimeout(100)
 		await expect(page.locator(".cell-dropdown")).toHaveCount(0)
