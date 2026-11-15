@@ -1,3 +1,11 @@
+<!--
+@component
+Spotlight-style search palette (modal) over navigation and action items, toggled by a global shortcut (`mod+k`).
+
+```svelte
+<CommandPalette items={[{text: "Home", href: "/"}, {text: "Log out", onClick: logout}]} />
+```
+-->
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {onMount, tick, untrack} from "svelte"
@@ -15,21 +23,21 @@
 		items: CommandPaletteItem[]
 		/** Controlled open state. Bind it to drive the palette from your own trigger. */
 		open?: boolean
-		/** Input placeholder. */
+		/** Input placeholder. Default: "Search…". */
 		placeholder?: string
 		/** Items shown on the idle screen (no query yet), grouped by `group`. Defaults to the first `maxResultCount` of `items`. */
 		homeItems?: CommandPaletteItem[]
-		/** Max results rendered for a query. */
+		/** Max results rendered for a query. Default: 50. */
 		maxResultCount?: number
 		/**
 		 * Global keyboard shortcut that toggles the palette, e.g. "mod+k"
 		 * (mod = ⌘ on Mac, Ctrl elsewhere). Set `enableShortcut={false}` to
-		 * disable the built-in listener and drive `open` yourself.
+		 * disable the built-in listener and drive `open` yourself. Default: "mod+k".
 		 */
 		shortcut?: string
-		/** Register the global `shortcut` listener. */
+		/** Register the global `shortcut` listener. Default: `true`. */
 		enableShortcut?: boolean
-		/** Close the palette after an item is selected. */
+		/** Close the palette after an item is selected. Default: `true`. */
 		closeOnSelect?: boolean
 		/** Override the built-in fuzzy scorer with app-specific search. */
 		filterCallback?: CommandPaletteFilter

@@ -1,3 +1,11 @@
+<!--
+@component
+FluentUI system icon rendered as inline SVG (resolved at build time by the `svelteFluentUI()` Vite plugin).
+
+```svelte
+<Icon name="folder" size={20} color="accent" />
+```
+-->
 <script lang="ts">
 	import iconMap from 'virtual:fluentui-icons'
 	import type {RestProps} from '../types/index.js'
@@ -7,15 +15,25 @@
 	type IconColor = 'neutral' | 'accent' | 'warning' | 'info' | 'error' | 'success' | 'fill' | 'fill-inverse' | 'lightweight' | 'disabled' | 'custom'
 
 	type OwnProps = {
+		/** FluentUI icon name without the `ic_fluent_` prefix and size/variant suffix, e.g. "folder". */
 		name: string
+		/** Icon size in px; the icon must exist at that size. Default: 24. */
 		size?: IconSize
+		/** `regular` (outline) or `filled`. Default: `regular`. */
 		variant?: IconVariant
+		/** Theme colour token for the fill; `custom` uses `customColor`. Default: inherits `currentColor`. */
 		color?: IconColor
+		/** CSS colour used when `color="custom"`. */
 		customColor?: string
+		/** Swap to the filled variant on hover (regular variant only). */
 		hoverEffect?: boolean
+		/** Extra class on the root `<span>`. */
 		class?: string
+		/** Inline style on the root `<span>`. */
 		style?: string
+		/** Tooltip (`title`) on the icon. */
 		title?: string
+		/** CSS width override of the root `<span>` (e.g. "100%"). */
 		width?: string
 	}
 

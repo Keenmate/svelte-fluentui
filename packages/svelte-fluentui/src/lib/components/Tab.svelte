@@ -1,3 +1,13 @@
+<!-- @component
+One tab of a `<Tabs>` strip. Renders no DOM itself — it registers its label and panel content with the parent `<Tabs>`.
+
+```svelte
+<Tabs bind:activeId>
+	<Tab id="general" label="General">General settings…</Tab>
+	<Tab id="advanced" label="Advanced" showClose onTabClose={({tab}) => remove(tab.id)}>…</Tab>
+</Tabs>
+```
+-->
 <script lang="ts">
 	import type {TabInfo} from "./tabs/tabs.types.js"
 	import {tabsContext} from "../contexts.js"
@@ -5,20 +15,31 @@
 	import { onDestroy, untrack } from "svelte"
 
 	type Props = {
+		/** Extra CSS class on the tab button. */
 		class?: string
+		/** Inline style on the tab button. */
 		style?: string
+		/** Unique tab id (required); matched against `Tabs.activeId`. Also the button id; the panel gets `<id>-panel`. */
 		id: string
+		/** Disables the tab: it can't be activated by click, keyboard or swipe. */
 		disabled?: boolean
+		/** Accessible name of the tab button (`aria-label`). */
 		ariaLabel?: string
+		/** Tab text. Ignored when `header` is set. */
 		label?: string
+		/** Icon rendered before the label. */
 		icon?: Snippet
+		/** Custom tab-button content; replaces `label`. */
 		header?: Snippet
 		/** Panel content. */
 		content?: Snippet
 		/** Panel content placed directly between the `<Tab>` tags; rendered after `content`. */
 		children?: Snippet
+		/** Renders `label` as inline-editable (`contenteditable`) text. Edits are not reported back. */
 		labelEditable?: boolean
+		/** Shows a close (×) button on the tab that fires `onTabClose`. */
 		showClose?: boolean
+		/** `false` removes the tab from the strip without unmounting `<Tab>`. Default: `true`. */
 		visible?: boolean
 		/** Arbitrary data, passed back as `tab.data` in Tabs events and callbacks. */
 		data?: Record<string, unknown>

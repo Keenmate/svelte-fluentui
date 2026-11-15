@@ -11,8 +11,6 @@ export class CalendarDay {
 	constructor(calendar: IFluentCalendar, day: Date) {
 		this.calendar = calendar
 		this.date     = new Date(day)
-		// this.date     = new Date(day)
-		// this.date.setHours(0, 0, 0)
 
 		this.isInDisabledList      = calendar.disabledDateFunc ? calendar.disabledDateFunc(day) : false
 		this.isOutsideCurrentMonth = !calendar.calendarExtended.isInCurrentMonth(day)

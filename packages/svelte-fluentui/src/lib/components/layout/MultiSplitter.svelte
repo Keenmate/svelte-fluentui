@@ -1,3 +1,14 @@
+<!-- @component
+Resizable container of two or more `MultiSplitterPane`s separated by draggable, keyboard-operable gutters.
+
+```svelte
+<MultiSplitter height="400px">
+	<MultiSplitterPane size="30%" minimize>Nav</MultiSplitterPane>
+	<MultiSplitterPane>Content</MultiSplitterPane>
+</MultiSplitter>
+```
+-->
+
 <!--
  * MultiSplitter
  *
@@ -32,30 +43,36 @@
 	import {MultiSplitterEngine, type MultiSplitterResizeDetail, type MultiSplitterToggleDetail} from "./multi-splitter/splitter.svelte.js"
 
 	type OwnProps = {
+		/** `MultiSplitterPane` children. */
 		children?: Snippet
+		/** `"horizontal"` = panes side by side; `"vertical"` = stacked. Default: `"horizontal"`. */
 		orientation?: Orientation
 		/** DOM `id` of the root element. Plain attribute — no longer drives persistence (use `persistKey`). */
 		id?: string
 		/** Opt-in localStorage persistence of pane sizes / minimized state. Saved under
 		 * "fluent-multi-splitter:<persistKey>" (the same key 1.x derived from `id`). Omit to disable persistence. */
 		persistKey?: string
-		/** Keyboard step in px when a gutter is focused. */
+		/** Keyboard step in px when a gutter is focused. Default: `10`. */
 		step?: number
-		/** Rail width in px when a pane is minimized. */
+		/** Rail width (height when vertical) in px of a minimized pane. Default: `40`. */
 		railSize?: number
-		/** Drag-to-rail snap threshold as ratio of the drag-start size (0–1). */
+		/** Drag-to-rail snap threshold as ratio of the drag-start size (0–1), floored at `railSize × 1.5`. Default: `0.4`. */
 		minimizeThreshold?: number
+		/** CSS width of the container, e.g. `"100%"`. */
 		width?: string
+		/** CSS height of the container, e.g. `"400px"`. */
 		height?: string
+		/** Extra CSS classes on the root element. */
 		class?: string
+		/** Inline style on the root element (after `width`/`height`). */
 		style?: string
-		/** Logs drag / minimize transitions to console (development aid). */
+		/** Logs drag / minimize transitions to console (development aid). Default: `false`. */
 		debug?: boolean
-		/** Fires when a pane's size changes. */
+		/** Fires continuously while a pane is resized; `ctx` = `{paneIndex, pane, size}` (size in px). */
 		onPaneResize?: (ctx: MultiSplitterResizeDetail) => void
-		/** Fires when a pane is minimized (collapsed to its rail). */
+		/** Fires when a pane is minimized (collapsed to its rail); `ctx` = `{paneIndex, pane}`. */
 		onPaneCollapse?: (ctx: MultiSplitterToggleDetail) => void
-		/** Fires when a minimized pane is restored. */
+		/** Fires when a minimized pane is restored; `ctx` = `{paneIndex, pane}`. */
 		onPaneExpand?: (ctx: MultiSplitterToggleDetail) => void
 	}
 

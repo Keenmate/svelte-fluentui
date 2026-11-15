@@ -1,3 +1,10 @@
+<!-- @component
+Range slider wrapping `<fluent-slider>`; `bind:value` is a number.
+
+```svelte
+<Slider label="Volume" min={0} max={100} bind:value={volume} />
+```
+-->
 <script lang="ts" module>
 	import {fluentSlider} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -11,21 +18,37 @@
 	import type {NativeEventHandler, Orientation, RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Id of `<fluent-slider>` (also the label's `for`). */
 		id?: string
+		/** Current value (bindable; updates live while dragging). `null`/unset shows `min`. */
 		value?: number | null
+		/** Lowest value (`min` attribute). Default: `0`. */
 		min?: number
+		/** Highest value (`max` attribute). Default: `10`. */
 		max?: number
+		/** Increment between values (`step` attribute). Default: `1`. */
 		step?: number
+		/** Track direction (`orientation` attribute). Default: `"horizontal"`. */
 		orientation?: Orientation
+		/** Disables the slider (`disabled` attribute). */
 		disabled?: boolean
+		/** Value shows but can't be changed (`readonly` attribute). */
 		readonly?: boolean
+		/** Marks the field required for form validation (`required` attribute). */
 		required?: boolean
+		/** Form field name (`name` attribute). */
 		name?: string
+		/** Visible label text rendered above the slider; also the fallback `aria-label`. */
 		label?: string
+		/** Custom label markup, rendered after `label` inside the `<label>`. */
 		labelTemplate?: Snippet
+		/** Accessible name (`aria-label`). Default: `label`. */
 		ariaLabel?: string
+		/** Extra CSS class on `<fluent-slider>`. */
 		class?: string
+		/** Inline style on `<fluent-slider>`. */
 		style?: string
+		/** Slotted content, typically `<fluent-slider-label>` tick marks. */
 		children?: Snippet
 		/** Fires when the user commits a new value; the live value while dragging is `bind:value`. */
 		onChange?: (ctx: {value: number}) => void

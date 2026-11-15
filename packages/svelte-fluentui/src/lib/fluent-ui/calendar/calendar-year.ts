@@ -37,10 +37,6 @@ export class CalendarYear {
 		if (!selectedValue) {
 			return false
 		}
-		// console.log("Year is same", {
-		// 	currentYear: this.year.getFullYear(),
-		// 	selectedValue: selectedValue.getFullYear()
-		// })
 		return this.year.getFullYear() === selectedValue.getFullYear()
 	}
 

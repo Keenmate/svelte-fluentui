@@ -1,3 +1,14 @@
+<!-- @component
+Custom single / multi select. Single mode: a trigger button with a portalled dropdown listbox; multi mode: an always-expanded inline listbox. Options are `<Option>` children.
+
+```svelte
+<Select label="Country" bind:value placeholder="Pick one">
+	<Option value="cz">Czechia</Option>
+	<Option value="sk">Slovakia</Option>
+</Select>
+```
+-->
+
 <!--
  * Select Component (rewrite)
  *
@@ -46,13 +57,19 @@
 	}
 
 	type OwnProps = {
+		/** Id of the trigger (single) or inline listbox (multi); also the label's `for`. */
 		id?: string
+		/** Extra CSS class on the trigger / inline listbox. */
 		class?: string
+		/** Inline style on the trigger / inline listbox. */
 		style?: string
+		/** Single mode: dropdown open state. Bindable. */
 		open?: boolean
 		/** Force the dropdown above/below the trigger. Default: auto (flip()). */
 		position?: "top" | "bottom"
+		/** Multi-select: renders an inline listbox and `value` becomes `string[]`. Default: `false`. */
 		multiple?: boolean
+		/** Disables the control. Default: `false`. */
 		disabled?: boolean
 		/** How type-ahead compares typed keys with option labels: `normalized` (default)
 		 * ignores case and diacritics (`a` finds `Ávila`), `case-insensitive` ignores
@@ -61,15 +78,23 @@
 		/** Non-editable: the value shows but can't be changed (dropdown won't open,
 		 * options can't be toggled). Unlike `disabled`, it stays focusable and un-dimmed. */
 		readonly?: boolean
+		/** Visual style of the trigger / listbox. Default: `outline`. */
 		appearance?: "outline" | "filled"
+		/** Adds `*` to the label and `required` to the hidden form input. Default: `false`. */
 		required?: boolean
+		/** Single mode: focus the trigger on mount. Default: `false`. */
 		autofocus?: boolean
+		/** Single mode: renders a hidden `<input name>` so the value takes part in form submission. */
 		name?: string
 		/** Selected value. String in single mode, string[] in multi mode. */
 		value?: string | string[]
+		/** Text rendered in a `<label>` above the control; also the default `aria-label`. */
 		label?: string
+		/** Accessible name; falls back to `label`. */
 		ariaLabel?: string
+		/** Tooltip text (`title`) on the trigger / inline listbox. */
 		title?: string
+		/** CSS width of the control. */
 		width?: string
 		/** Multi mode: explicit height for the inline listbox. */
 		height?: string
@@ -99,8 +124,11 @@
 		 * (they bubble to the host). Keys the control handles are `preventDefault`ed, so a host
 		 * can skip those. */
 		embedded?: boolean
+		/** Custom label content, rendered after `label`. */
 		labelTemplate?: Snippet
+		/** Single mode: replaces the chevron icon in the trigger. */
 		indicatorTemplate?: Snippet
+		/** The `<Option>` / `<OptionGroup>` items. */
 		children?: Snippet
 		/** Fires when the user changes the selection. `value` is the new bound value (array when `multiple`). */
 		onChange?: (ctx: {value: string | string[]; option?: SelectChangeOption}) => void

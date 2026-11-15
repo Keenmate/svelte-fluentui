@@ -10,14 +10,15 @@
 	}
 
 	const properties: Property[] = [
-		{name: "value", type: "string | null", default: "null", description: "The selected time value in HH:mm or HH:mm:ss format. Bindable."},
+		{name: "id", type: "string", default: "undefined", description: "Id of the input (also the label's for)."},
+		{name: "value", type: "string | null", default: "null", description: "The selected time value in 24-hour HH:mm or HH:mm:ss format (also with hourCycle h12). Bindable."},
 		{name: "placeholder", type: "string", default: '"Select time"', description: "Placeholder text shown in the input when no time is selected."},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the time picker, preventing user interaction."},
 		{name: "readonly", type: "boolean", default: "false", description: "Makes the time picker read-only; the popup cannot be opened."},
 		{name: "required", type: "boolean", default: "false", description: "Marks the field as required, showing a * indicator next to the label."},
 		{name: "autofocus", type: "boolean", default: "undefined", description: "Automatically focuses the input on mount."},
 		{name: "label", type: "string", default: "undefined", description: "Label text displayed above the time picker input."},
-		{name: "appearance", type: "string", default: "undefined", description: "Visual appearance of the underlying TextField (e.g. 'outline', 'filled-lighter')."},
+		{name: "appearance", type: "string", default: "undefined", description: "Visual appearance of the underlying TextField ('outline' or 'filled')."},
 		{name: "hourCycle", type: '"h12" | "h23"', default: '"h23"', description: "h23 = 24-hour clock, h12 = 12-hour clock with an AM/PM selector (same values as Intl.DateTimeFormat)"},
 		{name: "showSeconds", type: "boolean", default: "false", description: "When true, shows a seconds column in the time picker popup."},
 		{name: "minuteStep", type: "number", default: "1", description: "Step interval for the minutes column (e.g. 15 shows 00, 15, 30, 45)."},
@@ -30,6 +31,9 @@
 		{name: "closeOnSelect", type: "boolean", default: "true", description: "When true, the popup closes when the user clicks OK."},
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the popup (matching FluentUI Blazor). Set false to require clicking the clock icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the popup."},
+		{name: "openClockIconAriaLabel", type: "string", default: '"Open time picker"', description: "Accessible name of the clock button."},
+		{name: "title", type: "string", default: "undefined", description: "Tooltip text on the input."},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label markup, rendered after label."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names applied to the root element."},
 		{name: "style", type: "string", default: '""', description: "Inline styles applied to the root element."}
 	]

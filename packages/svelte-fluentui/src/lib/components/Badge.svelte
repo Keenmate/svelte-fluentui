@@ -1,3 +1,11 @@
+<!-- @component
+Small status/count indicator — a themed `<span>` with palette colours, appearances, sizes and optional truncation.
+
+```svelte
+<Badge fill="success" color="success">Done</Badge>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
@@ -26,12 +34,19 @@
 	type BadgeSize = "extra-small" | "small" | "medium" | "large" | "extra-large"
 
 	type OwnProps = {
+		/** Palette name for the text colour (`--fluent-color-<name>-contrast`); also used as the fill when `fill` is unset. */
 		color?: BadgeColor
+		/** Palette name for the background (`--fluent-color-<name>`). Default: `color`. */
 		fill?: string
+		/** Visual style: `accent`, `lightweight`, `neutral`, `outline`, `tint`. Default: `"lightweight"`. */
 		appearance?: BadgeAppearance
+		/** Size scale `extra-small` … `extra-large`. Default: `"medium"`. */
 		size?: BadgeSize
+		/** Fully rounded, at least as wide as tall (counts/dots). */
 		circular?: boolean
+		/** Pill-shaped corners. */
 		pill?: boolean
+		/** Custom `border-radius` (any CSS length); overrides `circular`/`pill`. */
 		radius?: string
 		/** Icon slot rendered before the label. */
 		icon?: Snippet
@@ -51,10 +66,13 @@
 		maxWidth?: string
 		/** Native tooltip; surface the full text here when truncating. */
 		title?: string
+		/** Badge label. */
 		children?: Snippet
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
+		/** Extra classes for the root `<span>`. */
 		class?: string
+		/** Inline style for the root `<span>` (appended after the computed colour styles). */
 		style?: string
 	}
 

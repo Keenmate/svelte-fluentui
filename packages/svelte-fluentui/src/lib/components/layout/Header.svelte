@@ -1,11 +1,23 @@
+<!-- @component
+Page header bar with fixed height and gutters.
+
+```svelte
+<Header height={60}>My app</Header>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../../types/index.js"
 
 	type OwnProps = {
+		/** Header content. */
 		children?: Snippet
+		/** Header height in px; `null` leaves it to CSS. Default: `50`. */
 		height?: number
+		/** Extra CSS classes, appended after `header`. */
 		class?: string
+		/** Inline style, appended after the computed height. */
 		style?: string
 	}
 
@@ -20,8 +32,6 @@
 		...rest
 	}: Props = $props()
 
-	let element: HTMLElement | undefined = $state()
-
 	let computedStyle = $derived(
 		[height != null && `height: ${height}px;`, style].filter(Boolean).join(" ")
 	)
@@ -29,7 +39,6 @@
 
 <header
 	{...rest}
-	bind:this={element}
 	style={computedStyle}
 	class="header {className}"
 >

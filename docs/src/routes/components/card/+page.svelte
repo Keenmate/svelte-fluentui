@@ -20,7 +20,7 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "any", default: "undefined", description: "Default slot content"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Default slot content"}
 	]
 
 	const actions: Property[] = []

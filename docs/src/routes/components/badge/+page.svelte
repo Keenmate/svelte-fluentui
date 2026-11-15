@@ -12,7 +12,8 @@
 	}
 
 	const properties: Property[] = [
-		{name: "color", type: "string", default: "undefined", description: "Badge color"},
+		{name: "color", type: "string", default: "undefined", description: "Palette name for the text colour (--fluent-color-<name>-contrast); also the fill when fill is unset"},
+		{name: "fill", type: "string", default: "color", description: "Palette name for the background (--fluent-color-<name>)"},
 		{name: "appearance", type: "string", default: '"lightweight"', description: "Visual appearance"},
 		{name: "size", type: '"extra-small" | "small" | "medium" | "large" | "extra-large"', default: '"medium"', description: "Size scale."},
 		{name: "circular", type: "boolean", default: "false", description: "Circular count-style shape (adds min-width)."},
@@ -42,6 +43,7 @@
 		{name: "label", type: "Snippet", default: "undefined", description: "Middle label section content."},
 		{name: "button", type: "Snippet", default: "× glyph", description: "Right button section content."},
 		{name: "showButton", type: "boolean", default: "true", description: "Render the button section."},
+		{name: "buttonTitle", type: "string", default: "undefined", description: "Accessible title/tooltip for the button."},
 		{name: "onLabelClick", type: "(ctx: {sourceEvent}) => void", default: "undefined", description: "Label click handler (adds pointer/hover)."},
 		{name: "onButtonClick", type: "(ctx: {sourceEvent}) => void", default: "undefined", description: "Button click handler."},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the CompositeBadge root div"}
@@ -64,7 +66,7 @@
 	const actions: Property[] = []
 
 	const slots: Property[] = [
-		{name: "children", type: "any", default: "undefined", description: "Default slot content"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Default slot content"}
 	]
 
 	const propertyColumns = [

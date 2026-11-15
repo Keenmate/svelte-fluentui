@@ -1,15 +1,32 @@
+<!--
+@component
+Form-field frame around any control: label, required marker, hint and validation message.
+
+```svelte
+<Field label="Email" id="email" required validationState="error" validationMessage="Invalid address">
+	<TextField id="email" bind:value={email} />
+</Field>
+```
+-->
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {Orientation, RestProps} from "../types/index.js"
 
 	export type FieldValidationState = "none" | "warning" | "error" | "success"
 	type OwnProps = {
+		/** Label text rendered above (or beside) the control. */
 		label?: string | null | undefined
+		/** Custom label content, rendered after `label` inside the `<label>`. */
 		labelTemplate?: Snippet | null | undefined
+		/** Show a required `*` marker after the label (visual only). */
 		required?: boolean
+		/** Helper text under the control; hidden while a validation message is shown. */
 		hint?: string | null | undefined
+		/** Validation state; colours the field and shows `validationMessage` when not `none`. Default: `none`. */
 		validationState?: FieldValidationState
+		/** Message shown under the control when `validationState` isn't `none` (announced for `error`). */
 		validationMessage?: string | null | undefined
+		/** `vertical` stacks label above the control, `horizontal` puts it beside. Default: `vertical`. */
 		orientation?: Orientation
 		/**
 		 * Optional id used both as the inner control's `id` (caller passes it through)
@@ -17,8 +34,11 @@
 		 * automatically associated with the inner control.
 		 */
 		id?: string | null | undefined
+		/** Extra class on the wrapper. */
 		class?: string
+		/** Inline style on the wrapper. */
 		style?: string
+		/** The form control to wrap. */
 		children?: Snippet
 	}
 

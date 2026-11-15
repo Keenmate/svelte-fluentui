@@ -1,3 +1,11 @@
+<!-- @component
+Wrapper for `<fluent-checkbox>` with a clickable value label, optional three-state cycling and status messages.
+
+```svelte
+<Checkbox bind:checked label="Subscribe" />
+```
+-->
+
 <script lang="ts" module>
 	import {fluentCheckbox} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -13,29 +21,41 @@
 	type OwnProps = {
 		/** Checked state; `null` is indeterminate. Bindable. Defaults to `false`. */
 		checked?: boolean | null;
-		/** Cycle through an indeterminate state (`checked = null`) as well. */
+		/** Clicks also cycle through an indeterminate state (`checked = null`). */
 		threeState?: boolean;
 		/** Click order in three-state mode: `"checked-first"` (unchecked → checked → indeterminate, default) or `"indeterminate-first"` (unchecked → indeterminate → checked, Blazor order). */
 		threeStateOrder?: "checked-first" | "indeterminate-first";
+		/** Focus on page load (`autofocus` attribute). */
 		autofocus?: boolean;
+		/** Label content (rendered after `label` / `labelTemplate`). */
 		children?: Snippet;
+		/** Disable the checkbox (`disabled` attribute). */
 		disabled?: boolean;
+		/** Show the state but block changes (`readonly` attribute). */
 		readonly?: boolean;
+		/** Mark as required for form validation (`required` attribute). */
 		required?: boolean;
+		/** Id of `<fluent-checkbox>` (the label's `for`). Generated when omitted. */
 		id?: string;
+		/** Form field name (`name` attribute). */
 		name?: string;
+		/** Text label; also the default `aria-label`. */
 		label?: string;
+		/** Rich label content. */
 		labelTemplate?: Snippet;
+		/** Where the label sits relative to the box. Default: `"end"`. */
 		labelPosition?: "top" | "start" | "end";
+		/** Accessible name (`aria-label`); overrides `label`. */
 		ariaLabel?: string;
+		/** Extra classes for `<fluent-checkbox>`. */
 		class?: string;
+		/** Inline style for `<fluent-checkbox>`. */
 		style?: string;
-		// Tri-state status messages, mirroring Switch's checkedMessage/
-		// uncheckedMessage. The indeterminateMessage shows when checked is null
-		// (only reachable when threeState is true). Each accepts either a
-		// plain string or a Snippet for richer content.
+		/** Status text (string or snippet) shown after the control while checked. Mirrors Switch's `checkedMessage`. */
 		checkedMessage?: string | Snippet;
+		/** Status text shown while unchecked. */
 		uncheckedMessage?: string | Snippet;
+		/** Status text shown while indeterminate (`checked === null`, only reachable with `threeState`). */
 		indeterminateMessage?: string | Snippet;
 		/** Fires when the user changes the state; `null` is indeterminate. */
 		onChange?: (ctx: {checked: boolean | null}) => void

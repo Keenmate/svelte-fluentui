@@ -8,17 +8,29 @@ import type {Snippet} from "svelte"
  * renders the real tablist + panels from it.
  */
 export type TabEntry = {
+	/** Unique tab id; also the tab button id (panel: `<id>-panel`). */
 	id: string
+	/** Tab text (ignored when `header` is set). */
 	label?: string
+	/** Icon rendered before the label. */
 	icon?: Snippet
+	/** Custom tab-button content; replaces `label`. */
 	header?: Snippet
+	/** Panel content. */
 	content?: Snippet
+	/** Panel content from between the `<Tab>` tags; rendered after `content`. */
 	children?: Snippet
+	/** Tab can't be activated. */
 	disabled?: boolean
+	/** Accessible name of the tab button. */
 	ariaLabel?: string
+	/** Label rendered as `contenteditable` text. */
 	labelEditable?: boolean
+	/** Shows the close (×) button. */
 	showClose?: boolean
+	/** `false` hides the tab from the strip. */
 	visible?: boolean
+	/** Arbitrary data, passed back as `tab.data` in events and callbacks. */
 	data?: Record<string, unknown>
 	/**
 	 * Called on the *currently active* tab before Tabs navigates away from
@@ -35,7 +47,9 @@ export type TabEntry = {
 	beforeCloseCallback?: (ctx: {tab: TabInfo}) => unknown
 	/** Fires when the user closes this tab with its × button. */
 	onTabClose?: (ctx: {tab: TabInfo}) => void
+	/** Extra CSS class on the tab button. */
 	class?: string
+	/** Inline style on the tab button. */
 	style?: string
 }
 

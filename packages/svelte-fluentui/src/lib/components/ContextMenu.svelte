@@ -6,6 +6,16 @@
 	export type ContextMenuActionDetail = ActionEventDetail<ContextMenuContext>
 </script>
 
+<!--
+@component
+Wraps content in a right-click zone that opens a menu of `ActionItem` entries (submenus, dividers, expandable sections).
+
+```svelte
+<ContextMenu items={[{id: "copy", text: "Copy", onClick: copy}]}>
+	<div>Right-click me</div>
+</ContextMenu>
+```
+-->
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {tick} from "svelte"
@@ -36,12 +46,12 @@
 		 * Horizontal offset (pixels) pushing the menu further to the right of the
 		 * cursor. Useful so the click position doesn't land directly on the first
 		 * menu item — otherwise the user has to move the mouse away and back to
-		 * select it. Added on top of a small baseline gap.
+		 * select it. Added on top of a small baseline gap. Default: 8.
 		 */
 		offsetMenuX?: number
 		/**
 		 * Vertical offset (pixels) pushing the menu further below the cursor.
-		 * Same rationale as `offsetMenuX`. Added on top of a small baseline gap.
+		 * Same rationale as `offsetMenuX`. Added on top of a small baseline gap. Default: 0.
 		 */
 		offsetMenuY?: number
 		/** Children rendered inside the context-menu trigger zone. */

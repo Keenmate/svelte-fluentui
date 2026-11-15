@@ -11,7 +11,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "items", type: "CommandPaletteItem[]", default: "[]", description: "Searchable entries. Each is either navigation (href) or an action (onClick)"},
+		{name: "items", type: "CommandPaletteItem[]", default: "required", description: "Searchable entries. Each is either navigation (href) or an action (onClick)"},
 		{name: "open", type: "boolean", default: "false", description: "Controlled, bindable open state. Drive it from your own trigger with bind:open"},
 		{name: "placeholder", type: "string", default: '"Search…"', description: "Input placeholder text"},
 		{name: "homeItems", type: "CommandPaletteItem[]", default: "items", description: "Items shown on the idle screen (before typing), grouped by `group`. Defaults to the first maxResultCount of items"},

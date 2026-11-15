@@ -1,3 +1,11 @@
+<!-- @component
+Floating overlay portalled to `<body>` and positioned against `anchor` with Floating UI (flip / shift, top layer via the Popover API). Used by Select, Combobox, DatePicker and friends for their dropdowns.
+
+```svelte
+<PositioningRegion anchor={inputEl} visible={open} availableHeight>…</PositioningRegion>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {portal} from "../actions/portal.js"
@@ -17,12 +25,17 @@
 	type AlignType = "center" | "top"
 
 	type OwnProps = {
+		/** Element the overlay is positioned against. */
 		anchor?: HTMLElement
+		/** Show the overlay (and start position tracking). Default: `false`. */
 		visible?: boolean
+		/** Inline style on the region `<div>`. */
 		style?: string
+		/** Tooltip text (`title` attribute) on the region. */
 		title?: string
+		/** Preferred side of the anchor; flips when there's no room. Default: `bottom`. */
 		position?: PositionType
-		/** Vertical alignment for left/right positions. "top" anchors the
+		/** Vertical alignment for `start` / `end` positions. "top" anchors the
 		 * overlay's bottom edge to the anchor's bottom (so it extends upward);
 		 * "center" centers it on the anchor (default). */
 		align?: AlignType
@@ -36,6 +49,7 @@
 		 * on a scroll container inside, so the dropdown stays inside the viewport
 		 * regardless of which side flip() picks. */
 		availableHeight?: boolean
+		/** Overlay content. */
 		children?: Snippet
 	}
 

@@ -113,16 +113,16 @@
 	};
 
 	const selectProperties: Property[] = [
-		{name: "appearance", type: '"outline" | "filled"', default: "undefined", description: "Visual appearance style"},
+		{name: "appearance", type: '"outline" | "filled"', default: '"outline"', description: "Visual appearance style"},
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label"},
-		{name: "autofocus", type: "boolean", default: "undefined", description: "Focus on first render"},
+		{name: "autofocus", type: "boolean", default: "false", description: "Focus on first render"},
 		{name: "class", type: "string", default: '""', description: "CSS class(es)"},
-		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the select"},
+		{name: "disabled", type: "boolean", default: "false", description: "Disables the select"},
 		{name: "readonly", type: "boolean", default: "false", description: "Non-editable: the value shows but can't be changed (dropdown won't open, options can't be toggled). Unlike disabled, it stays focusable and un-dimmed."},
 		{name: "height", type: "string", default: "undefined", description: "Multi mode: height of the inline listbox (e.g., '200px')"},
 		{name: "id", type: "string", default: "undefined", description: "Element ID"},
 		{name: "label", type: "string", default: "undefined", description: "Visible label"},
-		{name: "maxDropdownHeight", type: "string", default: "undefined (280px cap)", description: "Single mode: cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
+		{name: "maxDropdownHeight", type: "string", default: "undefined (available viewport space)", description: "Single mode: cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Single mode: width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "maxVisibleOptionCount", type: "number", default: "undefined", description: "Limits visible options in multiple select, enables scrolling"},
 		{name: "placeholder", type: "string", default: "undefined", description: "Single mode: text shown in the trigger while nothing is selected."},
@@ -135,10 +135,10 @@
 		{name: "name", type: "string", default: "undefined", description: "Form field name"},
 		{name: "open", type: "boolean", default: "undefined", description: "Controls dropdown open state"},
 		{name: "position", type: '"top" | "bottom"', default: "undefined", description: "Forces dropdown position"},
-		{name: "required", type: "boolean", default: "undefined", description: "Required for form validation"},
+		{name: "required", type: "boolean", default: "false", description: "Required for form validation"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text"},
-		{name: "value", type: "string", default: "undefined", description: "Selected value (bindable)"},
+		{name: "value", type: "string | string[]", default: "undefined", description: "Selected value (bindable); string[] when multiple"},
 		{name: "width", type: "string", default: "undefined", description: "Width (e.g., '200px', '100%')"}
 	];
 
@@ -147,7 +147,7 @@
 		{name: "class", type: "string", default: "undefined", description: "CSS class(es)"},
 		{name: "data", type: "Record<string, unknown>", default: "undefined", description: "Arbitrary data, passed back as option.data in onChange"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the option"},
-		{name: "label", type: "string", default: "undefined", description: "Accessibility label"},
+		{name: "label", type: "string", default: "undefined", description: "Text used for type-ahead and the trigger display (default: the rendered text)"},
 		{name: "selected", type: "boolean", default: "undefined", description: "Pre-select this option"},
 		{name: "style", type: "string", default: "undefined", description: "Inline styles"}
 	];

@@ -1,3 +1,7 @@
+<!-- @component
+Decorative 12px chevron (›) used as the NavGroup expand indicator.
+-->
+
 <svg
 	class="fluent-nav-expand-icon"
 	focusable="false"

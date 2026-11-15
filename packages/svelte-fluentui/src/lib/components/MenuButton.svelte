@@ -1,3 +1,11 @@
+<!-- @component
+A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionItem model), positioned with Floating UI.
+
+```svelte
+<MenuButton items={[{id: "edit", text: "Edit"}, {divider: true}, {id: "delete", text: "Delete", isDanger: true}]}>Actions</MenuButton>
+```
+-->
+
 <script lang="ts" module>
 	import {fluentButton, fluentMenu, fluentMenuItem, fluentDivider} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -30,7 +38,9 @@
 		appearance?: string
 		/** Disables the trigger button entirely. */
 		disabled?: boolean
+		/** Extra CSS class on the trigger `<fluent-button>`. */
 		class?: string
+		/** Inline style on the trigger `<fluent-button>`. */
 		style?: string
 		/**
 		 * Preferred side of the button to open the menu on. `"bottom"` (default) opens
@@ -42,6 +52,7 @@
 		position?: "bottom" | "top"
 		/** Bindable open state. */
 		open?: boolean
+		/** Button label content. */
 		children?: Snippet
 		/** Slot rendered inside the button's `start` slot (icon before label). */
 		start?: Snippet

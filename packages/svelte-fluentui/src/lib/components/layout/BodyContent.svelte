@@ -1,8 +1,17 @@
+<!-- @component
+Scrollable main content area of a page layout; fills its parent and scrolls vertically.
+
+```svelte
+<BodyContent>…page content…</BodyContent>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../../types/index.js"
 
 	type OwnProps = {
+		/** Page content. */
 		children?: Snippet
 	}
 

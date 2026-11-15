@@ -1,3 +1,11 @@
+<!-- @component
+Searchable multi- (or single-) select with removable chips, local or async (`searchCallback`) search.
+
+```svelte
+<Autocomplete bind:value {options} label="Countries" />
+```
+-->
+
 <!--
  * Autocomplete Component
  * Inspired by FluentUI Blazor Autocomplete component
@@ -22,27 +30,45 @@
 	type OwnProps<T = any> = {
 		/** Selected option values (bindable). */
 		value?: T[]
+		/** Local options searched as you type. */
 		options?: OptionItem<T>[]
+		/** Input placeholder. Default: `"Type to search..."`. */
 		placeholder?: string
+		/** Disable the control. */
 		disabled?: boolean
+		/** Show the selection but block changes. */
 		readonly?: boolean
+		/** Show a required marker (`*`) next to the label. */
 		required?: boolean
+		/** Focus the input on mount. */
 		autofocus?: boolean
+		/** Field label above the control. */
 		label?: string
+		/** Rich label content (replaces `label`). */
 		labelTemplate?: Snippet
+		/** `"filled"` for the filled look; anything else is the outline look. */
 		appearance?: string
+		/** Native `autocomplete` attribute of the input. Default: `"off"`. */
 		autocomplete?: string
+		/** Max number of selected values; `1` implies single-select unless `multiple` is set. */
 		maxSelectionCount?: number
+		/** Max options shown in the dropdown. Default: 9. */
 		maxResultCount?: number
+		/** Min characters typed before searching. */
 		minSearchLength?: number
+		/** Keep the dropdown open with the empty message when nothing matches. Default: `true`. */
 		showOverlayOnEmptyResults?: boolean
+		/** Show options on focus/open before anything is typed (e.g. popular items). */
 		showInitialOptions?: boolean
+		/** How many initial options to show. Default: `maxResultCount`. */
 		initialOptionsCount?: number
 		/** Close the dropdown after a pick. Defaults to `!multiple`: single-select closes,
 		 * multi-select stays open so several values can be chosen in a row. Set `true`
 		 * to close on each multi-select pick. Single-select always closes. */
 		closeOnSelect?: boolean
+		/** Control width (any CSS length). */
 		width?: string
+		/** Control height (any CSS length). */
 		height?: string
 		/** Cap the dropdown listbox height (e.g. "300px", "50vh"). The listbox is
 		 * always also capped to the space available to the viewport edge; this
@@ -52,34 +78,46 @@
 		 * listbox matches the control width; when set it uses this width instead
 		 * (and stops matching), so the list can be wider or narrower than the input. */
 		dropdownWidth?: string
+		/** Id of the root element. */
 		id?: string
+		/** Native tooltip on the root element. */
 		title?: string
+		/** Accessible name (`aria-label`) of the root element. */
 		ariaLabel?: string
+		/** Allow several values. Default: `true` unless `maxSelectionCount` is 1. */
 		multiple?: boolean
+		/** Force the loading spinner on/off. Default: follows the pending `searchCallback`. */
 		loading?: boolean
-		/** Debounce delay in ms before the search runs while typing (0 = search immediately). */
+		/** Debounce delay in ms before the search runs while typing. Default: 0 (search immediately). */
 		searchDelay?: number
+		/** Tab picks the highlighted option. Default: `true`. */
 		selectValueOnTab?: boolean
+		/** Where selected chips render: inside the input, above or below it. Default: `"inline"`. */
 		tagsPosition?: "inline" | "top" | "bottom"
+		/** Content pinned above the options in the dropdown. */
 		headerContent?: Snippet
+		/** Content pinned below the options in the dropdown. */
 		footerContent?: Snippet
+		/** Custom option row; receives the option. */
 		optionTemplate?: Snippet<[OptionItem<T>]>
-		/** Text shown in the dropdown when the search matches no options (with `showOverlayOnEmptyResults`). */
+		/** Text shown in the dropdown when the search matches no options (with `showOverlayOnEmptyResults`). Default: `"No results found"`. */
 		emptyText?: string
 		/** Custom content shown when the search matches no options; overrides `emptyText`. */
 		empty?: Snippet
-		// Decorative slots inside the input. Render arbitrary content (typically icons or
-		// small buttons) at the start (left) or end (right) of the input. The auto-rendered
-		// clear button and loading spinner take precedence in the end slot — `end`
-		// renders only when neither is active, so a search icon doesn't fight a clear button.
+		/** Decorative content (typically an icon) at the start of the input. */
 		start?: Snippet
+		/** Decorative content at the end of the input; renders only when neither the clear
+		 * button nor the loading spinner is showing. */
 		end?: Snippet
 		/** Show a built-in accent-coloured magnifier in the end slot (FluentUI Blazor look).
 		 * Renders by default when nothing higher-priority occupies the slot (clear button,
 		 * loading spinner, or a custom `end` all take precedence). Set false to hide it. */
 		showSearchIcon?: boolean
+		/** Extra classes for the root element. */
 		class?: string
+		/** Inline style for the root element. */
 		style?: string
+		/** Text to prefill and search with on mount (opens the dropdown). */
 		initialSearchQuery?: string
 		/** How the built-in search compares text: `normalized` (default) ignores case and
 		 * diacritics (`zurich` finds `Zürich`), `case-insensitive` ignores case only, `exact`

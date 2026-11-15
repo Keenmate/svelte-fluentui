@@ -193,6 +193,8 @@
 		{name: "height", type: "string", default: "undefined", description: "Component height"},
 		{name: "maxDropdownHeight", type: "string", default: '"300px"', description: "Cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
+		{name: "showSearchIcon", type: "boolean", default: "true", description: "Built-in magnifier in the end slot when nothing higher-priority (clear button, spinner, custom end) occupies it"},
+		{name: "initialSearchQuery", type: "string", default: '""', description: "Text to prefill and search with on mount (opens the dropdown)"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"}
 	]

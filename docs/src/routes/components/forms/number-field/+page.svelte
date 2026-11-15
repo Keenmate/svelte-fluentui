@@ -72,7 +72,7 @@
 		{name: "required", type: "boolean", default: "false", description: "Marks the field as required"},
 		{name: "name", type: "string", default: "undefined", description: "Form field name"},
 		{name: "id", type: "string", default: "undefined", description: "Element id, also linked to the external label via for="},
-		{name: "label", type: "string", default: "undefined", description: "Label text (rendered as external <label class=\"fluent-label\">)"},
+		{name: "label", type: "string", default: "undefined", description: "Label text (rendered as external <label class=\"fluent-field-label\">)"},
 		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Snippet rendered inside the external label — use for icons or rich label markup"},
 		{name: "autofocus", type: "boolean", default: "false", description: "Auto-focus on mount"},
 		{name: "autocomplete", type: "string", default: '"off"', description: "Browser autocomplete behavior"},
@@ -109,7 +109,7 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "Snippet", default: "undefined", description: "Label content (alternative to label prop)"},
+		{name: "children", type: "Snippet", default: "undefined", description: "Default slot of fluent-number-field (its built-in label part, which this wrapper hides via CSS) — use label / labelTemplate instead"},
 		{name: "start", type: "Snippet", default: "undefined", description: "Content/icon before the input"},
 		{name: "end", type: "Snippet", default: "undefined", description: "Content/icon after the input"}
 	]

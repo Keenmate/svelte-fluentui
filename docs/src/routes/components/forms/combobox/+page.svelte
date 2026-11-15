@@ -175,7 +175,7 @@
 
 	const properties: Property[] = [
 		{name: "id", type: "string", default: "generated", description: "Id of the input (also the label's for); generated when omitted"},
-		{name: "value", type: "string[]", default: "[]", description: "Selected value(s) (bindable)"},
+		{name: "value", type: "string[] | null", default: "undefined", description: "Selected value(s), always an array (bindable)"},
 		{name: "options", type: "OptionItem[]", default: "undefined", description: "Array of option items"},
 		{name: "multiple", type: "boolean", default: "false", description: "Multi-select: selected values render as removable chips and the input stays a filter. value/onChange carry the full array."},
 		{name: "closeOnSelect", type: "boolean", default: "!multiple", description: "Close the dropdown after a pick. Multi-select defaults to false (stays open so several can be chosen in a row); set true to close on each pick. Single-select always closes."},

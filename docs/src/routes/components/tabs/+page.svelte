@@ -36,11 +36,11 @@
 	]
 
 	const tabProperties: Property[] = [
-		{name: "id", type: "string", default: "undefined", description: "Unique ID"},
+		{name: "id", type: "string", default: "(required)", description: "Unique ID, matched against Tabs activeId"},
 		{name: "label", type: "string", default: "undefined", description: "Tab label text"},
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label"},
-		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the tab"},
-		{name: "labelEditable", type: "boolean", default: "false", description: "Allows inline editing of the tab label"},
+		{name: "disabled", type: "boolean", default: "false", description: "Disables the tab"},
+		{name: "labelEditable", type: "boolean", default: "false", description: "Allows inline editing of the tab label (contenteditable; edits are not reported back)"},
 		{name: "showClose", type: "boolean", default: "false", description: "Shows a close (×) button on the tab"},
 		{name: "visible", type: "boolean", default: "true", description: "Controls whether the tab is rendered"},
 		{name: "data", type: "Record<string, unknown>", default: "undefined", description: "Arbitrary data, passed back as tab.data in Tabs events and callbacks"},
@@ -56,7 +56,7 @@
 
 	const tabSlots: Property[] = [
 		{name: "icon", type: "Snippet", default: "undefined", description: "Optional icon slot rendered before the label"},
-		{name: "header", type: "Snippet", default: "undefined", description: "Fully custom header content (replaces the icon + label default)"},
+		{name: "header", type: "Snippet", default: "undefined", description: "Custom tab-button content; replaces the label (the icon snippet still renders before it)"},
 		{name: "content", type: "Snippet", default: "undefined", description: "Tab panel content"},
 		{name: "children", type: "Snippet", default: "undefined", description: "Panel content placed directly between the <Tab> tags, rendered after `content` (1.x: childContent)"}
 	]

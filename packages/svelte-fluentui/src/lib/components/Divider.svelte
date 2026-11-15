@@ -1,3 +1,11 @@
+<!--
+@component
+Wrapper for `<fluent-divider>`: a horizontal or vertical separator line.
+
+```svelte
+<Divider orientation="vertical" />
+```
+-->
 <script lang="ts" module>
 	import {fluentDivider} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -9,9 +17,13 @@
 	import type {Orientation, RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Extra class on `<fluent-divider>`. */
 		class?: string
+		/** Inline style on the divider. */
 		style?: string
+		/** Line direction (`orientation` attribute). Default: `horizontal`. */
 		orientation?: Orientation
+		/** `separator` (announced) or `presentation` (decorative) (`role` attribute). Default: `separator`. */
 		role?: "separator" | "presentation"
 	}
 

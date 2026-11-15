@@ -1,4 +1,12 @@
 <!--
+@component
+File picker with drag-and-drop, validation, a file list and an upload queue (progress, retry, chunking).
+
+```svelte
+<InputFile multiple bind:items maxFileSize={5 * 1024 * 1024} uploadCallback={uploadOne} />
+```
+-->
+<!--
  * InputFile Component
  * Inspired by FluentUI Blazor InputFile component
  * https://www.fluentui-blazor.net/InputFile
@@ -71,65 +79,84 @@
 	import {DEFAULT_LABELS} from "./InputFile.utils.js"
 
 	type Props = {
-		// Bindable rich state — source of truth.
+		/** The file list (status, progress, metadata) — the source of truth. Bindable. */
 		items?: InputFileItem[]
 
 		// Selection
+		/** Accepted types, as the native `accept` attribute (e.g. "image/*,.pdf"). */
 		accept?: string
+		/** Allow selecting more than one file. */
 		multiple?: boolean
+		/** Disable selecting, dropping and pasting. */
 		disabled?: boolean
+		/** Selector look: `card` (drop zone), `button` or `minimal`. Default: `card`. */
 		selectorAppearance?: InputFileSelectorAppearance
+		/** File list look: `list`, `chips`, `popover` or `none`. Default: `list`. */
 		listAppearance?: InputFileListAppearance
+		/** Size of the `card` selector. Default: `medium`. */
 		cardSize?: InputFileCardSize
-		// Only meaningful when listAppearance === "chips" — picks where the chip
-		// pile sits relative to the selector. "end" flows chips alongside the
-		// selector (RTL-friendly trailing axis); "below" puts them on their own
-		// row underneath. Default "end" for back-compat with the prior layout.
+		/** `listAppearance="chips"` only: `end` flows the chips beside the selector, `bottom`
+		 * puts them on their own row underneath. Default: `bottom`. */
 		chipsPosition?: InputFileChipsPosition
 
-		// Drag-expand: when an external file is dragged anywhere on the document
-		// (or on `expandOnDragTarget` if provided), an overlay covers the
-		// selector with a `large` layout that acts as a larger drop target.
-		// No layout shift — the overlay is rendered above content via portal.
+		/** While an external file is dragged over the page, cover the selector (or
+		 * `expandOnDragTarget`) with a large portalled drop overlay — no layout shift. */
 		expandOnDrag?: boolean
+		/** Element (or CSS selector) the `expandOnDrag` overlay covers. Default: the selector. */
 		expandOnDragTarget?: HTMLElement | string
 
-		// Initial state (alternative to bind:items for one-shot seeding).
+		/** Items appended once on mount (one-shot seeding instead of `bind:items`). */
 		initialItems?: InputFileItem[]
 
 		// Validation
+		/** Max size per file, in bytes; 0 = no limit. Default: 10 MB. */
 		maxFileSize?: number
+		/** Min size per file, in bytes; 0 = no limit. */
 		minFileSize?: number
+		/** Max combined size of the accepted files, in bytes; 0 = no limit. */
 		totalMaxSize?: number
+		/** Max number of files in the list; 0 = no limit. Default: 10. */
 		maxFileCount?: number
+		/** Min number of files for the list to be valid (see `onValidityChange`). */
 		minFileCount?: number
+		/** Extra per-file check; return an error message to reject, or nothing to accept. May be async. */
 		customValidator?: InputFileValidator
+		/** Where rejected files go: `list` (shown as error rows), `callback` (only `onFileError`), `silent`. Default: `list`. */
 		rejectionMode?: InputFileRejectionMode
+		/** Reject duplicates by `name`, `name-size` or content `hash`; `false` allows them. Default: `false`. */
 		dedupe?: InputFileDedupeMode
 
 		// Upload mechanics
 		/** Uploads one file (or chunk). Return `{metadata, downloadUrl, …}` to merge into the item. */
 		uploadCallback?: FileUploadHandler
+		/** Start uploading as soon as files are added (otherwise via "Upload all"). Default: `true`. */
 		autoUpload?: boolean
+		/** Max parallel uploads. Default: 1. */
 		concurrency?: number
+		/** Retries for a failed upload: `{attempts, delayMs (default 1000), backoff (default 2)}`. Default: no retry. */
 		retryPolicy?: InputFileRetryPolicy
+		/** Split files into chunks of this many bytes (each passed to `uploadCallback` as `chunk`). Default: whole file. */
 		chunkSize?: number
 
 		// UX
+		/** Show image thumbnails in the list. Default: `true`. */
 		showThumbnails?: boolean
+		/** Accept files pasted from the clipboard. Default: `true`. */
 		pasteFromClipboard?: boolean
+		/** Accept dropped folders (their files are added recursively). */
 		allowFolderDrop?: boolean
+		/** Let the user reorder list rows by dragging. */
 		allowReorder?: boolean
+		/** Show at most this many rows, with a "Show more" toggle. Default: all. */
 		maxVisibleFileCount?: number
+		/** Max height of the file list before it scrolls (number = px). */
 		listMaxHeight?: string | number
 
-		// i18n
+		/** Overrides for the built-in UI texts (partial; merged over the English defaults). */
 		labels?: Partial<InputFileLabels>
 
-		// Limits hint composition. When provided and returns a non-empty string,
-		// replaces ALL per-limit hint lines (max/min size, max/min files) with a
-		// single composed message under the Browse button. The Accepted-types
-		// line is unaffected.
+		/** Compose the limits hint under the selector. A non-empty result replaces all per-limit
+		 * lines (max/min size, max/min files); the accepted-types line is unaffected. */
 		formatLimits?: (info: {
 			minFileSize: number
 			maxFileSize: number
@@ -145,9 +172,13 @@
 		}) => string | null | undefined
 
 		// a11y
+		/** Id of the hidden native file input. */
 		id?: string
+		/** Accessible name of the component (root `role="group"`). */
 		"aria-label"?: string
+		/** Id(s) of elements describing the component. */
 		"aria-describedby"?: string
+		/** Id(s) of elements labelling the component. */
 		"aria-labelledby"?: string
 
 		// Callbacks
@@ -174,7 +205,9 @@
 		onFileRemove?: (ctx: {file: InputFileItem}) => void
 
 		// Snippets
+		/** Replace the selector content; receives `{openFileDialog, isDragging}`. */
 		dropZone?: Snippet<[{openFileDialog: () => void; isDragging: boolean}]>
+		/** Replace a file row; receives the item and its `remove` / `retry` / `pause` / `resume` / `cancel` actions. */
 		fileItem?: Snippet<
 			[
 				{
@@ -189,6 +222,7 @@
 		>
 		/** Rendered in the file list area when there are no files (`listAppearance="list"`). */
 		empty?: Snippet
+		/** Replace the file-list header actions; receives `{clearAll, uploadAll, pauseAll, resumeAll, retryAll}`. */
 		actions?: Snippet<[{
 			clearAll: () => void
 			uploadAll: () => Promise<void>
@@ -197,7 +231,9 @@
 			retryAll: () => Promise<void>
 		}]>
 
+		/** Extra class on the root. */
 		class?: string
+		/** Inline style on the root. */
 		style?: string
 	}
 

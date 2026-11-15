@@ -1,3 +1,11 @@
+<!-- @component
+A navigation link row (`NavItem` + `NavLink`) for `NavMenu` / `NavGroup`.
+
+```svelte
+<NavLinkItem href="/settings">{#snippet icon()}<Icon name="settings" />{/snippet}Settings</NavLinkItem>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import NavItem from "./NavItem.svelte"
@@ -6,17 +14,27 @@
 	import type {HTMLAnchorAttributes} from "svelte/elements"
 
 	type OwnProps = {
+		/** Link URL; without it the link renders as a `<div>`. */
 		href?: string
+		/** Link `rel` (only with `href`). */
 		rel?: string
+		/** Link `target`. */
 		target?: string
+		/** Native tooltip on the link (useful in a collapsed menu). */
 		title?: string
+		/** Dims the item and sets `aria-disabled`. */
 		disabled?: boolean
+		/** Style the row as a group header. */
 		group?: boolean
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
+		/** Icon before the text. */
 		icon?: Snippet
+		/** Content after the text (badge, …). */
 		afterText?: Snippet
+		/** Link text. */
 		children?: Snippet
+		/** Svelte action applied to the link element on mount (e.g. a router's link action). */
 		linkAction?: (node: HTMLElement) => void
 		/**
 		 * Attributes and events for the inner link element (the `<a>`, or `<div>`

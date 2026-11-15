@@ -1,3 +1,11 @@
+<!-- @component
+Labelled `role="group"` section of `<Option>` rows inside a Select or Combobox listbox. The header is skipped by keyboard navigation and filtering.
+
+```svelte
+<OptionGroup label="Fruits"><Option value="apple">Apple</Option></OptionGroup>
+```
+-->
+
 <!--
  * OptionGroup Component
  *
@@ -25,8 +33,11 @@
 	type OwnProps = {
 		/** Group heading text. */
 		label?: string
+		/** Extra CSS class on the group `<div>`. */
 		class?: string
+		/** Inline style on the group `<div>`. */
 		style?: string
+		/** The group's `<Option>` rows. */
 		children: Snippet
 	}
 

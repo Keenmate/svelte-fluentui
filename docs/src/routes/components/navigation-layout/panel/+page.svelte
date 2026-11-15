@@ -24,12 +24,13 @@
 		{name: "overlay", type: "boolean", default: "true", description: "Render a dimmed backdrop behind the panel"},
 		{name: "closeOnOutsideClick", type: "boolean", default: "true", description: "Close the panel when the user clicks outside it (overlay click when overlay is on, document click when overlay is off)"},
 		{name: "closeOnEscape", type: "boolean", default: "true", description: "Close the panel when Escape is pressed"},
+		{name: "pinned", type: "boolean", default: "false", description: "Render in place as a static <aside> (no portal, overlay, Escape or outside-click handling)"},
 		{name: "class", type: "string", default: "undefined", description: "Additional CSS class on the root"},
 		{name: "style", type: "string", default: "undefined", description: "Inline style appended on the panel surface"}
 	]
 
 	const panelCallbacks: Property[] = [
-		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the user closes the panel (overlay, Escape, outside click, close button)"}
+		{name: "onOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the user closes the panel (overlay, Escape, outside click)"}
 	]
 
 	const panelSlots: Property[] = [

@@ -1,3 +1,11 @@
+<!-- @component
+Three-section `[icon][label][button]` chip for notification pills, status + count or dismissible chips.
+
+```svelte
+<CompositeBadge color="success" onButtonClick={remove}>{#snippet label()}Approved{/snippet}</CompositeBadge>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
@@ -15,6 +23,7 @@
 	type CompositeColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark"
 
 	type OwnProps = {
+		/** Palette colour for all sections. Default: `"primary"`. */
 		color?: CompositeColor
 		/** Override only the label (middle) section colour. */
 		labelColor?: CompositeColor
@@ -26,7 +35,7 @@
 		label?: Snippet
 		/** Button content (right section). Defaults to a `×` dismiss glyph. */
 		button?: Snippet
-		/** Render the button section. */
+		/** Render the button section. Default: `true`. */
 		showButton?: boolean
 		/** Accessible title/tooltip for the button. */
 		buttonTitle?: string
@@ -34,7 +43,9 @@
 		onLabelClick?: (ctx: {sourceEvent: MouseEvent}) => void
 		/** Fires when the user clicks the button section. */
 		onButtonClick?: (ctx: {sourceEvent: MouseEvent}) => void
+		/** Extra classes for the root `<div>`. */
 		class?: string
+		/** Inline style for the root `<div>`. */
 		style?: string
 	}
 

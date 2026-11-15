@@ -1,3 +1,7 @@
+<!--
+@component
+Wrapper for `<fluent-data-grid-cell>`: one cell inside a `DataGridRow`.
+-->
 <script lang="ts" module>
 	import {fluentDataGridCell} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -11,15 +15,25 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Extra class on `<fluent-data-grid-cell>`. */
 		class?: string
+		/** Inline style on the cell. */
 		style?: string
+		/** 1-based grid column the cell occupies (`grid-column` attribute). */
 		gridColumn?: number | string
+		/** `columnheader` styles the cell as a header (`cell-type` attribute). Default: `default`. */
 		cellType?: "default" | "columnheader"
+		/** Column index (`col-index` attribute). */
 		colIndex?: number
+		/** ARIA role override (e.g. `columnheader`, `gridcell`). */
 		role?: string
+		/** `tabindex` of the cell. */
 		tabIndex?: number
+		/** Tooltip (`title`). */
 		title?: string
+		/** Accessible name (`aria-label`). */
 		ariaLabel?: string
+		/** Cell content. */
 		children?: Snippet
 	}
 

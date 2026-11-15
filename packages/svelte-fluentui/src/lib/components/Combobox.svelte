@@ -1,4 +1,13 @@
 <!--
+@component
+Editable single- or multi-select combobox: a filtering text input plus a portalled listbox.
+Options come from `options` or `<Option>` children; `value` is always an array.
+
+```svelte
+<Combobox label="City" bind:value options={[{value: "prg", label: "Prague"}, {value: "brn", label: "Brno"}]} />
+```
+-->
+<!--
  * Combobox Component (rewrite)
  *
  * Custom single-select combobox that replaces the previous <fluent-combobox>
@@ -54,30 +63,49 @@
 	type OwnProps = {
 		/** Id of the input (also the label's `for`). Generated when omitted. */
 		id?: string
+		/** Selected value(s), always an array (one item in single-select). Bindable. */
 		value?: SelectedValue
+		/** Options as data (`{value, label, disabled?, group?}`); alternative to `<Option>` children. Items with `group` render under an `OptionGroup` header. */
 		options?: OptionItem[]
+		/** `<Option>` / `<OptionGroup>` children. */
 		children?: Snippet
+		/** `list` filters the dropdown, `inline` completes the input to the first match, `both` does both, `none` neither. Default: `list`. */
 		autocomplete?: "inline" | "list" | "both" | "none"
+		/** Whether the dropdown is open. Bindable. */
 		open?: boolean
 		/** Read-only bindable mirror of the text currently in the input (the typed
 		 * filter while searching, otherwise the selected option's label). Writes are ignored. */
 		currentValue?: string
+		/** Input placeholder text. */
 		placeholder?: string
+		/** Force the dropdown above (`top`) or below (`bottom`) the control. Default: auto (where it fits). */
 		position?: "top" | "bottom"
+		/** Disable the control. */
 		disabled?: boolean
 		/** Non-editable: the value shows but can't be changed (no typing, no opening,
 		 * chips can't be removed). Unlike `disabled`, it stays focusable and un-dimmed. */
 		readonly?: boolean
+		/** Visual style of the control. Default: `outline`. */
 		appearance?: "outline" | "filled"
+		/** Mark the input as required (also shows the label's required marker). */
 		required?: boolean
+		/** Focus the input on mount. */
 		autofocus?: boolean
+		/** Form field name. */
 		name?: string
+		/** Extra class on the control. */
 		class?: string
+		/** Inline style on the control. */
 		style?: string
+		/** Text label rendered above the control. */
 		label?: string
+		/** Custom label content; replaces `label`. */
 		labelTemplate?: Snippet
+		/** Accessible name for the input. Default: `label`. */
 		ariaLabel?: string
+		/** Tooltip (`title`) on the control. */
 		title?: string
+		/** Width of the control (inline style, e.g. "240px"). */
 		width?: string
 		/** Explicit height of the control (inline style, e.g. "40px"). */
 		height?: string
@@ -98,11 +126,12 @@
 		 * to close on each multi-select pick. Single-select always closes. */
 		closeOnSelect?: boolean
 		/** Multi-select only: where the selected-value chips render. `inline` (default)
-		 * keeps them inside the control; `above`/`below` render them as a wrapping row
+		 * keeps them inside the control; `top`/`bottom` render them as a wrapping row
 		 * outside the control (matching Autocomplete's `tagsPosition`). */
 		tagsPosition?: "inline" | "top" | "bottom"
+		/** Minimum typed characters before the dropdown opens / filters (and `onSearch` fires). Default: no minimum. */
 		minSearchLength?: number
-		/** Text shown inside the dropdown when the filter matches no options. */
+		/** Text shown inside the dropdown when the filter matches no options. Default: "No results found". */
 		emptyText?: string
 		/** Custom content shown when the filter matches no options; overrides `emptyText`. */
 		empty?: Snippet
@@ -110,7 +139,7 @@
 		 * owns the data: update `options` with the results and the component skips
 		 * its own client-side filtering (the server/parent already filtered). */
 		onSearch?: (ctx: {term: string}) => void
-		/** Debounce (ms) before `onSearch` fires. Ignored without `onSearch`. */
+		/** Debounce (ms) before `onSearch` fires. Ignored without `onSearch`. Default: 250. */
 		searchDelay?: number
 		/** How the built-in search compares text: `normalized` (default) ignores case and
 		 * diacritics (`zurich` finds `Zürich`), `case-insensitive` ignores case only, `exact`
@@ -121,7 +150,7 @@
 		/** Parent-controlled loading flag (for async `onSearch`). While true the
 		 * dropdown shows `loadingText` instead of the empty-state message. */
 		loading?: boolean
-		/** Text shown while `loading` is true. */
+		/** Text shown while `loading` is true. Default: "Searching…". */
 		loadingText?: string
 		/** Single-select: text the input shows for a `value` no rendered option has (e.g. a
 		 * result of an earlier async search). Default: empty. */

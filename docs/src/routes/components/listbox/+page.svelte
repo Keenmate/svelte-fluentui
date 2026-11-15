@@ -17,8 +17,8 @@
 		{name: "name", type: "string", default: "undefined", description: "Form field name"},
 		{name: "label", type: "string", default: "undefined", description: "Label text displayed above the listbox"},
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label (aria-label)"},
-		{name: "width", type: "string", default: "undefined", description: "Component width (e.g., '300px', '100%')"},
-		{name: "height", type: "string", default: "undefined", description: "Component height (e.g., '200px')"},
+		{name: "width", type: "string", default: '"100%"', description: "Component width (e.g., '300px', '100%')"},
+		{name: "height", type: "string", default: "undefined", description: "Intended max height; currently no visual effect (<fluent-listbox> 2.6 has no max-height hook)"},
 		{name: "size", type: "number", default: "undefined", description: "Number of visible options"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"}

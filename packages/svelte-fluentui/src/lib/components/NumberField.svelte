@@ -1,3 +1,11 @@
+<!-- @component
+Wrapper for `<fluent-number-field>`: a numeric input with optional step buttons and a label.
+
+```svelte
+<NumberField label="Quantity" bind:value={qty} min={0} max={10} />
+```
+-->
+
 <script lang="ts" module>
 	import {fluentNumberField} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -12,35 +20,63 @@
 	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
 
 	type OwnProps = {
+		/** Id of the field (also the label's `for`). */
 		id?: string | null | undefined;
 		/** Numeric value; `null` when the field is empty. The underlying element's string value is converted at the boundary. */
 		value?: number | null;
+		/** Placeholder text (`placeholder` attribute). */
 		placeholder?: string;
+		/** Visual style (`appearance` attribute). Default: `outline` (element default). */
 		appearance?: "outline" | "filled";
+		/** Disables the field (`disabled` attribute). */
 		disabled?: boolean;
+		/** Makes the field read-only (`readonly` attribute). */
 		readonly?: boolean;
+		/** Marks the field as required (`required` attribute). */
 		required?: boolean;
+		/** Form field name (`name` attribute). */
 		name?: string;
+		/** Text rendered in a `<label>` above the field; also used as `aria-label` when `ariaLabel` is unset. */
 		label?: string;
+		/** Custom label content, rendered after `label`. */
 		labelTemplate?: Snippet | null | undefined;
+		/** Focus the field on mount (`autofocus` attribute). */
 		autofocus?: boolean;
+		/** Browser autofill hint, applied to the inner shadow `<input>`. Default: `off`. */
 		autocomplete?: string;
+		/** Increment used by the step buttons and arrow keys (`step` attribute). Default: `1` (element default). */
 		step?: number;
+		/** Minimum value (`min` attribute); the element clamps to it. */
 		min?: number;
+		/** Maximum value (`max` attribute); the element clamps to it. */
 		max?: number;
+		/** Minimum text length (`minlength` attribute). */
 		minlength?: number;
+		/** Maximum text length (`maxlength` attribute). */
 		maxlength?: number;
+		/** Visible width in characters (`size` attribute). */
 		size?: number;
+		/** Id of a `<datalist>` with suggestions (`list` attribute). */
 		list?: string;
+		/** Hide the step up/down buttons (`hide-step` attribute). */
 		hideStep?: boolean;
+		/** Accessible name (`aria-label`); falls back to `label`. */
 		ariaLabel?: string;
+		/** Tooltip text (`title` attribute). */
 		title?: string;
+		/** CSS width, appended to `style`. */
 		width?: string;
+		/** CSS height, appended to `style`. */
 		height?: string;
+		/** Extra CSS class on `<fluent-number-field>`. */
 		class?: string;
+		/** Inline style on `<fluent-number-field>`. */
 		style?: string;
+		/** Default slot of `<fluent-number-field>` (its built-in label part, hidden by this wrapper's CSS); use `label` / `labelTemplate`. */
 		children?: Snippet;
+		/** Content in the element's `start` slot (before the input). */
 		start?: Snippet;
+		/** Content in the element's `end` slot (after the input). */
 		end?: Snippet;
 
 		/** Fires when the user commits a value (blur / Enter / step buttons). The live value is `bind:value`. */

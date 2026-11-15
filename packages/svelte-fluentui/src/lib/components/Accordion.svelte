@@ -1,3 +1,13 @@
+<!-- @component
+Stack of collapsible panels; owns which `<AccordionItem>`s are expanded.
+
+```svelte
+<Accordion bind:value multiple>
+	<AccordionItem id="a" heading="First">…</AccordionItem>
+</Accordion>
+```
+-->
+
 <!--
  * Accordion Component (custom implementation)
  *
@@ -33,6 +43,7 @@
 		/** Gap between accordion items (any CSS length, e.g. "0.5rem"). Defaults
 		 * to the FluentUI spacing. */
 		gap?: string
+		/** `<AccordionItem>` children. */
 		children?: Snippet
 		/** Fires when the user expands or collapses an item; carries the new `value`. */
 		onChange?: (ctx: {value: ValueType}) => void

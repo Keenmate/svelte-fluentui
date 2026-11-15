@@ -26,8 +26,3 @@ export function attrs(record: Record<string, AttrValue>): Record<string, string 
 	}
 	return result
 }
-
-/** A boolean attribute: present (`""`) when true, absent (`null`) otherwise. */
-export function boolAttr(value: boolean | null | undefined): "" | null {
-	return value ? "" : null
-}

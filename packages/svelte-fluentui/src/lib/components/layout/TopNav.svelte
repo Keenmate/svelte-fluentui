@@ -1,3 +1,14 @@
+<!-- @component
+Responsive top navigation bar: brand, items and an action area; below 960px (container width) the
+items collapse into a hamburger-toggled drawer (`Panel`).
+
+```svelte
+<TopNav brand="Contoso" items={[{text: "Home", href: "/"}, {text: "Docs", href: "/docs"}]}>
+	<Button>Sign in</Button>
+</TopNav>
+```
+-->
+
 <script lang="ts" module>
 	import type {ActionEventDetail, ActionItem} from "../../action-items/index.js"
 
@@ -30,23 +41,37 @@
 	type CollapseMode = "auto" | "always" | "never"
 
 	type OwnProps = {
+		/** Brand text at the start of the bar (ignored with `brandTemplate`). Default: `"Brand"`. */
 		brand?: string
+		/** URL of the brand link (ignored with `brandTemplate`). Default: `"/"`. */
 		brandHref?: string
+		/** Replaces the brand link (logo, badges, …). */
 		brandTemplate?: Snippet
 		/** Bar items (links and/or actions); they move into the drawer when the bar collapses. */
 		items?: TopNavItem[]
+		/** Action area after the items (search, account menu, …); stays visible at every width. */
 		children?: Snippet
+		/** Drawer-only nav groups: `{title, icon, items: {label, href}[]}` (`icon` is rendered as text). */
 		navigationGroups?: NavGroupItem[]
+		/** Custom drawer content after items and groups; receives a `close` function. */
 		drawerContent?: Snippet<[close: () => void]>
+		/** `"auto"` collapses below a 960px container width; `"always"` / `"never"` force it. Default: `"auto"`. */
 		collapse?: CollapseMode
+		/** Show the drawer as a pinned, in-flow rail that stays open across link clicks. Default: `false`. */
 		drawerPinned?: boolean
+		/** Drawer width (any CSS length). Default: `"280px"`. */
 		drawerWidth?: string
+		/** Bar height in px; the drawer starts below it. Default: `60`. */
 		height?: number
+		/** Hamburger button size in px. Default: `42`. */
 		menuToggleSize?: number
+		/** Replaces the hamburger button; receives `{open, toggle}`. */
 		menuToggleTemplate?: Snippet<[{open: boolean; toggle: () => void}]>
+		/** Extra CSS classes on the root `<nav>`. */
 		class?: string
+		/** Inline style appended after the computed height. */
 		style?: string
-		/** Fires after an item ran (its `onClick`, or the navigation started). */
+		/** Fires after an item ran (its `onClick`, or the navigation started); `detail` = `{action, id, item, source, sourceEvent, triggerElement}`. */
 		onAction?: (detail: TopNavActionDetail) => void
 		/** Called before an item runs or navigates; return `false` (or a Promise resolving to `false`) to cancel. */
 		beforeActionCallback?: (detail: TopNavActionDetail) => unknown

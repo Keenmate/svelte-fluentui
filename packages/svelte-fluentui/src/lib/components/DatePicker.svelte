@@ -1,4 +1,12 @@
 <!--
+@component
+Date input with a calendar popup; `value` is a `Date` (or `null`).
+
+```svelte
+<DatePicker label="Due date" bind:value={due} minDate={new Date()} />
+```
+-->
+<!--
  * DatePicker Component
  * Inspired by FluentUI Blazor DatePicker component
  * https://www.fluentui-blazor.net/DateTime
@@ -21,19 +29,33 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Id of the input (also the label's `for`). */
 		id?: string
+		/** Selected date (`null` when empty). Bindable. */
 		value?: Date | null
+		/** Input placeholder. Default: "Select a date". */
 		placeholder?: string
+		/** Disable the input and the popup. */
 		disabled?: boolean
+		/** Show the value but don't allow changing it (no popup, no clear). */
 		readonly?: boolean
+		/** Mark the input as required. */
 		required?: boolean
+		/** Focus the input on mount. */
 		autofocus?: boolean
+		/** Text label above the input. */
 		label?: string
+		/** Custom label content, rendered after `label`. */
 		labelTemplate?: Snippet
+		/** TextField appearance (`outline` / `filled`). */
 		appearance?: string
+		/** Locale for formatting and calendar names. Default: browser locale. */
 		culture?: Intl.Locale
+		/** How the date is shown in the input. Default: `{year: "numeric", month: "long", day: "numeric"}`. */
 		dateFormat?: Intl.DateTimeFormatOptions
+		/** Earliest selectable day (inclusive, compared by day). */
 		minDate?: Date
+		/** Latest selectable day (inclusive, compared by day). */
 		maxDate?: Date
 		/** Return `true` to disable a date (composes with minDate/maxDate and getIsDateSelectableCallback). */
 		getIsDateDisabledCallback?: (ctx: {date: Date}) => boolean
@@ -59,9 +81,13 @@
 		openOnInputClick?: boolean
 		/** Bindable open state of the calendar popup. */
 		open?: boolean
+		/** Accessible name of the calendar icon button. Default: "Open calendar". */
 		openCalendarIconAriaLabel?: string
+		/** Tooltip (`title`) on the input. */
 		title?: string
+		/** Extra class on the root. */
 		class?: string
+		/** Inline style on the root. */
 		style?: string
 		/** Custom render for each day cell in the calendar popup. Receives CalendarDay properties. */
 		day?: Snippet<[day: CalendarDay]>

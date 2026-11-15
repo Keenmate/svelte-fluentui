@@ -1,3 +1,11 @@
+<!-- @component
+Floating hint shown on hover / focus of the element whose id is `anchor`; positioned with floating-ui and portalled to `<body>`.
+
+```svelte
+<Button id="save-btn">Save</Button>
+<Tooltip anchor="save-btn" position="bottom">Save the document</Tooltip>
+```
+-->
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {onMount, onDestroy, untrack} from "svelte"
@@ -19,7 +27,9 @@
 	type PhysicalSide = "top" | "bottom" | "left" | "right"
 
 	type OwnProps = {
+		/** Extra CSS class on the tooltip element. */
 		class?: string
+		/** Inline style on the tooltip element. */
 		style?: string
 		/**
 		 * Visibility. Leave `undefined` (the default) for hover/focus-driven
@@ -30,12 +40,13 @@
 		visible?: boolean
 		/** HTML id of the element the tooltip is positioned relative to. */
 		anchor?: string
-		/** Delay before showing on hover (default 250ms). */
+		/** Delay before showing on hover, in ms. Default: `250`. */
 		delay?: number
-		/** Preferred placement; flips to opposite if no room. */
+		/** Preferred placement; flips to the opposite side if there's no room. Default: `"top"`. */
 		position?: Position
+		/** Tooltip content. */
 		children?: Snippet
-		/** Max width for wrapping long content. */
+		/** Max width (CSS length) at which long content wraps. */
 		maxWidth?: string
 	}
 

@@ -1,3 +1,11 @@
+<!-- @component
+Single-line text input wrapping `<fluent-text-field>`; `bind:value` is a string. The instance exposes
+`select()`, `checkValidity()`, `reportValidity()`, `setCustomValidity()` and `setSelectionRange()`.
+
+```svelte
+<TextField label="Email" type="email" required bind:value={email} />
+```
+-->
 <script lang="ts" module>
 	import {fluentTextField} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -12,18 +20,31 @@
 	import {setAutocompleteOnShadowInput, setAttributeOnShadowInput} from "../utils/shadow-dom.js"
 
 	type OwnProps = {
+		/** Id of `<fluent-text-field>` (also the label's `for`). */
 		id?: string | null | undefined
+		/** Text value (bindable; updates on every keystroke). */
 		value?: string | null | undefined
+		/** Hint text shown while empty (`placeholder` attribute). */
 		placeholder?: string | null | undefined
+		/** Visual style (`appearance` attribute): `"outline"` or `"filled"`. Default: `"outline"` (FluentUI default). */
 		appearance?: string | null | undefined
+		/** Disables the field (`disabled` attribute). */
 		disabled?: boolean | null | undefined
+		/** Text shows but can't be edited (`readonly` attribute). */
 		readonly?: boolean | null | undefined
+		/** Marks the field required for form validation (`required` attribute). */
 		required?: boolean | null | undefined
+		/** Input type (`type` attribute): `text`, `email`, `password`, `tel`, `url`. Default: `"text"`. */
 		type?: string | null | undefined
+		/** Form field name (`name` attribute). */
 		name?: string | null | undefined
+		/** Visible label text rendered above the field; also the `aria-label`. */
 		label?: string | null | undefined
+		/** Custom label markup, rendered after `label` inside the `<label>`. */
 		labelTemplate?: Snippet | null | undefined
+		/** Focus on mount (`autofocus` attribute). */
 		autofocus?: boolean | null | undefined
+		/** Autofill hint (`autocomplete`), also applied to the inner shadow `<input>`. Default: `"off"`. */
 		autocomplete?: string | null | undefined
 		/** Max length of the typed value. Forwarded to the shadow-DOM `<input>` since fluent-text-field doesn't expose it. */
 		maxlength?: number | null | undefined
@@ -31,14 +52,18 @@
 		minlength?: number | null | undefined
 		/** Regex pattern attribute on the inner `<input>` — participates in native form validity (ValidityState.patternMismatch). */
 		pattern?: string | null | undefined
+		/** Content slotted into `<fluent-text-field>` (its default slot is the built-in label). */
 		children?: Snippet | null | undefined
 		/** Leading content (icon, prefix) rendered inside the input via the underlying `<fluent-text-field>`'s `start` slot. */
 		start?: Snippet | null | undefined
 		/** Trailing content (icon, suffix, action) rendered inside the input via the underlying `<fluent-text-field>`'s `end` slot. */
 		end?: Snippet | null | undefined
+		/** Inline style on `<fluent-text-field>`. */
 		style?: string | null | undefined
+		/** Tooltip text (`title` attribute). */
 		title?: string | null | undefined
 
+		/** Not a real option — passing it only spreads it onto the element. Call the instance method `setSelectionRange()` instead. */
 		setSelectionRange?: (
 			start: number,
 			end: number,

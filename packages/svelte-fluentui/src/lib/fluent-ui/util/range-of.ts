@@ -84,14 +84,6 @@ export class RangeOf<T> {
 		return this.isStartLowerThanEnd() ? this.end : this.start
 	}
 
-	// Compare two values of type T (assuming T has a 'compareTo' method or we can use a custom comparison)
-	// virtual compare(a: T, b: T): number {
-	// 	if (typeof a === "number" && typeof b === "number") {
-	// 		return a - b
-	// 	}
-	// 	throw new Error("Comparison not implemented for this type")
-	// }
-
 	// Helper method to check if start is lower than end
 	private isStartLowerThanEnd(): boolean {
 		return this.start !== null && this.end !== null && this.compare(this.start, this.end) < 0

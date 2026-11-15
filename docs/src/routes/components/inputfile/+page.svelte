@@ -41,6 +41,7 @@
 		{name: "selectorAppearance", type: "\"card\" | \"button\" | \"minimal\"", default: "\"card\"", description: "Visual variant of the file picker (drop-zone card, plain button, or compact icon)."},
 		{name: "listAppearance", type: "\"list\" | \"chips\" | \"popover\" | \"none\"", default: "\"list\"", description: "How the selected files are displayed: vertical rows, inline chips, anchored popover, or hidden."},
 		{name: "cardSize", type: "\"small\" | \"medium\" | \"large\"", default: "\"medium\"", description: "Card density when selectorAppearance=\"card\". small=single line, medium=horizontal row + wrapping hints, large=full vertical showcase."},
+		{name: "chipsPosition", type: "\"end\" | \"bottom\"", default: "\"bottom\"", description: "listAppearance=\"chips\" only: chips beside the selector (end) or on their own row below it."},
 		{name: "expandOnDrag", type: "boolean", default: "false", description: "When true, an overlay covers the selector (or `expandOnDragTarget`) with a `large` drop layout as soon as a file is dragged anywhere on the document. No layout shift — overlay is portalled above content."},
 		{name: "expandOnDragTarget", type: "HTMLElement | string", default: "undefined", description: "CSS selector or element ref the drag-expand overlay should cover. Defaults to the selector itself. Use to size the overlay to a parent form/section."},
 		{name: "maxFileSize", type: "number", default: "10485760", description: "Max bytes per file (default 10MB)."},
@@ -60,8 +61,10 @@
 		{name: "pasteFromClipboard", type: "boolean", default: "true", description: "Accept files pasted via Ctrl+V."},
 		{name: "allowFolderDrop", type: "boolean", default: "false", description: "Recursively traverse dropped folders."},
 		{name: "allowReorder", type: "boolean", default: "false", description: "Drag-to-reorder file rows."},
+		{name: "maxVisibleFileCount", type: "number", default: "undefined (all)", description: "Show at most this many rows, with a Show more / Show less toggle."},
+		{name: "listMaxHeight", type: "string | number", default: "undefined", description: "Max height of the file list before it scrolls (number = px)."},
 		{name: "labels", type: "Partial<InputFileLabels>", default: "undefined", description: "Override any built-in string for i18n."},
-		{name: "formatLimits", type: "(info) => string | null", default: "undefined", description: "Compose the limits hint shown under Browse. Receives {minFileSize, maxFileSize, totalMaxSize, maxFileCount, minFileCount, multiple} (maxFileSize is per file). Replaces ALL size/count lines; the Accepted-types line is unaffected. Return null/empty to keep the default per-limit lines."},
+		{name: "formatLimits", type: "(info) => string | null", default: "undefined", description: "Compose the limits hint shown under Browse. Receives {minFileSize, maxFileSize, totalMaxSize, maxFileCount, minFileCount, multiple, currentCount, currentTotalSize} (maxFileSize is per file). Replaces ALL size/count lines; the Accepted-types line is unaffected. Return null/empty to keep the default per-limit lines."},
 		{name: "id / aria-label / aria-describedby / aria-labelledby", type: "string", default: "undefined", description: "Standard a11y plumbing. Pair id with <Field id=\"\"> for label-for."},
 		{name: "class", type: "string", default: "\"\"", description: "Additional CSS classes."},
 		{name: "style", type: "string", default: "\"\"", description: "Inline styles."}
@@ -80,7 +83,7 @@
 	const slots: Property[] = [
 		{name: "dropZone", type: "Snippet<[{openFileDialog, isDragging}]>", default: "undefined", description: "Replace the default drop zone content."},
 		{name: "fileItem", type: "Snippet<[{item, remove, retry, pause, resume, cancel}]>", default: "undefined", description: "Replace the default file row renderer."},
-		{name: "actions", type: "Snippet<[{clearAll, uploadAll}]>", default: "undefined", description: "Replace the file-list header actions."},
+		{name: "actions", type: "Snippet<[{clearAll, uploadAll, pauseAll, resumeAll, retryAll}]>", default: "undefined", description: "Replace the file-list header actions."},
 		{name: "empty", type: "Snippet", default: "undefined", description: "Rendered when items is empty."}
 	]
 
@@ -94,6 +97,7 @@
 		{name: "pause(id)", type: "void", default: "—", description: "Pause an in-flight upload (aborts current request)."},
 		{name: "resume(id)", type: "Promise<void>", default: "—", description: "Resume a paused upload."},
 		{name: "cancel(id)", type: "void", default: "—", description: "Cancel an in-flight upload (no resume)."},
+		{name: "pauseAll() / resumeAll() / retryAll()", type: "void / Promise<void>", default: "—", description: "Pause every uploading file, resume every paused one, or retry every failed one."},
 		{name: "openPicker()", type: "void", default: "—", description: "Open the native file dialog."},
 		{name: "getItems()", type: "InputFileItem[]", default: "—", description: "Snapshot of current items."}
 	]

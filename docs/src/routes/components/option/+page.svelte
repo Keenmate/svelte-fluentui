@@ -13,10 +13,12 @@
 
 	const properties: Property[] = [
 		{name: "value", type: "string", default: "required", description: "Option value"},
-		{name: "label", type: "string", default: "undefined", description: "Optional display label"},
+		{name: "label", type: "string", default: "undefined", description: "Text used for filtering, type-ahead and the trigger display (default: the rendered text)"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disable the option"},
 		{name: "selected", type: "boolean", default: "undefined", description: "Force selection"},
-		{name: "style", type: "string", default: '""', description: "Custom inline styles"}
+		{name: "style", type: "string", default: "undefined", description: "Custom inline styles"},
+		{name: "class", type: "string", default: "undefined", description: "Extra CSS class on the option row"},
+		{name: "data", type: "Record<string, unknown>", default: "undefined", description: "Arbitrary context data, reported with the selection (Select onChange option.data)"}
 	]
 
 	const actions: Property[] = []
@@ -27,7 +29,8 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "any", default: "undefined", description: "Option label content"}
+		{name: "children", type: "Snippet", default: "required", description: "Option label content"},
+		{name: "icon", type: "Snippet", default: "undefined", description: "Icon rendered before the option text"}
 	]
 
 	const propertyColumns = [

@@ -1,3 +1,13 @@
+<!-- @component
+Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children. Supports keyboard nav, swipe, close buttons and scroll / wrap / menu overflow.
+
+```svelte
+<Tabs bind:activeId responsive="menu">
+	<Tab id="one" label="One">First panel</Tab>
+	<Tab id="two" label="Two">Second panel</Tab>
+</Tabs>
+```
+-->
 <!--
  * Tabs
  *
@@ -29,11 +39,17 @@
 	import TabsOverflowMenu from "./tabs/TabsOverflowMenu.svelte"
 
 	type OwnProps = {
+		/** Id of the root element. */
 		id?: string
+		/** Extra CSS class on the root element. */
 		class?: string
+		/** Inline style on the root element. */
 		style?: string
+		/** Tab strip direction. Default: `"horizontal"`. */
 		orientation?: Orientation
+		/** Id of the active tab (bindable). Defaults to the first visible tab. Assigning it directly bypasses `beforeLeaveCallback`. */
 		activeId?: string
+		/** Shows the animated underline (side bar when vertical) under the active tab. Default: `true`. */
 		showActiveIndicator?: boolean
 		/** The `<Tab>` elements, placed directly between the `<Tabs>` tags. */
 		children?: Snippet
@@ -44,7 +60,7 @@
 		 *  - `menu`: tabs that don't fit collapse into an overflow `⋯` button at the end of the strip. Clicking the button opens a floating menu of the hidden tabs. Selecting a hidden tab swaps its position with the last-visible tab so the selection stays visible.
 		 */
 		responsive?: "scroll" | "wrap" | "menu"
-		/** Stretch tabs to fill the strip (each tab takes an equal share). */
+		/** Stretch tabs to fill the strip (each tab takes an equal share). Default: `false`. */
 		justify?: boolean
 		/**
 		 * Fixed width for the tab strip (CSS length — `"200px"`, `"12rem"`, `"20%"`, etc.).
@@ -62,7 +78,7 @@
 		 * multi-line tab content). Rarely needed.
 		 */
 		stripHeight?: string
-		/** Enable horizontal-swipe (or vertical-swipe in vertical orientation) to navigate between tabs. Default `true`. Swipes starting on interactive elements (input, button, slider, contenteditable) are ignored so form controls keep working. */
+		/** Enable horizontal-swipe (or vertical-swipe in vertical orientation) to navigate between tabs. Default: `true`. Swipes starting on interactive elements (input, button, slider, contenteditable) are ignored so form controls keep working. */
 		swipe?: boolean
 		/** Fires when the user activates another tab. `tab` is the newly active one. */
 		onActiveIdChange?: (ctx: {activeId: string; oldActiveId: string | undefined; tab: TabInfo}) => void

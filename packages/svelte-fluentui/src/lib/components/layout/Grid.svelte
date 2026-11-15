@@ -1,3 +1,12 @@
+<!-- @component
+Responsive 12-column grid (flex mode) of `GridItem`s, or an equal-column CSS grid when `columns` is set.
+Breakpoints resolve against the viewport, or a container with `container`.
+
+```svelte
+<Grid spacing={2}><GridItem xs={12} md={6}>A</GridItem><GridItem xs={12} md={6}>B</GridItem></Grid>
+```
+-->
+
 <script module lang="ts">
 	// Module-scoped counter for auto-generated self-container names (used when a
 	// Grid has per-Grid `containerBreakpoints` but no explicit `containerId`).
@@ -9,36 +18,44 @@
 	import {gridContext} from "../../contexts.js"
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../../types/index.js"
-	import {onMount, onDestroy} from "svelte"
+	import {onMount} from "svelte"
 	import {getEffectiveBreakpoints, type GridBreakpoints} from "./containerQueries.js"
 
 	type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly"
 	type GridItemSize = "xs" | "sm" | "md" | "lg" | "xl" | "xxl"
 
 	type OwnProps = {
+		/** `GridItem`s and other cells. */
 		children?: Snippet
+		/** Gutter step between items, 1–10 (4px × step per side). Flex mode only. Default: `3`. */
 		spacing?: number
+		/** `justify-content` of the items. Flex mode only. Default: `"flex-start"`. */
 		justify?: JustifyContent
+		/** Render only the items that define a span for the grid's current breakpoint (measured from the
+		 * grid's own width, which is only observed while `onBreakpointChange` is set). Default: `false`. */
 		adaptiveRendering?: boolean
-		// Opt into container-query sizing: child GridItem xs/sm/md/… breakpoints
-		// resolve against a container's width instead of the viewport. When
-		// `containerId` is omitted the Grid marks itself as the query container
-		// (children size against the Grid). When set, children size against the
-		// nearest ancestor declaring `container-name: <containerId>` instead.
+		/** Opt into container-query sizing: child GridItem xs/sm/md/… breakpoints resolve against a
+		 * container's width instead of the viewport. Without `containerId` the Grid itself is the
+		 * query container. Default: `false`. */
 		container?: boolean
+		/** With `container`: size children against the nearest ancestor declaring
+		 * `container-name: <containerId>` instead of the Grid. */
 		containerId?: string
-		// Per-Grid breakpoint override (px). Falls back to the app-wide config
-		// (configureGridBreakpoints / --fluent-grid-breakpoint-* vars) and then the
-		// built-in defaults. Only meaningful with `container`.
+		/** Per-Grid breakpoint override (px). Falls back to the app-wide config
+		 * (`configureGridBreakpoints` / `--fluent-grid-breakpoint-*` vars), then the built-in
+		 * defaults. Only meaningful with `container`. */
 		containerBreakpoints?: Partial<GridBreakpoints>
-		// When set, switches from 12-column flex mode to CSS grid mode:
-		// `repeat(columns, 1fr)` tracks with a fixed `gap`. Children no longer
-		// need xs/sm/md breakpoint props; each cell is an equal column.
+		/** Switches from 12-column flex mode to CSS grid mode with N equal tracks; children need
+		 * no xs/sm/md props and fill one cell each. */
 		columns?: number
+		/** Gap between cells in `columns` mode (any CSS length); ignored in flex mode. Default: `"1rem"`. */
 		gap?: string
-		/** Fires when the grid's width crosses into another breakpoint. */
+		/** Fires when the grid's own width crosses into another breakpoint (xs < 600, sm < 960, md < 1280,
+		 * lg < 1920, xl < 2560, else xxl px); `ctx.breakpoint` is the new one. */
 		onBreakpointChange?: (ctx: {breakpoint: GridItemSize}) => void
+		/** Extra CSS classes on the outer `grid-container`. */
 		class?: string
+		/** Inline style on the outer `grid-container`. */
 		style?: string
 	}
 

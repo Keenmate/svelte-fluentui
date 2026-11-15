@@ -1,3 +1,11 @@
+<!-- @component
+Vertical (or horizontal) application bar of `AppBarItem` icon links.
+
+```svelte
+<AppBar><AppBarItem href="/inbox" count={3}>{#snippet icon()}<Icon name="mail" />{/snippet}Inbox</AppBarItem></AppBar>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {Orientation, RestProps} from "../../types/index.js"
@@ -5,8 +13,11 @@
 	import {classList} from "../../helpers/html.js"
 
 	type OwnProps = {
+		/** Bar direction. Default: `"vertical"`. */
 		orientation?: Orientation
+		/** `AppBarItem`s. */
 		children?: Snippet
+		/** Extra CSS classes. */
 		class?: string
 	}
 

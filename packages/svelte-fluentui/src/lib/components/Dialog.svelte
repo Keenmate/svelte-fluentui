@@ -119,6 +119,16 @@
 	export type DialogCloseReason = "escape" | "close-button" | "overlay" | "dismiss" | "action"
 </script>
 
+<!--
+@component
+Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a footer with optional primary / secondary actions.
+
+```svelte
+<Dialog bind:open modal title="Delete item?" primaryAction={{text: "Delete", onClick: remove}} secondaryAction={{text: "Cancel"}}>
+	This can't be undone.
+</Dialog>
+```
+-->
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import {onDestroy} from "svelte"
@@ -130,16 +140,23 @@
 
 
 	type OwnProps = {
+		/** Modal dialog: locks page scroll while open (`modal` on `<fluent-dialog>`). */
 		modal?: boolean
 		/** Whether the dialog is open (bindable). */
 		open?: boolean
+		/** Hide the × button and ignore overlay clicks and Escape. */
 		preventClose?: boolean
+		/** Render a "Dismiss" button in the footer (label via `dismissButtonText`). */
 		dismissible?: boolean
+		/** Keep Tab focus inside the dialog (`trapFocus` on `<fluent-dialog>`). Default: `true`; `false` disables it. */
 		trapFocus?: boolean
+		/** Id of the element describing the dialog (`aria-describedby`). */
 		ariaDescribedby?: string
+		/** Id of the element labelling the dialog (`aria-labelledby`). */
 		ariaLabelledby?: string
+		/** Accessible name of the dialog (`aria-label`). */
 		ariaLabel?: string
-		/** Title text shown in the header row (left side). Ignored when `header` snippet is provided. */
+		/** Title text shown in the header row (start side). Ignored when `header` snippet is provided. */
 		title?: string
 		/** Fully custom header content (replaces the default title + close button row). */
 		header?: Snippet
@@ -147,11 +164,13 @@
 		children?: Snippet
 		/** Fully custom footer content (replaces primary/secondary action buttons and the legacy `actions` slot). */
 		footer?: Snippet
-		/** Convenience action — renders as a styled button (default `appearance="accent"`) on the right side of the footer. */
+		/** Convenience action — renders as a styled button (default `appearance="accent"`) at the end of the footer. */
 		primaryAction?: DialogAction
 		/** Convenience action — renders as a styled button (default `appearance="neutral"`) next to the primary action. */
 		secondaryAction?: DialogAction
+		/** Extra footer content rendered before the Dismiss / action buttons. Ignored when `footer` is set. */
 		actions?: Snippet
+		/** Label of the `dismissible` button. Default: "Dismiss". */
 		dismissButtonText?: Snippet
 		/** Fires when the dialog opens or closes. */
 		onOpenChange?: (ctx: {open: boolean}) => void
@@ -165,11 +184,17 @@
 		 * Not called for `hide()` from code.
 		 */
 		beforeCloseCallback?: (ctx: {reason: DialogCloseReason}) => unknown
+		/** Close on Escape (topmost layer only). Default: `true`. */
 		closeOnEscape?: boolean
+		/** Preset size: 400 / 600 / 800 / 1000 px wide, or `full` (90vw × 90vh). Default: `medium`. */
 		size?: "small" | "medium" | "large" | "extra-large" | "full"
+		/** CSS width; overrides the `size` width. */
 		width?: string
+		/** CSS height; overrides the `size` height (`auto` for presets). */
 		height?: string
+		/** Extra class on `<fluent-dialog>`. */
 		class?: string
+		/** Inline style on `<fluent-dialog>`. */
 		style?: string
 	}
 

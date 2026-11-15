@@ -1,3 +1,10 @@
+<!-- @component
+Multi-line text input wrapping `<fluent-text-area>`; `bind:value` is a string. Call `focus()` on the instance to focus it.
+
+```svelte
+<Textarea label="Comments" rows={4} resize="vertical" bind:value={comments} />
+```
+-->
 <script lang="ts" module>
 	import {fluentTextArea} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -23,30 +30,55 @@
 			: (undefined as unknown as CSSStyleSheet)
 
 	type OwnProps = {
+		/** Extra CSS class on `<fluent-text-area>`. */
 		class?: string
+		/** Inline style on `<fluent-text-area>`. */
 		style?: string
+		/** Text shows but can't be edited (`readonly` attribute). */
 		readonly?: boolean
+		/** Which directions the user can drag-resize (`resize` attribute). Default: no resize handle. */
 		resize?: "none" | "both" | "horizontal" | "vertical"
+		/** Focus on mount (`autofocus` attribute). */
 		autofocus?: boolean
+		/** Autofill hint, applied to the inner shadow `<textarea>`. Default: `"off"`. */
 		autocomplete?: string
+		/** Id of the `<form>` the field belongs to (`form` attribute). */
 		form?: string
+		/** Id of a `<datalist>` with suggestions (`list` attribute). */
 		list?: string
+		/** Maximum length in characters (`maxlength` attribute). */
 		maxlength?: number
+		/** Minimum length in characters (`minlength` attribute). */
 		minlength?: number
+		/** Hint text shown while empty (`placeholder` attribute). */
 		placeholder?: string
+		/** Visible width in characters (`cols` attribute); the host then shrinks to fit. */
 		cols?: number
+		/** Visible height in text lines (`rows` attribute). */
 		rows?: number
+		/** Browser spell checking (`spellcheck` attribute). Default: browser default. */
 		spellcheck?: boolean
+		/** Id of `<fluent-text-area>` (also the label's `for`). */
 		id?: string
+		/** Form field name (`name` attribute). */
 		name?: string
+		/** Disables the field (`disabled` attribute). */
 		disabled?: boolean
+		/** Marks the field required for form validation (`required` attribute). */
 		required?: boolean
+		/** Visual style (`appearance` attribute). Default: `"outline"` (FluentUI default). */
 		appearance?: "outline" | "filled"
+		/** Text content (bindable; updates on every keystroke). */
 		value?: string
+		/** Visible label text rendered above the field. */
 		label?: string
+		/** Accessible name (`aria-label`). */
 		ariaLabel?: string
+		/** Stretch to the container's width (ignored when `cols` is set). Default: `false`. */
 		fullWidth?: boolean
+		/** Custom label markup, rendered after `label` inside the `<label>`. */
 		labelTemplate?: Snippet
+		/** Content slotted into `<fluent-text-area>` (its default slot is the built-in label). */
 		children?: Snippet
 		/** Fires when the user commits an edit (blur / change). The live value is `bind:value`. */
 		onChange?: (ctx: {value: string}) => void

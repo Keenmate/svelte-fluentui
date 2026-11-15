@@ -1,3 +1,13 @@
+<!-- @component
+A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div role="option">`). Selection comes from the parent's `selected-options` context.
+
+```svelte
+<Select bind:value>
+	<Option value="cz">Czechia</Option>
+</Select>
+```
+-->
+
 <!--
  * Option Component
  *
@@ -24,17 +34,25 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Value written to the parent's selection when this option is picked. */
 		value: string
+		/** Text used for filtering, type-ahead and the trigger display. Default: the rendered text. */
 		label?: string
+		/** Extra CSS class on the row. */
 		class?: string
+		/** Inline style on the row. */
 		style?: string
+		/** Native `click` on the row, called after the context selection toggled (not called when disabled). */
 		onclick?: (ev: MouseEvent) => void
+		/** Force the selected state; when unset it is derived from the parent's selection. */
 		selected?: boolean
+		/** Option can't be highlighted or selected. Default: `false`. */
 		disabled?: boolean
-		/** Arbitrary context data passed to onchange when this option is selected */
+		/** Arbitrary context data, reported as `option.data` in the parent's `onChange` when this option is picked. */
 		data?: Record<string, unknown>
 		/** Icon slot rendered before option text */
 		icon?: Snippet
+		/** Row content (the option's display text). */
 		children: Snippet
 	}
 

@@ -24,6 +24,7 @@
 	}
 
 	const properties: Property[] = [
+		{name: "id", type: "string", default: "undefined", description: "Element id (also the label's for)"},
 		{name: "value", type: "string", default: "undefined", description: "Input value (bindable)"},
 		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder text"},
 		{name: "appearance", type: '"outline" | "filled"', default: "undefined", description: "Visual style"},
@@ -37,7 +38,9 @@
 		{name: "autocomplete", type: "string", default: '"off"', description: 'Browser autocomplete ("off", "on", "email", "username", etc.)'},
 		{name: "maxlength", type: "number", default: "undefined", description: "Max length of the typed value (forwarded to the shadow `<input>`; browser blocks further input)"},
 		{name: "minlength", type: "number", default: "undefined", description: "Min required length (forwarded to the shadow `<input>`; flags tooShort on validation)"},
-		{name: "pattern", type: "string", default: "undefined", description: "Regex the value must match; participates in native validity (patternMismatch)"}
+		{name: "pattern", type: "string", default: "undefined", description: "Regex the value must match; participates in native validity (patternMismatch)"},
+		{name: "style", type: "string", default: '""', description: "Inline style"},
+		{name: "title", type: "string", default: "undefined", description: "Tooltip text (title attribute)"}
 	]
 
 	const callbacks: Property[] = [
@@ -46,15 +49,17 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "Snippet", default: "undefined", description: "Additional content"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Additional content slotted into <fluent-text-field>"},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label markup"},
+		{name: "start", type: "Snippet", default: "undefined", description: "Leading content (icon, prefix) in the start slot"},
+		{name: "end", type: "Snippet", default: "undefined", description: "Trailing content (icon, suffix, action) in the end slot"}
 	]
 
 	const actions: Property[] = [
 		{name: "select", type: "() => void", default: "-", description: "Select all text"},
 		{name: "checkValidity", type: "() => boolean", default: "-", description: "Check form validity"},
 		{name: "reportValidity", type: "() => boolean", default: "-", description: "Report form validity"},
-		{name: "setCustomValidity", type: "(message: string) => any", default: "-", description: "Set custom validity message"},
-		{name: "setValidity", type: "(flags: any, message: any, anchor: any) => void", default: "-", description: "Set validity state"},
+		{name: "setCustomValidity", type: "(message: string) => void", default: "-", description: "Set custom validity message"},
 		{name: "setSelectionRange", type: "(start: number, end: number, direction?: \"forward\" | \"backward\" | \"none\") => void", default: "-", description: "Set text selection range"}
 	]
 

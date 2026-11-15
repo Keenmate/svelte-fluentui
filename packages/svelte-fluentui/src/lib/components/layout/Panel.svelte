@@ -1,3 +1,11 @@
+<!-- @component
+Slide-in side panel (drawer) portalled to `<body>`, with optional backdrop; or, with `pinned`, an in-flow `<aside>`.
+
+```svelte
+<Panel bind:open side="end" width="400px">…</Panel>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {pushLayer} from "../../helpers/layer-stack.js"
@@ -6,18 +14,29 @@
 	type Side = "start" | "end"
 
 	type Props = {
+		/** Whether the panel is shown. Bindable. Default: `false`. */
 		open?: boolean
+		/** Edge it slides in from; follows the writing direction. Default: `"end"`. */
 		side?: Side
+		/** Panel width (any CSS length). Default: `"320px"`. */
 		width?: string
+		/** Top offset of panel + backdrop (any CSS length), keeping e.g. a top nav above it usable. Default: `"0"`. */
 		top?: string
+		/** Render a backdrop behind the panel (clicking it closes). Default: `true`. */
 		overlay?: boolean
+		/** Close on a backdrop click, or on any click outside the panel when `overlay` is off. Default: `true`. */
 		closeOnOutsideClick?: boolean
+		/** Close on Escape (when it is the topmost layer). Default: `true`. */
 		closeOnEscape?: boolean
+		/** Render in place as a static `<aside>` (no portal, backdrop, Escape or outside-click). Default: `false`. */
 		pinned?: boolean
-		/** Fires when the user closes the panel (Escape, overlay, outside click, close button). */
+		/** Fires when the user closes the panel (Escape, backdrop or outside click); `ctx` = `{open: false}`. */
 		onOpenChange?: (ctx: {open: boolean}) => void
+		/** Panel content; header/body/footer are up to you. */
 		children?: Snippet
+		/** Extra CSS classes on the root (the `<aside>` when pinned). */
 		class?: string
+		/** Inline style on the panel surface, after `width`. */
 		style?: string
 	}
 

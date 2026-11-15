@@ -27,7 +27,7 @@
 		{name: "type", type: "string", default: "undefined", description: "Hint of the linked resource's MIME type"},
 		{name: "appearance", type: '"neutral" | "accent" | "hypertext" | "stealth" | "transparent"', default: "undefined", description: "Visual style variant"},
 		{name: "preventDefault", type: "boolean", default: "false", description: "Prevent default navigation behavior"},
-		{name: "use", type: "(node: HTMLAnchorElement) => any", default: "undefined", description: "Svelte action applied to the anchor element"},
+		{name: "use", type: "(node: HTMLElement) => any", default: "undefined", description: "Svelte action applied to the inner shadow-DOM <a> element"},
 		{name: "...rest", type: "HTMLAnchorAttributes", default: "-", description: "Other native and anchor attributes (title, aria-*, data-*, …) and DOM events (lowercase onkeydown, …) are forwarded untouched to fluent-anchor"}
 	]
 

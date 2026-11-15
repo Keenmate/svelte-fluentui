@@ -1,7 +1,16 @@
+<!-- @component
+Flex spacer: a fixed-width gap, or (without `width`) grows to push siblings apart.
+
+```svelte
+<Stack orientation="horizontal"><span>Left</span><Spacer /><span>Right</span></Stack>
+```
+-->
+
 <script lang="ts">
 	import type {RestProps} from "../../types/index.js"
 
 	type OwnProps = {
+		/** Fixed width in px (the value gets a `px` suffix). Omit to grow and fill the free space (`flex: 1`). */
 		width?: string | number
 	}
 

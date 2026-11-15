@@ -1,3 +1,11 @@
+<!-- @component
+Flex-wrap container that hides child badges past `maxVisibleBadgeCount`, optionally with a built-in "+N more" toggle.
+
+```svelte
+<BadgeGroup maxVisibleBadgeCount={3} expandable>{#each tags as t}<Badge>{t}</Badge>{/each}</BadgeGroup>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
@@ -20,20 +28,23 @@
 	 */
 
 	type OwnProps = {
-		/** Max badges shown before the overflow is hidden. */
+		/** Max badges shown before the overflow is hidden. Default: 5. */
 		maxVisibleBadgeCount?: number
 		/** Reveal all children, ignoring `maxVisibleBadgeCount`. Bindable; the expandable toggle writes it. */
 		showAll?: boolean
 		/** Render a built-in clickable "+N more" / "Show less" toggle. */
 		expandable?: boolean
-		/** Label for the collapsed toggle. */
+		/** Label for the collapsed toggle; receives the hidden count. Default: `+N more`. */
 		moreLabel?: (hiddenCount: number) => string
-		/** Label for the expanded toggle. */
+		/** Label for the expanded toggle. Default: `"Show less"`. */
 		lessLabel?: string
-		/** Gap between badges (any CSS length). */
+		/** Gap between badges (any CSS length). Default: `"0.5rem"`. */
 		gap?: string
+		/** The badges. */
 		children?: Snippet
+		/** Extra classes for the root `<div>`. */
 		class?: string
+		/** Inline style for the root `<div>`. */
 		style?: string
 	}
 

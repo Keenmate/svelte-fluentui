@@ -1,3 +1,12 @@
+<!-- @component
+Renders the toasts queued through the `toast` store (`toast.success(…)`, `toast.error(…)`, …) at their positions,
+in the browser top layer. Takes no props; mount it once, e.g. in the root layout.
+
+```svelte
+<ToastContainer />
+<Button onclick={() => toast.success("Saved")}>Save</Button>
+```
+-->
 <script lang="ts">
 	import {toast, type ToastInstance, type ToastPosition} from "../stores/toast.js"
 	import {onDestroy} from "svelte"

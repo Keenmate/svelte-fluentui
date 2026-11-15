@@ -1,14 +1,29 @@
+<!-- @component
+Content container with FluentUI layer background, border and shadow.
+
+```svelte
+<Card width={320}>Content</Card>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Width; a number is px, a string any CSS length. */
 		width?: string | number
+		/** Height; a number is px, a string any CSS length. */
 		height?: string | number
+		/** Clip content and scroll (`overflow: auto`) instead of letting it overflow. */
 		areaRestricted?: boolean
+		/** Extra classes for the root `<div>`. */
 		class?: string
+		/** Inline style for the root `<div>` (`width`/`height` are appended). */
 		style?: string
+		/** Drop border, shadow and background — padding only. */
 		minimalStyle?: boolean
+		/** Card content. */
 		children?: Snippet
 	}
 

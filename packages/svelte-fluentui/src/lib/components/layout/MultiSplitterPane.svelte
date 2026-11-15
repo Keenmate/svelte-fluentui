@@ -1,3 +1,11 @@
+<!-- @component
+One pane of a `MultiSplitter`; renders its trailing gutter (except the last pane).
+
+```svelte
+<MultiSplitterPane size="250px" min="150px" minimize>…</MultiSplitterPane>
+```
+-->
+
 <!--
  * MultiSplitterPane
  *
@@ -22,6 +30,7 @@
 	import type {RestProps} from "../../types/index.js"
 
 	type OwnProps = {
+		/** Pane content. */
 		children?: Snippet
 		/** Initial size: "200px" or "30%". If omitted, shares leftover with other unsized panes. */
 		size?: string
@@ -29,9 +38,11 @@
 		min?: string
 		/** Max size: "400px" or "50%". Default unbounded. */
 		max?: string
-		/** If true, pane can collapse to a rail. */
+		/** Pane can collapse to a rail (drag past the threshold, double-click the gutter, or a `data-multisplitter-toggle` element). Default: `false`. */
 		minimize?: boolean
+		/** Extra CSS classes on the pane element. */
 		class?: string
+		/** Inline style on the pane element. */
 		style?: string
 		/** Native `click` event on the pane, forwarded untouched. */
 		onclick?: (event: MouseEvent) => void

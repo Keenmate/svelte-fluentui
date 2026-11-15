@@ -65,7 +65,7 @@
 
 	const fieldProps: Prop[] = [
 		{name: "label", type: "string", default: "undefined", description: "Visible label rendered above the slotted control. Omit to render no label."},
-		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Snippet alternative to label, for custom label content (icons, links, etc.)."},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label content (icons, links, etc.), rendered after label inside the same <label>."},
 		{name: "required", type: "boolean", default: "false", description: "Renders a red asterisk after the label. Visual only — does not enforce validation; the inner control's own required prop handles that."},
 		{name: "hint", type: "string", default: "undefined", description: "Helper text rendered below the slotted control in neutral color. Hidden automatically when validationMessage is shown."},
 		{name: "validationState", type: '"none" | "warning" | "error" | "success"', default: '"none"', description: "Drives the message color and the inner-control border color via the data-state attribute."},

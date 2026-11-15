@@ -1,21 +1,41 @@
+<!-- @component
+Flexbox container laying its children out vertically or horizontally with gap and alignment.
+
+```svelte
+<Stack orientation="horizontal" gap="8px" verticalAlign="center">…</Stack>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {Orientation, RestProps} from "../../types/index.js"
 
 	type OwnProps = {
+		/** Stacked items. */
 		children?: Snippet
+		/** Flex direction. Default: `"vertical"`. */
 		orientation?: Orientation
+		/** Horizontal alignment (main axis when horizontal, cross axis when vertical — `space-*` only applies on the main axis). */
 		horizontalAlign?: "start" | "center" | "end" | "stretch" | "space-between" | "space-around"
+		/** Vertical alignment (main axis when vertical, cross axis when horizontal — `space-*` only applies on the main axis). */
 		verticalAlign?: "start" | "center" | "end" | "stretch" | "space-between" | "space-around"
+		/** CSS `row-gap` (any CSS length). */
 		verticalGap?: string
+		/** CSS `column-gap` (any CSS length). */
 		horizontalGap?: string
+		/** CSS `gap` for both axes (any CSS length), e.g. `"8px"`. */
 		gap?: string
+		/** CSS width of the stack. */
 		width?: string
+		/** CSS height of the stack. */
 		height?: string
+		/** Reverse the item order (`row-reverse` / `column-reverse`). Default: `false`. */
 		reversed?: boolean
 		/** Allow children to wrap onto multiple lines when they overflow the main axis. */
 		wrap?: boolean
+		/** Extra CSS classes. */
 		class?: string
+		/** Inline style for the root `<div>`. */
 		style?: string
 	}
 

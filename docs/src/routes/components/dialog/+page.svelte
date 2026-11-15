@@ -32,19 +32,24 @@
 		{name: "preventClose", type: "boolean", default: "false", description: "Hide the close button and ignore Escape / overlay clicks"},
 		{name: "primaryAction / secondaryAction", type: "DialogAction", default: "undefined", description: "Footer buttons: {text, icon?, isDisabled?, onClick?, appearance?, shouldCloseOnClick? (default true)} — the dialog closes after the action ran"},
 		{name: "dismissible", type: "boolean", default: "false", description: "Show dismiss button"},
-		{name: "trapFocus", type: "boolean", default: "undefined", description: "Trap focus"},
+		{name: "trapFocus", type: "boolean", default: "undefined (on)", description: "Trap Tab focus inside the open dialog; false disables it"},
+		{name: "title", type: "string", default: "undefined", description: "Title text in the header row (ignored when the header snippet is set)"},
+		{name: "closeOnEscape", type: "boolean", default: "true", description: "Close on Escape (topmost layer only)"},
 		{name: "size", type: '"small" | "medium" | "large" | "extra-large" | "full"', default: '"medium"', description: "Predefined dialog size"},
 		{name: "width", type: "string", default: "undefined", description: "Custom width (overrides size)"},
 		{name: "height", type: "string", default: "undefined", description: "Custom height (overrides size)"},
 		{name: "ariaDescribedby", type: "string", default: "undefined", description: "Accessibility: described by"},
 		{name: "ariaLabelledby", type: "string", default: "undefined", description: "Accessibility: labelled by"},
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label"},
+		{name: "class", type: "string", default: "undefined", description: "Extra class on fluent-dialog"},
+		{name: "style", type: "string", default: "undefined", description: "Inline style on fluent-dialog"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-dialog"}
 	]
 
 	const actions: Property[] = [
 		{name: "show", type: "() => void", default: "-", description: "Show the dialog"},
-		{name: "hide", type: "() => void", default: "-", description: "Hide the dialog"}
+		{name: "hide", type: "() => void", default: "-", description: "Hide the dialog"},
+		{name: "toggle", type: "() => void", default: "-", description: "Toggle the dialog"}
 	]
 
 	const callbacks: Property[] = [
@@ -55,9 +60,11 @@
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "any", default: "undefined", description: "Dialog content"},
-		{name: "actions", type: "any", default: "undefined", description: "Action buttons"},
-		{name: "dismissButtonText", type: "any", default: "undefined", description: "Dismiss button text"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Dialog content"},
+		{name: "header", type: "Snippet", default: "undefined", description: "Custom header content (replaces the title + close button row)"},
+		{name: "footer", type: "Snippet", default: "undefined", description: "Custom footer content (replaces actions, Dismiss and the primary/secondary buttons)"},
+		{name: "actions", type: "Snippet", default: "undefined", description: "Extra footer content before the Dismiss / action buttons"},
+		{name: "dismissButtonText", type: "Snippet", default: "undefined", description: "Label of the dismissible button (default \"Dismiss\")"}
 	]
 
 	const propertyColumns = [

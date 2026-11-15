@@ -1,3 +1,10 @@
+<!-- @component
+On/off toggle wrapping `<fluent-switch>`; `bind:checked` is a boolean.
+
+```svelte
+<Switch label="Notifications" bind:checked={enabled} checkedMessage="On" uncheckedMessage="Off" />
+```
+-->
 <script lang="ts" module>
 	import {fluentSwitch} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -12,25 +19,41 @@
 	import type {NativeEventHandler, RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Extra CSS class on `<fluent-switch>`. */
 		class?: string
+		/** Inline style on `<fluent-switch>`. */
 		style?: string
+		/** State shows but can't be toggled (`readonly` attribute). */
 		readonly?: boolean
+		/** Id of `<fluent-switch>` (also the label's `for`). Generated when omitted. */
 		id?: string
+		/** Disables the switch (`disabled` attribute). */
 		disabled?: boolean
+		/** Focus on mount (`autofocus` attribute). */
 		autofocus?: boolean
+		/** Form field name (`name` attribute). */
 		name?: string
+		/** Accessible name (`aria-label`). Default: `label`. */
 		ariaLabel?: string
+		/** Visible label text; clicking it toggles the switch. */
 		label?: string
+		/** Label placement: stacked above (`"top"`) or beside the toggle (`"start"`). Default: `"top"`. */
 		labelPosition?: "top" | "start"
+		/** On/off state (bindable; `checked` attribute). */
 		checked?: boolean
+		/** Marks the field required for form validation (`required` attribute). */
 		required?: boolean
+		/** Text or snippet shown next to the toggle while on (`checked-message` slot). */
 		checkedMessage?: string | Snippet
+		/** Text or snippet shown next to the toggle while off (`unchecked-message` slot). */
 		uncheckedMessage?: string | Snippet
 		/** Fires when the switch is toggled. */
 		onChange?: (ctx: {checked: boolean}) => void
 		/** Native `change` event, forwarded untouched. */
 		onchange?: NativeEventHandler
+		/** Extra label content, rendered inside the `<label>` after `labelTemplate`. */
 		children?: Snippet
+		/** Custom label markup, rendered after `label` inside the `<label>`. */
 		labelTemplate?: Snippet
 	}
 

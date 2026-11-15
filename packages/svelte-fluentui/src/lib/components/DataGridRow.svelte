@@ -1,3 +1,7 @@
+<!--
+@component
+Wrapper for `<fluent-data-grid-row>`: one row of `DataGridCell`s inside a `DataGrid`.
+-->
 <script lang="ts" module>
 	import {fluentDataGridRow} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -11,10 +15,15 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Extra class on `<fluent-data-grid-row>`. */
 		class?: string;
+		/** Inline style on the row. */
 		style?: string;
+		/** Row index, rendered as `data-row-index`. */
 		rowIndex?: number;
+		/** Row kind: `default`, `header` or `sticky-header` (`row-type` attribute). */
 		rowType?: string;
+		/** `<DataGridCell>` children. */
 		children?: Snippet;
 	};
 

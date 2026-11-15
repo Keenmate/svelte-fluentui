@@ -11,7 +11,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "items", type: "MenuEntry[]", default: "[]", description: "Menu entries rendered as a dropdown when the button is clicked: items and {divider: true} separators."},
+		{name: "items", type: "MenuEntry[]", default: "— (required)", description: "Menu entries rendered as a dropdown when the button is clicked: items and {divider: true} separators."},
 		{name: "appearance", type: "string", default: "undefined", description: "Passed through to <fluent-button>. Options: 'accent', 'lightweight', 'outline', 'stealth', 'neutral'."},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disables both the trigger button and opening the menu."},
 		{name: "class", type: "string", default: '""', description: "Extra class on the button element."},

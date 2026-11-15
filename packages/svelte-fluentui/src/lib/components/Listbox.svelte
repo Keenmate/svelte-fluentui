@@ -1,3 +1,14 @@
+<!-- @component
+Wrapper for `<fluent-listbox>`: an always-visible list of `<Option>` children with single or multiple selection.
+
+```svelte
+<Listbox bind:value label="Fruit">
+	<Option value="apple">Apple</Option>
+	<Option value="pear">Pear</Option>
+</Listbox>
+```
+-->
+
 <script lang="ts" module>
 	import {fluentListbox} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -20,16 +31,27 @@
 		value?: ValueType
 		/** Allow selecting more than one option. */
 		multiple?: boolean
+		/** Disables the listbox (`disabled` attribute on `<fluent-listbox>`). */
 		disabled?: boolean
+		/** Focus the listbox on mount (`autofocus` attribute). */
 		autofocus?: boolean
+		/** Form field name (`name` attribute). */
 		name?: string
+		/** Text rendered in a `<label>` above the listbox. */
 		label?: string
+		/** Accessible name (`aria-label`) when there is no visible label. */
 		ariaLabel?: string
+		/** CSS width of the listbox. Default: `100%`. */
 		width?: string
+		/** Intended max height (CSS length). Currently has no visual effect — `<fluent-listbox>` 2.6 has no max-height hook. */
 		height?: string
+		/** Number of visible options (`size` attribute). */
 		size?: number
+		/** Extra CSS class on `<fluent-listbox>`. */
 		class?: string
+		/** Inline style, appended after the computed width. */
 		style?: string
+		/** `<Option>` children. */
 		children?: Snippet
 		/** Fires when the user selects or deselects an option. */
 		onChange?: (ctx: {value: ValueType}) => void
@@ -70,16 +92,6 @@
 		if (style) styles.push(style)
 		return styles.join('; ')
 	})
-
-	let element:
-		| (HTMLElement & {
-				length: number
-				value: any
-				selectedIndex: number
-				options: HTMLOptionElement[]
-				selectFirstOption: VoidFunction
-		  })
-		| undefined = $state()
 
 	// svelte-ignore state_referenced_locally
 	const selectedOptions = createSelectedOptions(value, multiple)
@@ -128,7 +140,6 @@
 {/if}
 <!-- svelte-ignore a11y_autofocus -->
 <fluent-listbox
-	bind:this={element}
 	{...rest}
 	{...attrs({disabled, autofocus, name, size})}
 	aria-label={ariaLabel || null}

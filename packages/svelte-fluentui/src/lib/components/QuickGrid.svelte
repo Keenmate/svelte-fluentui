@@ -1,3 +1,12 @@
+<!-- @component
+Data grid with client- or server-side sorting, filtering and paging, inline cell editing with
+validation, a row toolbar, a context menu and an optional tree mode. Model types live in `QuickGrid.types.ts`.
+
+```svelte
+<QuickGrid items={people} columns={[{field: "name", title: "Name", sortable: true}]} pageable pageSize={20} />
+```
+-->
+
 <script lang="ts" generics="T">
 	import {tick, untrack, onMount, onDestroy} from "svelte"
 	import GridCellEditor from "./GridCellEditor.svelte"
@@ -59,7 +68,9 @@
 	// Public model types live in QuickGrid.types.ts (exported from the package root).
 
 	type OwnProps<T> = {
+		/** Rows to display (in server paging mode: the current page). */
 		items: T[]
+		/** Column definitions (field, title, sort / filter / editor settings, templates). */
 		columns: Column<T>[]
 		/** `"none"` (default), `"single"`, or `"multiple"` (Ctrl / ⌘ + click adds a column). A column opts out with `sortable: false`. */
 		sortMode?: SortMode
@@ -82,7 +93,7 @@
 		pageable?: boolean
 		/** Bindable. Rows per page. */
 		pageSize?: number
-		/** Offer these page sizes in the pager. */
+		/** Offer these page sizes in the pager (the current `pageSize` is always included). Default: no selector. */
 		pageSizes?: number[]
 		/** Bindable. 1-based; brought back into range when the page count shrinks. */
 		currentPage?: number
@@ -100,7 +111,9 @@
 		onPageSizeChange?: (ctx: {pageSize: number}) => void
 		/** Fires when the displayed data should change — load it here in server mode. */
 		onDataRequest?: (detail: DataRequestDetail) => void
+		/** Alternate row background. Default: `true`. */
 		striped?: boolean
+		/** Highlight the row under the pointer. Default: `true`. */
 		hoverable?: boolean
 		/** When true, appends an empty filler column at the end of every row that absorbs any remaining
 		 *  horizontal space. Pair with per-column `width` / `minWidth` / `maxWidth` / `autoWidth` when you
@@ -110,26 +123,34 @@
 		 *  Useful with `fillerColumn` to stop content-sized columns from collapsing to a one-word column.
 		 *  Accepts any CSS length (e.g. `"100px"`, `"8rem"`). */
 		columnMinWidth?: string
+		/** Extra CSS class on the root container. */
 		class?: string
+		/** Inline style on the root container. */
 		style?: string
 		// Editing props
+		/** Enables cell editing (columns opt in / out with their own `editable`). Default: `false`. */
 		editable?: boolean
+		/** What puts a cell into edit mode: `click`, `dblclick`, `button`, `always` or `navigate`. Default: `dblclick`. */
 		editTrigger?: EditTrigger
-		dropdownShowOnFocus?: boolean  // Auto-show editor for dropdown types when cell is focused
-		// Row-level editability gate, evaluated before the column's: `false` here makes the
-		// whole row read-only (e.g. parent / category rows in a tree grid). Default `true`.
+		/** Open the dropdown editor (select / combobox / …) as soon as its cell gets focus. Default: `true`. */
+		dropdownShowOnFocus?: boolean
+		/** Row-level editability gate, evaluated before the column's: `false` makes the whole row
+		 *  read-only (e.g. parent / category rows in a tree grid). Default: `true`. */
 		rowEditable?: boolean
 		/** Per-row decision; wins over `rowEditable`. */
 		getIsRowEditableCallback?: (ctx: {row: T}) => boolean
-		checkboxAlwaysEditable?: boolean  // Make checkboxes always interactive, even in navigate mode
-		// Invalid cells state (bindable for external tracking)
+		/** Checkbox cells stay clickable even outside edit mode (e.g. in `navigate` mode). Default: `false`. */
+		checkboxAlwaysEditable?: boolean
+		/** Bindable. Cells whose last committed value failed validation. */
 		invalidCells?: CellValidationState[]
-		// Row toolbar (floating toolbar for row actions)
+		/** Shows the floating row toolbar (row actions). Default: `false`. */
 		showRowToolbar?: boolean
 		/** Toolbar entries: built-in names (`"add"`, `"delete"`, …), action items, `{divider: true}`. */
 		rowToolbar?: RowToolbarConfig<T>[]
-		toolbarAlign?: 'center' | 'top'  // Vertical alignment: center (default) or top (first row aligned with grid row)
-		toolbarTrigger?: 'hover' | 'click' | 'button'  // How to show toolbar: hover (default), click on row, or button in first column
+		/** Toolbar vertical alignment: `center` on the row, or `top` (first toolbar row aligned with the grid row). Default: `center`. */
+		toolbarAlign?: 'center' | 'top'
+		/** How the toolbar appears: `hover`, `click` on the row, or a `button` in the first column. Default: `hover`. */
+		toolbarTrigger?: 'hover' | 'click' | 'button'
 		// Context menu
 		/** Right-click menu entries: built-in names (`"expand-all"`, …), menu items, `{divider: true}`. */
 		contextMenu?: ContextMenuConfig<T>[]
@@ -142,14 +163,23 @@
 		 *  (`items.map(...)`). */
 		idMember?: keyof T
 		// Tree mode (ltree-style path hierarchy)
-		treePathMember?: keyof T              // Required to enable tree mode — field holding the path string ("1.2.3", "/1/2/3", "C:\\foo\\bar")
-		treeLevelMember?: keyof T             // Optional — pre-computed depth (0-based). Falls back to deriving from path.
-		treeParentMember?: keyof T            // Optional — pre-computed parent path. Falls back to deriving from path.
-		treeSeparator?: string                // Path separator. Auto-detected from first row if omitted.
-		treeDataSorted?: boolean              // True when the caller's order is final (parents before children): the grid never reorders, `sort` only reports. Default false → grid orders by path, siblings by `sort`.
-		expandedPaths?: Set<string>           // Bindable set of expanded paths; written back on every toggle.
-		defaultExpandDepth?: number           // Expansion depth for parents the grid hasn't seen yet (initially, and new ones in `items`). Omit to expand all.
-		treeDoubleClickBehavior?: "none" | "toggle"  // "toggle": double-clicking the tree column toggles expand/collapse on rows with children. Default "none".
+		/** Enables tree mode: field holding the path string (`"1.2.3"`, `"/1/2/3"`, `"C:\\foo\\bar"`). */
+		treePathMember?: keyof T
+		/** Pre-computed depth (0-based). Default: derived from the path. */
+		treeLevelMember?: keyof T
+		/** Pre-computed parent path. Default: derived from the path. */
+		treeParentMember?: keyof T
+		/** Path separator. Default: auto-detected from the first row. */
+		treeSeparator?: string
+		/** The caller's order is final (parents before children): the grid never reorders, `sort` only
+		 *  reports. Default: `false` — the grid orders by path, siblings by `sort`. */
+		treeDataSorted?: boolean
+		/** Bindable set of expanded paths; written back on every toggle. */
+		expandedPaths?: Set<string>
+		/** Expansion depth for parents the grid hasn't seen yet (initially, and new ones in `items`). Default: expand all. */
+		defaultExpandDepth?: number
+		/** `toggle`: double-clicking the tree column expands / collapses rows with children. Default: `none`. */
+		treeDoubleClickBehavior?: "none" | "toggle"
 		/** Fires on every filter input change with a copy of the `{field: value}` map. */
 		onFiltersChange?: (ctx: {filters: Record<string, string>}) => void
 		// Events

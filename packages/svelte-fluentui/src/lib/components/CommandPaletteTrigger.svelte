@@ -1,17 +1,26 @@
+<!--
+@component
+Search-field-styled button that opens a `CommandPalette`; shows a placeholder and the shortcut hint.
+
+```svelte
+<CommandPaletteTrigger onclick={() => (open = true)} />
+```
+-->
 <script lang="ts">
 	import Button from "./Button.svelte"
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
-		/** Placeholder text shown in the pill. */
+		/** Placeholder text shown in the pill. Default: "Search…". */
 		placeholder?: string
 		/**
 		 * Keyboard hint shown on the trailing side. Defaults to the platform's
 		 * command-palette shortcut (⌘K on Mac, Ctrl K elsewhere). Pass `null` to hide.
 		 */
 		shortcut?: string | null
-		/** Size variant, matching the library's input/button sizing. */
+		/** Size variant, matching the library's input/button sizing. Default: `medium`. */
 		size?: "small" | "medium" | "large"
+		/** Extra class on the button. */
 		class?: string
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (event: MouseEvent) => void

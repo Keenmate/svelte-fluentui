@@ -1,13 +1,21 @@
+<!-- @component
+Generic `role="menuitem"` row of a `NavMenu`; `NavLinkItem` and `NavGroup` build on it.
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../../types/index.js"
 
 	type OwnProps = {
+		/** Dims the item and sets `aria-disabled`. */
 		disabled?: boolean
+		/** Style the item as a group header (`fluent-nav-group`). */
 		group?: boolean
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
+		/** Item content. */
 		children?: Snippet
+		/** Extra CSS classes. */
 		class?: string
 	}
 
@@ -22,8 +30,6 @@
 		    class: className = undefined,
 		    ...rest
 	    }: Props = $props()
-
-	// const isInNavGroup = getContext<NavGroupSvelteContext>("nav-group")
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->

@@ -1,3 +1,14 @@
+<!-- @component
+Wrapper for `<fluent-breadcrumb>` — a trail of `<BreadcrumbItem>` links.
+
+```svelte
+<Breadcrumb>
+	<BreadcrumbItem href="/">Home</BreadcrumbItem>
+	<BreadcrumbItem>Current</BreadcrumbItem>
+</Breadcrumb>
+```
+-->
+
 <script lang="ts" module>
 	import {fluentBreadcrumb} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -10,6 +21,7 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** `<BreadcrumbItem>` children. */
 		children?: Snippet
 	}
 

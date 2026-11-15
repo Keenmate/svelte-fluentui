@@ -1,3 +1,13 @@
+<!--
+@component
+Wrapper for `<fluent-data-grid>`: a keyboard-navigable grid of `DataGridRow` / `DataGridCell` children.
+
+```svelte
+<DataGrid gridTemplateColumns="1fr 1fr">
+	<DataGridRow><DataGridCell gridColumn={1}>A</DataGridCell><DataGridCell gridColumn={2}>B</DataGridCell></DataGridRow>
+</DataGrid>
+```
+-->
 <script lang="ts" module>
 	import {fluentDataGrid} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -11,13 +21,21 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Extra class on `<fluent-data-grid>`. */
 		class?: string;
+		/** Inline style on `<fluent-data-grid>`. */
 		style?: string;
+		/** Element id. */
 		id?: string;
+		/** Total row count for assistive tech (`aria-rowcount`), e.g. when only a page is rendered. */
 		ariaRowCount?: number;
+		/** Auto-generated header row: `none`, `default` or `sticky` (`generate-header` attribute). */
 		generateHeader?: "none" | "default" | "sticky";
+		/** CSS `grid-template-columns` applied to every row, e.g. "1fr 2fr 120px" (`grid-template-columns` attribute). */
 		gridTemplateColumns?: string;
+		/** ARIA role. Default: `grid`. */
 		role?: string;
+		/** `<DataGridRow>` children. */
 		children?: Snippet;
 	};
 

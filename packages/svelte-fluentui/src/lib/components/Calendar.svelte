@@ -1,3 +1,12 @@
+<!-- @component
+Inline month calendar with single, multiple or range selection and month/year pickers.
+
+```svelte
+<Calendar bind:value />
+<Calendar selectMode="range" bind:selectedDates />
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import Calendar from "./Calendar.svelte"
@@ -16,30 +25,39 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
-		/** Selected date in single mode. Bindable. */
+		/** Selected date in single mode. Bindable. Default: today. */
 		value?: Date
 		/** Selected dates in multiple/range mode. Bindable. */
 		selectedDates?: Date[]
-		/** Month currently shown. Bindable. */
+		/** Month currently shown. Bindable. Default: the current month. */
 		pickerMonth?: Date
+		/** Locale for month/day names and the default first day of the week. Default: the browser locale. */
 		culture?: Intl.Locale
 		/** First day of the week (0=Sunday, 1=Monday, …, 6=Saturday). Overrides culture's default when set. */
 		firstDayOfWeek?: number | null
+		/** Grid shown: `days`, `months` (pick a month) or `years` (pick a year). Default: `"days"`. */
 		view?: CalendarView
+		/** `single` (binds `value`), `multiple` or `range` (bind `selectedDates`). Default: `"single"`. */
 		selectMode?: CalendarSelectMode
+		/** Blazor-parity flag; currently has no effect. */
 		checkIfSelectedValueHasChanged?: boolean
 		/** Return `true` to disable a date. */
 		getIsDateDisabledCallback?: (ctx: {date: Date}) => boolean
 		/** Inverse of `getIsDateDisabledCallback` — return `true` to allow a date. When both are set, a date must pass both. */
 		getIsDateSelectableCallback?: (ctx: {date: Date}) => boolean
+		/** In month/year views, mark a month/year disabled only when every day in it is disabled (otherwise its first day decides). Default: `true`. */
 		disabledCheckAllDaysOfMonthYear?: boolean
+		/** Animate the grid when paging periods. Default: on for the months view only. */
 		animatePeriodChanges?: boolean
+		/** Disabled dates stay clickable (rendered as disabled but selectable) instead of inactive. Default: `false`. */
 		disabledSelectable?: boolean
+		/** `"2-digit"` pads day numbers (`01`); unset shows `1`. */
 		dayFormat?: typeof DayFormat["TwoDigit"] | null
-		/** Day-cell edge length in CSS units (default 28px). Resizes the whole grid proportionally. */
+		/** Day-cell edge length; a number is px, a string any CSS length. Default: 28px. Resizes the whole grid proportionally. */
 		cellSize?: string | number
-		/** Gap between cells in CSS units (default 2px). */
+		/** Gap between cells; a number is px, a string any CSS length. Default: 2px. */
 		gap?: string | number
+		/** Block selection and navigation without visual de-emphasis. */
 		readonly?: boolean
 		/** When true, the calendar is non-interactive AND visually de-emphasized (opacity, not-allowed cursor on interactive cells, `aria-disabled="true"` on the host). Stricter than `readonly`, which blocks interaction without visual treatment. */
 		disabled?: boolean
@@ -57,8 +75,11 @@
 		onPickerMonthChange?: (ctx: {pickerMonth: Date}) => void
 		/** Fires when the cursor enters a day cell (with that day) or leaves the day grid (with `null`). Pure observation — does not affect highlighting. */
 		onDayHover?: (ctx: {date: Date | null}) => void
+		/** Custom day-cell content; receives the `CalendarDay`. */
 		day?: Snippet<[day: CalendarDay]>
+		/** Extra classes for the root `<div>`. */
 		class?: string
+		/** Inline style for the root `<div>` (appended after the size variables). */
 		style?: string
 	}
 

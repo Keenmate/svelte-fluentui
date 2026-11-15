@@ -1,15 +1,29 @@
+<!-- @component
+Page footer. Either plain `children`, or a three-part `start | center | end` layout (center is truly centred).
+
+```svelte
+<Footer>{#snippet start()}© 2026{/snippet}{#snippet end()}v2.0{/snippet}</Footer>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../../types/index.js"
 
 	type OwnProps = {
+		/** Inline-start section. Any of `start`/`center`/`end` switches to the 3-part grid layout (`1fr | auto | 1fr`). */
 		start?: Snippet
+		/** Centre section; sits at the footer midpoint regardless of start/end widths. */
 		center?: Snippet
+		/** Inline-end section. */
 		end?: Snippet
+		/** Footer content, used only when none of `start`/`center`/`end` is set. */
 		children?: Snippet
-		/** Stack to a single column below 600px container width. Only applies in 3-part mode. */
+		/** Stack to a single column below 600px container width. Only applies in 3-part mode. Default: `true`. */
 		stack?: boolean
+		/** Extra CSS classes, appended after `fluent-footer`. */
 		class?: string
+		/** Inline style for the root `<footer>`. */
 		style?: string
 	}
 

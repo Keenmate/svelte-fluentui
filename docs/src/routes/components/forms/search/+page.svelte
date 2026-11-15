@@ -63,16 +63,17 @@
 
 	const properties: Property[] = [
 		{name: "appearance", type: '"outline" | "filled"', default: "outline", description: "Gets or sets the visual appearance"},
-		{name: "placeholder", type: "string", default: "undefined", description: "Gets or sets the text used on aria label attribute"},
+		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder text shown while the field is empty"},
 		{name: "autocomplete", type: "string", default: '"off"', description: "Gets or sets whether a form or input field should have autocomplete 'on' or 'off'"},
 		{name: "autofocus", type: "bool", default: "false", description: "Determines if the element should receive document focus on page load"},
-		{name: "dataList", type: "string", default: "undefined", description: "Allows associating a datalist to the element by id"},
+		{name: "dataList", type: "string", default: "undefined", description: "Allows associating a datalist to the element by id (alias of list; wins when both are set)"},
+		{name: "list", type: "string", default: "undefined", description: "Id of a datalist with suggestions"},
 		{name: "disabled", type: "bool", default: "false", description: "Disables the form control, ensuring it doesn't participate in form submission"},
-		{name: "displayName", type: "string", default: "undefined", description: "Gets or sets the display name for this field"},
-		{name: "immediate", type: "bool", default: "false", description: "Gets or sets if the derived component is embedded in another component"},
+		{name: "displayName", type: "string", default: "undefined", description: "Declared for Blazor parity; currently unused (no effect)"},
+		{name: "immediate", type: "bool", default: "false", description: "Debounce onSearch by searchDelay (without it onSearch fires on every keystroke)"},
 		{name: "searchDelay", type: "number", default: "0", description: "Debounce delay in ms before onSearch fires while typing (requires immediate; 0 = no debounce)"},
 		{name: "label", type: "string", default: "undefined", description: "Gets or sets the text to be used for the input"},
-		{name: "labelTemplate", type: "RenderFragment", default: "undefined", description: "Gets or sets the content to be rendered inside the component"},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label content rendered above the input"},
 		{name: "maxlength", type: "int", default: "undefined", description: "Gets or sets the maximum number of characters a user can enter"},
 		{name: "minlength", type: "int", default: "undefined", description: "Gets or sets the minimum number of characters a user can enter"},
 		{name: "name", type: "string", default: "undefined", description: "Gets or sets the name of the element"},
@@ -84,7 +85,11 @@
 		{name: "value", type: "string", default: '""', description: "Gets or sets the value of the input. This should be used with two-way binding"},
 		{name: "width", type: "string", default: "undefined", description: "Gets or sets the width of the component"},
 		{name: "height", type: "string", default: "undefined", description: "Gets or sets the height of the component"},
-		{name: "title", type: "string", default: "undefined", description: "Gets or sets the title (tooltip) for the component"}
+		{name: "title", type: "string", default: "undefined", description: "Gets or sets the title (tooltip) for the component"},
+		{name: "id", type: "string", default: "undefined", description: "Element id, also the label's for"},
+		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessible name (aria-label); falls back to label"},
+		{name: "class", type: "string", default: '""', description: "Extra CSS class on fluent-search"},
+		{name: "style", type: "string", default: '""', description: "Inline style; width / height are appended"}
 	]
 
 	const callbacks: Property[] = [

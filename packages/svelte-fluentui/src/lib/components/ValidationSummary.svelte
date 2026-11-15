@@ -1,3 +1,10 @@
+<!-- @component
+Lists form errors as links (`#<field>`) in an alert panel; renders nothing while `errors` has no messages.
+
+```svelte
+<ValidationSummary errors={{email: "Required"}} labels={{email: "Email"}} />
+```
+-->
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
@@ -13,15 +20,18 @@
 		 * field name itself is shown. Use this to display "Email" instead of "email".
 		 */
 		labels?: Record<string, string>
+		/** Heading above the error list. Default: `"Please fix the following:"`. */
 		title?: string
 		/**
-		 * Called when a user clicks an error link. Receives the field name from
-		 * `errors`. Typical use: scroll to + focus the offending input.
+		 * Fires when the user clicks an error link; `field` is its key in `errors`. When set, the default
+		 * `#<field>` jump is prevented — typically you scroll to and focus the offending input yourself.
 		 */
-		/** Fires when the user clicks an error; the default jump-to-field navigation is prevented. */
 		onFieldClick?: (ctx: {field: string}) => void
+		/** Extra CSS class on the summary element. */
 		class?: string
+		/** Inline style on the summary element. */
 		style?: string
+		/** Extra content rendered below the error list. */
 		children?: Snippet
 	}
 

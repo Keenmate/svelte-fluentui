@@ -1,3 +1,11 @@
+<!-- @component
+First / previous / next / last page buttons with a "Page X of Y" text and an optional item-count summary.
+
+```svelte
+<Paginator bind:currentPageIndex lastPageIndex={9} totalItemCount={200} />
+```
+-->
+
 <script lang="ts" module>
 	import {fluentButton} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -10,12 +18,17 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Extra CSS class on the root `<div>`. */
 		class?: string
+		/** Inline style on the root `<div>`. */
 		style?: string
+		/** Disables all navigation buttons. Default: `false`. */
 		disabled?: boolean
+		/** Total number of items; shows the summary ("N items") when set. */
 		totalItemCount?: number
 		/** Current page, 0-based (bindable). */
 		currentPageIndex?: number
+		/** Index of the last page, 0-based. Default: `0`. */
 		lastPageIndex?: number
 		/** Defaults to `currentPageIndex > 0`. */
 		canGoBack?: boolean
@@ -23,7 +36,9 @@
 		canGoForwards?: boolean
 		/** Fires when the user moves to another page (first / previous / next / last). */
 		onPageChange?: (ctx: {pageIndex: number}) => void
+		/** Replaces the default "N items" summary. */
 		summaryTemplate?: Snippet
+		/** Replaces the default "Page X of Y" text. */
 		paginationTextTemplate?: Snippet
 	}
 

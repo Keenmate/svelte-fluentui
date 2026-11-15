@@ -33,6 +33,7 @@
 	}
 
 	const properties: Property[] = [
+		{name: "id", type: "string", default: "undefined", description: "Id of the input (also the label's for)."},
 		{name: "value", type: "Date | null", default: "null", description: "The currently selected date. Supports two-way binding with bind:value."},
 		{name: "placeholder", type: "string", default: '"Select a date"', description: "Placeholder text shown in the text field when no date is selected."},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the date picker, preventing interaction."},
@@ -58,6 +59,7 @@
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the calendar popup (matching FluentUI Blazor). Set false to require clicking the calendar icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the calendar popup."},
 		{name: "openCalendarIconAriaLabel", type: "string", default: '"Open calendar"', description: "ARIA label for the calendar trigger button."},
+		{name: "title", type: "string", default: "undefined", description: "Tooltip (title) on the input."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names applied to the root element."},
 		{name: "style", type: "string", default: '""', description: "Inline styles applied to the root element."},
 	]

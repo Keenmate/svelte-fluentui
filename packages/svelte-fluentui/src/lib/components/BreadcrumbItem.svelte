@@ -1,3 +1,7 @@
+<!-- @component
+Wrapper for `<fluent-breadcrumb-item>` — one link in a `<Breadcrumb>`; omit `href` for the current page.
+-->
+
 <script lang="ts" module>
 	import {fluentBreadcrumbItem} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -11,8 +15,11 @@
 	import type {AnchorRestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Link URL (`href` attribute); without it the item renders as plain text. */
 		href?: string
+		/** Custom separator in the `separator` slot (replaces the default chevron). */
 		separator?: Snippet
+		/** Item label. */
 		children?: Snippet
 	}
 

@@ -11,7 +11,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "items", type: "MenuEntry[]", default: "[]", description: "Menu entries rendered when the child area is right-clicked: items, {divider: true} separators, and items with children (submenu, or an inline section with isExpandable). Same entry shape as <MenuButton>"},
+		{name: "items", type: "MenuEntry[]", default: "required", description: "Menu entries rendered when the child area is right-clicked: items, {divider: true} separators, and items with children (submenu, or an inline section with isExpandable). Same entry shape as <MenuButton>"},
 		{name: "disabled", type: "boolean", default: "false", description: "When true, right-clicks fall through to the browser's native context menu as usual"},
 		{name: "offsetMenuX", type: "number", default: "8", description: "Horizontal offset (pixels) pushing the menu further right of the cursor. Default 8px keeps the cursor off the first menu item after right-click"},
 		{name: "offsetMenuY", type: "number", default: "0", description: "Vertical offset (pixels) pushing the menu further below the cursor. Stacks on top of a small baseline gap"},

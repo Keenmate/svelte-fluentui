@@ -1,3 +1,11 @@
+<!-- @component
+Inline message bar with an intent colour, default icon, optional title and dismiss button.
+
+```svelte
+<Alert intent="warning" title="Heads up" dismissible>Body text</Alert>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
@@ -6,14 +14,21 @@
 	type Intent = 'info' | 'success' | 'warning' | 'error'
 
 	type OwnProps = {
+		/** Colour and default icon: `info`, `success`, `warning` or `error`. Default: `"info"`. */
 		intent?: Intent
+		/** Bold title line above the body. */
 		title?: string
+		/** Show a × button that hides the alert (it stays hidden; fires `onDismiss`). */
 		dismissible?: boolean
+		/** Extra classes for the root `<div>`. */
 		class?: string
+		/** Inline style for the root `<div>`. */
 		style?: string
 		/** Fires when the user dismisses the alert. */
 		onDismiss?: (ctx: {sourceEvent: MouseEvent}) => void
+		/** Replaces the default intent icon. */
 		icon?: Snippet
+		/** Alert body. */
 		children?: Snippet
 	}
 

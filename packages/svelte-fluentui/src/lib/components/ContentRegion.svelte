@@ -1,8 +1,13 @@
+<!-- @component
+Full-width, non-wrapping flex row with a start margin — a simple region for inline header/toolbar content.
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Region content. */
 		children?: Snippet
 	}
 

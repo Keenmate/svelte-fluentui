@@ -1,3 +1,14 @@
+<!-- @component
+Wrapper for `<fluent-radio>`. Inside a `RadioGroup` it reads and sets the group's value through context.
+
+```svelte
+<RadioGroup bind:value>
+	<Radio value="a">Option A</Radio>
+	<Radio value="b">Option B</Radio>
+</RadioGroup>
+```
+-->
+
 <script lang="ts" module>
 	import {fluentRadio} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -12,18 +23,31 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Value this radio represents (`value` attribute); becomes the group's value when picked. */
 		value: string
+		/** Text rendered in a `<label>` above the radio (use `children` for the inline label). */
 		label?: string
+		/** Custom label content, rendered after `label`. */
 		labelTemplate?: Snippet
+		/** Accessible name (`aria-label`). */
 		ariaLabel?: string
+		/** Form field name (`name` attribute). */
 		name?: string
+		/** Can't be changed by the user (`readonly` attribute). */
 		readonly?: boolean
+		/** Disables the radio (`disabled` attribute). */
 		disabled?: boolean
+		/** Marks the radio as required (`required` attribute). */
 		required?: boolean
+		/** Force the checked state (`checked` attribute). Default: derived from the parent `RadioGroup` value. */
 		checked?: boolean
+		/** Focus the radio on mount (`autofocus` attribute). */
 		autofocus?: boolean
+		/** Extra CSS class on `<fluent-radio>`. */
 		class?: string
+		/** Inline style on `<fluent-radio>`. */
 		style?: string
+		/** Inline label content (the element's default slot). */
 		children?: Snippet
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (event: MouseEvent) => void

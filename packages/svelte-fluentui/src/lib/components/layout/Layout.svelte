@@ -1,11 +1,23 @@
+<!-- @component
+Page layout wrapper stacking Header / BodyContent / Footer (vertical) or side-by-side regions (horizontal).
+
+```svelte
+<Layout><Header>…</Header><BodyContent>…</BodyContent><Footer>…</Footer></Layout>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {Orientation, RestProps} from "../../types/index.js"
 
 	type OwnProps = {
+		/** Layout regions (Header, BodyContent, Footer, …). */
 		children?: Snippet
+		/** Direction the regions flow in. Default: `"vertical"`. */
 		orientation?: Orientation
+		/** Extra CSS classes, appended after `layout`. */
 		class?: string
+		/** Inline style for the root `<div>`. */
 		style?: string
 	}
 
@@ -19,13 +31,10 @@
 		style = "",
 		...rest
 	}: Props = $props()
-
-	let element: HTMLElement | undefined = $state()
 </script>
 
 <div
 	{...rest}
-	bind:this={element}
 	{style}
 	class="layout {className}"
 	data-orientation={orientation === "horizontal" ? "horizontal" : null}

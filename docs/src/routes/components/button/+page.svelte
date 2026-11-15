@@ -15,7 +15,7 @@
 	const properties: Property[] = [
 		{name: "appearance", type: "string", default: "undefined", description: "Visual appearance of the button. Options: 'accent', 'lightweight', 'outline', 'stealth'."},
 		{name: "autofocus", type: "boolean", default: "undefined", description: "Automatically focuses the button when the page loads."},
-		{name: "disabled", type: "string", default: "undefined", description: "Disables the button when set."},
+		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the button when set."},
 		{name: "form", type: "string", default: "undefined", description: "Associates the button with a form element by its id."},
 		{name: "formaction", type: "string", default: "undefined", description: "URL to use for form submission when this button is used."},
 		{name: "formenctype", type: "string", default: "undefined", description: "Encoding type to use for form submission."},
@@ -26,6 +26,9 @@
 		{name: "type", type: "string", default: "undefined", description: "Button type: 'button', 'submit', or 'reset'."},
 		{name: "value", type: "string", default: "undefined", description: "Value submitted with the form when the button is clicked."},
 		{name: "style", type: "string", default: "\"\"", description: "Inline CSS styles to apply to the button element."},
+		{name: "class", type: "string", default: "undefined", description: "Additional CSS classes for fluent-button."},
+		{name: "aria-label", type: "string", default: "undefined", description: "Accessible name; needed for icon-only buttons."},
+		{name: "title", type: "string", default: "undefined", description: "Native browser tooltip shown on hover."},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-button"}
 	]
 

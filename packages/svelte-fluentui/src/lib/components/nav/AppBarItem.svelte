@@ -1,3 +1,7 @@
+<!-- @component
+One `AppBar` entry: an icon link with a label and an optional count badge.
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {AnchorRestProps} from "../../types/index.js"
@@ -5,10 +9,11 @@
 	import {StackHorizontalAlign, StackOrientation, StackVerticalAlign} from "../../fluent-ui/constants/stack.js"
 
 	type OwnProps = {
+		/** Link URL. */
 		href?: string
 		/** Counter shown as a small badge on the icon (e.g. unread items). Hidden when 0 / undefined. */
 		count?: number
-		/** Largest value displayed verbatim; above it the badge reads "<maxCount>+". The full count is still announced to screen readers. */
+		/** Largest value displayed verbatim; above it the badge reads "<maxCount>+". The full count is still announced to screen readers. Default: `99`. */
 		maxCount?: number
 		/** Wording for the count in the accessible name (localisation), e.g. `(count) => count + " unread"`. Receives the full, uncapped count. Default: the bare number. */
 		countLabel?: (count: number) => string
@@ -16,8 +21,11 @@
 		active?: boolean
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
+		/** Icon shown above the label (the count badge sits on it). */
 		icon?: Snippet
+		/** Item label. */
 		children?: Snippet
+		/** Extra CSS classes on the outer item `<div>`. */
 		class?: string
 	}
 

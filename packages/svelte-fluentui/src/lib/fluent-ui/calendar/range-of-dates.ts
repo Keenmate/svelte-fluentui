@@ -34,7 +34,6 @@ export class RangeOfDates extends RangeOf<Date> {
 		newRight.setHours(0, 0, 0, 0)
 
 		// @ts-ignore
-		// return left - right
 		return newLeft - newRight
 	}
 

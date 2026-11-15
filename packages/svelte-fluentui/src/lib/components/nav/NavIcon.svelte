@@ -1,8 +1,13 @@
+<!-- @component
+Fixed-width icon slot inside a nav link.
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../../types/index.js"
 
 	type OwnProps = {
+		/** The icon. */
 		children?: Snippet
 	}
 

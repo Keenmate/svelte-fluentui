@@ -10,7 +10,6 @@ export class CalendarExtended {
 
 	constructor(culture: Intl.Locale, currentDate: Date, firstDayOfWeek?: number) {
 		this.culture = culture
-		/*this.weekInfo = (culture as any).getWeekInfo() // any, because WebStorm does not recognize getWeekInfo() method of Locale*/
 		const locale = culture as any
 		const baseInfo = locale.weekInfo ?? {
 			firstDay: 1,
@@ -36,18 +35,10 @@ export class CalendarExtended {
 			monthFirst.getFullYear() === maxDate.getFullYear() &&
 			monthFirst.getMonth() === maxDate.getMonth() &&
 			weekNumber > 3
-		// console.log("Get days of week", {
-		// 	weekNumber,
-		// 	monthFirst,
-		// 	maxDate,
-		// 	maxLimit
-		// })
-
 		if (!maxLimit) {
 			const monthWeek = this.addDays(monthFirst, weekNumber * 7)
 			const weekFirst = this.startOfWeek(monthWeek)
 			const res = Array.from({ length: 7 }, (_, i) => this.addDays(weekFirst, i))
-			// console.log("Result days of week", {monthWeek, weekFirst, res})
 			return res
 		}
 
@@ -143,7 +134,6 @@ export class CalendarExtended {
 	}
 
 	shift<T>(array: T[], positions: number): T[] {
-		const len = array.length
 		return array.slice(positions).concat(array.slice(0, positions))
 	}
 
@@ -192,12 +182,6 @@ export class CalendarExtended {
 		const diff = (this.weekInfo.firstDay % 7) - dayOfWeek
 		const d = new Date(date)
 		d.setDate(d.getDate() + diff)
-		// console.log("start of week", {
-		// 	origDate: date,
-		// 	dayOfWeek,
-		// 	diff,
-		// 	newDate:  d
-		// })
 		return d
 	}
 }

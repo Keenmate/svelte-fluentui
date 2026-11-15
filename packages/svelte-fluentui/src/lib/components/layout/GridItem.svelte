@@ -1,3 +1,11 @@
+<!-- @component
+A cell of a `Grid`: spans 1–12 columns per breakpoint (`xs`…`xxl`, mobile-first), or grows when none is set.
+
+```svelte
+<GridItem xs={12} md={6} lg={4}>…</GridItem>
+```
+-->
+
 <script lang="ts">
 	import {gridContext} from "../../contexts.js"
 	import {attrs} from "../../helpers/attrs.js"
@@ -15,18 +23,31 @@
 	type GridItemHidden = "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xs-up" | "sm-up" | "md-up" | "lg-up" | "xl-up" | "xxl-up" | "xs-down" | "sm-down" | "md-down" | "lg-down" | "xl-down" | "xxl-down"
 
 	type OwnProps = {
+		/** Cell content. */
 		children?: Snippet
+		/** Columns (0–12) to span from the xs breakpoint up; `0` = auto/grow. No breakpoint at all also grows. */
 		xs?: number
+		/** Columns (0–12) to span from the sm breakpoint (600px) up. */
 		sm?: number
+		/** Columns (0–12) to span from the md breakpoint (960px) up. */
 		md?: number
+		/** Columns (0–12) to span from the lg breakpoint (1280px) up. */
 		lg?: number
+		/** Columns (0–12) to span from the xl breakpoint (1920px) up. */
 		xl?: number
+		/** Columns (0–12) to span from the xxl breakpoint (2560px) up. */
 		xxl?: number
+		/** `justify-content` of the cell's own content (also makes the cell `display: flex`). */
 		justify?: JustifyContent
+		/** Gap between the cell's children (any CSS length; also makes the cell `display: flex`). */
 		gap?: string
+		/** Per-item override of the parent Grid's `adaptiveRendering`. */
 		adaptiveRendering?: boolean
+		/** Hide at a viewport breakpoint: exact (`"md"`), and up (`"md-up"`) or below (`"md-down"`). */
 		hiddenWhen?: GridItemHidden
+		/** Extra CSS classes. */
 		class?: string
+		/** Inline style, appended after the justify/gap styles. */
 		style?: string
 	}
 

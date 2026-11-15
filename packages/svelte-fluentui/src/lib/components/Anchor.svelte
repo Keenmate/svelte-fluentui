@@ -1,3 +1,11 @@
+<!-- @component
+Wrapper for `<fluent-anchor>` — a link styled like a FluentUI button or hyperlink.
+
+```svelte
+<Anchor href="/docs" appearance="hypertext">Docs</Anchor>
+```
+-->
+
 <script lang="ts" module>
 	import {fluentAnchor} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -9,25 +17,41 @@
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
 	import type {AnchorRestProps} from "../types/index.js"
-	import useActions from "../actions/use-actions.js"
 
 	type OwnProps = {
+		/** Element id. */
 		id?: string
+		/** Extra classes for `<fluent-anchor>`. */
 		class?: string
+		/** Inline style for `<fluent-anchor>`. */
 		style?: string
+		/** `download` attribute (suggested file name). */
 		download?: string
+		/** Link target URL (`href` attribute). */
 		href?: string
+		/** `hreflang` attribute. */
 		hreflang?: string
+		/** `ping` attribute (space-separated URLs). */
 		ping?: string
+		/** `referrerpolicy` attribute. */
 		referrerpolicy?: string
+		/** `rel` attribute. */
 		rel?: string
+		/** `target` attribute (`_blank`, `_self`, …). */
 		target?: string
+		/** `type` attribute (MIME hint). */
 		type?: string
+		/** Visual style (`appearance` attribute). Default (element): `"neutral"`. */
 		appearance?: "neutral" | "accent" | "hypertext" | "stealth" | "transparent"
+		/** Content in the `start` slot (before the text). */
 		start?: Snippet
+		/** Content in the `end` slot (after the text). */
 		end?: Snippet
+		/** Link text/content. */
 		children?: Snippet
+		/** Call `preventDefault()` on click (stop navigation) before `onclick` runs. */
 		preventDefault?: boolean
+		/** Action applied to the inner shadow-DOM `<a>` element. */
 		use?: ((node: HTMLElement) => any) | undefined
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (event: MouseEvent) => void

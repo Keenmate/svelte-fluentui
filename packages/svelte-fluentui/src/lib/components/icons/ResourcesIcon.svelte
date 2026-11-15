@@ -1,7 +1,12 @@
+<!-- @component
+Decorative 24px "resources" (grid) SVG icon; filled in the accent colour when `active`.
+-->
+
 <script lang="ts">
 	import type {SVGAttributes} from "svelte/elements"
 
 	type OwnProps = {
+		/** Filled accent variant (e.g. for the current AppBar item). */
 		active?: boolean
 	}
 

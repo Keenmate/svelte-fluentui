@@ -64,7 +64,7 @@
 		{name: "heading", type: "string | Snippet", default: "undefined", description: "Heading: plain text, or a snippet for rich content"},
 		{name: "start", type: "Snippet", default: "undefined", description: "Content rendered at the start of the header"},
 		{name: "end", type: "Snippet", default: "undefined", description: "Content rendered at the end of the header"},
-		{name: "icon", type: "Snippet", default: "undefined", description: "Custom expand/collapse icon. Receives isExpanded boolean"}
+		{name: "icon", type: "Snippet<[isExpanded: boolean]>", default: "undefined", description: "Custom expand/collapse icon. Receives isExpanded boolean"}
 	]
 
 	const propertyColumns = [

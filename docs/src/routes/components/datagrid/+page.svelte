@@ -18,7 +18,7 @@
 	const properties: Property[] = [
 		{name: "ariaRowCount", type: "number", default: "undefined", description: "Total number of rows (for accessibility)"},
 		{name: "class", type: "string", default: '""', description: "Custom CSS classes"},
-		{name: "generateHeader", type: "string", default: "undefined", description: 'Header option: "none", "default", "sticky"'},
+		{name: "generateHeader", type: '"none" | "default" | "sticky"', default: "undefined", description: 'Header option: "none", "default", "sticky"'},
 		{name: "gridTemplateColumns", type: "string", default: "undefined", description: 'CSS grid-template-columns applied to every row (e.g. "1fr 1fr", "2fr 100px"). Recommended when composing rows manually — without it column widths are auto-generated and can misalign header vs. data rows.'},
 		{name: "id", type: "string", default: "undefined", description: "Element ID"},
 		{name: "role", type: "string", default: '"grid"', description: "ARIA role"},

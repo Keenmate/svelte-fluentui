@@ -44,14 +44,14 @@
 		{name: "gap", type: "string", default: '"1rem" (when columns set)', description: "Gap between cells in columns mode (e.g. '0.5rem', '16px'). Ignored in flex-spacing mode."},
 		{name: "spacing", type: "number (1-10)", default: "3", description: "Spacing between grid items (flex-spacing mode only)"},
 		{name: "justify", type: "JustifyContent", default: "flex-start", description: "Horizontal alignment of items (flex-spacing mode only)"},
-		{name: "adaptiveRendering", type: "boolean", default: "false", description: "Only render items for current breakpoint (flex-spacing mode only)"},
+		{name: "adaptiveRendering", type: "boolean", default: "false", description: "Only render items that define a span for the current breakpoint (flex-spacing mode only). The breakpoint is measured from the grid width, which is only observed while onBreakpointChange is set."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names"},
 		{name: "style", type: "string", default: '""', description: "Inline CSS styles"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the outer grid-container div"}
 	]
 
 	const gridCallbacks: Property[] = [
-		{name: "onBreakpointChange", type: "(ctx: {breakpoint: GridItemSize}) => void", default: "undefined", description: "Fires when the grid container crosses a responsive breakpoint (xs, sm, md, lg, xl, xxl)"}
+		{name: "onBreakpointChange", type: "(ctx: {breakpoint: GridItemSize}) => void", default: "undefined", description: "Fires when the grid's own width crosses a breakpoint (xs <600, sm <960, md <1280, lg <1920, xl <2560, else xxl px)"}
 	]
 
 	const gridSlots: Property[] = [

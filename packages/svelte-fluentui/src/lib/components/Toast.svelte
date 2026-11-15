@@ -1,3 +1,11 @@
+<!-- @component
+Notification card: title header (dismiss button / timestamp / action link), body content and up to two footer links.
+For queued, auto-dismissing toasts use `ToastContainer` with the toast service.
+
+```svelte
+<Toast title="Saved" topCTAType="dismiss" onDismiss={() => (shown = false)}>Your changes were saved.</Toast>
+```
+-->
 <script lang="ts" module>
 	import {fluentAnchor} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -18,9 +26,13 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Id of the root element. */
 		id?: string
+		/** Bold heading text. */
 		title?: string
+		/** Time shown in the header (as `HH:mm`, local) with `topCTAType="timestamp"`. */
 		timestamp?: Date
+		/** What the header's end shows: a dismiss (×) button, the `timestamp`, or the `topAction` link. Default: nothing. */
 		topCTAType?: 'dismiss' | 'timestamp' | 'action'
 		/** Link in the header (with `topCTAType="action"`). */
 		topAction?: ToastAction
@@ -28,12 +40,13 @@
 		primaryAction?: ToastAction
 		/** Second link in the footer. */
 		secondaryAction?: ToastAction
-		/** Fires when the user dismisses the toast. */
+		/** Fires when the user clicks the dismiss (×) button; the toast doesn't remove itself. */
 		onDismiss?: (ctx: {sourceEvent: MouseEvent}) => void
 		/** Fires after an action link ran; `id` is the item's id, or `top` / `primary` / `secondary` for plain-text actions. */
 		onAction?: (detail: ToastActionDetail) => void
 		/** Called before an action link runs; return `false` (or a Promise resolving to `false`) to cancel. */
 		beforeActionCallback?: (detail: ToastActionDetail) => unknown
+		/** Body content between the header and the footer links. */
 		children?: Snippet
 	}
 

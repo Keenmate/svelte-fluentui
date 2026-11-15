@@ -1,3 +1,7 @@
+<!-- @component
+Decorative 20px hamburger (☰) SVG icon in the accent colour.
+-->
+
 <svg
 	class="hamburger-icon"
 	focusable="false"

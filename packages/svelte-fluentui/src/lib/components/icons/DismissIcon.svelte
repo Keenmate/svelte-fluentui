@@ -1,7 +1,12 @@
+<!-- @component
+Decorative dismiss (×) SVG icon in `currentColor`.
+-->
+
 <script lang="ts">
 	import type {SVGAttributes} from "svelte/elements"
 
 	type OwnProps = {
+		/** Width and height (`<svg>` attributes; a number means px). Default: `14`. */
 		size?: number | string
 	}
 

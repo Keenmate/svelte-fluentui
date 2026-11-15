@@ -1,3 +1,13 @@
+<!-- @component
+Groups controls in a single tab stop with arrow-key navigation, wrapping `<fluent-toolbar>`.
+
+```svelte
+<Toolbar aria-label="Formatting">
+	<Button>Bold</Button>
+	<Button>Italic</Button>
+</Toolbar>
+```
+-->
 <script lang="ts" module>
 	import {fluentToolbar} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -11,10 +21,15 @@
 	import type {Orientation, RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Id of `<fluent-toolbar>`. */
 		id?: string;
+		/** Extra CSS class on `<fluent-toolbar>`. */
 		class?: string;
+		/** Inline style on `<fluent-toolbar>`. */
 		style?: string;
+		/** Layout and arrow-key direction (`orientation` attribute). Default: `"horizontal"`. */
 		orientation?: Orientation;
+		/** Toolbar items (buttons, fields, …); arrow keys move focus between them. */
 		children?: Snippet;
 	};
 

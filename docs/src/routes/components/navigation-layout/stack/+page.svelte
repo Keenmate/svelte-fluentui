@@ -12,9 +12,16 @@
 	const properties: Property[] = [
 		{name: "orientation", type: '"horizontal" | "vertical"', default: '"vertical"', description: "Stack direction"},
 		{name: "gap", type: "string", default: "undefined", description: "Gap between items"},
-		{name: "horizontalAlign", type: "string", default: "undefined", description: "Horizontal alignment"},
-		{name: "verticalAlign", type: "string", default: "undefined", description: "Vertical alignment"},
+		{name: "verticalGap", type: "string", default: "undefined", description: "CSS row-gap"},
+		{name: "horizontalGap", type: "string", default: "undefined", description: "CSS column-gap"},
+		{name: "horizontalAlign", type: '"start" | "center" | "end" | "stretch" | "space-between" | "space-around"', default: "undefined", description: "Horizontal alignment (space-* only on the main axis)"},
+		{name: "verticalAlign", type: '"start" | "center" | "end" | "stretch" | "space-between" | "space-around"', default: "undefined", description: "Vertical alignment (space-* only on the main axis)"},
+		{name: "width", type: "string", default: "undefined", description: "CSS width"},
+		{name: "height", type: "string", default: "undefined", description: "CSS height"},
+		{name: "reversed", type: "boolean", default: "false", description: "Reverse item order (row-reverse / column-reverse)"},
 		{name: "wrap", type: "boolean", default: "false", description: "Allow wrapping"},
+		{name: "class", type: "string", default: '""', description: "Additional CSS class names"},
+		{name: "style", type: "string", default: '""', description: "Inline style string"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
 	]
 

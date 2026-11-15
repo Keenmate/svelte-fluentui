@@ -1,3 +1,11 @@
+<!-- @component
+A single collapsible panel inside an `<Accordion>` (also works standalone via `bind:expanded`).
+
+```svelte
+<AccordionItem id="details" heading="Details">Body</AccordionItem>
+```
+-->
+
 <!--
  * AccordionItem Component (custom implementation)
  *
@@ -20,7 +28,7 @@
 	type OwnProps = {
 		/** Unique item identifier. Required. */
 		id: string
-		/** Heading level for the role="heading" wrapper (accessibility). */
+		/** Heading level for the role="heading" wrapper (accessibility). Default: 2. */
 		headingLevel?: string | number
 		/** Explicitly control expanded state; falls back to the parent value when
 		 * left `undefined`. Bindable: once set to `true`/`false` (or when the item
@@ -30,10 +38,13 @@
 		disabled?: boolean
 		/** Heading: plain text or a snippet for rich content. */
 		heading?: string | Snippet
+		/** Content placed before the heading button (e.g. an icon). */
 		start?: Snippet
+		/** Content placed after the heading button, before the chevron (e.g. a badge). */
 		end?: Snippet
 		/** Custom expand/collapse icon. Receives the current isExpanded boolean. */
 		icon?: Snippet<[isExpanded: boolean]>
+		/** Panel content; `inert` while collapsed. */
 		children?: Snippet
 		/** Fires when the user expands or collapses this item. */
 		onExpandedChange?: (ctx: {expanded: boolean; sourceEvent: Event}) => void

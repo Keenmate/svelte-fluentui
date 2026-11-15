@@ -1,3 +1,11 @@
+<!-- @component
+Removable selection tag ("chip") used by Combobox and Autocomplete for multi-select values.
+
+```svelte
+<Chip text="Prague" onRemove={() => remove("Prague")} />
+```
+-->
+
 <!--
  * Chip Component (internal)
  *
@@ -21,11 +29,17 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Chip text. */
 		text?: string
+		/** `inline` sits inside a field's border; `external` is standalone with its own border. Default: `"inline"`. */
 		variant?: "inline" | "external"
+		/** White fill + inset ring, for hosts whose background equals the default chip fill (readonly/filled fields). */
 		contrast?: boolean
+		/** Render the × remove button. Default: `true`. */
 		showRemove?: boolean
+		/** Accessible label/tooltip of the × button. Default: `Remove <text>`. */
 		removeLabel?: string
+		/** Native tooltip on the chip. */
 		title?: string
 		/** Fires when the user clicks the remove (×) button. */
 		onRemove?: (ctx: {sourceEvent: MouseEvent}) => void

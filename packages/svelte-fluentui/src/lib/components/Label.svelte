@@ -1,3 +1,11 @@
+<!-- @component
+Lightweight tag-style indicator: tinted fill + coloured border in one of six semantic colours.
+
+```svelte
+<Label color="info" outline>Beta</Label>
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
@@ -14,16 +22,21 @@
 	type LabelSize = "extra-small" | "small" | "medium" | "large" | "extra-large"
 
 	type OwnProps = {
+		/** Semantic colour: primary, secondary, success, warning, danger, info. Default: `"primary"`. */
 		color?: LabelColor
+		/** Size scale `extra-small` … `extra-large`. Default: `"medium"`. */
 		size?: LabelSize
 		/** Transparent background; fills with the tint on hover. */
 		outline?: boolean
 		/** Icon slot rendered before the label text. */
 		icon?: Snippet
+		/** Label text. */
 		children?: Snippet
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
+		/** Extra classes for the root `<span>`. */
 		class?: string
+		/** Inline style for the root `<span>`. */
 		style?: string
 	}
 

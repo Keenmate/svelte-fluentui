@@ -20,8 +20,8 @@
 	const properties: Property[] = [
 		{name: "id", type: "string", default: "undefined", description: "Unique toast ID"},
 		{name: "title", type: "string", default: "undefined", description: "Main message or heading"},
-		{name: "timestamp", type: "Date", default: "undefined", description: 'Displayed if topCTAType is "Timestamp"'},
-		{name: "topCTAType", type: '"Dismiss" | "Timestamp" | "Action"', default: "undefined", description: "What to show on the top right"},
+		{name: "timestamp", type: "Date", default: "undefined", description: 'Displayed (as local HH:mm) if topCTAType is "timestamp"'},
+		{name: "topCTAType", type: '"dismiss" | "timestamp" | "action"', default: "undefined", description: "What to show at the header's end"},
 		{name: "topAction", type: "string | ActionItem", default: "undefined", description: "Top right action link (with topCTAType=\"action\"); a plain string gets id \"top\""},
 		{name: "primaryAction", type: "string | ActionItem", default: "undefined", description: "Primary link at the bottom; a plain string gets id \"primary\""},
 		{name: "secondaryAction", type: "string | ActionItem", default: "undefined", description: "Secondary link at the bottom; a plain string gets id \"secondary\""},
@@ -29,7 +29,7 @@
 	]
 
 	const callbacks: Property[] = [
-		{name: "onDismiss", type: "(ctx: {sourceEvent: MouseEvent}) => void", default: "undefined", description: "Fires when the user dismisses the toast"},
+		{name: "onDismiss", type: "(ctx: {sourceEvent: MouseEvent}) => void", default: "undefined", description: "Fires when the user clicks the dismiss (×) button; the toast does not remove itself"},
 		{name: "onAction", type: "(detail: {action, id, item, source, sourceEvent}) => void", default: "undefined", description: "Fires after any action link ran; id tells which"},
 		{name: "beforeActionCallback", type: "(detail) => unknown", default: "undefined", description: "Called before an action link runs; return false (or resolve to false) to cancel"}
 	]

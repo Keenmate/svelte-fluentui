@@ -1,3 +1,7 @@
+<!-- @component
+Hamburger button row used by `NavMenu` (`collapsible`) to toggle the collapsed rail.
+-->
+
 <script lang="ts">
 	import HamburgerIcon from "../icons/HamburgerIcon.svelte"
 	import NavItem from "./NavItem.svelte"
@@ -8,6 +12,7 @@
 	type OwnProps = {
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
+		/** Extra CSS classes. */
 		class?: string
 	}
 

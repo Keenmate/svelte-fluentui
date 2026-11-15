@@ -86,20 +86,23 @@
 	}
 
 	const properties: Property[] = [
-		{name: "value", type: "Date | null", default: "undefined", description: "Selected date value (bindable)"},
-		{name: "selectedDates", type: "Date[]", default: "undefined", description: "Selected dates for multi/range mode (bindable)"},
+		{name: "value", type: "Date", default: "new Date()", description: "Selected date value in single mode (bindable)"},
+		{name: "selectedDates", type: "Date[]", default: "[]", description: "Selected dates for multi/range mode (bindable)"},
 		{name: "pickerMonth", type: "Date", default: "new Date()", description: "Currently displayed month (bindable)"},
 		{name: "class / style", type: "string", default: "undefined", description: "Applied to the root <div> (style is merged with the cellSize/gap variables)"},
-		{name: "culture", type: "Intl.Locale", default: "navigator.language", description: "Locale for formatting"},
+		{name: "culture", type: "Intl.Locale", default: "browser locale", description: "Locale for formatting and the default first day of the week"},
+		{name: "firstDayOfWeek", type: "number | null", default: "undefined", description: "First day of the week (0 = Sunday … 6 = Saturday); overrides the culture default"},
+		{name: "cellSize", type: "string | number", default: "28px", description: "Day-cell edge length (number = px); resizes the whole grid"},
+		{name: "gap", type: "string | number", default: "2px", description: "Gap between cells (number = px)"},
 		{name: "view", type: '"days" | "months" | "years"', default: '"days"', description: "Calendar view mode"},
 		{name: "selectMode", type: '"single" | "multiple" | "range"', default: '"single"', description: "Selection mode"},
-		{name: "checkIfSelectedValueHasChanged", type: "boolean", default: "false", description: "Verify value changes before updating"},
+		{name: "checkIfSelectedValueHasChanged", type: "boolean", default: "undefined", description: "Blazor-parity flag; currently has no effect"},
 		{name: "getIsDateDisabledCallback", type: "(ctx: {date: Date}) => boolean", default: "undefined", description: "Return true to disable a date"},
 		{name: "getIsDateSelectableCallback", type: "(ctx: {date: Date}) => boolean", default: "undefined", description: "Inverse: return true to allow a date; a date must pass both"},
-		{name: "disabledCheckAllDaysOfMonthYear", type: "boolean", default: "false", description: "Check all days when disabling"},
-		{name: "animatePeriodChanges", type: "boolean", default: "false", description: "Animate month/year transitions"},
+		{name: "disabledCheckAllDaysOfMonthYear", type: "boolean", default: "true", description: "Months/years view: a month/year is disabled only when every day in it is disabled (false = its first day decides)"},
+		{name: "animatePeriodChanges", type: "boolean", default: "true in months view", description: "Animate the grid when paging periods"},
 		{name: "disabledSelectable", type: "boolean", default: "false", description: "Allow selecting disabled dates"},
-		{name: "dayFormat", type: "string", default: "undefined", description: "Custom day number format"},
+		{name: "dayFormat", type: '"2-digit" | null', default: "undefined", description: "\"2-digit\" pads day numbers (01); unset shows 1"},
 		{name: "readonly", type: "boolean", default: "false", description: "Blocks day/month/year/title interaction without visual de-emphasis. ARIA: sets aria-readonly on the host."},
 		{name: "disabled", type: "boolean", default: "false", description: "Blocks interaction AND visually de-emphasizes the whole calendar (reduced opacity, not-allowed cursor on interactive cells). ARIA: sets aria-disabled on the host."},
 		{name: "getDatesToHighlightCallback", type: "(ctx: {date: Date}) => Date[]", default: "undefined", description: "Hover preview — returns the dates to highlight when the cursor is over a day"},
@@ -118,7 +121,7 @@
 	]
 
 	const slots: Property[] = [
-		{name: "day", type: "Snippet", default: "undefined", description: ""}
+		{name: "day", type: "Snippet<[day: CalendarDay]>", default: "undefined", description: "Custom day-cell content; receives the CalendarDay"}
 	]
 
 	const propertyColumns = [

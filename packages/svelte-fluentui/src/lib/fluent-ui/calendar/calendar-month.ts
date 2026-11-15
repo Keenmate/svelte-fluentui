@@ -34,19 +34,6 @@ export class CalendarMonth {
 			return false
 		}
 
-		// if (this.month.getFullYear() === 2038 && [11, 0].includes(this.month.getMonth())) {
-		// 	console.log("is month selected", {
-		// 		"this.month.getFullYear()": this.month.getFullYear(),
-		// 		"value.getFullYear()":      value.getFullYear(),
-		// 		"this.month.getMonth()":    this.month.getMonth(),
-		// 		"value.getMonth()":         value.getMonth(),
-		// 		res:                        (
-		// 			                            this.month.getFullYear() === value.getFullYear()
-		// 			                            && this.month.getMonth() === value.getMonth()
-		// 		                            )
-		// 	})
-		// }
-
 		return (
 			this.month.getFullYear() === value.getFullYear()
 			&& this.month.getMonth() === value.getMonth()

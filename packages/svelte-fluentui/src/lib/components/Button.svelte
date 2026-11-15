@@ -1,3 +1,11 @@
+<!-- @component
+Wrapper for `<fluent-button>`.
+
+```svelte
+<Button appearance="accent" onclick={save}>Save</Button>
+```
+-->
+
 <script lang="ts" module>
 	import {fluentButton} from "@fluentui/web-components"
 	import {registerFluentElements} from "../fluent-ui/register.js"
@@ -11,23 +19,41 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Visual style (`appearance` attribute): `neutral`, `accent`, `lightweight`, `outline`, `stealth`. Default (element): `"neutral"`. */
 		appearance?: string
+		/** Focus on page load (`autofocus` attribute). */
 		autofocus?: boolean
+		/** Disable the button (`disabled` attribute). */
 		disabled?: boolean
+		/** Id of the owning `<form>` (`form` attribute). */
 		form?: string
+		/** `formaction` attribute (submit buttons). */
 		formaction?: string
+		/** `formenctype` attribute (submit buttons). */
 		formenctype?: string
+		/** `formmethod` attribute (submit buttons). */
 		formmethod?: string
+		/** `formnovalidate` attribute (submit buttons). */
 		formnovalidate?: string
+		/** `formtarget` attribute (submit buttons). */
 		formtarget?: string
+		/** Form field name (`name` attribute). */
 		name?: string
+		/** `type` attribute: `button`, `submit` or `reset`. Default (element): `"submit"` inside a form. */
 		type?: string
+		/** Form value submitted with `name` (`value` attribute). */
 		value?: string
+		/** Content in the `start` slot (leading icon). */
 		start?: Snippet
+		/** Content in the `end` slot (trailing icon). */
 		end?: Snippet
+		/** Button label. */
 		children?: Snippet
+		/** Inline style for `<fluent-button>`. */
 		style?: string
+		/** Extra classes for `<fluent-button>`. */
 		class?: string
+		/** Accessible name (`aria-label`), needed for icon-only buttons. */
 		"aria-label"?: string
 		/** Native HTML `title` — text shown as a browser tooltip when hovering the button. */
 		title?: string

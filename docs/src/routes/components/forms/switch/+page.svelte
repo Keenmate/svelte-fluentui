@@ -14,32 +14,32 @@
 
 	const properties: Property[] = [
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label"},
+		{name: "autofocus", type: "boolean", default: "undefined", description: "Focus on mount"},
 		{name: "checked", type: "boolean", default: "false", description: "Whether switch is on"},
-		{name: "checkedMessage", type: "string", default: "undefined", description: "Message when checked"},
+		{name: "checkedMessage", type: "string | Snippet", default: "undefined", description: "Text or snippet shown next to the toggle while on (checked-message slot)"},
 		{name: "class", type: "string", default: "\"\"", description: ""},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disables the switch"},
-		{name: "id", type: "string", default: "undefined", description: ""},
+		{name: "id", type: "string", default: "generated", description: "Id of <fluent-switch>, also the label's for"},
 		{name: "label", type: "string", default: "undefined", description: "Visible label"},
 		{name: "labelPosition", type: '"top" | "start"', default: '"top"', description: "Where the main label is rendered relative to the toggle"},
 		{name: "name", type: "string", default: "undefined", description: "Form name"},
 		{name: "readonly", type: "boolean", default: "undefined", description: "Prevents user changes"},
 		{name: "required", type: "boolean", default: "undefined", description: "Required for form submission"},
 		{name: "style", type: "string", default: "\"\"", description: "Custom CSS"},
-		{name: "uncheckedMessage", type: "string", default: "undefined", description: "Message when unchecked"}
+		{name: "uncheckedMessage", type: "string | Snippet", default: "undefined", description: "Text or snippet shown next to the toggle while off (unchecked-message slot)"}
 	]
 
 	const actions: Property[] = []
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {checked: boolean}) => void", default: "undefined", description: "Fires when the switch is toggled"},
+		{name: "onchange", type: "(ev: Event) => void", default: "undefined", description: "Native change event, forwarded untouched"},
 		{name: "...rest", type: "HTMLAttributes", default: "undefined", description: "Other native attributes and DOM events (onkeydown, onfocusin, data-*, aria-*, …), forwarded untouched to <fluent-switch>"}
 	]
 
 	const slots: Property[] = [
-		{name: "children", type: "Snippet", default: "undefined", description: "Additional content"},
-		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label markup"},
-		{name: "checked-message", type: "string", default: "undefined", description: "Message when on"},
-		{name: "unchecked-message", type: "string", default: "undefined", description: "Message when off"}
+		{name: "children", type: "Snippet", default: "undefined", description: "Extra label content, rendered inside the <label>"},
+		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label markup"}
 	]
 
 	const propertyColumns = [

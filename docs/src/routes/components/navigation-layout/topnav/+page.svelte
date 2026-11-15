@@ -65,9 +65,13 @@
 		{name: "navigationGroups", type: "NavGroupItem[]", default: "[]", description: "Groups shown in the mobile sidebar — { title, icon, items: { label, href }[] }"},
 		{name: "drawerContent", type: "Snippet<[() => void]>", default: "undefined", description: "Custom mobile drawer content (rendered after items + groups). Receives a closeDrawer fn so consumer-supplied links can dismiss the drawer on click."},
 		{name: "collapse", type: '"auto" | "always" | "never"', default: '"auto"', description: 'Force the collapse state. "auto" uses the 960px container query; "always" keeps the hamburger visible at every width (useful when the consumer wants to hide a paired desktop sidebar at a custom breakpoint); "never" keeps items expanded at every width.'},
+		{name: "drawerPinned", type: "boolean", default: "false", description: "Render the drawer as a pinned, in-flow rail that stays open across link clicks"},
+		{name: "drawerWidth", type: "string", default: '"280px"', description: "Drawer width (any CSS length)"},
 		{name: "height", type: "number", default: "60", description: "TopNav height in pixels"},
-		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
-		{name: "style", type: "string", default: "undefined", description: "Inline style appended after the computed height"},
+		{name: "menuToggleSize", type: "number", default: "42", description: "Hamburger button size in pixels"},
+		{name: "menuToggleTemplate", type: "Snippet<[{open, toggle}]>", default: "undefined", description: "Replaces the default hamburger button"},
+		{name: "class", type: "string", default: '""', description: "Additional CSS class"},
+		{name: "style", type: "string", default: '""', description: "Inline style appended after the computed height"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root nav"}
 	]
 

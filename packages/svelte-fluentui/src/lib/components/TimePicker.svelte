@@ -1,3 +1,10 @@
+<!-- @component
+Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value` is a 24-hour `"HH:mm"` string or `null`.
+
+```svelte
+<TimePicker label="Start" minuteStep={15} hourCycle="h12" bind:value={start} />
+```
+-->
 <!--
  * TimePicker Component
  * Inspired by FluentUI Blazor TimePicker component
@@ -17,21 +24,35 @@
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
+		/** Id of the input (also the label's `for`). */
 		id?: string
+		/** Selected time, 24-hour `"HH:mm"` (or `"HH:mm:ss"` with `showSeconds`) regardless of `hourCycle`; `null` when empty. Bindable. */
 		value?: string | null // HH:mm:ss or HH:mm format
+		/** Hint text shown while empty. Default: `"Select time"`. */
 		placeholder?: string
+		/** Disables the input and the clock button. Default: `false`. */
 		disabled?: boolean
+		/** Shows the value but blocks opening the popup. Default: `false`. */
 		readonly?: boolean
+		/** Marks the field required and shows a `*` after the label. Default: `false`. */
 		required?: boolean
+		/** Focus the input on mount. */
 		autofocus?: boolean
+		/** Visible label text rendered above the input. */
 		label?: string
+		/** Custom label markup, rendered after `label` inside the `<label>`. */
 		labelTemplate?: Snippet
+		/** Input style, passed to the inner TextField: `"outline"` or `"filled"`. */
 		appearance?: string
 		/** `"h23"` = 24-hour clock (default), `"h12"` = 12-hour clock with AM/PM. Same values as `Intl.DateTimeFormat`'s `hourCycle`. */
 		hourCycle?: "h12" | "h23"
+		/** Adds a seconds column and includes seconds in `value`. Default: `false`. */
 		showSeconds?: boolean
+		/** Spacing of the minute options, in minutes. Default: `1`. */
 		minuteStep?: number
+		/** Spacing of the hour options, in hours. Default: `1`. */
 		hourStep?: number
+		/** Spacing of the second options, in seconds. Default: `1`. */
 		secondStep?: number
 		/** Minimum allowed time in HH:mm or HH:mm:ss format. */
 		minTime?: string
@@ -47,11 +68,15 @@
 		openOnInputClick?: boolean
 		/** Bindable popup open state. */
 		open?: boolean
+		/** Accessible name of the clock button. Default: `"Open time picker"`. */
 		openClockIconAriaLabel?: string
+		/** Tooltip text on the input (`title`). */
 		title?: string
+		/** Extra CSS class on the root element. */
 		class?: string
+		/** Inline style on the root element. */
 		style?: string
-		/** Fires when the user picks or clears a time. */
+		/** Fires when the user picks (OK) or clears a time; `value` is the new time or `null`. */
 		onChange?: (ctx: {value: string | null}) => void
 		/** Fires on every open/close of the clock popup after mount (user or `bind:open`); not on initial render. */
 		onOpenChange?: (ctx: {open: boolean}) => void

@@ -1,3 +1,11 @@
+<!-- @component
+Modal dialog for the site-wide theme settings (theme mode, accent and neutral colour, text direction), backed by the `settings` store.
+
+```svelte
+<SiteSettings bind:open />
+```
+-->
+
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {Dialog, Select, Option, Switch, Button, Divider, TextField, Stack} from "../index.js"
@@ -9,6 +17,7 @@
 		open?: boolean
 		/** Fires when the dialog opens or closes. */
 		onOpenChange?: (ctx: {open: boolean}) => void
+		/** Declared but currently not rendered. */
 		children?: Snippet
 	}
 

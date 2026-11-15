@@ -39,7 +39,9 @@ export type QuickGridDateOutputFormat = "date" | "iso" | "timestamp"
 
 /** One option of a select / combobox / autocomplete cell editor. Extra properties are allowed. */
 export type QuickGridEditorOption = {
+	/** Value stored in the cell when this option is picked. */
 	value: string | number | boolean
+	/** Text shown in the editor and the cell. */
 	label: string
 	/** Group heading: options sharing a `group` render under it (select / combobox / autocomplete editors). */
 	group?: string
@@ -49,6 +51,7 @@ export type QuickGridEditorOption = {
 /** Editor fields shared by the public column options and the internal cell editor. */
 type QuickGridEditorOptionsBase = {
 	// === SHARED (select/autocomplete) ===
+	/** Static option list (see `loadOptionsCallback` for loaded ones). */
 	options?: QuickGridEditorOption[]
 	/** Default: `"edit-start"`. */
 	optionsLoadTrigger?: QuickGridOptionsLoadTrigger
@@ -62,16 +65,25 @@ type QuickGridEditorOptionsBase = {
 	emptyLabel?: string
 
 	// === TEXT ===
+	/** Max characters (`maxlength` on the input). */
 	maxLength?: number
+	/** Input placeholder (text / number / select editors). */
 	placeholder?: string
+	/** Validation regex (`pattern` on the input). */
 	pattern?: string
+	/** Virtual-keyboard hint (`inputmode` on the input). */
 	inputMode?: "text" | "numeric" | "email" | "tel" | "url"
 
 	// === NUMBER ===
+	/** Minimum value. */
 	min?: number
+	/** Maximum value. */
 	max?: number
+	/** Step of the arrows / spinner. Default: derived from `decimalPlaces`. */
 	step?: number
+	/** Round the committed number to this many decimals. */
 	decimalPlaces?: number
+	/** `false` forces `min` to 0. */
 	allowNegative?: boolean
 
 	// === CHECKBOX ===
@@ -81,7 +93,9 @@ type QuickGridEditorOptionsBase = {
 	falseValue?: unknown
 
 	// === DATE ===
+	/** Earliest selectable date. */
 	minDate?: Date | string
+	/** Latest selectable date. */
 	maxDate?: Date | string
 	/** What to store: Date object, ISO string, or timestamp. */
 	outputFormat?: QuickGridDateOutputFormat
@@ -171,7 +185,9 @@ export type QuickGridBeforeCommitResult = QuickGridValidationResult | boolean | 
 // ---------------------------------------------------------------------------
 
 export type QuickGridColumn<T = any> = {
+	/** Row property shown in this column (also the key for sort, filter and edits). */
 	field: keyof T | string
+	/** Header text. */
 	title: string
 	/** Info tooltip shown next to the header title (displays an ⓘ icon). */
 	headerInfo?: string
@@ -203,6 +219,7 @@ export type QuickGridColumn<T = any> = {
 	 *  the header text and the longest cell value. Without `maxWidth`, very long values will widen the
 	 *  column unbounded — set a `maxWidth` if you want a hard cap. */
 	nowrap?: boolean
+	/** Horizontal text alignment of header and cells. */
 	align?: "start" | "center" | "end"
 	/** Formats the cell's value for display. */
 	getDisplayValueCallback?: (ctx: {value: any; row: T; column: QuickGridColumn<T>}) => string
@@ -228,10 +245,13 @@ export type QuickGridColumn<T = any> = {
 	editable?: boolean
 	/** Per-row decision (e.g. only leaf rows in a tree); wins over `editable`. */
 	getIsEditableCallback?: (ctx: {row: T; column: QuickGridColumn<T>}) => boolean
+	/** Cell editor kind. Default: `text`. */
 	editor?: QuickGridEditorType
 	/** Per-column override of the grid's `editTrigger`. */
 	editTrigger?: QuickGridEditTrigger
+	/** Editor settings (options, limits, search, …). */
 	editorOptions?: QuickGridEditorOptions<T>
+
 	/** Validates a new value: return an error message, or null when valid. Prefer beforeCommitCallback. */
 	validateCallback?: (ctx: {value: any; row: T; column: QuickGridColumn<T>}) => string | null | Promise<string | null>
 	/** Validates and optionally transforms a value before it is committed (see QuickGridBeforeCommitResult). */
