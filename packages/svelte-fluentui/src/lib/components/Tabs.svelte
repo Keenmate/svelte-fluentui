@@ -500,7 +500,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 					type="button"
 					role="tab"
 					id={tab.id}
-					class="fluent-tab {tab.class || ''}"
+					class="fluent-tab fluent-focus-ring {tab.class || ''}"
 					class:active={tab.id === activeId}
 					class:disabled={tab.disabled}
 					class:truncated={isLastAndTruncated}
@@ -558,7 +558,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 				<button
 					type="button"
 					bind:this={moreBtnRef}
-					class="fluent-tab fluent-tabs-more-btn"
+					class="fluent-tab fluent-tabs-more-btn fluent-focus-ring"
 					class:active={overflowOpen}
 					onclick={() => overflowOpen = !overflowOpen}
 					aria-label={labels.moreTabs}
@@ -877,10 +877,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 		opacity: 0.6;
 	}
 
-	.fluent-tab:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer);
-		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
-	}
+	/* Keyboard focus outline: `.fluent-focus-ring` (_primitives.scss). */
 
 	.fluent-tab-label {
 		display: inline-block;

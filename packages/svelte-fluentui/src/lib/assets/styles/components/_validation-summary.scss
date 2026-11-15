@@ -4,6 +4,7 @@
    ======================================== */
 
 @use "../tokens" as *;
+@use "primitives";
 
 .fluent-validation-summary {
 	background: color-mix(in srgb, var(--fluent-color-danger-foreground, #d13438) 8%, transparent);
@@ -38,8 +39,7 @@
 		text-decoration: none;
 	}
 	&__link:focus-visible {
-		outline: 2px solid var(--accent-fill-rest, #0078d4);
-		outline-offset: 2px;
+		@include primitives.focus-ring(2px);
 		border-radius: $border-radius-sm;
 	}
 }

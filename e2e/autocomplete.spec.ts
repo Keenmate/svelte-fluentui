@@ -263,7 +263,7 @@ test.describe("label rendering", () => {
 		const label = wrap.locator("label.fluent-field-label")
 		await expect(label).toBeVisible()
 		await expect(label).toContainText("Fruit")
-		await expect(label.locator(".required-indicator")).toHaveText("*")
+		await expect(label.locator(".fluent-required-indicator")).toHaveText("*")
 	})
 
 	test("labelTemplate: custom snippet renders in place of label text", async ({page}) => {

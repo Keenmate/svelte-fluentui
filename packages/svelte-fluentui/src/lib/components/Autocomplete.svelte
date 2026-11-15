@@ -19,6 +19,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	import type { Snippet } from "svelte"
 	import { untrack } from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import FieldLabel from "./FieldLabel.svelte"
 	import Chip from "./Chip.svelte"
 	import {chipNavFromChip, chipNavFromInput, type ChipNavOptions} from "../helpers/chip-nav.js"
 	import {defaultAutocompleteLabels, type AutocompleteLabels} from "./Autocomplete.labels.js"
@@ -702,11 +703,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 >
 	{#if labelTemplate}
 		{@render labelTemplate()}
-	{:else if label}
-		<label class="fluent-field-label" for={inputId}>
-			{label}
-			{#if required}<span class="required-indicator">*</span>{/if}
-		</label>
+	{:else}
+		<FieldLabel for={inputId} {label} {required} />
 	{/if}
 
 	<div class="autocomplete-container">
@@ -733,6 +731,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		<div
 			class="autocomplete-input-container"
 			class:inline-mode={tagsPosition === 'inline'}
+			class:fluent-field-control={tagsPosition === 'inline'}
 			class:focused={isFocused}
 			class:disabled
 			class:readonly
@@ -778,6 +777,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 			<input
 				type="text"
 				class="autocomplete-native-input"
+				class:fluent-field-control={tagsPosition !== 'inline'}
+				class:filled={tagsPosition !== 'inline' && appearance === 'filled'}
 				bind:this={inputElement}
 				id={inputId}
 				role="combobox"
@@ -810,7 +811,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 					{#if hasSingleSelection && !disabled && !readonly}
 						<button
 							type="button"
-							class="clear-button"
+							class="clear-button fluent-focus-ring"
 							onclick={clearSingleSelection}
 							aria-label={labels.clearSelection}
 							title={labels.clearSelection}
@@ -870,9 +871,9 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 				visible={isOpen}
 				availableHeight
 				matchWidth={!dropdownWidth}
-				style="z-index: var(--fluent-z-popover); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12); {dropdownWidth ? `width: ${dropdownWidth}; ` : ''}{maxDropdownHeight ? `--_autocomplete-listbox-max-height: ${maxDropdownHeight}; ` : ''}max-height: min(var(--_available-height, 100vh), var(--_autocomplete-listbox-max-height, 300px)); overflow-y: auto; overscroll-behavior: contain;"
+				style="{dropdownWidth ? `width: ${dropdownWidth}; ` : ''}{maxDropdownHeight ? `--_autocomplete-listbox-max-height: ${maxDropdownHeight};` : ''}"
 			>
-				<div class="options-list" bind:this={optionsListElement}>
+				<div class="options-list fluent-popup-surface fluent-popup--layer" bind:this={optionsListElement}>
 					{#if headerContent}
 						<div class="options-header">
 							{@render headerContent()}
@@ -930,11 +931,6 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		flex-direction: column;
 	}
 
-	.required-indicator {
-		color: var(--fluent-color-danger-foreground, #d13438);
-		margin-inline-start: 0.25rem;
-	}
-
 	.autocomplete-container {
 		display: flex;
 		flex-direction: column;
@@ -976,60 +972,19 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	/* ===== Input Container: Inline Mode (mimics fluent-text-field) ===== */
 	/* Two side-by-side flex boxes: the wrapping main box (chips + input) and the
 	   end slot (magnifier/clear/loading). nowrap here so the end slot stays a
-	   separate box always at the end; the chips wrap inside the main box instead. */
+	   separate box always at the end; the chips wrap inside the main box instead.
+	   The box itself (border, hover, focus underline, filled, disabled, readonly)
+	   is the shared `.fluent-field-control` primitive (_primitives.scss). */
 	.autocomplete-input-container.inline-mode {
 		display: flex;
 		flex-wrap: nowrap;
 		align-items: center;
 		gap: 4px;
-		min-height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		box-sizing: border-box;
-		padding: 0 8px;
-		background: var(--neutral-fill-input-rest, #ffffff);
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
+	}
+
+	/* Single class so the primitive's disabled / readonly cursor wins. */
+	.inline-mode {
 		cursor: text;
-		transition: border-color 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
-	}
-
-	.autocomplete-input-container.inline-mode:hover:not(.disabled):not(.readonly) {
-		background: var(--neutral-fill-input-hover, #f5f5f5);
-	}
-
-	.autocomplete-input-container.inline-mode.focused:not(.disabled) {
-		/* FluentUI 2 textfield focus: thin gray border on top/sides stays put,
-		   bottom edge becomes accent + visually 2px thick. We use an inset box-shadow
-		   to add the 1px instead of bumping border-bottom-width — that would shift
-		   the input's content by 1px on focus. */
-		border-bottom-color: var(--accent-fill-rest, #0078d4);
-		box-shadow: inset 0 -1px 0 0 var(--accent-fill-rest, #0078d4);
-	}
-
-	.autocomplete-input-container.inline-mode.disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-		background: var(--neutral-fill-input-rest, #ffffff);
-	}
-
-	.autocomplete-input-container.inline-mode.readonly {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
-	}
-
-	/* Filled appearance for inline mode */
-	.autocomplete-input-container.inline-mode.filled {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
-		border: none;
-		border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px) calc(var(--control-corner-radius, 4) * 1px) 0 0;
-	}
-
-	.autocomplete-input-container.inline-mode.filled:hover:not(.disabled):not(.readonly) {
-		background: var(--neutral-fill-secondary-hover, #ebebeb);
-	}
-
-	.autocomplete-input-container.inline-mode.filled.focused:not(.disabled) {
-		border-bottom-color: var(--accent-fill-rest, #0078d4);
-		box-shadow: 0 1px 0 0 var(--accent-fill-rest, #0078d4);
 	}
 
 	/* Selection chips (inline + above/below) are rendered by the shared Chip
@@ -1041,18 +996,19 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	.autocomplete-native-input {
 		flex: 1;
 		min-width: 60px;
-		border: none;
 		outline: none;
-		background: transparent;
 		font-family: inherit;
 		font-size: 14px;
 		line-height: 20px;
 		color: var(--neutral-foreground-rest, #242424);
-		padding: 0;
 	}
 
+	/* Inline mode: a bare input inside the control box. */
 	.autocomplete-input-container.inline-mode .autocomplete-native-input {
 		align-self: stretch;
+		border: none;
+		background: transparent;
+		padding: 0;
 	}
 
 	.autocomplete-native-input::placeholder {
@@ -1063,32 +1019,12 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		cursor: not-allowed;
 	}
 
-	/* Non-inline mode: make input full width */
+	/* Non-inline mode: the input itself is the control box (`.fluent-field-control`),
+	   full width at the control height. */
 	.autocomplete-input-container:not(.inline-mode) .autocomplete-native-input {
 		padding: 4px 8px;
 		height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		box-sizing: border-box;
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		background: var(--neutral-fill-input-rest, #ffffff);
 		width: 100%;
-	}
-
-	.autocomplete-input-container:not(.inline-mode) .autocomplete-native-input:hover:not(:disabled) {
-		background: var(--neutral-fill-input-hover, #f5f5f5);
-	}
-
-	.autocomplete-input-container:not(.inline-mode) .autocomplete-native-input:focus {
-		/* See comment on `.inline-mode.focused` — same FluentUI bottom-emphasis pattern. */
-		border-bottom-color: var(--accent-fill-rest, #0078d4);
-		box-shadow: inset 0 -1px 0 0 var(--accent-fill-rest, #0078d4);
-	}
-
-	.autocomplete-input-container:not(.inline-mode).filled .autocomplete-native-input {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
-		border: none;
-		border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px) calc(var(--control-corner-radius, 4) * 1px) 0 0;
 	}
 
 	/* ===== Input Start Slot ===== */
@@ -1215,10 +1151,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		color: var(--neutral-foreground-rest, #242424);
 	}
 
-	.clear-button:focus {
-		outline: 1px solid var(--accent-fill-rest, #0078d4);
-		outline-offset: 2px;
-	}
+	/* Keyboard focus outline: `.fluent-focus-ring` (_primitives.scss). */
 
 	/* ===== Loading Indicator ===== */
 	.loading-indicator {
@@ -1229,21 +1162,21 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	}
 
 	.spinner {
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
+		animation: fluent-spin 1s linear infinite;
 	}
 
 	/* ===== Dropdown Options ===== */
+	/* The popup: surface from `.fluent-popup-surface` (+ `--layer`); capped to the space
+	   PositioningRegion measured (and the `maxDropdownHeight` prop), scrolls. */
 	.options-list {
 		display: flex;
 		flex-direction: column;
+		box-sizing: border-box;
 		padding: 0.25rem;
 		min-width: 200px;
+		max-height: min(var(--_available-height, 100vh), var(--_autocomplete-listbox-max-height, 300px));
+		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	.options-listbox {

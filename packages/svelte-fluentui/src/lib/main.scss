@@ -22,6 +22,10 @@
 // Note: theme.scss internally loads variables.scss
 @use "assets/styles/theme.scss";
 
+// Shared primitives (field control, popup surface, focus ring, ...) - before the
+// component partials, which build on them.
+@use "assets/styles/components/primitives";
+
 // Use component styles
 @use "assets/styles/layout.scss";
 @use "assets/styles/nav.scss";

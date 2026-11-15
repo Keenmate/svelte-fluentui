@@ -20,7 +20,7 @@
 
 <button
 	type="button"
-	class="fluent-tabs-scroll-btn fluent-tabs-scroll-btn-{side}"
+	class="fluent-tabs-scroll-btn fluent-tabs-scroll-btn-{side} fluent-focus-ring"
 	{onclick}
 	aria-label={ariaLabel}
 	tabindex="-1"
@@ -108,10 +108,5 @@
 
 	.fluent-tabs-scroll-btn:hover {
 		background: var(--neutral-fill-stealth-hover);
-	}
-
-	.fluent-tabs-scroll-btn:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer);
-		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
 	}
 </style>

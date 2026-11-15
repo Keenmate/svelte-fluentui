@@ -18,6 +18,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 	import {tick, untrack} from "svelte"
 	import TextField from "./TextField.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import FieldLabel from "./FieldLabel.svelte"
 	import Button from "./Button.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
@@ -458,13 +459,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 </script>
 
 <div {...rest} class="fluent-timepicker {className}" style={style}>
-	{#if label || labelTemplate}
-		<label for={id} class="fluent-field-label">
-			{#if label}{label}{/if}
-			{#if labelTemplate}{@render labelTemplate?.()}{/if}
-			{#if required}<span class="required-indicator">*</span>{/if}
-		</label>
-	{/if}
+	<FieldLabel for={id} {label} {labelTemplate} {required} />
 
 	<!-- Mouse convenience (a press anywhere on the field opens); keyboard users get
 	     ArrowDown on the input and the clock button. -->
@@ -523,12 +518,12 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 				anchor={wrapperElement}
 				visible={isOpen}
 				matchWidth={false}
-				style="z-index: var(--fluent-z-popover); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12); min-width: 280px;"
+				style="min-width: 280px;"
 			>
 				<!-- The click handler only stops propagation (keeps the field's open-on-click
 				     from re-firing); it is not an interaction. -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<div class="time-picker-panel" bind:this={popupElement} id={popupId} role="dialog" tabindex="-1" aria-label={popupAriaLabel ?? labels.popup} onclick={handlePopupClick}>
+				<div class="time-picker-panel fluent-popup-surface fluent-popup--layer" bind:this={popupElement} id={popupId} role="dialog" tabindex="-1" aria-label={popupAriaLabel ?? labels.popup} onclick={handlePopupClick}>
 					<div class="time-selectors">
 						<!-- Hour selector -->
 						<div class="time-column">
@@ -655,11 +650,6 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		min-width: 110px;
 	}
 
-	.required-indicator {
-		color: var(--fluent-color-danger-foreground, #d13438);
-		margin-inline-start: 0.25rem;
-	}
-
 	.timepicker-wrapper {
 		position: relative;
 	}
@@ -697,8 +687,12 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		margin-inline-start: 0.25rem;
 	}
 
-	/* Padding lives here, not on the region, so a press anywhere on the popup is "inside". */
+	/* Surface (`.fluent-popup-surface`) + padding live here, not on the region, so a
+	   press anywhere on the popup is "inside". */
 	.time-picker-panel {
+		/* Offset parent for the column scroll maths (offsetTop), measured inside
+		   the surface border as when the border sat on the region. */
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;

@@ -33,6 +33,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	import type {Snippet} from "svelte"
 	import {untrack, tick} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import FieldLabel from "./FieldLabel.svelte"
 	import Chip from "./Chip.svelte"
 	import Option from "./Option.svelte"
 	import OptionGroup from "./OptionGroup.svelte"
@@ -330,6 +331,8 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	let inputEl: HTMLInputElement | undefined = $state()
 	let mainEl: HTMLElement | undefined = $state()
 	let listEl: HTMLDivElement | undefined = $state()
+	/** The popup surface around the listbox (scroll container; also holds the empty message). */
+	let popupEl: HTMLDivElement | undefined = $state()
 	// Hidden mirror of the options, always mounted, so display text resolves
 	// from `value` even while the portalled listbox is closed/unmounted.
 	let sourceEl: HTMLDivElement | undefined = $state()
@@ -436,7 +439,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	const nav = new ListNav({
 		count: () => visibleOptionEls().length,
 		itemAt: i => visibleOptionEls()[i],
-		pageSize: () => listPageSize(listEl, visibleOptionEls())
+		pageSize: () => listPageSize(popupEl, visibleOptionEls())
 	})
 
 	// Highlights the option with `val`, else the first one.
@@ -707,7 +710,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		// Only focus arriving from outside: the indicator and a pick in the list hand
 		// focus back to the input, and that must not reopen it.
 		const from = ev.relatedTarget as Node | null
-		if (openOnFocus && !isOpen && !controlEl?.contains(from) && !listEl?.contains(from)) openDropdown()
+		if (openOnFocus && !isOpen && !controlEl?.contains(from) && !popupEl?.contains(from)) openDropdown()
 	}
 
 	// Clicking anywhere in the control's empty area — its own padding or the
@@ -734,7 +737,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	// focus back out of whatever just opened.
 	$effect(() => {
 		if (!isOpen) return
-		return dismissOnOutside(() => [controlEl, listEl], () => closeDropdown(false))
+		return dismissOnOutside(() => [controlEl, popupEl], () => closeDropdown(false))
 	})
 
 	// ---------- Computed ----------
@@ -749,7 +752,6 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		return (parts.join("; ") + (parts.length && style ? "; " : "") + style)
 	})
 
-	const hasLabel = $derived(!!(label || labelTemplate))
 	// Stable fallback so the label/aria-controls wiring works without an explicit id.
 	const uid = $props.id()
 	const inputId = $derived(id ?? `fluent-combobox-${uid}`)
@@ -807,13 +809,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 <!-- display:contents root so consumers see one element, transparent to layout. -->
 <div {...rest} class="combobox-root">
 
-	{#if hasLabel}
-		<label class="fluent-field-label" for={inputId}>
-			{#if label}{label}{/if}
-			{#if labelTemplate}{@render labelTemplate()}{/if}
-			{#if required}<span class="required-indicator">*</span>{/if}
-		</label>
-	{/if}
+	<FieldLabel for={inputId} {label} {labelTemplate} {required} />
 
 	<!-- Hidden mirror of options so the selected value's display text resolves
 	     even when the dropdown is closed. aria-hidden — not a second listbox. -->
@@ -830,7 +826,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	     which owns the keyboard. -->
 	<div
 		bind:this={controlEl}
-		class="combobox-control {appearance} {className}"
+		class="combobox-control fluent-field-control fluent-field-control--focus-within {appearance} {className}"
 		class:open={isOpen}
 		class:disabled
 		class:readonly
@@ -916,23 +912,30 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 			matchWidth={!dropdownWidth}
 			availableHeight
 		>
-			<!-- The keyboard stays on the input (aria-activedescendant); the list takes clicks only. -->
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- The popup surface (and scroll container) holds the listbox plus, outside it,
+			     the empty / loading message — a listbox may only contain options. -->
 			<div
-				bind:this={listEl}
-				id={listboxId}
-				role="listbox"
-				aria-label={ariaLabel ?? label}
-				aria-multiselectable={multiple ? "true" : null}
-				tabindex="-1"
-				class={["combobox-listbox", dropdownClass]}
+				bind:this={popupEl}
+				class={["combobox-listbox fluent-popup-surface", dropdownClass]}
 				style={[
 					dropdownWidth ? `width: ${dropdownWidth}` : "",
 					maxDropdownHeight ? `--_combobox-listbox-max-height: ${maxDropdownHeight}` : ""
 				].filter(Boolean).join("; ") || undefined}
-				onclick={handleListClick}
 			>
-				{@render optionList()}
+				<!-- The keyboard stays on the input (aria-activedescendant); the list takes clicks only. -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<div
+					bind:this={listEl}
+					id={listboxId}
+					role="listbox"
+					aria-label={ariaLabel ?? label}
+					aria-multiselectable={multiple ? "true" : null}
+					tabindex="-1"
+					class="combobox-options"
+					onclick={handleListClick}
+				>
+					{@render optionList()}
+				</div>
 				{#if displayedCount === 0}
 					<div class="combobox-no-data">
 						{#if loading || searchPending}
@@ -966,82 +969,21 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		display: contents;
 	}
 
-	.required-indicator {
-		color: var(--fluent-color-danger-foreground, #d13438);
-		margin-inline-start: 0.25rem;
-	}
-
-	/* ===== Control (bordered box wrapping input + indicator) ===== */
+	/* ===== Control (bordered box wrapping input + indicator) =====
+	 * Box, hover, focus underline (focus-within / open), filled, disabled,
+	 * readonly and embedded come from the shared `.fluent-field-control`
+	 * primitive (_primitives.scss). */
 	.combobox-control {
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-		min-height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		box-sizing: border-box;
-		padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
-		background: var(--neutral-fill-input-rest, #ffffff);
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
 		cursor: text;
-		transition: border-color 0.1s ease, background 0.1s ease, box-shadow 0.1s ease;
 		min-width: 200px;
 	}
 
-	.combobox-control:hover:not(.disabled):not(.readonly) {
-		background: var(--neutral-fill-input-hover, #f5f5f5);
-	}
-
-	/* Match fluent-text-field focus: accent bottom edge via inset shadow so the
-	 * underline thickens without shifting content by 1px. */
-	.combobox-control:focus-within:not(.disabled),
-	.combobox-control.open:not(.disabled) {
-		border-bottom-color: var(--accent-fill-rest, #0078d4);
-		box-shadow: inset 0 -1px 0 0 var(--accent-fill-rest, #0078d4);
-	}
-
-	.combobox-control.filled {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
-		border: none;
-		border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px) calc(var(--control-corner-radius, 4) * 1px) 0 0;
-	}
-
-	.combobox-control.filled:hover:not(.disabled):not(.readonly) {
-		background: var(--neutral-fill-secondary-hover, #ebebeb);
-	}
-
-	.combobox-control.filled:focus-within:not(.disabled),
-	.combobox-control.filled.open:not(.disabled) {
-		border-bottom-color: var(--accent-fill-rest, #0078d4);
-		box-shadow: 0 1px 0 0 var(--accent-fill-rest, #0078d4);
-	}
-
-	.combobox-control.disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-
-	/* Readonly: value shows but can't be changed. Non-dimmed (unlike disabled), but
-	   a neutral-secondary fill signals it's inert, matching Autocomplete/TextField. */
-	.combobox-control.readonly {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
-		cursor: default;
-	}
-
-	/* Embedded (e.g. a QuickGrid cell): no frame of its own — the host draws it. */
-	.combobox-control.embedded,
-	.combobox-control.embedded:hover:not(.disabled):not(.readonly),
-	.combobox-control.embedded:focus-within:not(.disabled),
-	.combobox-control.embedded.open:not(.disabled) {
-		width: 100%;
-		height: 100%;
+	/* Embedded (e.g. a QuickGrid cell): the primitive drops the frame. */
+	.combobox-control.embedded {
 		min-width: 0;
-		min-height: 0;
-		padding: 0;
-		border: none;
-		border-radius: 0;
-		background: transparent;
-		box-shadow: none;
 	}
 
 	.combobox-control.embedded .combobox-input {
@@ -1148,14 +1090,13 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		cursor: not-allowed;
 	}
 
-	/* ===== Dropdown listbox (portalled) ===== */
+	/* ===== Dropdown (portalled) =====
+	 * `.combobox-listbox` is the popup: surface (background, border, radius,
+	 * shadow) from `.fluent-popup-surface`, padding, height cap and scrolling.
+	 * The `role="listbox"` (`.combobox-options`) and the empty message sit in it. */
 	:global(.combobox-listbox) {
 		display: flex;
 		flex-direction: column;
-		background: var(--neutral-layer-floating, #ffffff);
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
 		padding: calc(var(--design-unit, 4) * 1px);
 		/* Cap to the space PositioningRegion measured to the viewport edge, and
 		 * (when set) to the per-instance `maxDropdownHeight` prop — whichever is smaller. */
@@ -1163,6 +1104,11 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		box-sizing: border-box;
+	}
+
+	.combobox-options {
+		display: flex;
+		flex-direction: column;
 	}
 
 	/* Option row layout, hover, highlight, selected, disabled and the

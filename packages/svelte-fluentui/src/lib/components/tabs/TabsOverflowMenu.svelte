@@ -30,7 +30,7 @@
 	matchWidth={false}
 	position={horizontal ? "bottom" : "end"}
 >
-	<div class="fluent-tabs-overflow-menu context-menu" bind:this={menuEl}>
+	<div class="fluent-tabs-overflow-menu context-menu fluent-popup-elevation fluent-popup--layer" bind:this={menuEl}>
 		<fluent-menu>
 			{#each tabs as tab (tab.id)}
 				<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
@@ -48,17 +48,13 @@
 </PositioningRegion>
 
 <style>
-	/* Overflow menu — reuses the context-menu look from QuickGrid.
-	 * Transparent wrapper + matching border-radius so the inner
-	 * `<fluent-menu>`'s rounded corners aren't framed by gray pixels. */
+	/* Overflow menu — `<fluent-menu>` paints the surface; the wrapper adds the
+	 * popup elevation (`.fluent-popup-elevation` + `--layer`: z-index + menu shadow,
+	 * since fluent-menu's own shadow is too subtle on dark themes). Transparent, with
+	 * the menu's border-radius so its rounded corners aren't framed by gray pixels. */
 	.fluent-tabs-overflow-menu {
-		z-index: var(--fluent-z-popover);
 		background: transparent;
 		border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
-		/* Popover elevation on the wrapper for visible separation on dark
-		 * themes (fluent-menu's own shadow is too subtle). Matches
-		 * ContextMenu's elevation. */
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
 	}
 
 	.fluent-tabs-overflow-menu fluent-menu {

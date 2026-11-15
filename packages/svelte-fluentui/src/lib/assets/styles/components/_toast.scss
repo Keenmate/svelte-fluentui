@@ -5,6 +5,7 @@
    ======================================== */
 
 @use "../tokens" as *;
+@use "primitives";
 
 // ===== TOAST CONTAINER =====
 
@@ -244,9 +245,8 @@
 		color: var(--neutral-foreground-rest);
 	}
 
-	&:focus {
-		outline: 2px solid var(--accent-fill-rest);
-		outline-offset: 2px;
+	&:focus-visible {
+		@include primitives.focus-ring(2px);
 	}
 }
 

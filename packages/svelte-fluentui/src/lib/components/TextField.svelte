@@ -15,6 +15,7 @@ Single-line text input wrapping `<fluent-text-field>`; `bind:value` is a string.
 
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
+	import FieldLabel from "./FieldLabel.svelte"
 	import type {Snippet} from "svelte"
 	import type {NativeEventHandler, RestProps} from "../types/index.js"
 	import {setAutocompleteOnShadowInput, setAttributeOnShadowInput} from "../utils/shadow-dom.js"
@@ -173,16 +174,7 @@ Single-line text input wrapping `<fluent-text-field>`; `bind:value` is a string.
 	})
 </script>
 
-{#if label || labelTemplate}
-	<label for={id} class="fluent-field-label">
-		{#if label}
-			{label}
-		{/if}
-		{#if labelTemplate}
-			{@render labelTemplate?.()}
-		{/if}
-	</label>
-{/if}
+<FieldLabel for={id} {label} {labelTemplate} />
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_autofocus -->

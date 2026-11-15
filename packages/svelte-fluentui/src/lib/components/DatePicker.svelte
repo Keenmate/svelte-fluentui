@@ -20,6 +20,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	import TextField from "./TextField.svelte"
 	import Calendar from "./Calendar.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import FieldLabel from "./FieldLabel.svelte"
 	import type DayFormat from "../fluent-ui/calendar/day-format.js"
 	import {defaultLocale} from "../helpers/locale.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
@@ -288,13 +289,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 </script>
 
 <div {...rest} class="fluent-datepicker {className}" style={style}>
-	{#if label || labelTemplate}
-		<label for={id} class="fluent-field-label">
-			{#if label}{label}{/if}
-			{#if labelTemplate}{@render labelTemplate?.()}{/if}
-			{#if required}<span class="required-indicator">*</span>{/if}
-		</label>
-	{/if}
+	<FieldLabel for={id} {label} {labelTemplate} {required} />
 
 	<!-- Mouse convenience (a press anywhere on the field opens); keyboard users get
 	     ArrowDown on the input and the calendar button. -->
@@ -354,10 +349,9 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 				anchor={wrapperElement}
 				visible={isOpen}
 				matchWidth={false}
-				style="z-index: var(--fluent-z-popover); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);"
 			>
-				<!-- Padding lives here, not on the region, so a press anywhere on the popup is "inside". -->
-				<div class="datepicker-popup" bind:this={popupElement} id={popupId} role="dialog" aria-label={popupAriaLabel ?? labels.popup}>
+				<!-- Surface + padding live here, not on the region, so a press anywhere on the popup is "inside". -->
+				<div class="datepicker-popup fluent-popup-surface fluent-popup--layer" bind:this={popupElement} id={popupId} role="dialog" aria-label={popupAriaLabel ?? labels.popup}>
 					<Calendar
 						value={value || new Date()}
 						pickerMonth={value || new Date()}
@@ -388,11 +382,6 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-	}
-
-	.required-indicator {
-		color: var(--fluent-color-danger-foreground, #d13438);
-		margin-inline-start: 0.25rem;
 	}
 
 	.datepicker-wrapper {

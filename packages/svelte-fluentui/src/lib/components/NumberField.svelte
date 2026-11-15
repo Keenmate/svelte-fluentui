@@ -15,6 +15,7 @@ Wrapper for `<fluent-number-field>`: a numeric input with optional step buttons 
 
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
+	import FieldLabel from "./FieldLabel.svelte"
 	import type {Snippet} from "svelte"
 	import type {NativeEventHandler, RestProps} from "../types/index.js"
 	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
@@ -228,16 +229,7 @@ Wrapper for `<fluent-number-field>`: a numeric input with optional step buttons 
 	});
 </script>
 
-{#if label || labelTemplate}
-	<label for={id} class="fluent-field-label">
-		{#if label}
-			{label}
-		{/if}
-		{#if labelTemplate}
-			{@render labelTemplate?.()}
-		{/if}
-	</label>
-{/if}
+<FieldLabel for={id} {label} {labelTemplate} />
 
 <fluent-number-field
 	bind:this={element}

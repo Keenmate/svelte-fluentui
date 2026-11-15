@@ -632,7 +632,7 @@
 		inset-inline-end: 4px;
 		font-size: 10px;
 		color: var(--neutral-foreground-hint, #707070);
-		animation: pulse 1s infinite;
+		animation: fluent-pulse 1s infinite;
 	}
 
 	/* The dropdown list (Select / Combobox `dropdownClass`): portalled, so themed via
@@ -643,11 +643,11 @@
 		border-color: var(--fluent-quickgrid-dropdown-border, var(--neutral-stroke-rest, #d1d1d1));
 	}
 
-	:global(.cell-dropdown[role="listbox"] .fluent-option[role="option"]:is(:hover, [data-highlighted]):not([disabled])) {
+	:global(.cell-dropdown:is(.select-listbox-popover, .combobox-listbox) .fluent-option[role="option"]:is(:hover, [data-highlighted]):not([disabled])) {
 		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-stealth-hover, #f0f0f0));
 	}
 
-	:global(.cell-dropdown[role="listbox"] .fluent-option[role="option"][aria-selected="true"]:is(:hover, [data-highlighted]):not([disabled])) {
+	:global(.cell-dropdown:is(.select-listbox-popover, .combobox-listbox) .fluent-option[role="option"][aria-selected="true"]:is(:hover, [data-highlighted]):not([disabled])) {
 		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-secondary-hover, #ebebeb));
 	}
 
@@ -657,10 +657,5 @@
 		color: var(--neutral-foreground-hint, #707070);
 		font-style: italic;
 		text-align: center;
-	}
-
-	@keyframes pulse {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.4; }
 	}
 </style>

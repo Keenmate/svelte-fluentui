@@ -1,0 +1,157 @@
+/* ========================================
+   Shared style primitives
+   One copy of the visual building blocks several components share, shipped in
+   the main stylesheet so components (and consumers) only add a class — no SCSS
+   needed. Selectors are kept at a single class (plus state) so a component's
+   own scoped rules (class + Svelte hash) still win where it needs to differ.
+
+   - .fluent-field-control      bordered input box (Select, Combobox, Autocomplete)
+   - .fluent-popup-surface      floating panel (dropdowns, picker popups)
+   - .fluent-popup-elevation    z-index + shadow only (wrappers whose child paints the surface, e.g. <fluent-menu>)
+   - .fluent-popup--layer       modifier: page-layer background + menu shadow (pickers, Autocomplete, menus)
+   - .fluent-required-indicator the "*" after a required field's label
+   - .fluent-focus-ring         keyboard focus outline (+ `focus-ring` mixin for SCSS partials)
+   - danger menu item           ContextMenu / MenuButton / QuickGrid menu `danger` items
+   - @keyframes fluent-spin / fluent-pulse
+   ======================================== */
+
+$control-height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+$control-radius: calc(var(--control-corner-radius, 4) * 1px);
+
+/* ---------- Focus ring ----------
+   Fluent's keyboard focus outline: `--focus-stroke-outer` (black / white per
+   theme) at `--focus-stroke-width`, inset by default. */
+@mixin focus-ring($offset: calc(var(--focus-stroke-width, 2) * -1px)) {
+	outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer, #000000);
+	outline-offset: $offset;
+}
+
+.fluent-focus-ring:focus-visible {
+	@include focus-ring;
+}
+
+/* ---------- Required indicator ---------- */
+.fluent-required-indicator,
+.fluent-field__required {
+	color: var(--fluent-color-danger-foreground, #d13438);
+}
+
+.fluent-required-indicator {
+	margin-inline-start: 0.25rem;
+}
+
+/* ---------- Field control box ----------
+   Rest / hover / focus (accent bottom edge) / filled / disabled / readonly, and
+   `embedded` (no frame of its own — the host, e.g. a QuickGrid cell, draws it).
+   Focus states: the element's own `:focus-visible`, `.focused` (JS-tracked),
+   `.open` (its popup is showing), or `--focus-within` modifier → `:focus-within`.
+   The accent edge is an inset shadow, so the underline thickens without
+   shifting the content by 1px. */
+.fluent-field-control {
+	box-sizing: border-box;
+	min-height: $control-height;
+	padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
+	background: var(--neutral-fill-input-rest, #ffffff);
+	border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+	border-radius: $control-radius;
+	transition: border-color 0.1s ease, background 0.1s ease, box-shadow 0.1s ease;
+}
+
+.fluent-field-control:hover:not(:disabled, .disabled, .readonly, .embedded) {
+	background: var(--neutral-fill-input-hover, #f5f5f5);
+}
+
+.fluent-field-control:is(:focus-visible, .focused, .open, .fluent-field-control--focus-within:focus-within):not(:disabled, .disabled, .embedded) {
+	border-bottom-color: var(--accent-fill-rest, #0078d4);
+	box-shadow: inset 0 -1px 0 0 var(--accent-fill-rest, #0078d4);
+}
+
+.fluent-field-control.filled {
+	background: var(--neutral-fill-secondary-rest, #f5f5f5);
+	border: none;
+	border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+	border-radius: $control-radius $control-radius 0 0;
+}
+
+.fluent-field-control.filled:hover:not(:disabled, .disabled, .readonly, .embedded) {
+	background: var(--neutral-fill-secondary-hover, #ebebeb);
+}
+
+.fluent-field-control.filled:is(:focus-visible, .focused, .open, .fluent-field-control--focus-within:focus-within):not(:disabled, .disabled, .embedded) {
+	border-bottom-color: var(--accent-fill-rest, #0078d4);
+	box-shadow: 0 1px 0 0 var(--accent-fill-rest, #0078d4);
+}
+
+// Doubled class: beats a component's own `cursor` (class + Svelte hash).
+.fluent-field-control.fluent-field-control:is(:disabled, .disabled) {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+/* Readonly: value shows but can't be changed. Not dimmed (unlike disabled); a
+   neutral-secondary fill + default cursor signal it's inert. */
+.fluent-field-control.readonly:not(.embedded) {
+	background: var(--neutral-fill-secondary-rest, #f5f5f5);
+	cursor: default;
+}
+
+.fluent-field-control.embedded {
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+/* ---------- Popup surface ----------
+   Two looks are in use: listbox dropdowns (Select, Combobox) sit on the
+   floating layer with Fluent's flyout shadow; pickers, Autocomplete and menus
+   add `.fluent-popup--layer` (page-layer background, lighter shadow). Their row
+   hover fill (`--neutral-fill-secondary-hover`) is close to the floating layer
+   in dark mode, so they can't drop the modifier without recolouring rows. */
+.fluent-popup-surface,
+.fluent-popup-elevation {
+	z-index: var(--fluent-z-popover);
+	box-shadow: var(--_popup-shadow, var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12)));
+}
+
+.fluent-popup--layer {
+	--_popup-bg: var(--neutral-layer-1, #ffffff);
+	--_popup-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
+}
+
+.fluent-popup-surface {
+	background: var(--_popup-bg, var(--neutral-layer-floating, #ffffff));
+	border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+	border-radius: $control-radius;
+}
+
+/* ---------- Danger menu item ----------
+   `danger: true` items in ContextMenu, MenuButton and QuickGrid's context menu.
+   Dark theme comes from the palette tokens. */
+.fluent-context-menu .fluent-context-menu-item.danger,
+.fluent-menu-button-menu fluent-menu-item.danger,
+.context-menu fluent-menu-item.danger {
+	color: var(--fluent-color-danger-foreground, #d13438);
+}
+
+.fluent-context-menu .fluent-context-menu-item.danger:hover:not(:disabled),
+.fluent-menu-button-menu fluent-menu-item.danger:hover,
+.context-menu fluent-menu-item.danger:hover {
+	background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes fluent-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes fluent-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.4; }
+}

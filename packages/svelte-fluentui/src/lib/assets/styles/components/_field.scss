@@ -43,8 +43,8 @@
 		margin-bottom: 0;
 	}
 
+	// Colour shared with `.fluent-required-indicator` (_primitives.scss).
 	&__required {
-		color: var(--fluent-color-danger-foreground, #d13438);
 		margin-inline-start: 0.15rem;
 		font-weight: 700;
 	}

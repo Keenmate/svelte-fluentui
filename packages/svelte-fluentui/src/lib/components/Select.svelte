@@ -32,6 +32,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	import type {Snippet} from "svelte"
 	import {untrack, tick} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import FieldLabel from "./FieldLabel.svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
@@ -582,8 +583,6 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 
 	const displayText = $derived(getOptionText(selectedSingle) || (selectedSingle ? (valueText ?? "") : ""))
 
-	const hasLabel = $derived(!!(label || labelTemplate))
-
 	// Stable fallback so label / aria-controls wiring works without an explicit id.
 	const uid = $props.id()
 	const controlId = $derived(id ?? `fluent-select-${uid}`)
@@ -594,13 +593,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
      display:contents so it's transparent to flex/grid layout in the parent. -->
 <div {...rest} class="select-root">
 
-{#if hasLabel}
-	<label class="fluent-field-label" for={controlId}>
-		{#if label}{label}{/if}
-		{#if labelTemplate}{@render labelTemplate?.()}{/if}
-		{#if required}<span class="required-indicator">*</span>{/if}
-	</label>
-{/if}
+<FieldLabel for={controlId} {label} {labelTemplate} {required} />
 
 {#if multiple}
 	<!-- ===== Multi mode: always-expanded inline listbox ===== -->
@@ -653,7 +646,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		{disabled}
 		{autofocus}
 		{title}
-		class="select-trigger {appearance} {className}"
+		class="select-trigger fluent-field-control {appearance} {className}"
 		class:open={isOpen}
 		class:readonly
 		class:embedded
@@ -691,7 +684,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 				role="listbox"
 				tabindex="-1"
 				aria-label={ariaLabel || label}
-				class={["select-listbox-popover", dropdownClass]}
+				class={["select-listbox-popover fluent-popup-surface", dropdownClass]}
 				style={[
 					dropdownWidth ? `width: ${dropdownWidth}` : "",
 					maxDropdownHeight ? `--_select-listbox-max-height: ${maxDropdownHeight}` : ""
@@ -720,93 +713,34 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		display: contents;
 	}
 
-	.required-indicator {
-		color: var(--fluent-color-danger-foreground, #d13438);
-		margin-inline-start: 0.25rem;
-	}
-
 	/* ===== Trigger button (single mode) ===== */
 	.select-trigger {
 		display: inline-flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 8px;
-		min-height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		box-sizing: border-box;
-		padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
-		background: var(--neutral-fill-input-rest, #ffffff);
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
 		font-family: inherit;
 		font-size: var(--type-ramp-base-font-size, 14px);
 		line-height: var(--type-ramp-base-line-height, 20px);
 		color: var(--neutral-foreground-rest, #242424);
 		cursor: pointer;
 		text-align: start;
-		transition: border-color 0.1s ease, background 0.1s ease, box-shadow 0.1s ease;
 		min-width: 200px;
 	}
 
-	.select-trigger:hover:not(:disabled):not(.readonly) {
-		background: var(--neutral-fill-input-hover, #f5f5f5);
-	}
-
-	.select-trigger:focus-visible:not(:disabled),
-	.select-trigger.open:not(:disabled) {
-		/* Match fluent-text-field focus: accent-colored bottom edge via inset shadow
-		 * so the underline thickens visually without shifting content by 1px. */
-		border-bottom-color: var(--accent-fill-rest, #0078d4);
-		box-shadow: inset 0 -1px 0 0 var(--accent-fill-rest, #0078d4);
+	/* Box, hover, focus underline, filled, disabled, readonly and embedded come
+	 * from the shared `.fluent-field-control` primitive (_primitives.scss). */
+	.select-trigger:focus-visible {
 		outline: none;
 	}
 
-	.select-trigger.filled {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
-		border: none;
-		border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px) calc(var(--control-corner-radius, 4) * 1px) 0 0;
-	}
-
-	.select-trigger.filled:hover:not(:disabled):not(.readonly) {
-		background: var(--neutral-fill-secondary-hover, #ebebeb);
-	}
-
-	.select-trigger.filled:focus-visible:not(:disabled),
-	.select-trigger.filled.open:not(:disabled) {
-		border-bottom-color: var(--accent-fill-rest, #0078d4);
-		box-shadow: 0 1px 0 0 var(--accent-fill-rest, #0078d4);
-	}
-
-	.select-trigger:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-
-	/* Readonly: value shows but the dropdown won't open. Non-dimmed (unlike
-	   disabled), with a neutral-secondary fill + default cursor to signal it's inert. */
-	.select-trigger.readonly {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
-		cursor: default;
-	}
-
-	/* Embedded (e.g. a QuickGrid cell): no frame of its own — the host draws it. */
-	.select-trigger.embedded,
-	.select-trigger.embedded:hover:not(:disabled):not(.readonly),
-	.select-trigger.embedded:focus-visible:not(:disabled),
-	.select-trigger.embedded.open:not(:disabled) {
-		width: 100%;
-		height: 100%;
+	/* Embedded (e.g. a QuickGrid cell): the primitive drops the frame; the
+	 * trigger also inherits the host's text and tightens its gap. */
+	.select-trigger.embedded {
 		min-width: 0;
-		min-height: 0;
-		padding: 0;
 		gap: 4px;
-		border: none;
-		border-radius: 0;
-		background: transparent;
-		box-shadow: none;
 		font: inherit;
 		color: inherit;
-		outline: none;
 	}
 
 	.select-trigger-value {
@@ -837,10 +771,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	:global(.select-listbox-popover) {
 		display: flex;
 		flex-direction: column;
-		background: var(--neutral-layer-floating, #ffffff);
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
+		/* Surface (background, border, radius, shadow) = `.fluent-popup-surface`. */
 		padding: calc(var(--design-unit, 4) * 1px);
 		/* Cap to the available viewport space exposed by PositioningRegion
 		 * (fallback 280px), and — when the `maxHeight` prop is set — to that
