@@ -130,7 +130,7 @@
 				<h3>With search input</h3>
 				<p class="example-description">
 					Drop a <span class="component-name">Search</span> into the action slot for a search-as-you-type
-					navbar. Pair with <span class="component-name">immediate</span> + <span class="component-name">immediateDelay</span>
+					navbar. Pair with <span class="component-name">immediate</span> + <span class="component-name">searchDelay</span>
 					for debounced input.
 				</p>
 				<div class="topnav-frame">
@@ -139,7 +139,7 @@
 							bind:value={searchValue}
 							placeholder="Search…"
 							immediate
-							immediateDelay={250}
+							searchDelay={250}
 							onSearch={onSearchInput}
 							width="240px"
 						/>

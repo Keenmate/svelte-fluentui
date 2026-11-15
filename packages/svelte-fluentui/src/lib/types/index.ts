@@ -18,6 +18,9 @@ export type AnchorRestProps<Own> = Omit<HTMLAnchorAttributes, keyof Own>
 /** A native event handler as forwarded by a component (`oninput`, `onchange`, ...). */
 export type NativeEventHandler = (event: Event) => void
 
+/** Layout axis shared by every `orientation` prop (Stack, Divider, RadioGroup, Slider, Tabs, Toolbar, Layout, MultiSplitter, Field, AppBar). */
+export type Orientation = "horizontal" | "vertical"
+
 /** One selectable option (Combobox, Autocomplete, …). `T` is the value type. */
 export type OptionItem<T = string> = {
 	value: T

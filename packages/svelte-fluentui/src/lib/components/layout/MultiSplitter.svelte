@@ -27,9 +27,7 @@
 	import {multiSplitterContext} from "../../contexts.js"
 	import {onMount} from "svelte"
 	import type {MultiSplitterContext, PaneHandle, PaneRegistration} from "../../types/multi-splitter.js"
-	import type {RestProps} from "../../types/index.js"
-
-	type Orientation = "horizontal" | "vertical"
+	import type {Orientation, RestProps} from "../../types/index.js"
 
 	type OwnProps = {
 		children?: Snippet

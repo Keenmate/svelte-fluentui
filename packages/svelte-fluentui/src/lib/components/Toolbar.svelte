@@ -8,13 +8,13 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import type {RestProps} from "../types/index.js"
+	import type {Orientation, RestProps} from "../types/index.js"
 
 	type OwnProps = {
 		id?: string;
 		class?: string;
 		style?: string;
-		orientation?: "horizontal" | "vertical";
+		orientation?: Orientation;
 		children?: Snippet;
 	};
 

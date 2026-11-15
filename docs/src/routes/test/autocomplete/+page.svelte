@@ -71,7 +71,7 @@
 	let labelTplSel = $state<string[]>([])
 	let tagsAboveSel = $state<string[]>(["apple", "banana"])
 	let tagsBelowSel = $state<string[]>(["apple", "banana"])
-	let keepOpenSel = $state<string[]>([])
+	let stayOpenSel = $state<string[]>([])
 	let noTabSel = $state<string[]>([])
 	let limitedSel = $state<string[]>([])
 	let noEmptyOverlaySel = $state<string[]>([])
@@ -182,12 +182,12 @@
 </div>
 
 <div class="fixture">
-	<div class="fixture-label">debounced — immediateDelay=300ms; rapid typing collapses to one call</div>
+	<div class="fixture-label">debounced — searchDelay=300ms; rapid typing collapses to one call</div>
 	<div id="debounced-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="debounced"
 			searchCallback={debouncedSearch}
-			immediateDelay={300}
+			searchDelay={300}
 			placeholder="Type fast"
 		/>
 	</div>
@@ -297,13 +297,13 @@
 </div>
 
 <div class="fixture">
-	<div class="fixture-label">keepOpen multi — dropdown stays open after pick</div>
+	<div class="fixture-label">closeOnSelect={"{false}"} multi — dropdown stays open after pick</div>
 	<div id="keepopen-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="keepopen"
 			options={fruits}
-			bind:value={keepOpenSel}
-			keepOpen
+			bind:value={stayOpenSel}
+			closeOnSelect={false}
 			placeholder="Pick many, stay open"
 		/>
 	</div>

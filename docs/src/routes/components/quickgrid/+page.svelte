@@ -540,7 +540,7 @@
 					<td>Filter input accessible name</td>
 				</tr>
 				<tr>
-					<td>noItems</td>
+					<td>emptyText</td>
 					<td>string</td>
 					<td>&quot;No items to display&quot;</td>
 					<td>Empty grid message</td>
@@ -666,10 +666,10 @@
 					<td>Editor dropdown while loading options / searching</td>
 				</tr>
 				<tr>
-					<td>editorNoOptions / editorNoMatches</td>
+					<td>editorEmptyText / editorFilterEmptyText</td>
 					<td>string</td>
 					<td>&quot;No options&quot; / &quot;No matching options&quot;</td>
-					<td>Empty editor dropdown</td>
+					<td>Empty editor dropdown (select/autocomplete) / combobox filter with no match</td>
 				</tr>
 			</tbody>
 		</table>

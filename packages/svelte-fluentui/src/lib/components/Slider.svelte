@@ -8,7 +8,7 @@
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import type {NativeEventHandler, RestProps} from "../types/index.js"
+	import type {NativeEventHandler, Orientation, RestProps} from "../types/index.js"
 
 	type OwnProps = {
 		id?: string
@@ -16,7 +16,7 @@
 		min?: number
 		max?: number
 		step?: number
-		orientation?: "horizontal" | "vertical"
+		orientation?: Orientation
 		disabled?: boolean
 		readonly?: boolean
 		required?: boolean

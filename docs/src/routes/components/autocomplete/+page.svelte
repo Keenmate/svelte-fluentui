@@ -77,8 +77,8 @@
 	let preselectedValue = $state<string[]>(["us", "uk"])
 	let singleSelectValue = $state<string[]>([])
 	let maxSelectValue = $state<string[]>([])
-	let keepOpenValue = $state<string[]>([])
-	let keepOpenClosingValue = $state<string[]>([])
+	let stayOpenValue = $state<string[]>([])
+	let closeOnSelectValue = $state<string[]>([])
 	let langSearchValue = $state<string[]>([])
 	let asyncValue = $state<string[]>([])
 	let initialOptionsValue = $state<string[]>([])
@@ -180,10 +180,11 @@
 		{name: "showOverlayOnEmptyResults", type: "boolean", default: "true", description: "Show dropdown on no results"},
 		{name: "showInitialOptions", type: "boolean", default: "false", description: "Show options on focus when empty"},
 		{name: "initialOptionsCount", type: "number", default: "maxResultCount", description: "Initial options count limit"},
-		{name: "keepOpen", type: "boolean", default: "true", description: "Multi-select only: keep the dropdown open after each pick so several can be chosen in a row. Set false to close on each selection (single-select always closes)."},
+		{name: "closeOnSelect", type: "boolean", default: "!multiple", description: "Close the dropdown after a pick. Multi-select defaults to false (stays open so several can be chosen in a row); set true to close on each selection. Single-select always closes."},
+		{name: "emptyText", type: "string", default: "\"No results found\"", description: "Text shown in the dropdown when the search matches no options (with showOverlayOnEmptyResults)"},
 		{name: "selectValueOnTab", type: "boolean", default: "true", description: "Select highlighted option on Tab key"},
 		{name: "tagsPosition", type: '"inline" | "top" | "bottom"', default: '"inline"', description: "Position of selected tags: inside input (inline), above input, or below input"},
-		{name: "immediateDelay", type: "number", default: "0", description: "Debounce delay in ms before search"},
+		{name: "searchDelay", type: "number", default: "0", description: "Debounce delay in ms before search"},
 		{name: "loading", type: "boolean", default: "undefined", description: "External loading state control"},
 		{name: "id", type: "string", default: "undefined", description: "Element ID"},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text"},
@@ -209,6 +210,7 @@
 		{name: "optionTemplate", type: "Snippet<[OptionItem]>", default: "undefined", description: "Custom rendering for each option in the dropdown list. Receives the OptionItem as a parameter."},
 		{name: "headerContent", type: "Snippet", default: "undefined", description: "Custom content rendered at the top of the dropdown overlay, above the option list."},
 		{name: "footerContent", type: "Snippet", default: "undefined", description: "Custom content rendered at the bottom of the dropdown overlay, below the option list."},
+		{name: "empty", type: "Snippet", default: "undefined", description: "Custom content shown when the search matches no options; overrides emptyText."},
 		{name: "start", type: "Snippet", default: "undefined", description: "Decorative content (typically an icon) rendered at the start (left) of the input."},
 		{name: "end", type: "Snippet", default: "undefined", description: "Decorative content rendered at the end (right) of the input. The auto-rendered clear button and loading spinner take precedence — end shows only when neither is active."}
 	]
@@ -378,10 +380,10 @@
 			</GridItem>
 		</Grid>
 
-		<h3>Keep open on selection (keepOpen)</h3>
+		<h3>Close on selection (closeOnSelect)</h3>
 		<p>
-			In multi-select, <code>keepOpen</code> (default <code>true</code>) keeps the dropdown open after
-			each pick so you can select several options in a row. Set it to <code>false</code> to close the
+			In multi-select, <code>closeOnSelect</code> defaults to <code>false</code>, so the dropdown stays open after
+			each pick and you can select several options in a row. Set it to <code>true</code> to close the
 			dropdown on every selection. (Single-select always closes on pick.)
 		</p>
 		<p>
@@ -392,34 +394,34 @@
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>keepOpen = true (default)</strong>
+					<strong>closeOnSelect = false (default)</strong>
 					<small style="color: var(--neutral-foreground-hint);">Dropdown stays open — pick several in a row.</small>
 					<Autocomplete
-						bind:value={keepOpenValue}
+						bind:value={stayOpenValue}
 						options={programmingLanguages}
 						searchCallback={handleLanguageSearch}
 						showInitialOptions={true}
-						keepOpen={true}
+						closeOnSelect={false}
 						label="Programming languages"
 						placeholder="Focus for core list, search for Elixir/Erlang..."
 					/>
-					<small>Selected: {keepOpenValue.join(", ") || "None"}</small>
+					<small>Selected: {stayOpenValue.join(", ") || "None"}</small>
 				</Stack>
 			</GridItem>
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>keepOpen = false</strong>
+					<strong>closeOnSelect = true</strong>
 					<small style="color: var(--neutral-foreground-hint);">Dropdown closes after each pick.</small>
 					<Autocomplete
-						bind:value={keepOpenClosingValue}
+						bind:value={closeOnSelectValue}
 						options={programmingLanguages}
 						searchCallback={handleLanguageSearch}
 						showInitialOptions={true}
-						keepOpen={false}
+						closeOnSelect={true}
 						label="Programming languages"
 						placeholder="Focus for core list, search for Elixir/Erlang..."
 					/>
-					<small>Selected: {keepOpenClosingValue.join(", ") || "None"}</small>
+					<small>Selected: {closeOnSelectValue.join(", ") || "None"}</small>
 				</Stack>
 			</GridItem>
 		</Grid>
@@ -609,8 +611,8 @@
 			</GridItem>
 		</Grid>
 
-		<h3>Debounce (immediateDelay)</h3>
-		<p>Use <code>immediateDelay</code> to add a debounce delay before triggering search.</p>
+		<h3>Debounce (searchDelay)</h3>
+		<p>Use <code>searchDelay</code> to add a debounce delay before triggering search.</p>
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
@@ -618,7 +620,7 @@
 					<Autocomplete
 						bind:value={debounceValue}
 						searchCallback={handleAsyncSearch}
-						immediateDelay={300}
+						searchDelay={300}
 						label="Search with debounce"
 						placeholder="Type to search (300ms delay)..."
 					/>
@@ -652,7 +654,7 @@
 						bind:value={minSearchLengthValue}
 						searchCallback={handleMinSearchLengthSearch}
 						minSearchLength={3}
-						immediateDelay={200}
+						searchDelay={200}
 						label="Search countries"
 						placeholder="Type at least 3 characters..."
 					/>
@@ -860,7 +862,7 @@ ${'<'}Autocomplete
   bind:value={selected}
   searchCallback={searchItems}
   label="Search items"
-  immediateDelay={300}
+  searchDelay={300}
 />`}</code></pre>
 
 		<h3>Custom Option Template</h3>

@@ -54,7 +54,7 @@
 		/** First day of the week (0=Sunday…6=Saturday). Overrides culture default. */
 		firstDayOfWeek?: number | null
 		/** When true (default), the popup closes after a date is picked. */
-		autoClose?: boolean
+		closeOnSelect?: boolean
 		/** When true (default), clicking anywhere on the input area opens the calendar popup, matching FluentUI Blazor. Set false to require clicking the calendar icon. */
 		openOnInputClick?: boolean
 		/** Bindable open state of the calendar popup. */
@@ -100,7 +100,7 @@
 		gap = undefined,
 		animatePeriodChanges = undefined,
 		firstDayOfWeek = undefined,
-		autoClose = true,
+		closeOnSelect = true,
 		openOnInputClick = true,
 		open = $bindable(false),
 		openCalendarIconAriaLabel = "Open calendar",
@@ -179,7 +179,7 @@
 	// Handle calendar date selection
 	function handleDateSelected(selectedDate: Date) {
 		value = selectedDate
-		if (autoClose) setOpen(false)
+		if (closeOnSelect) setOpen(false)
 		onChange?.({value: selectedDate})
 	}
 

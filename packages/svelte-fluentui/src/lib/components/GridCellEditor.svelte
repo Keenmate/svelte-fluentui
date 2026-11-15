@@ -16,7 +16,7 @@
 	} from "./QuickGrid.types.js"
 
 	type EditorLabels = Pick<QuickGridLabels, "editorEmptyOption" | "editorSelectPlaceholder" | "editorSearchPlaceholder" |
-		"editorLoading" | "editorSearching" | "editorNoOptions" | "editorNoMatches">
+		"editorLoading" | "editorSearching" | "editorEmptyText" | "editorFilterEmptyText">
 
 	type Props = {
 		type: EditorType
@@ -170,7 +170,7 @@
 	// `onSearch` a local filter, else the async `onSearch` (debounced, aborted
 	// when superseded or the dropdown closes; stale responses dropped).
 	const search = new AsyncSearch<EditorOption>({
-		delay: () => options.debounceMs ?? 300,
+		delay: () => options.searchDelay ?? 300,
 		search: (query, signal) => {
 			const initialOpts = autocompleteInitialOptions()
 			if (query.length < (options.minSearchLength ?? 1)) return initialOpts
@@ -742,7 +742,7 @@
 						</div>
 					{/each}
 					{#if opts.length === 0}
-						<div class="cell-dropdown-empty">{isLoadingOptions ? labels.editorLoading : labels.editorNoMatches}</div>
+						<div class="cell-dropdown-empty">{isLoadingOptions ? labels.editorLoading : labels.editorFilterEmptyText}</div>
 					{/if}
 				{:else}
 					{#if options.allowEmpty && type === "select"}
@@ -774,7 +774,7 @@
 					{/each}
 					{#if dropdownOptions.length === 0}
 						<div class="cell-dropdown-empty">
-							{isLoadingOptions ? labels.editorLoading : search.loading ? labels.editorSearching : labels.editorNoOptions}
+							{isLoadingOptions ? labels.editorLoading : search.loading ? labels.editorSearching : labels.editorEmptyText}
 						</div>
 					{/if}
 				{/if}

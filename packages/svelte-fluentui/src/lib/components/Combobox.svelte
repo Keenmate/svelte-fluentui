@@ -92,18 +92,19 @@
 		 * and keep the input as a filter (it never collapses to a single label).
 		 * `value`/`onChange` carry the full array in both modes. */
 		multiple?: boolean
-		/** Multi-select only: keep the dropdown open after each pick so several can
-		 * be chosen in a row (default `true`). Set `false` to close on each pick. */
-		keepOpen?: boolean
+		/** Close the dropdown after a pick. Defaults to `!multiple`: single-select closes,
+		 * multi-select stays open so several values can be chosen in a row. Set `true`
+		 * to close on each multi-select pick. Single-select always closes. */
+		closeOnSelect?: boolean
 		/** Multi-select only: where the selected-value chips render. `inline` (default)
 		 * keeps them inside the control; `above`/`below` render them as a wrapping row
 		 * outside the control (matching Autocomplete's `tagsPosition`). */
 		tagsPosition?: "inline" | "top" | "bottom"
 		minSearchLength?: number
 		/** Text shown inside the dropdown when the filter matches no options. */
-		noDataText?: string
-		/** Custom content shown when the filter matches no options; overrides noDataText. */
-		noDataTemplate?: Snippet
+		emptyText?: string
+		/** Custom content shown when the filter matches no options; overrides `emptyText`. */
+		empty?: Snippet
 		/** Debounced notification that the search term changed. When provided, the parent
 		 * owns the data: update `options` with the results and the component skips
 		 * its own client-side filtering (the server/parent already filtered). */
@@ -157,11 +158,11 @@
 		maxDropdownHeight = undefined,
 		dropdownWidth = undefined,
 		multiple = false,
-		keepOpen = true,
+		closeOnSelect = undefined,
 		tagsPosition = "inline",
 		minSearchLength = undefined,
-		noDataText = "No results found",
-		noDataTemplate = undefined,
+		emptyText = "No results found",
+		empty = undefined,
 		onSearch = undefined,
 		searchDelay = 250,
 		searchBehavior = "normalized",
@@ -474,12 +475,12 @@
 	}
 
 	// Shared post-pick side effects. Single-select closes; multi-select clears the
-	// filter and (with keepOpen) stays open so more can be picked in a row.
+	// filter and (unless closeOnSelect) stays open so more can be picked in a row.
 	function afterSelect(val: string) {
 		isFiltering = false
 		typed = ""
 		emitChange()
-		if (multiple && keepOpen) {
+		if (multiple && !closeOnSelect) {
 			// Re-show the full list (filter cleared) and re-anchor the highlight on
 			// the just-toggled row; keep focus in the input for continued typing.
 			tick().then(() => { applyFilter(); highlightValue(val) })
@@ -845,10 +846,10 @@
 					<div class="combobox-no-data">
 						{#if loading || searchPending}
 							{loadingText}
-						{:else if noDataTemplate}
-							{@render noDataTemplate()}
+						{:else if empty}
+							{@render empty()}
 						{:else}
-							{noDataText}
+							{emptyText}
 						{/if}
 					</div>
 				{/if}

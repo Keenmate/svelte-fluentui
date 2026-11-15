@@ -139,7 +139,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **TimePicker:** `onValueChange(value)`, `onOpenChange(open)`, `disabledTimeFunc(h, m, s)` → `onChange({value})`, `onOpenChange({open})`, `getIsTimeDisabledCallback({hour, minute, second})`
 - **TextField:** `oninput`, `onchange`, `onkeydown`, `onkeyup`, `onfocus`, `onblur` (hand-forwarded) → native events and attributes (incl. `class`) forwarded via `...rest`; new `onChange({value})` on commit
 - **NumberField:** same hand-forwarded native events → native via `...rest`; new `onChange({value})` on commit
-- **Search:** `oninput(value)`, `onchange(value)` → `onSearch({term})` (debounced by `immediateDelay`), `onChange({value})` on commit; `oninput`/`onchange` are native
+- **Search:** `oninput(value)`, `onchange(value)` → `onSearch({term})` (debounced by `searchDelay`), `onChange({value})` on commit; `oninput`/`onchange` are native
 - **Search:** `focusAsync(preventScroll)` method → `focus(preventScroll)`
 - **Select:** `onchange({value, selectedOption, data})` (`value` was `""` when `multiple`) → `onChange({value, option})` — `value` is the new bound value (array when `multiple`), `option` is `{value, text, data}`; no longer fires when re-picking the selected option
 - **Combobox:** `onchange(value)` → `onChange({value})` (always an array)
@@ -153,6 +153,14 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **Slider:** `onchange(value)`, `oninput(value)` → `onChange({value})`; live value via `bind:value`
 - **RadioGroup:** `onchange(value)` → `onChange({value})`
 - **Textarea:** `oninput(value)`, `onchange(value)` → `onChange({value})` on commit; `oninput` / `onchange` are now the native events
+- **Autocomplete, Search:** `immediateDelay` → `searchDelay` (Search keeps `immediate`)
+- **QuickGrid (`editorOptions`):** `debounceMs` → `searchDelay`
+- **DatePicker, TimePicker:** `autoClose` → `closeOnSelect` (default `true`, same meaning)
+- **Autocomplete, Combobox:** `keepOpen` → `closeOnSelect`, inverted (default `!multiple`: multi-select still stays open; `keepOpen={false}` → `closeOnSelect={true}`)
+- **Combobox:** `noDataText` / `noDataTemplate` → `emptyText` / `empty`
+- **InputFile:** `emptyState` snippet / `labels.emptyState` → `empty` / `labels.emptyText`
+- **QuickGrid (labels):** `noItems` / `editorNoOptions` / `editorNoMatches` → `emptyText` / `editorEmptyText` / `editorFilterEmptyText`
+- **Field (exported type):** `FieldOrientation` → `Orientation` (shared by every `orientation` prop)
 - **Removed placeholder components `Menu`, `MenuItem`, `Tree`, `TreeItem`, `ProgressBar`.** They
   rendered an empty FluentUI element and accepted no props.
 - **MultiSplitter is content-height by default.** Leftover Blazor splitter CSS forced `height: 100%`
@@ -163,6 +171,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- Empty-state props aligned to `emptyText` (string) + `empty` (snippet): new on Autocomplete (default "No results found") and CommandPalette (`emptyText`; the built-in message stays the default).
+- `Orientation` type (`"horizontal" | "vertical"`) exported from the package root; used by every `orientation` prop.
 - CommandPalette `searchBehavior` (default `normalized`): matching and the `<mark>` highlight ignore case and diacritics ("cafe" finds "Café"); PageUp / PageDown move the cursor.
 - Docs: QuickGrid Editable "task tracker" demo using every editor type together (async autocomplete, dependent combobox via `loadOptionsCallback`, row-aware date validation, custom multi-value editor); `searchBehavior` demos on Select, Autocomplete, Combobox and QuickGrid.
 - `searchBehavior` (`normalized` default / `case-insensitive` / `exact`, as in web-multiselect) on Combobox, Select (type-ahead), Autocomplete and QuickGrid `editorOptions`; `normalizeForSearch` and `SearchBehavior` exported. **Behaviour change:** Select type-ahead, Autocomplete and the grid editors now ignore accents by default.

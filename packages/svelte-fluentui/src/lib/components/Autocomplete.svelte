@@ -38,9 +38,10 @@
 		showOverlayOnEmptyResults?: boolean
 		showInitialOptions?: boolean
 		initialOptionsCount?: number
-		/** Multi-select only: keep the dropdown open after each pick so several can
-		 * be chosen in a row (default `true`). Set `false` to close on each pick. */
-		keepOpen?: boolean
+		/** Close the dropdown after a pick. Defaults to `!multiple`: single-select closes,
+		 * multi-select stays open so several values can be chosen in a row. Set `true`
+		 * to close on each multi-select pick. Single-select always closes. */
+		closeOnSelect?: boolean
 		width?: string
 		height?: string
 		/** Cap the dropdown listbox height (e.g. "300px", "50vh"). The listbox is
@@ -56,12 +57,17 @@
 		ariaLabel?: string
 		multiple?: boolean
 		loading?: boolean
-		immediateDelay?: number
+		/** Debounce delay in ms before the search runs while typing (0 = search immediately). */
+		searchDelay?: number
 		selectValueOnTab?: boolean
 		tagsPosition?: "inline" | "top" | "bottom"
 		headerContent?: Snippet
 		footerContent?: Snippet
 		optionTemplate?: Snippet<[OptionItem<T>]>
+		/** Text shown in the dropdown when the search matches no options (with `showOverlayOnEmptyResults`). */
+		emptyText?: string
+		/** Custom content shown when the search matches no options; overrides `emptyText`. */
+		empty?: Snippet
 		// Decorative slots inside the input. Render arbitrary content (typically icons or
 		// small buttons) at the start (left) or end (right) of the input. The auto-rendered
 		// clear button and loading spinner take precedence in the end slot — `end`
@@ -112,7 +118,7 @@
 		showOverlayOnEmptyResults = true,
 		showInitialOptions = false,
 		initialOptionsCount = undefined,
-		keepOpen = true,
+		closeOnSelect = undefined,
 		width = undefined,
 		height = undefined,
 		maxDropdownHeight = undefined,
@@ -122,12 +128,14 @@
 		ariaLabel = undefined,
 		multiple = undefined,
 		loading = undefined,
-		immediateDelay = 0,
+		searchDelay = 0,
 		selectValueOnTab = true,
 		tagsPosition = "inline",
 		headerContent = undefined,
 		footerContent = undefined,
 		optionTemplate = undefined,
+		emptyText = "No results found",
+		empty = undefined,
 		start = undefined,
 		end = undefined,
 		showSearchIcon = true,
@@ -162,11 +170,11 @@
 		itemAt: i => optionsListElement?.querySelectorAll(".option-item")[i]
 	})
 
-	// Debounced search (`immediateDelay`), local or via `searchCallback`. Aborts the
+	// Debounced search (`searchDelay`), local or via `searchCallback`. Aborts the
 	// in-flight request when a newer search starts, the search is cancelled (empty
 	// query, dropdown closed) or the component unmounts; stale responses are dropped.
 	const search = new AsyncSearch<OptionItem<any>>({
-		delay: () => immediateDelay,
+		delay: () => searchDelay,
 		search: (term, signal) => searchCallback
 			? searchCallback({term, signal})
 			: options.filter(opt => containsText(opt.label, term, searchBehavior)),
@@ -237,7 +245,7 @@
 			return
 		}
 
-		// Debounced when immediateDelay > 0 (loading shows immediately), else now.
+		// Debounced when searchDelay > 0 (loading shows immediately), else now.
 		search.schedule(text)
 	}
 
@@ -270,8 +278,8 @@
 		searchText = ""
 		nav.reset()
 
-		// Multi-select honors keepOpen / max-cap; single-select always closes.
-		const stayOpen = effectiveMultiple && keepOpen &&
+		// Multi-select honors closeOnSelect / max-cap; single-select always closes.
+		const stayOpen = effectiveMultiple && !closeOnSelect &&
 			!(maxSelectionCount && selectedOptions.length >= maxSelectionCount)
 
 		if (stayOpen) {
@@ -789,7 +797,7 @@
 							</button>
 						{/each}
 					{:else if showOverlayOnEmptyResults}
-						<div class="no-results">No results found</div>
+						<div class="no-results">{#if empty}{@render empty()}{:else}{emptyText}{/if}</div>
 					{/if}
 					{#if footerContent}
 						<div class="options-footer">

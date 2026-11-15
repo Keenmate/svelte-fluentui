@@ -296,13 +296,13 @@ test.describe("tagsPosition", () => {
 })
 
 // =============================================================================
-// keepOpen
+// closeOnSelect (multi default: stay open)
 // =============================================================================
 
-test("keepOpen multi: dropdown stays open after picking an option via keyboard", async ({page}) => {
-	// NOTE: `keepOpen` only works for keyboard-driven selection. Mouse clicks on
+test("closeOnSelect=false multi: dropdown stays open after picking an option via keyboard", async ({page}) => {
+	// NOTE: staying open (`closeOnSelect` false) only works for keyboard-driven selection. Mouse clicks on
 	// the (portaled) `.option-item` bubble to the document and trigger
-	// `handleClickOutside` → `closeDropdown` before the `selectOption` keepOpen
+	// `handleClickOutside` → `closeDropdown` before the `selectOption` stay-open
 	// branch matters. This is a known limitation, tracked in FINDINGS.md.
 	const wrap = await open(page, "keepopen")
 
@@ -364,10 +364,10 @@ test("showOverlayOnEmptyResults default (true): empty-result search shows 'No re
 })
 
 // =============================================================================
-// immediateDelay (debounce)
+// searchDelay (debounce)
 // =============================================================================
 
-test("immediateDelay=300: rapid typing collapses into a single callback after the delay", async ({page}) => {
+test("searchDelay=300: rapid typing collapses into a single callback after the delay", async ({page}) => {
 	const wrap = wrapById(page, "debounced")
 
 	await inputOf(wrap).click()

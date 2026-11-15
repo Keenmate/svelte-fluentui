@@ -333,7 +333,7 @@
 	<QuickGrid items={acRows} idMember="id" editable editTrigger="dblclick" onEditCancel={({field}) => acLog.push(`cancel:${field}`)}
 		columns={[{field: "city", title: "City", editable: true, editor: "autocomplete" as const,
 			getDisplayValueCallback: ({value}) => cities.find((c) => c.value === value)?.label ?? String(value ?? ""),
-			editorOptions: {debounceMs: 50, searchCallback: async ({term}) => {
+			editorOptions: {searchDelay: 50, searchCallback: async ({term}) => {
 				await sleep(20)
 				return cities.filter((c) => c.label.toLowerCase().includes(term.toLowerCase()))
 			}}}]}

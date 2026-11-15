@@ -123,7 +123,7 @@
 				initialOptions: people.slice(0, 4),
 				searchCallback: searchPeople,
 				minSearchLength: 1,
-				debounceMs: 200,
+				searchDelay: 200,
 				allowEmpty: true,
 				placeholder: "Search people…"
 			}

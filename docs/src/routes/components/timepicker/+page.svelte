@@ -27,7 +27,7 @@
 		{name: "maxTime", type: "string", default: "undefined", description: "Maximum allowed time in HH:mm or HH:mm:ss format."},
 		{name: "getIsTimeDisabledCallback", type: "(ctx: {hour, minute, second}) => boolean", default: "undefined", description: "Return true to disable a specific time. Composes with minTime/maxTime and disabledTimes."},
 		{name: "disabledTimes", type: "string[]", default: "undefined", description: 'Convenience shorthand for booked / blocked slots, e.g. ["10:15", "10:30"]. Composes with getIsTimeDisabledCallback.'},
-		{name: "autoClose", type: "boolean", default: "true", description: "When true, the popup closes when the user clicks OK."},
+		{name: "closeOnSelect", type: "boolean", default: "true", description: "When true, the popup closes when the user clicks OK."},
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the popup (matching FluentUI Blazor). Set false to require clicking the clock icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the popup."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names applied to the root element."},

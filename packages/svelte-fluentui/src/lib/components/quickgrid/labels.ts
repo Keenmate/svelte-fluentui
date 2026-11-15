@@ -4,7 +4,7 @@ import type {QuickGridLabels} from "../QuickGrid.types.js"
 export const defaultQuickGridLabels: QuickGridLabels = {
 	filterPlaceholder: "Filter...",
 	filterAriaLabel: (title) => `Filter ${title}`,
-	noItems: "No items to display",
+	emptyText: "No items to display",
 	previousPage: "Previous",
 	nextPage: "Next",
 	pageInfo: (page, pageCount) => `Page ${page} of ${pageCount}`,
@@ -36,6 +36,6 @@ export const defaultQuickGridLabels: QuickGridLabels = {
 	editorSearchPlaceholder: "Type to search...",
 	editorLoading: "Loading...",
 	editorSearching: "Searching...",
-	editorNoOptions: "No options",
-	editorNoMatches: "No matching options"
+	editorEmptyText: "No options",
+	editorFilterEmptyText: "No matching options"
 }

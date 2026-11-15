@@ -1,7 +1,7 @@
 import {test, expect} from "@playwright/test"
 
 /**
- * Search (2.0.0 Phase 3): `immediate` + `immediateDelay` debounce onSearch via
+ * Search (2.0.0 Phase 3): `immediate` + `searchDelay` debounce onSearch via
  * helpers/debounce.ts; a pending call is dropped on unmount.
  * Fixture: docs/src/routes/test/search-debounce/+page.svelte
  */

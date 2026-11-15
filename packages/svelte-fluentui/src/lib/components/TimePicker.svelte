@@ -42,7 +42,7 @@
 		/** Convenience shorthand for booked / blocked time slots. Each entry in "HH:mm" or "HH:mm:ss" form. */
 		disabledTimes?: string[]
 		/** When true (default), the popup closes when the user clicks OK. */
-		autoClose?: boolean
+		closeOnSelect?: boolean
 		/** When true (default), clicking anywhere on the input area opens the popup, matching FluentUI Blazor. Set false to require clicking the clock icon. */
 		openOnInputClick?: boolean
 		/** Bindable popup open state. */
@@ -80,7 +80,7 @@
 		maxTime = undefined,
 		getIsTimeDisabledCallback = undefined,
 		disabledTimes = undefined,
-		autoClose = true,
+		closeOnSelect = true,
 		openOnInputClick = true,
 		open = $bindable(false),
 		openClockIconAriaLabel = "Open time picker",
@@ -328,7 +328,7 @@
 		}
 		if (isTimeDisabled(h, selectedMinute, showSeconds ? selectedSecond : 0)) return
 		value = generateTimeValue()
-		if (autoClose) setOpen(false)
+		if (closeOnSelect) setOpen(false)
 		onChange?.({value})
 	}
 

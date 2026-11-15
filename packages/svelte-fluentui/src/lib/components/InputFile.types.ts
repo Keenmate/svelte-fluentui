@@ -121,7 +121,7 @@ export type InputFileLabels = {
 		totalBytes: number
 		percent: number
 	}) => string
-	emptyState: string
+	emptyText: string
 	uploadedAnnouncement: (name: string) => string
 	failedAnnouncement: (name: string, err: string) => string
 }

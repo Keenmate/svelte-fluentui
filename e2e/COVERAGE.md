@@ -39,7 +39,7 @@ keystrokes and works consistently.
 "attached"})` before asserting on effect-driven state. See FINDINGS.md #4.
 
 See `FINDINGS.md` for component bugs/limitations discovered while writing
-specs (keepOpen, etc.).
+specs (closeOnSelect, etc.).
 
 ---
 

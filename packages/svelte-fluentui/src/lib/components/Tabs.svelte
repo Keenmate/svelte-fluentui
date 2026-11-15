@@ -63,7 +63,7 @@
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
-	import type {RestProps} from "../types/index.js"
+	import type {Orientation, RestProps} from "../types/index.js"
 
 	function toTabInfo(tab: TabEntry): TabInfo {
 		return {id: tab.id, label: tab.label, data: tab.data}
@@ -73,7 +73,7 @@
 		id?: string
 		class?: string
 		style?: string
-		orientation?: "horizontal" | "vertical"
+		orientation?: Orientation
 		activeId?: string
 		showActiveIndicator?: boolean
 		/** The `<Tab>` elements, placed directly between the `<Tabs>` tags. */

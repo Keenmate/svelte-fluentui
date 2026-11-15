@@ -94,8 +94,8 @@ type QuickGridEditorOptionsBase = {
 	initialOptions?: QuickGridEditorOption[]
 	/** Min chars before search (default: 1). */
 	minSearchLength?: number
-	/** Debounce search calls (default: 300). */
-	debounceMs?: number
+	/** Debounce delay in ms before a search runs (default: 300). */
+	searchDelay?: number
 }
 
 /** Per-column editor configuration (`Column.editorOptions`). */
@@ -412,7 +412,7 @@ export type QuickGridLabels = {
 	/** Filter input accessible name, from the column title. */
 	filterAriaLabel: (columnTitle: string) => string
 	/** Empty grid message. */
-	noItems: string
+	emptyText: string
 	previousPage: string
 	nextPage: string
 	/** Pager text; also announced after a page change. */
@@ -460,6 +460,8 @@ export type QuickGridLabels = {
 	editorSearchPlaceholder: string
 	editorLoading: string
 	editorSearching: string
-	editorNoOptions: string
-	editorNoMatches: string
+	/** Dropdown has no options (select / autocomplete editors). */
+	editorEmptyText: string
+	/** The combobox editor filter matches no options. */
+	editorFilterEmptyText: string
 }

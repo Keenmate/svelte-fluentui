@@ -158,7 +158,7 @@ AUTOCOMPLETE:
   initialOptions: EditorOption[]    # Show before search
   onSearch: (query, row, signal?) => Promise<EditorOption[]>
   minSearchLength: number           # Min chars before search (default: 1)
-  debounceMs: number               # Debounce delay (default: 300)
+  searchDelay: number               # Debounce delay (default: 300)
   multiple: boolean                 # Allow multiple selections
   maxSelections: number             # Max items when multiple=true
 
@@ -333,7 +333,7 @@ const columns = [
         return response.json()
       },
       minSearchLength: 2,
-      debounceMs: 300
+      searchDelay: 300
     }
   }
 ]

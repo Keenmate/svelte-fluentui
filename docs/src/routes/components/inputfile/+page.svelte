@@ -81,7 +81,7 @@
 		{name: "dropZone", type: "Snippet<[{openFileDialog, isDragging}]>", default: "undefined", description: "Replace the default drop zone content."},
 		{name: "fileItem", type: "Snippet<[{item, remove, retry, pause, resume, cancel}]>", default: "undefined", description: "Replace the default file row renderer."},
 		{name: "actions", type: "Snippet<[{clearAll, uploadAll}]>", default: "undefined", description: "Replace the file-list header actions."},
-		{name: "emptyState", type: "Snippet", default: "undefined", description: "Rendered when items is empty."}
+		{name: "empty", type: "Snippet", default: "undefined", description: "Rendered when items is empty."}
 	]
 
 	const instanceMethods: Property[] = [

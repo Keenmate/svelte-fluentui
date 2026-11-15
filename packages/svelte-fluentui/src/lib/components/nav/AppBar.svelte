@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import type {RestProps} from "../../types/index.js"
+	import type {Orientation, RestProps} from "../../types/index.js"
 	import {AppBarOrientation} from "../../fluent-ui/constants/app-bar.js"
 	import {classList} from "../../helpers/html.js"
 
 	type OwnProps = {
-		orientation?: AppBarOrientation
+		orientation?: Orientation
 		children?: Snippet
 		class?: string
 	}

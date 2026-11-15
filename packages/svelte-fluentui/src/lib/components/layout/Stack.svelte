@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import type {RestProps} from "../../types/index.js"
+	import type {Orientation, RestProps} from "../../types/index.js"
 
 	type OwnProps = {
 		children?: Snippet
-		orientation?: "vertical" | "horizontal"
+		orientation?: Orientation
 		horizontalAlign?: "start" | "center" | "end" | "stretch" | "space-between" | "space-around"
 		verticalAlign?: "start" | "center" | "end" | "stretch" | "space-between" | "space-around"
 		verticalGap?: string

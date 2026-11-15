@@ -104,7 +104,7 @@ export const DEFAULT_LABELS: InputFileLabels = {
 			: `${completed} of ${total} done`
 		return `${counts} · ${sizes}`
 	},
-	emptyState: "No files selected",
+	emptyText: "No files selected",
 	uploadedAnnouncement: (n) => `Uploaded ${n}`,
 	failedAnnouncement: (n, e) => `Failed to upload ${n}: ${e}`
 }

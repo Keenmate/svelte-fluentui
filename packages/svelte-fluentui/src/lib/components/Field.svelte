@@ -1,10 +1,8 @@
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import type {RestProps} from "../types/index.js"
+	import type {Orientation, RestProps} from "../types/index.js"
 
 	export type FieldValidationState = "none" | "warning" | "error" | "success"
-	export type FieldOrientation = "vertical" | "horizontal"
-
 	type OwnProps = {
 		label?: string | null | undefined
 		labelTemplate?: Snippet | null | undefined
@@ -12,7 +10,7 @@
 		hint?: string | null | undefined
 		validationState?: FieldValidationState
 		validationMessage?: string | null | undefined
-		orientation?: FieldOrientation
+		orientation?: Orientation
 		/**
 		 * Optional id used both as the inner control's `id` (caller passes it through)
 		 * and as the label's `for` attribute. If omitted, label clicks are not

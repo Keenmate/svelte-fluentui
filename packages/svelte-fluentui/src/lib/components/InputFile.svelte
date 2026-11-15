@@ -182,7 +182,8 @@
 				}
 			]
 		>
-		emptyState?: Snippet
+		/** Rendered in the file list area when there are no files (`listAppearance="list"`). */
+		empty?: Snippet
 		actions?: Snippet<[{
 			clearAll: () => void
 			uploadAll: () => Promise<void>
@@ -241,7 +242,7 @@
 		onFileRemove = undefined,
 		dropZone = undefined,
 		fileItem = undefined,
-		emptyState = undefined,
+		empty = undefined,
 		actions = undefined,
 		class: className = "",
 		style = ""
@@ -1490,8 +1491,8 @@
 	{#if listAppearance === "list"}
 		{#if items.length > 0}
 			{@render fileListPanel(false)}
-		{:else if emptyState}
-			{@render emptyState()}
+		{:else if empty}
+			{@render empty()}
 		{/if}
 	{:else if listAppearance === "popover" && popoverOpen && items.length > 0 && selectorWrapEl}
 		<!-- The .fluent-inputfile wrapper restores the CSS scope for the portal'd

@@ -36,7 +36,7 @@
 	}
 
 	// Immediate mode state
-	let immediateDelayEnabled = $state(false);
+	let searchDelayEnabled = $state(false);
 	let immediateQuery = $state("");
 	let immediateResults = $state<string[]>([]);
 	let immediateLastSearched = $state("");
@@ -70,7 +70,7 @@
 		{name: "disabled", type: "bool", default: "false", description: "Disables the form control, ensuring it doesn't participate in form submission"},
 		{name: "displayName", type: "string", default: "undefined", description: "Gets or sets the display name for this field"},
 		{name: "immediate", type: "bool", default: "false", description: "Gets or sets if the derived component is embedded in another component"},
-		{name: "immediateDelay", type: "int", default: "0", description: "Gets or sets the delay, in milliseconds, before to read the FluentInputBase.ValueChanged event"},
+		{name: "searchDelay", type: "number", default: "0", description: "Debounce delay in ms before onSearch fires while typing (requires immediate; 0 = no debounce)"},
 		{name: "label", type: "string", default: "undefined", description: "Gets or sets the text to be used for the input"},
 		{name: "labelTemplate", type: "RenderFragment", default: "undefined", description: "Gets or sets the content to be rendered inside the component"},
 		{name: "maxlength", type: "int", default: "undefined", description: "Gets or sets the maximum number of characters a user can enter"},
@@ -89,7 +89,7 @@
 
 	const callbacks: Property[] = [
 		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user commits the value (Enter / blur / clear)"},
-		{name: "onSearch", type: "(ctx: {term: string}) => void", default: "undefined", description: "Fires as the user types; debounced by immediateDelay when immediate is set"},
+		{name: "onSearch", type: "(ctx: {term: string}) => void", default: "undefined", description: "Fires as the user types; debounced by searchDelay when immediate is set"},
 		{name: "oninput / onchange / …", type: "(event: Event) => void", default: "undefined", description: "Native events, forwarded untouched"}
 	]
 
@@ -201,7 +201,7 @@
 						label="Search for name"
 						bind:value={debounceQuery}
 						immediate={true}
-						immediateDelay={500}
+						searchDelay={500}
 						onSearch={handleDebounceSearch}
 						placeholder="Type to search (500ms debounce)..."
 					/>
@@ -223,12 +223,12 @@
 		<Grid columns={1} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<Checkbox bind:checked={immediateDelayEnabled}>Immediate Delay</Checkbox>
+					<Checkbox bind:checked={searchDelayEnabled}>Search delay</Checkbox>
 					<Search
 						label="Search for State"
 						bind:value={immediateQuery}
 						immediate={true}
-						immediateDelay={immediateDelayEnabled ? 300 : 0}
+						searchDelay={searchDelayEnabled ? 300 : 0}
 						onSearch={handleImmediateSearch}
 						placeholder="Type to search..."
 					/>

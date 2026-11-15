@@ -45,6 +45,9 @@
 		onOpenChange?: (ctx: {open: boolean}) => void
 		/** Replace a result row's rendering. Receives the item and whether it's the active row. */
 		item?: Snippet<[item: CommandPaletteItem, selected: boolean]>
+		/** Text shown when nothing matches (used when no `empty` snippet is given). Defaults to
+		 * the built-in message: `No matches for "<query>"`, or `No items` with an empty query. */
+		emptyText?: string
 		/** Replace the empty-state body. Receives the current query. */
 		empty?: Snippet<[query: string]>
 		/** Replace the footer hints. */
@@ -69,6 +72,7 @@
 		beforeActionCallback = undefined,
 		onOpenChange = undefined,
 		item: itemSnippet = undefined,
+		emptyText = undefined,
 		empty: emptySnippet = undefined,
 		footer: footerSnippet = undefined,
 		class: className = undefined,
@@ -446,7 +450,7 @@
 						{@render emptySnippet(trimmedQuery)}
 					{:else}
 						<div class="cp-empty">
-							{#if trimmedQuery}No matches for "{trimmedQuery}"{:else}No items{/if}
+							{#if emptyText}{emptyText}{:else if trimmedQuery}No matches for "{trimmedQuery}"{:else}No items{/if}
 						</div>
 					{/if}
 				{/if}

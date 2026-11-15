@@ -39,13 +39,14 @@
 		end?: Snippet;
 		// New props from Blazor API
 		immediate?: boolean;
-		immediateDelay?: number;
+		/** Debounce delay in ms before `onSearch` fires while typing (requires `immediate`; 0 = no debounce). */
+		searchDelay?: number;
 		dataList?: string;
 		displayName?: string;
 		width?: string;
 		height?: string;
 		title?: string;
-		/** Fires as the user types (debounced by `immediateDelay` when `immediate`). */
+		/** Fires as the user types (debounced by `searchDelay` when `immediate`). */
 		onSearch?: (ctx: {term: string}) => void;
 		/** Fires when the user commits the value (Enter / blur / clear). */
 		onChange?: (ctx: {value: string}) => void;
@@ -85,7 +86,7 @@
 		end,
 		// New props
 		immediate = false,
-		immediateDelay = 0,
+		searchDelay = 0,
 		dataList,
 		displayName,
 		width,
@@ -99,8 +100,8 @@
 	}: Props = $props();
 
 	let element: HTMLElement | undefined;
-	// `immediate` + `immediateDelay`: onSearch fires once typing pauses for the delay.
-	const debouncedSearch = debounce((term: string) => onSearch?.({term}), () => immediateDelay);
+	// `immediate` + `searchDelay`: onSearch fires once typing pauses for the delay.
+	const debouncedSearch = debounce((term: string) => onSearch?.({term}), () => searchDelay);
 
 	// Expose focus method for parent components
 	export function focus(preventScroll: boolean = false) {
@@ -119,7 +120,7 @@
 		value = val;
 		oninput?.(e);
 
-		if (immediate && immediateDelay > 0) {
+		if (immediate && searchDelay > 0) {
 			// Immediate mode with a delay: debounce onSearch
 			debouncedSearch(val);
 		} else {

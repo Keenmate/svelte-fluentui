@@ -148,7 +148,7 @@ Runnable snippets for common `svelte-fluentui` patterns. For the full component 
   placeholder="Choose a date"
   firstDayOfWeek={1}
   {disabledDateFunc}
-  autoClose={true}
+  closeOnSelect={true}
 />
 
 <TimePicker
@@ -158,7 +158,7 @@ Runnable snippets for common `svelte-fluentui` patterns. For the full component 
   showSeconds={false}
   minTime="08:00"
   maxTime="18:00"
-  autoClose={true}
+  closeOnSelect={true}
 />
 ```
 

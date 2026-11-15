@@ -56,10 +56,11 @@ maxResultCount?: number          # Max options to show (default: 9)
 showOverlayOnEmptyResults?: boolean # Show dropdown when no matches (default: true)
 showInitialOptions?: boolean       # Show options before typing (default: false)
 initialOptionsCount?: number       # How many initial options to show
-keepOpen?: boolean                 # Keep dropdown open after selection
+closeOnSelect?: boolean            # Close after a pick (default: !multiple — multi stays open)
+emptyText?: string                 # No-match message (default: "No results found"); `empty` snippet overrides
 selectValueOnTab?: boolean         # Select highlighted option on Tab (default: true)
 tagsPosition?: "inline" | "above" | "below"  # Where to show tags (default: "inline")
-immediateDelay?: number            # Debounce delay in ms (default: 0)
+searchDelay?: number               # Debounce delay in ms (default: 0)
 loading?: boolean                  # Show loading state
 initialSearchQuery?: string        # Pre-populate search text
 width?: string
@@ -136,7 +137,7 @@ ASYNC SEARCH
   bind:selectedOptions={selected}
   onoptionssearch={searchCountries}
   placeholder="Search countries..."
-  immediateDelay={300}
+  searchDelay={300}
 />
 
 
@@ -160,7 +161,7 @@ Add delay before triggering search:
 <Autocomplete
   bind:selectedOptions={selected}
   onoptionssearch={searchAPI}
-  immediateDelay={300}  # Wait 300ms after typing stops
+  searchDelay={300}  # Wait 300ms after typing stops
 />
 
 
@@ -217,12 +218,12 @@ WITH LABEL
 />
 
 
-KEEP OPEN AFTER SELECTION
--------------------------
+CLOSE AFTER EACH SELECTION (multi-select stays open by default)
+---------------------------------------------------------------
 <Autocomplete
   {options}
   bind:selectedOptions={selected}
-  keepOpen
+  closeOnSelect
   maxSelectionCount={5}
 />
 
@@ -300,7 +301,7 @@ USER PICKER:
   bind:selectedOptions={selectedUsers}
   onoptionssearch={searchUsers}
   placeholder="Add team members..."
-  immediateDelay={300}
+  searchDelay={300}
   maxSelectionCount={10}
 />
 

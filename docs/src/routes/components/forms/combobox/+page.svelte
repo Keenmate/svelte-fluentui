@@ -178,14 +178,14 @@
 		{name: "value", type: "string[]", default: "[]", description: "Selected value(s) (bindable)"},
 		{name: "options", type: "OptionItem[]", default: "undefined", description: "Array of option items"},
 		{name: "multiple", type: "boolean", default: "false", description: "Multi-select: selected values render as removable chips and the input stays a filter. value/onChange carry the full array."},
-		{name: "keepOpen", type: "boolean", default: "true", description: "Multi-select only: keep the dropdown open after each pick so several can be chosen in a row. Set false to close on each pick."},
+		{name: "closeOnSelect", type: "boolean", default: "!multiple", description: "Close the dropdown after a pick. Multi-select defaults to false (stays open so several can be chosen in a row); set true to close on each pick. Single-select always closes."},
 		{name: "tagsPosition", type: '"inline" | "top" | "bottom"', default: '"inline"', description: "Multi-select only: where the selected-value chips render — inside the control (inline), or as a wrapping row above/below it."},
 		{name: "label", type: "string", default: "undefined", description: "Label text displayed above the combobox"},
 		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder text"},
 		{name: "autocomplete", type: '"inline" | "list" | "both" | "none"', default: "undefined", description: "Autocomplete behavior"},
 		{name: "minSearchLength", type: "number", default: "undefined", description: "Keep dropdown closed until the typed text reaches this length. Useful with large/async option sets to avoid opening on a single character."},
-		{name: "noDataText", type: "string", default: '"No results found"', description: "Text shown inside the dropdown when the filter matches no options."},
-		{name: "noDataTemplate", type: "Snippet", default: "undefined", description: "Custom content shown when the filter matches no options; overrides noDataText."},
+		{name: "emptyText", type: "string", default: '"No results found"', description: "Text shown inside the dropdown when the filter matches no options."},
+		{name: "empty", type: "Snippet", default: "undefined", description: "Custom content shown when the filter matches no options; overrides emptyText."},
 		{name: "onSearch", type: "(ctx: {term: string}) => void", default: "undefined", description: "Debounced notification that the search term changed. When set, update options with the results yourself; the component skips its own client-side filtering."},
 		{name: "searchDelay", type: "number", default: "250", description: "Debounce in ms before onSearch fires. Ignored without onSearch."},
 		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How filtering and inline completion compare text: normalized ignores case and diacritics (zurich finds Zürich), case-insensitive ignores case only, exact matches both. No effect on filterCallback or onSearch."},
@@ -279,21 +279,21 @@
 			Set <code>multiple</code> to select several values. Picked options render as removable chips inside
 			the control and the input stays a filter (type to narrow, click or <kbd>Enter</kbd> to toggle,
 			<kbd>Backspace</kbd> on an empty filter removes the last chip). By default the dropdown stays open after
-			each pick (<code>keepOpen</code>, default <code>true</code>) so you can choose several in a row — the
-			right-hand example sets <code>keepOpen={false}</code> to close on each pick.
+			each pick (<code>closeOnSelect</code> defaults to <code>false</code> in multiple mode) so you can choose several in a row — the
+			right-hand example sets <code>closeOnSelect={"{true}"}</code> to close on each pick.
 		</p>
 		<Grid columns={2} gap="1rem">
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>keepOpen (default)</strong>
+					<strong>closeOnSelect={"{false}"} (default)</strong>
 					<Combobox id="multi" bind:value={multiValue} options={songs} multiple label="Select songs" placeholder="Filter songs…" />
 					<small>Selected: {multiValue.length ? multiValue.join(", ") : "None"}</small>
 				</Stack>
 			</GridItem>
 			<GridItem>
 				<Stack orientation="vertical" gap="0.5rem">
-					<strong>keepOpen={"{false}"}</strong>
-					<Combobox id="multi-closing" bind:value={multiClosingValue} options={songs} multiple keepOpen={false} label="Select songs" placeholder="Filter songs…" />
+					<strong>closeOnSelect={"{true}"}</strong>
+					<Combobox id="multi-closing" bind:value={multiClosingValue} options={songs} multiple closeOnSelect={true} label="Select songs" placeholder="Filter songs…" />
 					<small>Selected: {multiClosingValue.length ? multiClosingValue.join(", ") : "None"}</small>
 				</Stack>
 			</GridItem>

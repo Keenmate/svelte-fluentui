@@ -6,12 +6,12 @@
 </script>
 
 <script lang="ts">
-	import type {RestProps} from "../types/index.js"
+	import type {Orientation, RestProps} from "../types/index.js"
 
 	type OwnProps = {
 		class?: string
 		style?: string
-		orientation?: "horizontal" | "vertical"
+		orientation?: Orientation
 		role?: "separator" | "presentation"
 	}
 

@@ -463,7 +463,7 @@
 				// Start searching after 1 character
 				minSearchLength: 1,
 				// Debounce search calls
-				debounceMs: 200,
+				searchDelay: 200,
 				// Use ISO code as value, label as display
 				valueMember: "value",
 				displayMember: "label",
@@ -1689,7 +1689,7 @@ function clearError(rowKey, field) {
 				<tr><td>initialOptions</td><td>QuickGridEditorOption[]</td><td>autocomplete</td><td>Options shown before search</td></tr>
 				<tr><td>searchBehavior</td><td>"normalized" | "case-insensitive" | "exact"</td><td>select, combobox, autocomplete</td><td>How filtering and type-ahead compare text (default: "normalized", ignores case and diacritics). No effect on searchCallback</td></tr>
 				<tr><td>minSearchLength</td><td>number</td><td>autocomplete</td><td>Min chars before search (default: 1)</td></tr>
-				<tr><td>debounceMs</td><td>number</td><td>autocomplete</td><td>Search debounce delay (default: 300)</td></tr>
+				<tr><td>searchDelay</td><td>number</td><td>autocomplete</td><td>Search debounce delay (default: 300)</td></tr>
 				<tr><td>trueValue</td><td>any</td><td>checkbox</td><td>Value to store when checked (default: true)</td></tr>
 				<tr><td>falseValue</td><td>any</td><td>checkbox</td><td>Value to store when unchecked (default: false)</td></tr>
 				<tr><td>minDate</td><td>Date | string</td><td>date</td><td>Minimum selectable date</td></tr>

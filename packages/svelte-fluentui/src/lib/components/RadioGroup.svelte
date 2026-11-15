@@ -9,7 +9,7 @@
 	import {radioGroupContext} from "../contexts.js"
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import type {NativeEventHandler, RestProps} from "../types/index.js"
+	import type {NativeEventHandler, Orientation, RestProps} from "../types/index.js"
 
 	type OwnProps = {
 		value?: string | null
@@ -17,7 +17,7 @@
 		label?: string
 		labelTemplate?: Snippet
 		ariaLabel?: string
-		orientation?: "horizontal" | "vertical"
+		orientation?: Orientation
 		readonly?: boolean
 		disabled?: boolean
 		required?: boolean

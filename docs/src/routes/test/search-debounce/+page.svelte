@@ -7,6 +7,6 @@
 
 <button id="unmount" onclick={() => (shown = false)}>unmount</button>
 {#if shown}
-	<Search id="debounced" immediate immediateDelay={400} onSearch={({term}) => terms.push(term)} />
+	<Search id="debounced" immediate searchDelay={400} onSearch={({term}) => terms.push(term)} />
 {/if}
 <output id="terms">{terms.join(" | ")}</output>

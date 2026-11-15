@@ -1866,7 +1866,7 @@
 			{#if displayItems.length === 0}
 				<tr>
 					<td colspan={columns.length + (showRowToolbar && toolbarTrigger === 'button' ? 1 : 0) + (fillerColumn ? 1 : 0)} class="empty-message">
-						{labels.noItems}
+						{labels.emptyText}
 					</td>
 				</tr>
 			{:else}

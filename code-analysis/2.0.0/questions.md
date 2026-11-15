@@ -260,3 +260,13 @@ Breaking-ish: document in release notes. Do it at the start of Phase 2.
 **Q-QG-5 decided 2026-11-14 (user: ok):** go with Phase 2. Fix the clipped advanced row toolbar on the
 editable docs page as a small separate commit first (pre-existing; may move to Phase 5 if it turns out
 to need the toolbar rework).
+
+## Q25 — Leftover naming groups (Phase 4 "Left" list)
+
+**Decided 2026-11-15:**
+- Empty state: as in svelte-pure-admin — string prop `emptyText`, snippet `empty` (Combobox
+  `noDataText` / `noDataTemplate`, QuickGrid `labels.noItems`; CommandPalette gains `emptyText`).
+- Search debounce: `searchDelay` everywhere (Autocomplete / Search `immediateDelay`).
+- Close after a pick: `closeOnSelect` everywhere (DatePicker / TimePicker `autoClose`; Combobox /
+  Autocomplete `keepOpen`, inverted, defaults unchanged).
+- One exported `Orientation` type; `FieldOrientation` removed.
