@@ -67,6 +67,7 @@
 		// Display
 		{group: "Display", name: "Badge", description: "Status indicator badge", href: "/components/badge"},
 		{group: "Display", name: "Card", description: "Content container card", href: "/components/card"},
+		{group: "Display", name: "Chip", description: "Removable selection tag", href: "/components/chip"},
 		{group: "Display", name: "Divider", description: "Visual separator line", href: "/components/divider"},
 
 		// Feedback

@@ -32,7 +32,7 @@ Breakpoints resolve against the viewport, or a container with `container`.
 		/** `justify-content` of the items. Flex mode only. Default: `"flex-start"`. */
 		justify?: JustifyContent
 		/** Render only the items that define a span for the grid's current breakpoint (measured from the
-		 * grid's own width, which is only observed while `onBreakpointChange` is set). Default: `false`. */
+		 * grid's own width). Default: `false`. */
 		adaptiveRendering?: boolean
 		/** Opt into container-query sizing: child GridItem xs/sm/md/… breakpoints resolve against a
 		 * container's width instead of the viewport. Without `containerId` the Grid itself is the
@@ -142,15 +142,15 @@ Breakpoints resolve against the viewport, or a container with `container`.
 		}
 	}
 
+	// Always track the grid's width: `adaptiveRendering` (on the Grid or any single
+	// GridItem) needs `currentSize` just as much as `onBreakpointChange` does.
 	onMount(() => {
-		if (onBreakpointChange) {
-			updateBreakpoint()
-			const resizeObserver = new ResizeObserver(updateBreakpoint)
-			if (gridElement) resizeObserver.observe(gridElement)
+		updateBreakpoint()
+		const resizeObserver = new ResizeObserver(updateBreakpoint)
+		if (gridElement) resizeObserver.observe(gridElement)
 
-			return () => {
-				resizeObserver.disconnect()
-			}
+		return () => {
+			resizeObserver.disconnect()
 		}
 	})
 </script>

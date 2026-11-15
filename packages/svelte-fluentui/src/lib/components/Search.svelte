@@ -76,8 +76,6 @@ Wrapper for `<fluent-search>`: a search input with a clear button, `onSearch` wh
 		searchDelay?: number;
 		/** Alias of `list` (Blazor naming); wins over `list`. */
 		dataList?: string;
-		/** Declared for Blazor parity; currently unused. */
-		displayName?: string;
 		/** CSS width, appended to `style`. */
 		width?: string;
 		/** CSS height, appended to `style`. */
@@ -126,7 +124,6 @@ Wrapper for `<fluent-search>`: a search input with a clear button, `onSearch` wh
 		immediate = false,
 		searchDelay = 0,
 		dataList,
-		displayName,
 		width,
 		height,
 		title,

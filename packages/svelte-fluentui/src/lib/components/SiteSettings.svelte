@@ -1,5 +1,6 @@
 <!-- @component
 Modal dialog for the site-wide theme settings (theme mode, accent and neutral colour, text direction), backed by the `settings` store.
+App-specific settings can be added as `children`; they render below the built-in ones.
 
 ```svelte
 <SiteSettings bind:open />
@@ -17,7 +18,7 @@ Modal dialog for the site-wide theme settings (theme mode, accent and neutral co
 		open?: boolean
 		/** Fires when the dialog opens or closes. */
 		onOpenChange?: (ctx: {open: boolean}) => void
-		/** Declared but currently not rendered. */
+		/** Extra, app-specific settings rendered below the built-in ones (after the Direction switch). */
 		children?: Snippet
 	}
 
@@ -140,6 +141,12 @@ Modal dialog for the site-wide theme settings (theme mode, accent and neutral co
 				{/snippet}
 			</Switch>
 		</div>
+
+		{#if children}
+			<div class="site-settings-extra">
+				{@render children()}
+			</div>
+		{/if}
 
 		<!-- Info Text -->
 		<p style="margin: 0; font-size: 0.875rem; line-height: 1.5; color: var(--neutral-foreground-rest);">

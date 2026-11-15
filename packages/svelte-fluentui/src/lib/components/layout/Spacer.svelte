@@ -10,7 +10,8 @@ Flex spacer: a fixed-width gap, or (without `width`) grows to push siblings apar
 	import type {RestProps} from "../../types/index.js"
 
 	type OwnProps = {
-		/** Fixed width in px (the value gets a `px` suffix). Omit to grow and fill the free space (`flex: 1`). */
+		/** Fixed width: a number (or numeric string) is px, any other string is used as a CSS length
+		 * (`"1rem"`, `"10%"`). Omit to grow and fill the free space (`flex: 1`). */
 		width?: string | number
 	}
 
@@ -23,7 +24,10 @@ Flex spacer: a fixed-width gap, or (without `width`) grows to push siblings apar
 		...rest
 	}: Props = $props()
 
-	let widthCssVar = $derived(width && `${width}px`)
+	// Numbers and bare numeric strings ("100") get `px`; CSS lengths pass through.
+	let widthCssVar = $derived(
+		!width ? undefined : typeof width === "number" || /^\d+(\.\d+)?$/.test(width.trim()) ? `${width}px` : width
+	)
 </script>
 
 <div

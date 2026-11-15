@@ -27,20 +27,20 @@
 	}
 
 	const properties: Property[] = [
-		{name: "modal", type: "boolean", default: "undefined", description: "Modal behavior"},
+		{name: "modal", type: "boolean", default: "undefined", description: "true: modal (aria-modal) and locks page scroll while open; false: non-modal fluent-dialog; unset keeps fluent-dialog's modal default without the scroll lock"},
 		{name: "open", type: "boolean", default: "undefined", description: "Whether the dialog is open (bindable)"},
 		{name: "preventClose", type: "boolean", default: "false", description: "Hide the close button and ignore Escape / overlay clicks"},
 		{name: "primaryAction / secondaryAction", type: "DialogAction", default: "undefined", description: "Footer buttons: {text, icon?, isDisabled?, onClick?, appearance?, shouldCloseOnClick? (default true)} — the dialog closes after the action ran"},
 		{name: "dismissible", type: "boolean", default: "false", description: "Show dismiss button"},
-		{name: "trapFocus", type: "boolean", default: "undefined (on)", description: "Trap Tab focus inside the open dialog; false disables it"},
+		{name: "trapFocus", type: "boolean", default: "undefined (on)", description: "Trap Tab focus inside the open dialog (trap-focus attribute); false disables it"},
 		{name: "title", type: "string", default: "undefined", description: "Title text in the header row (ignored when the header snippet is set)"},
 		{name: "closeOnEscape", type: "boolean", default: "true", description: "Close on Escape (topmost layer only)"},
 		{name: "size", type: '"small" | "medium" | "large" | "extra-large" | "full"', default: '"medium"', description: "Predefined dialog size"},
 		{name: "width", type: "string", default: "undefined", description: "Custom width (overrides size)"},
 		{name: "height", type: "string", default: "undefined", description: "Custom height (overrides size)"},
-		{name: "ariaDescribedby", type: "string", default: "undefined", description: "Accessibility: described by"},
-		{name: "ariaLabelledby", type: "string", default: "undefined", description: "Accessibility: labelled by"},
-		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessibility label"},
+		{name: "ariaDescribedby", type: "string", default: "undefined", description: "Id of the element describing the dialog (aria-describedby on fluent-dialog, mirrored to its inner role=dialog)"},
+		{name: "ariaLabelledby", type: "string", default: "undefined", description: "Id of the element labelling the dialog (aria-labelledby on fluent-dialog, mirrored to its inner role=dialog)"},
+		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessible name (aria-label on fluent-dialog, mirrored to its inner role=dialog)"},
 		{name: "class", type: "string", default: "undefined", description: "Extra class on fluent-dialog"},
 		{name: "style", type: "string", default: "undefined", description: "Inline style on fluent-dialog"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to fluent-dialog"}

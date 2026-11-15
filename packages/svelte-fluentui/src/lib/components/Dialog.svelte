@@ -140,7 +140,8 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 
 
 	type OwnProps = {
-		/** Modal dialog: locks page scroll while open (`modal` on `<fluent-dialog>`). */
+		/** Modal dialog: locks page scroll while open (`modal` on `<fluent-dialog>`, which sets `aria-modal`).
+		 * `false` makes `<fluent-dialog>` non-modal; unset keeps its modal default but skips the scroll lock. */
 		modal?: boolean
 		/** Whether the dialog is open (bindable). */
 		open?: boolean
@@ -148,7 +149,7 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 		preventClose?: boolean
 		/** Render a "Dismiss" button in the footer (label via `dismissButtonText`). */
 		dismissible?: boolean
-		/** Keep Tab focus inside the dialog (`trapFocus` on `<fluent-dialog>`). Default: `true`; `false` disables it. */
+		/** Keep Tab focus inside the dialog (`trap-focus` on `<fluent-dialog>`). Default: `true`; `false` disables it. */
 		trapFocus?: boolean
 		/** Id of the element describing the dialog (`aria-describedby`). */
 		ariaDescribedby?: string
@@ -350,6 +351,13 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 
 	onDestroy(() => popDialog(handle))
 
+	// FAST's `modal` is a boolean attribute that defaults to `true`, so an absent
+	// attribute can't express `modal={false}`; set the property instead (drops
+	// `aria-modal` and FAST's own overlay for non-modal dialogs).
+	$effect(() => {
+		if (element) (element as unknown as {modal: boolean}).modal = modal !== false
+	})
+
 	const actionHost = {}
 	async function runFooterAction(action: DialogAction, fallbackId: string, event: MouseEvent) {
 		const ran = await runAction({
@@ -391,7 +399,10 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 	use:portal
 	bind:this={element}
 	{...rest}
-	{...attrs({modal, trapFocus, ariaDescribedby, ariaLabelledby, ariaLabel})}
+	{...attrs({
+		modal, "trap-focus": trapFocus, "aria-describedby": ariaDescribedby,
+		"aria-labelledby": ariaLabelledby, "aria-label": ariaLabel
+	})}
 	hidden={!open}
 	class={["dialog-positioned", className]}
 	style={dialogStyle + (style ? ` ${style}` : '')}

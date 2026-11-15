@@ -10,7 +10,7 @@
 	}
 
 	const properties: Property[] = [
-		{name: "width", type: "string | number", default: "undefined", description: "Fixed width in px (a px suffix is appended, so pass a number). Omit to grow and fill free space"},
+		{name: "width", type: "string | number", default: "undefined", description: "Fixed width: a number (or numeric string) is px, any other string is a CSS length (\"1rem\", \"10%\"). Omit to grow and fill free space"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"}
 	]
 
@@ -68,16 +68,30 @@
 		<div class="element-block">
 			<span>100px after</span>
 		</div>
-		<Spacer width="100" />
+		<Spacer width={100} />
 		<div class="element-block">
 			<span>200px after</span>
 		</div>
-		<Spacer width="200" />
+		<Spacer width={200} />
 		<div class="element-block">
 			<span>300px after</span>
 		</div>
-		<Spacer width="300" />
+		<Spacer width={300} />
 		<div class="element-block">4</div>
+	</div>
+	<h5>
+		CSS length:
+	</h5>
+	<div class="example example-row-start">
+		<div class="element-block">
+			<span>2rem after</span>
+		</div>
+		<Spacer width="2rem" />
+		<div class="element-block">
+			<span>10% after</span>
+		</div>
+		<Spacer width="10%" />
+		<div class="element-block">3</div>
 	</div>
 	</Card>
 

@@ -39,12 +39,8 @@ Wrapper for `<fluent-radio-group>`: holds the selected value of its `<Radio>` ch
 		readonly?: boolean
 		/** Disables all radios (`disabled` attribute). */
 		disabled?: boolean
-		/** Declared but currently not forwarded to `<fluent-radio-group>`. */
-		required?: boolean
 		/** Focus the group on mount (`autofocus` attribute). */
 		autofocus?: boolean
-		/** Passed through as the `placeholder` attribute. */
-		placeholder?: string
 		/** Extra CSS class on `<fluent-radio-group>`. */
 		class?: string
 		/** Inline style on `<fluent-radio-group>`. */
@@ -69,9 +65,7 @@ Wrapper for `<fluent-radio-group>`: holds the selected value of its `<Radio>` ch
 		orientation = undefined,
 		readonly = undefined,
 		disabled = undefined,
-		required = undefined,
 		autofocus = undefined,
-		placeholder = undefined,
 		class: className = undefined,
 		style = undefined,
 		children = undefined,
@@ -120,7 +114,7 @@ Wrapper for `<fluent-radio-group>`: holds the selected value of its `<Radio>` ch
 <fluent-radio-group
 	{...rest}
 	{...attrs({
-		value, name, orientation, readonly, disabled, autofocus, placeholder,
+		value, name, orientation, readonly, disabled, autofocus,
 		"aria-label": ariaLabel, class: className, style
 	})}
 	onchange={handleGroupChange}

@@ -69,7 +69,6 @@
 		{name: "dataList", type: "string", default: "undefined", description: "Allows associating a datalist to the element by id (alias of list; wins when both are set)"},
 		{name: "list", type: "string", default: "undefined", description: "Id of a datalist with suggestions"},
 		{name: "disabled", type: "bool", default: "false", description: "Disables the form control, ensuring it doesn't participate in form submission"},
-		{name: "displayName", type: "string", default: "undefined", description: "Declared for Blazor parity; currently unused (no effect)"},
 		{name: "immediate", type: "bool", default: "false", description: "Debounce onSearch by searchDelay (without it onSearch fires on every keystroke)"},
 		{name: "searchDelay", type: "number", default: "0", description: "Debounce delay in ms before onSearch fires while typing (requires immediate; 0 = no debounce)"},
 		{name: "label", type: "string", default: "undefined", description: "Gets or sets the text to be used for the input"},

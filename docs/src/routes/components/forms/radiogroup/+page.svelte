@@ -26,9 +26,7 @@
 		{name: "orientation", type: '"horizontal" | "vertical"', default: "undefined", description: "Layout direction"},
 		{name: "readonly", type: "boolean", default: "undefined", description: "Read-only state"},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disabled state for entire group"},
-		{name: "required", type: "boolean", default: "undefined", description: "Declared but currently not forwarded to <fluent-radio-group> (no effect)"},
 		{name: "autofocus", type: "boolean", default: "undefined", description: "Focus the group on page load"},
-		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder hint text"},
 		{name: "class", type: "string", default: "undefined", description: "CSS class name"},
 		{name: "style", type: "string", default: "undefined", description: "Inline CSS styles"},
 		{name: "onChange", type: "(ctx: {value: string}) => void", default: "undefined", description: "Fires when the user selects a different radio"}

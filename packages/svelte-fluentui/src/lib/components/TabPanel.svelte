@@ -21,7 +21,8 @@ Standalone panel wrapping `<fluent-tab-panel>`; shown while `active`. Not used b
 		id?: string
 		/** Shows the panel; `false` sets the `hidden` attribute. Default: `true`. */
 		active?: boolean
-		/** Currently has no effect (reserved). Default: `false`. */
+		/** Lazy content: `children` aren't rendered until the panel is first `active`, then stay mounted
+		 * (state survives later hide/show). Default: `false` (rendered immediately, even while hidden). */
 		defer?: boolean
 		/** Panel content. */
 		children?: Snippet
@@ -39,10 +40,18 @@ Standalone panel wrapping `<fluent-tab-panel>`; shown while `active`. Not used b
 		children = undefined,
 		...rest
 	}: Props = $props()
+
+	// `defer`: mount the content on first activation, keep it mounted afterwards.
+	// svelte-ignore state_referenced_locally
+	let activated = $state(active)
+	$effect(() => {
+		if (active) activated = true
+	})
+	const renderContent = $derived(!defer || active || activated)
 </script>
 
 <fluent-tab-panel {...rest} class={className} {...(style ? { style } : {})} {...(id ? { id } : {})} hidden={!active} >
-	{#if children}
-		{@render children?.()}
+	{#if children && renderContent}
+		{@render children()}
 	{/if}
 </fluent-tab-panel>

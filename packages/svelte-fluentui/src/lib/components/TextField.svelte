@@ -63,13 +63,6 @@ Single-line text input wrapping `<fluent-text-field>`; `bind:value` is a string.
 		/** Tooltip text (`title` attribute). */
 		title?: string | null | undefined
 
-		/** Not a real option — passing it only spreads it onto the element. Call the instance method `setSelectionRange()` instead. */
-		setSelectionRange?: (
-			start: number,
-			end: number,
-			direction?: "forward" | "backward" | "none"
-		) => void
-
 		/** Fires when the user commits an edit (blur / Enter). The live value is `bind:value`. */
 		onChange?: (ctx: {value: string}) => void
 		/** Native `input` event, forwarded untouched. */

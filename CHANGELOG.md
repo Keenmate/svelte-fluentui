@@ -62,6 +62,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **exports:** `AnchorButton` (alias of `Anchor`) → removed — use `Anchor`
 - **Icon:** `primaryFill` → removed — use `color` / `customColor`
 - **Tabs:** `overflow`, `moreButtonId`, `styleMoreValues` (no effect since the rewrite) → removed — use `responsive="menu"`
+- **TextField:** `setSelectionRange` prop (only spread onto the element) → removed — call the instance method `setSelectionRange()`
+- **RadioGroup:** `required` (never forwarded; `<fluent-radio-group>` has no `required`) → removed — set `required` on the `<Radio>`s
+- **Search:** `displayName` (Blazor leftover, unused) → removed
+- **RadioGroup:** `placeholder` (`<fluent-radio-group>` has none, no effect) → removed
 - **QuickGrid:** `ontoolbarclick(detail)` + deprecated `onrowaction(detail)` → one `onAction(detail)` (`source` is `row-toolbar` or `context-menu`; `action`, `id`, `row`, `viewIndex`, `itemIndex`, `rowKey`, plus the cell for the menu) + `beforeActionCallback`
 - **QuickGrid:** `oncontextmenuopen(ctx)` → `onContextMenuOpen(ctx)`
 - **QuickGrid rowToolbar items:** `{id, icon, iconSnippet, title, label, row, group, type, danger, disabled(row, index), onclick({row, rowIndex})}` → action items `{id, action, icon (name or snippet), text, tooltip, isTextVisible, toolbarRow, isDanger, isDisabled / getIsDisabledCallback({row, itemIndex}), onClick(detail)}`; groups are `{divider: true}` entries
@@ -177,6 +181,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- `Chip` exported (the removable selection tag of Combobox / Autocomplete multi-select) with a docs page; new `removeFocusable` puts its × in the Tab order for standalone use.
 - Empty-state props aligned to `emptyText` (string) + `empty` (snippet): new on Autocomplete (default "No results found") and CommandPalette (`emptyText`; the built-in message stays the default).
 - `Orientation` type (`"horizontal" | "vertical"`) exported from the package root; used by every `orientation` prop.
 - CommandPalette `searchBehavior` (default `normalized`): matching and the `<mark>` highlight ignore case and diacritics ("cafe" finds "Café"); PageUp / PageDown move the cursor.
@@ -290,6 +295,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - QuickGrid combobox editor: a value that isn't among the options shows the cell's display text instead of an empty input.
 - QuickGrid dark theme: sorted and hovered sortable headers show `--fluent-quickgrid-header-bg-sorted` / `--fluent-quickgrid-header-bg-hover` (the dark-theme header rule overrode both with the plain header background).
 - MultiSplitter: dragging a pane into its rail fires `onPaneCollapse` once (it fired again on every animation frame while the pointer stayed under the snap threshold); dragging it back out still fires `onPaneExpand` once.
+- Props that didn't do what they claimed now work: TabPanel `defer` (content mounts on first activation), SiteSettings `children` (rendered below the built-in settings), Listbox `height` (max height, scrolls), Grid `adaptiveRendering` without `onBreakpointChange`, GridItem `hiddenWhen` on window resize, Spacer `width` CSS lengths (`"1rem"` became `1rempx`; numbers stay px).
+- Dialog: `ariaLabel` / `ariaLabelledby` / `ariaDescribedby` reach `<fluent-dialog>` under their real attribute names (they rendered as `arialabel` etc. and never reached the inner `role="dialog"`); `trapFocus` uses `trap-focus`; `modal={false}` makes `<fluent-dialog>` non-modal (`aria-modal` was always `true`).
 
 ### Internal
 - QuickGrid split into `components/quickgrid/`: `QuickGridHeader`, `QuickGridPager`, `QuickGridRowToolbar`, `QuickGridContextMenu` (internal, not exported) and `tree.ts`, `columns.ts`, `navigation.ts`, `editing.svelte.ts`, `options.svelte.ts`; QuickGrid.svelte 3526 → ~2440 lines. Per-render lookups instead of per-cell scans (invalid cells by key, column styles per column, tree path / level / parent per row, view index by row key). `renderCellCallback`'s `{@html}` XSS risk documented (JSDoc, docs: prefer the column `snippet`).

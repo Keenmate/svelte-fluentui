@@ -128,7 +128,7 @@
 
 			<GridItem>
 				<h3>Required</h3>
-				<RadioGroup bind:value={requiredValue} name="required-radio" required>
+				<RadioGroup bind:value={requiredValue} name="required-radio">
 					<Radio value="required" required></Radio>
 				</RadioGroup>
 			</GridItem>

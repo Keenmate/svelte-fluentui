@@ -43,7 +43,7 @@ Wrapper for `<fluent-listbox>`: an always-visible list of `<Option>` children wi
 		ariaLabel?: string
 		/** CSS width of the listbox. Default: `100%`. */
 		width?: string
-		/** Intended max height (CSS length). Currently has no visual effect — `<fluent-listbox>` 2.6 has no max-height hook. */
+		/** Max height (CSS length); longer lists scroll inside the listbox (`max-height` + `overflow-y: auto`). */
 		height?: string
 		/** Number of visible options (`size` attribute). */
 		size?: number
@@ -81,13 +81,12 @@ Wrapper for `<fluent-listbox>`: an always-visible list of `<Option>` children wi
 		...rest
 	}: Props = $props()
 
-	// Combine width/height with style (default width: 100%)
-	// Note: height is exposed as the private --_listbox-max-height; nothing reads it yet
-	// (<fluent-listbox> 2.6 has no max-height hook), so the prop has no visual effect.
+	// Combine width/height with style (default width: 100%). `<fluent-listbox>` 2.6 has
+	// no max-height hook of its own, so `height` caps the host and lets it scroll.
 	const computedStyle = $derived.by(() => {
 		const styles: string[] = [`width: ${width || '100%'}`]
 		if (height) {
-			styles.push(`--_listbox-max-height: ${height}`)
+			styles.push(`max-height: ${height}`, "overflow-y: auto")
 		}
 		if (style) styles.push(style)
 		return styles.join('; ')

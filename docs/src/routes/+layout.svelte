@@ -361,6 +361,7 @@
 			items: [
 				{label: "Badge", href: "/components/badge"},
 				{label: "Card", href: "/components/card"},
+				{label: "Chip", href: "/components/chip"},
 				{label: "Divider", href: "/components/divider"},
 				{label: "Icon", href: "/components/icon"}
 			]

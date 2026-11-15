@@ -1,5 +1,7 @@
 <!-- @component
-Removable selection tag ("chip") used by Combobox and Autocomplete for multi-select values.
+Removable selection tag ("chip") — the one Combobox and Autocomplete use for multi-select values.
+`onRemove` fires from the × button; other attributes and events go to the root `<span>`.
+Theme it with the `--fluent-chip-*` custom properties.
 
 ```svelte
 <Chip text="Prague" onRemove={() => remove("Prague")} />
@@ -7,15 +9,8 @@ Removable selection tag ("chip") used by Combobox and Autocomplete for multi-sel
 -->
 
 <!--
- * Chip Component (internal)
- *
- * The single selection-tag ("chip") used by Autocomplete and Combobox for
- * multi-select values. Previously each of those components defined its own chip
- * markup + CSS + design tokens, which drifted apart (different × colours, widths,
- * paddings). This is the one shared implementation so they can't diverge again.
- *
- * Not exported from the library index — it's an internal building block. Theme it
- * via the `--fluent-chip-*` custom properties.
+ * One shared implementation (Autocomplete, Combobox and app code) so chip markup,
+ * CSS and design tokens can't drift apart again.
  *
  * variant:
  *   "inline"   — sits inside a field's border (no border of its own).
@@ -23,6 +18,9 @@ Removable selection tag ("chip") used by Combobox and Autocomplete for multi-sel
  * contrast:
  *   true when the host background equals the chip's default fill (readonly / filled
  *   fields), so the chip swaps to a white fill + inset ring to stay visible.
+ * removeFocusable:
+ *   false (default) keeps the × out of the Tab order — Combobox/Autocomplete remove
+ *   chips with Backspace from their input. Standalone chips should set it to true.
 -->
 
 <script lang="ts">
@@ -39,9 +37,12 @@ Removable selection tag ("chip") used by Combobox and Autocomplete for multi-sel
 		showRemove?: boolean
 		/** Accessible label/tooltip of the × button. Default: `Remove <text>`. */
 		removeLabel?: string
+		/** Put the × button in the Tab order. Default: `false` (hosts like Combobox remove chips via Backspace);
+		 * set `true` for standalone chips so keyboard users can reach it. */
+		removeFocusable?: boolean
 		/** Native tooltip on the chip. */
 		title?: string
-		/** Fires when the user clicks the remove (×) button. */
+		/** Fires when the user activates the remove (×) button. */
 		onRemove?: (ctx: {sourceEvent: MouseEvent}) => void
 	}
 
@@ -54,6 +55,7 @@ Removable selection tag ("chip") used by Combobox and Autocomplete for multi-sel
 		contrast = false,
 		showRemove = true,
 		removeLabel = undefined,
+		removeFocusable = false,
 		title = undefined,
 		onRemove = undefined,
 		class: className = "",
@@ -73,7 +75,7 @@ Removable selection tag ("chip") used by Combobox and Autocomplete for multi-sel
 		<button
 			type="button"
 			class="fluent-chip-remove"
-			tabindex="-1"
+			tabindex={removeFocusable ? 0 : -1}
 			aria-label={removeLabel ?? `Remove ${text}`}
 			title={removeLabel ?? `Remove ${text}`}
 			onclick={(event) => onRemove?.({sourceEvent: event})}

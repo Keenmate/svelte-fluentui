@@ -31,7 +31,7 @@
 			title: "Display",
 			description: "Cards, badges, and other display components",
 			href: "/components/card",
-			components: ["Card", "Badge"]
+			components: ["Card", "Badge", "Chip"]
 		},
 		{
 			title: "Feedback",

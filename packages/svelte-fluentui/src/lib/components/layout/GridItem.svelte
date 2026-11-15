@@ -12,6 +12,7 @@ A cell of a `Grid`: spans 1–12 columns per breakpoint (`xs`…`xxl`, mobile-fi
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../../types/index.js"
 	import {onMount} from "svelte"
+	import {innerWidth} from "svelte/reactivity/window"
 	import {
 		acquireContainer,
 		DEFAULT_GRID_BREAKPOINTS,
@@ -43,7 +44,8 @@ A cell of a `Grid`: spans 1–12 columns per breakpoint (`xs`…`xxl`, mobile-fi
 		gap?: string
 		/** Per-item override of the parent Grid's `adaptiveRendering`. */
 		adaptiveRendering?: boolean
-		/** Hide at a viewport breakpoint: exact (`"md"`), and up (`"md-up"`) or below (`"md-down"`). */
+		/** Hide at a viewport breakpoint: exact (`"md"`), and up (`"md-up"`) or below (`"md-down"`).
+		 * Re-evaluated on window resize. */
 		hiddenWhen?: GridItemHidden
 		/** Extra CSS classes. */
 		class?: string
@@ -121,12 +123,13 @@ A cell of a `Grid`: spans 1–12 columns per breakpoint (`xs`…`xxl`, mobile-fi
 		return false
 	})
 
+	// `innerWidth` from svelte/reactivity/window is reactive: a `resize` listener is
+	// attached while this derived has readers and removed when the item is destroyed.
 	let isHidden = $derived(() => {
 		if (!hiddenWhen) return false
 
-		if (typeof window === "undefined") return false
-
-		const width = window.innerWidth
+		const width = innerWidth.current
+		if (width === undefined) return false
 		const breakpoint = hiddenWhen.replace("-up", "").replace("-down", "")
 		const isUp = hiddenWhen.includes("-up")
 		const isDown = hiddenWhen.includes("-down")
