@@ -864,7 +864,7 @@
 				class={["combobox-listbox", dropdownClass]}
 				style={[
 					dropdownWidth ? `width: ${dropdownWidth}` : "",
-					maxDropdownHeight ? `--combobox-listbox-max-height: ${maxDropdownHeight}` : ""
+					maxDropdownHeight ? `--_combobox-listbox-max-height: ${maxDropdownHeight}` : ""
 				].filter(Boolean).join("; ") || undefined}
 				onclick={handleListClick}
 			>
@@ -1095,7 +1095,7 @@
 		padding: calc(var(--design-unit, 4) * 1px);
 		/* Cap to the space PositioningRegion measured to the viewport edge, and
 		 * (when set) to the per-instance `maxDropdownHeight` prop — whichever is smaller. */
-		max-height: min(var(--available-height, 280px), var(--combobox-listbox-max-height, 100vh));
+		max-height: min(var(--_available-height, 280px), var(--_combobox-listbox-max-height, 100vh));
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		box-sizing: border-box;

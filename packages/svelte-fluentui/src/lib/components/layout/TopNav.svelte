@@ -168,7 +168,7 @@
 	class:topnav--force-collapse={collapse === "always"}
 	class:topnav--force-expand={collapse === "never"}
 	class:topnav--drawer-pinned={drawerPinned}
-	style="height: {height}px; --topnav-toggle-size: {menuToggleSize}px; {style}"
+	style="height: {height}px; --fluent-topnav-toggle-size: {menuToggleSize}px; {style}"
 >
 	<div class="topnav-container">
 		{#if hasDrawerContent}
@@ -311,11 +311,11 @@
 	}
 
 	/* Default toggle — plain icon target, no button chrome. Sized via
-	   --topnav-toggle-size (set inline from the menuToggleSize prop).
+	   --fluent-topnav-toggle-size (set inline from the menuToggleSize prop).
 	   Custom templates render at their natural size. */
 	.mobile-menu-toggle {
-		width: var(--topnav-toggle-size, 42px);
-		height: var(--topnav-toggle-size, 42px);
+		width: var(--fluent-topnav-toggle-size, 42px);
+		height: var(--fluent-topnav-toggle-size, 42px);
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -338,7 +338,7 @@
 	}
 
 	.hamburger-glyph {
-		font-size: calc(var(--topnav-toggle-size, 42px) * 0.55);
+		font-size: calc(var(--fluent-topnav-toggle-size, 42px) * 0.55);
 		line-height: 1;
 	}
 

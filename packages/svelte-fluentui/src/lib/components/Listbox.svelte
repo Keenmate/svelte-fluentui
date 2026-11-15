@@ -60,11 +60,12 @@
 	}: Props = $props()
 
 	// Combine width/height with style (default width: 100%)
-	// Note: height uses --listbox-max-height CSS variable which the FluentUI web component uses internally
+	// Note: height is exposed as the private --_listbox-max-height; nothing reads it yet
+	// (<fluent-listbox> 2.6 has no max-height hook), so the prop has no visual effect.
 	const computedStyle = $derived.by(() => {
 		const styles: string[] = [`width: ${width || '100%'}`]
 		if (height) {
-			styles.push(`--listbox-max-height: ${height}`)
+			styles.push(`--_listbox-max-height: ${height}`)
 		}
 		if (style) styles.push(style)
 		return styles.join('; ')

@@ -2142,11 +2142,11 @@
 	}
 
 	.quickgrid.striped tbody tr:nth-child(even) {
-		background: var(--fluent-quickgrid-stripe-bg, var(--neutral-layer-2, #fafafa));
+		background: var(--fluent-quickgrid-row-bg-stripe, var(--neutral-layer-2, #fafafa));
 	}
 
 	.quickgrid.hoverable tbody tr:hover {
-		background: var(--fluent-quickgrid-row-hover-bg, var(--neutral-layer-3, #f0f0f0));
+		background: var(--fluent-quickgrid-row-bg-hover, var(--neutral-layer-3, #f0f0f0));
 	}
 
 	.empty-message {
@@ -2234,14 +2234,14 @@
 	}
 
 	.quickgrid.editable .editable-cell:hover {
-		background: var(--fluent-quickgrid-editable-hover-bg, var(--neutral-fill-secondary-hover, #f0f0f0));
+		background: var(--fluent-quickgrid-editable-bg-hover, var(--neutral-fill-secondary-hover, #f0f0f0));
 	}
 
 	.quickgrid.editable .editable-cell:hover::after {
 		content: "";
 		position: absolute;
 		inset: 2px;
-		border: 1px dashed var(--fluent-quickgrid-editable-hover-border, var(--neutral-stroke-input-rest, #d1d1d1));
+		border: 1px dashed var(--fluent-quickgrid-editable-border-hover, var(--neutral-stroke-input-rest, #d1d1d1));
 		border-radius: var(--fluent-border-radius-sm);
 		pointer-events: none;
 	}

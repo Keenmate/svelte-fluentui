@@ -102,7 +102,7 @@
 	 * don't reveal gray pixels behind them (the wrapper would otherwise be a
 	 * rectangular surface). */
 	.context-menu {
-		z-index: var(--fluent-z-popover, 1060);
+		z-index: var(--fluent-z-popover);
 		background: transparent;
 		border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
 		/* Popover elevation — paint shadow on the wrapper so the menu reads

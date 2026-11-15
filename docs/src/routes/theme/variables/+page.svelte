@@ -130,13 +130,13 @@
 			description: "Border color for sidebar"
 		},
 		{
-			name: "--fluent-sidebar-hover",
+			name: "--fluent-sidebar-link-bg-hover",
 			category: "Sidebar",
 			defaultValue: "#edebe9 (light) / #201f1e (dark)",
 			description: "Background color for sidebar items on hover"
 		},
 		{
-			name: "--fluent-sidebar-active",
+			name: "--fluent-sidebar-link-bg-active",
 			category: "Sidebar",
 			defaultValue: "#e1dfdd (light) / #252423 (dark)",
 			description: "Background color for active sidebar items"

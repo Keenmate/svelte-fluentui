@@ -15,15 +15,8 @@ It seems they are injecting CSS that they construct in JS.
 }
 
 :root {
-	--font-monospace: Consolas, "Courier New", "Liberation Mono", SFMono-Regular, Menlo, Monaco, monospace;
-	--presence-available: #13a10e;
-	--presence-away: #eaa300;
-	--presence-busy: #d13438;
-	--presence-dnd: #d13438;
-	--presence-offline: #adadad;
-	--presence-oof: #c239b3;
-	--presence-unknown: #d13438;
-	--highlight-bg: #fff3cd;
+	--fluent-font-monospace: Consolas, "Courier New", "Liberation Mono", SFMono-Regular, Menlo, Monaco, monospace;
+	--fluent-highlight-bg: #fff3cd;
 
 	--direction: ltr;
 	--disabled-opacity: 0.3;

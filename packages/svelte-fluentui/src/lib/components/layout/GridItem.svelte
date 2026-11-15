@@ -492,99 +492,99 @@
 	/* ===== Container-query mode (opt-in via <Grid container>) ===== */
 	/* Column values stay on data-* attributes (CSP-clean: no inline styles).
 	   These map each data-* value to a CSS var, gated by [data-cq] so viewport
-	   items are untouched. The base rule below sizes from --col; the @container
-	   activations only reassign --col, so a named container needs just ~5 rules. */
-	div[data-cq][data-xs="1"] { --xs: 1; }
-	div[data-cq][data-xs="2"] { --xs: 2; }
-	div[data-cq][data-xs="3"] { --xs: 3; }
-	div[data-cq][data-xs="4"] { --xs: 4; }
-	div[data-cq][data-xs="5"] { --xs: 5; }
-	div[data-cq][data-xs="6"] { --xs: 6; }
-	div[data-cq][data-xs="7"] { --xs: 7; }
-	div[data-cq][data-xs="8"] { --xs: 8; }
-	div[data-cq][data-xs="9"] { --xs: 9; }
-	div[data-cq][data-xs="10"] { --xs: 10; }
-	div[data-cq][data-xs="11"] { --xs: 11; }
-	div[data-cq][data-xs="12"] { --xs: 12; }
-	div[data-cq][data-sm="1"] { --sm: 1; }
-	div[data-cq][data-sm="2"] { --sm: 2; }
-	div[data-cq][data-sm="3"] { --sm: 3; }
-	div[data-cq][data-sm="4"] { --sm: 4; }
-	div[data-cq][data-sm="5"] { --sm: 5; }
-	div[data-cq][data-sm="6"] { --sm: 6; }
-	div[data-cq][data-sm="7"] { --sm: 7; }
-	div[data-cq][data-sm="8"] { --sm: 8; }
-	div[data-cq][data-sm="9"] { --sm: 9; }
-	div[data-cq][data-sm="10"] { --sm: 10; }
-	div[data-cq][data-sm="11"] { --sm: 11; }
-	div[data-cq][data-sm="12"] { --sm: 12; }
-	div[data-cq][data-md="1"] { --md: 1; }
-	div[data-cq][data-md="2"] { --md: 2; }
-	div[data-cq][data-md="3"] { --md: 3; }
-	div[data-cq][data-md="4"] { --md: 4; }
-	div[data-cq][data-md="5"] { --md: 5; }
-	div[data-cq][data-md="6"] { --md: 6; }
-	div[data-cq][data-md="7"] { --md: 7; }
-	div[data-cq][data-md="8"] { --md: 8; }
-	div[data-cq][data-md="9"] { --md: 9; }
-	div[data-cq][data-md="10"] { --md: 10; }
-	div[data-cq][data-md="11"] { --md: 11; }
-	div[data-cq][data-md="12"] { --md: 12; }
-	div[data-cq][data-lg="1"] { --lg: 1; }
-	div[data-cq][data-lg="2"] { --lg: 2; }
-	div[data-cq][data-lg="3"] { --lg: 3; }
-	div[data-cq][data-lg="4"] { --lg: 4; }
-	div[data-cq][data-lg="5"] { --lg: 5; }
-	div[data-cq][data-lg="6"] { --lg: 6; }
-	div[data-cq][data-lg="7"] { --lg: 7; }
-	div[data-cq][data-lg="8"] { --lg: 8; }
-	div[data-cq][data-lg="9"] { --lg: 9; }
-	div[data-cq][data-lg="10"] { --lg: 10; }
-	div[data-cq][data-lg="11"] { --lg: 11; }
-	div[data-cq][data-lg="12"] { --lg: 12; }
-	div[data-cq][data-xl="1"] { --xl: 1; }
-	div[data-cq][data-xl="2"] { --xl: 2; }
-	div[data-cq][data-xl="3"] { --xl: 3; }
-	div[data-cq][data-xl="4"] { --xl: 4; }
-	div[data-cq][data-xl="5"] { --xl: 5; }
-	div[data-cq][data-xl="6"] { --xl: 6; }
-	div[data-cq][data-xl="7"] { --xl: 7; }
-	div[data-cq][data-xl="8"] { --xl: 8; }
-	div[data-cq][data-xl="9"] { --xl: 9; }
-	div[data-cq][data-xl="10"] { --xl: 10; }
-	div[data-cq][data-xl="11"] { --xl: 11; }
-	div[data-cq][data-xl="12"] { --xl: 12; }
-	div[data-cq][data-xxl="1"] { --xxl: 1; }
-	div[data-cq][data-xxl="2"] { --xxl: 2; }
-	div[data-cq][data-xxl="3"] { --xxl: 3; }
-	div[data-cq][data-xxl="4"] { --xxl: 4; }
-	div[data-cq][data-xxl="5"] { --xxl: 5; }
-	div[data-cq][data-xxl="6"] { --xxl: 6; }
-	div[data-cq][data-xxl="7"] { --xxl: 7; }
-	div[data-cq][data-xxl="8"] { --xxl: 8; }
-	div[data-cq][data-xxl="9"] { --xxl: 9; }
-	div[data-cq][data-xxl="10"] { --xxl: 10; }
-	div[data-cq][data-xxl="11"] { --xxl: 11; }
-	div[data-cq][data-xxl="12"] { --xxl: 12; }
+	   items are untouched. The base rule below sizes from --_col; the @container
+	   activations only reassign --_col, so a named container needs just ~5 rules. */
+	div[data-cq][data-xs="1"] { --_xs: 1; }
+	div[data-cq][data-xs="2"] { --_xs: 2; }
+	div[data-cq][data-xs="3"] { --_xs: 3; }
+	div[data-cq][data-xs="4"] { --_xs: 4; }
+	div[data-cq][data-xs="5"] { --_xs: 5; }
+	div[data-cq][data-xs="6"] { --_xs: 6; }
+	div[data-cq][data-xs="7"] { --_xs: 7; }
+	div[data-cq][data-xs="8"] { --_xs: 8; }
+	div[data-cq][data-xs="9"] { --_xs: 9; }
+	div[data-cq][data-xs="10"] { --_xs: 10; }
+	div[data-cq][data-xs="11"] { --_xs: 11; }
+	div[data-cq][data-xs="12"] { --_xs: 12; }
+	div[data-cq][data-sm="1"] { --_sm: 1; }
+	div[data-cq][data-sm="2"] { --_sm: 2; }
+	div[data-cq][data-sm="3"] { --_sm: 3; }
+	div[data-cq][data-sm="4"] { --_sm: 4; }
+	div[data-cq][data-sm="5"] { --_sm: 5; }
+	div[data-cq][data-sm="6"] { --_sm: 6; }
+	div[data-cq][data-sm="7"] { --_sm: 7; }
+	div[data-cq][data-sm="8"] { --_sm: 8; }
+	div[data-cq][data-sm="9"] { --_sm: 9; }
+	div[data-cq][data-sm="10"] { --_sm: 10; }
+	div[data-cq][data-sm="11"] { --_sm: 11; }
+	div[data-cq][data-sm="12"] { --_sm: 12; }
+	div[data-cq][data-md="1"] { --_md: 1; }
+	div[data-cq][data-md="2"] { --_md: 2; }
+	div[data-cq][data-md="3"] { --_md: 3; }
+	div[data-cq][data-md="4"] { --_md: 4; }
+	div[data-cq][data-md="5"] { --_md: 5; }
+	div[data-cq][data-md="6"] { --_md: 6; }
+	div[data-cq][data-md="7"] { --_md: 7; }
+	div[data-cq][data-md="8"] { --_md: 8; }
+	div[data-cq][data-md="9"] { --_md: 9; }
+	div[data-cq][data-md="10"] { --_md: 10; }
+	div[data-cq][data-md="11"] { --_md: 11; }
+	div[data-cq][data-md="12"] { --_md: 12; }
+	div[data-cq][data-lg="1"] { --_lg: 1; }
+	div[data-cq][data-lg="2"] { --_lg: 2; }
+	div[data-cq][data-lg="3"] { --_lg: 3; }
+	div[data-cq][data-lg="4"] { --_lg: 4; }
+	div[data-cq][data-lg="5"] { --_lg: 5; }
+	div[data-cq][data-lg="6"] { --_lg: 6; }
+	div[data-cq][data-lg="7"] { --_lg: 7; }
+	div[data-cq][data-lg="8"] { --_lg: 8; }
+	div[data-cq][data-lg="9"] { --_lg: 9; }
+	div[data-cq][data-lg="10"] { --_lg: 10; }
+	div[data-cq][data-lg="11"] { --_lg: 11; }
+	div[data-cq][data-lg="12"] { --_lg: 12; }
+	div[data-cq][data-xl="1"] { --_xl: 1; }
+	div[data-cq][data-xl="2"] { --_xl: 2; }
+	div[data-cq][data-xl="3"] { --_xl: 3; }
+	div[data-cq][data-xl="4"] { --_xl: 4; }
+	div[data-cq][data-xl="5"] { --_xl: 5; }
+	div[data-cq][data-xl="6"] { --_xl: 6; }
+	div[data-cq][data-xl="7"] { --_xl: 7; }
+	div[data-cq][data-xl="8"] { --_xl: 8; }
+	div[data-cq][data-xl="9"] { --_xl: 9; }
+	div[data-cq][data-xl="10"] { --_xl: 10; }
+	div[data-cq][data-xl="11"] { --_xl: 11; }
+	div[data-cq][data-xl="12"] { --_xl: 12; }
+	div[data-cq][data-xxl="1"] { --_xxl: 1; }
+	div[data-cq][data-xxl="2"] { --_xxl: 2; }
+	div[data-cq][data-xxl="3"] { --_xxl: 3; }
+	div[data-cq][data-xxl="4"] { --_xxl: 4; }
+	div[data-cq][data-xxl="5"] { --_xxl: 5; }
+	div[data-cq][data-xxl="6"] { --_xxl: 6; }
+	div[data-cq][data-xxl="7"] { --_xxl: 7; }
+	div[data-cq][data-xxl="8"] { --_xxl: 8; }
+	div[data-cq][data-xxl="9"] { --_xxl: 9; }
+	div[data-cq][data-xxl="10"] { --_xxl: 10; }
+	div[data-cq][data-xxl="11"] { --_xxl: 11; }
+	div[data-cq][data-xxl="12"] { --_xxl: 12; }
 
-	/* Register --col as a number that falls back to 12 (full width) if a value
+	/* Register --_col as a number that falls back to 12 (full width) if a value
 	   ever becomes invalid at computed-value time, instead of collapsing to the
 	   guaranteed-invalid empty value (which turns flex-basis into `auto` and
 	   shrinks items to content width). Belt-and-suspenders now that the fallback
-	   chains no longer self-reference --col. */
-	@property --col {
+	   chains no longer self-reference --_col. */
+	@property --_col {
 		syntax: "<number>";
 		inherits: false;
 		initial-value: 12;
 	}
 
-	/* Base: mobile-first, sized from --col (defaults to --xs, else 12 = full).
+	/* Base: mobile-first, sized from --_col (defaults to --_xs, else 12 = full).
 	   Two attributes ([data-cq][data-xs]) outspecify the 1-attr viewport rules,
 	   so container items never pick up viewport flex-basis regardless of order. */
 	div[data-cq][data-xs] {
-		--col: var(--xs, 12);
-		flex-basis: calc(var(--col) / 12 * 100%);
-		max-width: calc(var(--col) / 12 * 100%);
+		--_col: var(--_xs, 12);
+		flex-basis: calc(var(--_col) / 12 * 100%);
+		max-width: calc(var(--_col) / 12 * 100%);
 	}
 
 	/* Default (unnamed) container: queries the nearest container = the Grid itself.
@@ -594,18 +594,18 @@
 	   (configureGridBreakpoints / --fluent-grid-breakpoint-* vars) disable these
 	   defaults and replace them with generated rules — no threshold overlap. */
 	@container (min-width: 480px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --col: var(--sm, var(--xs, 12)); }
+		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --_col: var(--_sm, var(--_xs, 12)); }
 	}
 	@container (min-width: 640px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --col: var(--md, var(--sm, var(--xs, 12))); }
+		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --_col: var(--_md, var(--_sm, var(--_xs, 12))); }
 	}
 	@container (min-width: 900px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --col: var(--lg, var(--md, var(--sm, var(--xs, 12)))); }
+		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --_col: var(--_lg, var(--_md, var(--_sm, var(--_xs, 12)))); }
 	}
 	@container (min-width: 1200px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --col: var(--xl, var(--lg, var(--md, var(--sm, var(--xs, 12))))); }
+		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --_col: var(--_xl, var(--_lg, var(--_md, var(--_sm, var(--_xs, 12))))); }
 	}
 	@container (min-width: 1600px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --col: var(--xxl, var(--xl, var(--lg, var(--md, var(--sm, var(--xs, 12)))))); }
+		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] { --_col: var(--_xxl, var(--_xl, var(--_lg, var(--_md, var(--_sm, var(--_xs, 12)))))); }
 	}
 </style>

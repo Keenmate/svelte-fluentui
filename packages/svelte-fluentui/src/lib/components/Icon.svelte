@@ -70,8 +70,8 @@
 	// Derived computed style
 	let computedStyle = $derived.by(() => {
 		let styles = styleParam || ''
-		styles += ` --icon-size: ${size}px;`
-		styles += ` --icon-fill: ${resolvedFill};`
+		styles += ` --fluent-icon-size: ${size}px;`
+		styles += ` --fluent-icon-fill: ${resolvedFill};`
 		if (width) {
 			styles += ` width: ${width};`
 		}
@@ -179,9 +179,9 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: var(--icon-size, 24px);
-		height: var(--icon-size, 24px);
-		color: var(--icon-fill, currentColor);
+		width: var(--fluent-icon-size, 24px);
+		height: var(--fluent-icon-size, 24px);
+		color: var(--fluent-icon-fill, currentColor);
 		line-height: 1;
 		vertical-align: middle;
 	}
@@ -189,7 +189,7 @@
 	.fluent-icon :global(svg) {
 		width: 100%;
 		height: 100%;
-		fill: var(--icon-fill, currentColor);
+		fill: var(--fluent-icon-fill, currentColor);
 		display: block;
 	}
 
@@ -260,9 +260,9 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: var(--icon-size, 24px);
-		height: var(--icon-size, 24px);
-		font-size: calc(var(--icon-size, 24px) * 0.75);
+		width: var(--fluent-icon-size, 24px);
+		height: var(--fluent-icon-size, 24px);
+		font-size: calc(var(--fluent-icon-size, 24px) * 0.75);
 	}
 
 	.fluent-icon-loading {

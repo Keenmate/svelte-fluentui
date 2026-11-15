@@ -168,8 +168,8 @@ A consumer aria-label gets it appended too: aria-label="Mailbox" ->
 "Mailbox, 3 unread". aria-labelledby gets the hidden count text's id appended.
 
 COUNT BADGE CSS VARIABLES (set on AppBar, an item class, or any ancestor):
---fluent-appbar-count-background     # default var(--accent-fill-rest)
---fluent-appbar-count-color          # default var(--foreground-on-accent-rest)
+--fluent-appbar-count-bg             # default var(--accent-fill-rest)
+--fluent-appbar-count-text           # default var(--foreground-on-accent-rest)
 --fluent-appbar-count-ring-color     # 1px ring, default var(--neutral-layer-1)
 --fluent-appbar-count-size           # height / min width / line height, 16px
 --fluent-appbar-count-font-size      # 10px
@@ -180,8 +180,8 @@ COUNT BADGE CSS VARIABLES (set on AppBar, an item class, or any ancestor):
 --fluent-appbar-count-overlap        # 8px (how far the badge reaches over the icon's end edge; grows outward, RTL-aware)
 
 .danger-count {
-  --fluent-appbar-count-background: var(--fluent-color-danger);
-  --fluent-appbar-count-color: var(--fluent-color-danger-contrast);
+  --fluent-appbar-count-bg: var(--fluent-color-danger);
+  --fluent-appbar-count-text: var(--fluent-color-danger-contrast);
 }
 
 
@@ -304,12 +304,14 @@ STYLING
 ==============================================================================
 
 CSS Variables:
---fluent-sidebar-background
+--fluent-sidebar-bg
 --fluent-sidebar-text
+--fluent-sidebar-link-bg-hover
+--fluent-sidebar-link-bg-active
 --fluent-sidebar-padding
 --fluent-sidebar-icon-gap
 --fluent-sidebar-link-padding
---fluent-navbar-background
+--fluent-navbar-bg
 --fluent-navbar-text
 --fluent-navbar-border
 --fluent-navbar-icon-gap

@@ -172,7 +172,7 @@ small {
 
 mark {
 	padding: 0;
-	background-color: var(--highlight-bg);
+	background-color: var(--fluent-highlight-bg);
 }
 
 sub,
@@ -213,7 +213,7 @@ pre,
 code,
 kbd,
 samp {
-	font-family: var(--font-monospace);
+	font-family: var(--fluent-font-monospace);
 	font-size: 1em;
 }
 

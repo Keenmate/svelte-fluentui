@@ -10,7 +10,7 @@
 
 	// Container-query demo state. cqMax/cbMax are measured from the demo column
 	// so the slider can drag the box out to the full available width (past the
-	// lg@900 stop), where the old --col cycle bug used to surface.
+	// lg@900 stop), where the old --_col cycle bug used to surface.
 	let cqBoxWidth = $state(760)
 	let cbBoxWidth = $state(760)
 	let cqMax = $state(1080)

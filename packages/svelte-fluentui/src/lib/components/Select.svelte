@@ -615,7 +615,7 @@
 				class={["select-listbox-popover", dropdownClass]}
 				style={[
 					dropdownWidth ? `width: ${dropdownWidth}` : "",
-					maxDropdownHeight ? `--select-listbox-max-height: ${maxDropdownHeight}` : ""
+					maxDropdownHeight ? `--_select-listbox-max-height: ${maxDropdownHeight}` : ""
 				].filter(Boolean).join("; ") || undefined}
 				onclickcapture={snapshotSelection}
 				onclick={handleListClick}
@@ -766,7 +766,7 @@
 		/* Cap to the available viewport space exposed by PositioningRegion
 		 * (fallback 280px), and — when the `maxHeight` prop is set — to that
 		 * ceiling too, whichever is smaller. */
-		max-height: min(var(--available-height, 280px), var(--select-listbox-max-height, 100vh));
+		max-height: min(var(--_available-height, 280px), var(--_select-listbox-max-height, 100vh));
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		box-sizing: border-box;

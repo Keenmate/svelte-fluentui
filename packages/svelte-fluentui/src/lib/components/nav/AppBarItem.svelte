@@ -95,11 +95,11 @@
 
 <style>
 	/* Item box, link, label and hover (moved from the global Blazor compat CSS in 2.0).
-	   `--appbar-item-size` is set on the parent `.fluent-appbar`. */
+	   `--fluent-appbar-item-size` is set on the parent `.fluent-appbar`. */
 	.fluent-appbar-item {
-		width: calc(var(--appbar-item-size, 68) * 1px);
-		--appbar-active-indicator-width: calc(var(--design-unit) * 0.5px);
-		height: calc(var(--appbar-item-size, 68) * 1px - 20px);
+		width: calc(var(--fluent-appbar-item-size, 68) * 1px);
+		--fluent-appbar-active-indicator-width: calc(var(--design-unit) * 0.5px);
+		height: calc(var(--fluent-appbar-item-size, 68) * 1px - 20px);
 	}
 
 	.fluent-appbar-item:hover {
@@ -124,7 +124,7 @@
 	}
 
 	a :global(.stack-vertical) {
-		padding: calc(var(--design-unit) * 1px) calc(var(--appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
+		padding: calc(var(--design-unit) * 1px) calc(var(--fluent-appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
 		height: 100%;
 	}
 
@@ -173,8 +173,8 @@
 		block-size: var(--fluent-appbar-count-size, 16px);
 		padding-inline: var(--fluent-appbar-count-padding-inline, 4px);
 		border-radius: var(--fluent-appbar-count-radius, 9999px);
-		background-color: var(--fluent-appbar-count-background, var(--accent-fill-rest, #0078d4));
-		color: var(--fluent-appbar-count-color, var(--foreground-on-accent-rest, #ffffff));
+		background-color: var(--fluent-appbar-count-bg, var(--accent-fill-rest, #0078d4));
+		color: var(--fluent-appbar-count-text, var(--foreground-on-accent-rest, #ffffff));
 		box-shadow: 0 0 0 1px var(--fluent-appbar-count-ring-color, var(--neutral-layer-1, #ffffff));
 		font-size: var(--fluent-appbar-count-font-size, 10px);
 		font-weight: var(--fluent-appbar-count-font-weight, 600);

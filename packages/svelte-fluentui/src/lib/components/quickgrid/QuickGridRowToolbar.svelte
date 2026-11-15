@@ -257,7 +257,7 @@
 	}
 
 	.row-toolbar-btn:hover {
-		background: var(--fluent-quickgrid-toolbar-hover-bg, var(--neutral-fill-secondary-hover, #f0f0f0));
+		background: var(--fluent-quickgrid-toolbar-bg-hover, var(--neutral-fill-secondary-hover, #f0f0f0));
 	}
 
 	.row-toolbar-btn:active {
@@ -295,7 +295,7 @@
 		width: 100%;
 		height: 100%;
 		pointer-events: none;
-		z-index: var(--fluent-z-dropdown, 1000);
+		z-index: var(--fluent-z-dropdown);
 	}
 
 	.row-connector path {

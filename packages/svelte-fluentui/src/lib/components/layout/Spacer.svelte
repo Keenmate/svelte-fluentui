@@ -21,12 +21,12 @@
 	{...rest}
 	class={["spacer", className]}
 	class:auto-width={!width}
-	style:--spacer-width={widthCssVar}
+	style:--fluent-spacer-width={widthCssVar}
 ></div>
 
 <style lang="scss">
 	.spacer {
-		width: var(--spacer-width);
+		width: var(--fluent-spacer-width);
 
 		&.auto-width {
 			flex: 1;

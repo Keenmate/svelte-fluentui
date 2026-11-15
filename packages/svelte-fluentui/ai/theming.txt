@@ -170,25 +170,27 @@ COMPONENT-SPECIFIC VARIABLES
 ==============================================================================
 
 SIDEBAR:
---fluent-sidebar-background
+--fluent-sidebar-bg
 --fluent-sidebar-text
+--fluent-sidebar-link-bg-hover
+--fluent-sidebar-link-bg-active
 --fluent-sidebar-padding
 --fluent-sidebar-icon-gap
 --fluent-sidebar-link-padding
 
 NAVBAR:
---fluent-navbar-background
+--fluent-navbar-bg
 --fluent-navbar-text
 --fluent-navbar-border
 --fluent-navbar-icon-gap
 
 HEADER:
---fluent-header-background
+--fluent-header-bg
 --fluent-header-text
 --fluent-header-border
 
 FOOTER:
---fluent-footer-background
+--fluent-footer-bg
 --fluent-footer-text
 --fluent-footer-border
 

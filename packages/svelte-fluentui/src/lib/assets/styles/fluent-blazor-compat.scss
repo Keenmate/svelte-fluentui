@@ -136,11 +136,11 @@ fluent-dialog {
 }
 
 fluent-dialog::part(control) {
-	--dialog-padding: calc(var(--design-unit) * 6 * 1px);
+	--fluent-dialog-padding: calc(var(--design-unit) * 6 * 1px);
 	position: relative;
-	padding: var(--dialog-padding);
-	width: calc(var(--dialog-width) - 2 * var(--dialog-padding));
-	height: calc(var(--dialog-height) - 2 * var(--dialog-padding));
+	padding: var(--fluent-dialog-padding);
+	width: calc(var(--dialog-width) - 2 * var(--fluent-dialog-padding));
+	height: calc(var(--dialog-height) - 2 * var(--fluent-dialog-padding));
 }
 
 // =============================================================================

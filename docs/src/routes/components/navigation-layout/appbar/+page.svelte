@@ -45,8 +45,8 @@
 	]
 
 	const appBarItemCssVariables: Property[] = [
-		{name: "--fluent-appbar-count-background", type: "color", default: "var(--accent-fill-rest)", description: "Count badge fill"},
-		{name: "--fluent-appbar-count-color", type: "color", default: "var(--foreground-on-accent-rest)", description: "Count badge text colour"},
+		{name: "--fluent-appbar-count-bg", type: "color", default: "var(--accent-fill-rest)", description: "Count badge fill"},
+		{name: "--fluent-appbar-count-text", type: "color", default: "var(--foreground-on-accent-rest)", description: "Count badge text colour"},
 		{name: "--fluent-appbar-count-ring-color", type: "color", default: "var(--neutral-layer-1)", description: "1px ring separating the badge from the icon (match the AppBar background)"},
 		{name: "--fluent-appbar-count-size", type: "length", default: "16px", description: "Badge height, minimum width and line height"},
 		{name: "--fluent-appbar-count-font-size", type: "length", default: "10px", description: "Badge text size"},
@@ -67,8 +67,8 @@
 		`<AppBar class="danger-count">…</AppBar>`,
 		``,
 		`.danger-count {`,
-		`  --fluent-appbar-count-background: var(--fluent-color-danger);`,
-		`  --fluent-appbar-count-color: var(--fluent-color-danger-contrast);`,
+		`  --fluent-appbar-count-bg: var(--fluent-color-danger);`,
+		`  --fluent-appbar-count-text: var(--fluent-color-danger-contrast);`,
 		`  --fluent-appbar-count-size: 18px;`,
 		`  --fluent-appbar-count-font-size: 11px;`,
 		`  --fluent-appbar-count-radius: 4px;`,
@@ -274,8 +274,8 @@
 	}
 
 	:global(.danger-count) {
-		--fluent-appbar-count-background: var(--fluent-color-danger);
-		--fluent-appbar-count-color: var(--fluent-color-danger-contrast);
+		--fluent-appbar-count-bg: var(--fluent-color-danger);
+		--fluent-appbar-count-text: var(--fluent-color-danger-contrast);
 		--fluent-appbar-count-size: 18px;
 		--fluent-appbar-count-font-size: 11px;
 		--fluent-appbar-count-radius: 4px;

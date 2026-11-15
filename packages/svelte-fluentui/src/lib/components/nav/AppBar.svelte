@@ -39,6 +39,6 @@
 
 <style>
 	.fluent-appbar {
-		--appbar-item-size: 68;
+		--fluent-appbar-item-size: 68;
 	}
 </style>

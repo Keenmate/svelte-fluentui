@@ -771,7 +771,7 @@
 				visible={isOpen}
 				availableHeight
 				matchWidth={!dropdownWidth}
-				style="z-index: var(--fluent-z-popover, 1060); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12); {dropdownWidth ? `width: ${dropdownWidth}; ` : ''}{maxDropdownHeight ? `--autocomplete-listbox-max-height: ${maxDropdownHeight}; ` : ''}max-height: min(var(--available-height, 100vh), var(--autocomplete-listbox-max-height, 300px)); overflow-y: auto; overscroll-behavior: contain;"
+				style="z-index: var(--fluent-z-popover); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12); {dropdownWidth ? `width: ${dropdownWidth}; ` : ''}{maxDropdownHeight ? `--_autocomplete-listbox-max-height: ${maxDropdownHeight}; ` : ''}max-height: min(var(--_available-height, 100vh), var(--_autocomplete-listbox-max-height, 300px)); overflow-y: auto; overscroll-behavior: contain;"
 			>
 				<div class="options-list" bind:this={optionsListElement}>
 					{#if headerContent}

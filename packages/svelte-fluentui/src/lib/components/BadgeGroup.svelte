@@ -102,7 +102,7 @@
 	{...rest}
 	bind:this={containerEl}
 	class={`badge-group${className ? ` ${className}` : ""}`}
-	style={`--badge-group-gap: ${gap};${style ? ` ${style}` : ""}`}
+	style={`--fluent-badge-group-gap: ${gap};${style ? ` ${style}` : ""}`}
 >
 	{@render children?.()}
 	{#if expandable && hiddenCount > 0}
@@ -117,7 +117,7 @@
 		display: inline-flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: var(--badge-group-gap, 0.5rem);
+		gap: var(--fluent-badge-group-gap, 0.5rem);
 	}
 
 	/* Toggle styled to match a neutral Badge */

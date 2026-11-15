@@ -99,16 +99,16 @@
 		min-width: 24px;
 		padding: 0 6px;
 		flex-shrink: 0;
-		background-color: var(--v-solid);
-		color: var(--v-contrast);
+		background-color: var(--_v-solid);
+		color: var(--_v-contrast);
 	}
 
 	.composite-badge-label {
 		display: flex;
 		align-items: center;
 		padding: 0 8px;
-		background-color: var(--lv-tint, var(--v-tint));
-		color: var(--lv-emphasis, var(--v-emphasis));
+		background-color: var(--_lv-tint, var(--_v-tint));
+		color: var(--_lv-emphasis, var(--_v-emphasis));
 		user-select: none;
 		transition: background-color 150ms ease;
 	}
@@ -118,7 +118,7 @@
 	}
 
 	.composite-badge.is-clickable .composite-badge-label:hover {
-		background-color: color-mix(in srgb, var(--lv-emphasis, var(--v-emphasis)) 18%, transparent);
+		background-color: color-mix(in srgb, var(--_lv-emphasis, var(--_v-emphasis)) 18%, transparent);
 	}
 
 	.composite-badge-button {
@@ -132,8 +132,8 @@
 		font: inherit;
 		line-height: 1;
 		cursor: pointer;
-		background-color: var(--bv-solid, var(--v-solid));
-		color: var(--bv-contrast, var(--v-contrast));
+		background-color: var(--_bv-solid, var(--_v-solid));
+		color: var(--_bv-contrast, var(--_v-contrast));
 		transition: filter 150ms ease;
 	}
 
@@ -148,119 +148,119 @@
 
 	/* Variant palette — sets the section colour vars for all three sections. */
 	.composite-badge-primary {
-		--v-solid: var(--fluent-color-primary, #0078d4);
-		--v-contrast: var(--fluent-color-primary-contrast, #fff);
-		--v-tint: var(--fluent-color-primary-tint, rgba(0, 120, 212, 0.12));
-		--v-emphasis: var(--fluent-color-primary-emphasis, #0067b8);
+		--_v-solid: var(--fluent-color-primary, #0078d4);
+		--_v-contrast: var(--fluent-color-primary-contrast, #fff);
+		--_v-tint: var(--fluent-color-primary-tint, rgba(0, 120, 212, 0.12));
+		--_v-emphasis: var(--fluent-color-primary-emphasis, #0067b8);
 	}
 	.composite-badge-secondary {
-		--v-solid: var(--fluent-color-secondary, #616161);
-		--v-contrast: var(--fluent-color-secondary-contrast, #fff);
-		--v-tint: var(--fluent-color-secondary-tint, rgba(97, 97, 97, 0.12));
-		--v-emphasis: var(--fluent-color-secondary-emphasis, #424242);
+		--_v-solid: var(--fluent-color-secondary, #616161);
+		--_v-contrast: var(--fluent-color-secondary-contrast, #fff);
+		--_v-tint: var(--fluent-color-secondary-tint, rgba(97, 97, 97, 0.12));
+		--_v-emphasis: var(--fluent-color-secondary-emphasis, #424242);
 	}
 	.composite-badge-success {
-		--v-solid: var(--fluent-color-success, #107c10);
-		--v-contrast: var(--fluent-color-success-contrast, #fff);
-		--v-tint: var(--fluent-color-success-tint, rgba(16, 124, 16, 0.12));
-		--v-emphasis: var(--fluent-color-success-emphasis, #0e700e);
+		--_v-solid: var(--fluent-color-success, #107c10);
+		--_v-contrast: var(--fluent-color-success-contrast, #fff);
+		--_v-tint: var(--fluent-color-success-tint, rgba(16, 124, 16, 0.12));
+		--_v-emphasis: var(--fluent-color-success-emphasis, #0e700e);
 	}
 	.composite-badge-warning {
-		--v-solid: var(--fluent-color-warning, #fde300);
-		--v-contrast: var(--fluent-color-warning-contrast, #242424);
-		--v-tint: var(--fluent-color-warning-tint, rgba(253, 227, 0, 0.22));
-		--v-emphasis: var(--fluent-color-warning-emphasis, #8a6d00);
+		--_v-solid: var(--fluent-color-warning, #fde300);
+		--_v-contrast: var(--fluent-color-warning-contrast, #242424);
+		--_v-tint: var(--fluent-color-warning-tint, rgba(253, 227, 0, 0.22));
+		--_v-emphasis: var(--fluent-color-warning-emphasis, #8a6d00);
 	}
 	.composite-badge-danger {
-		--v-solid: var(--fluent-color-danger, #c50f1f);
-		--v-contrast: var(--fluent-color-danger-contrast, #fff);
-		--v-tint: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
-		--v-emphasis: var(--fluent-color-danger-emphasis, #b10e1e);
+		--_v-solid: var(--fluent-color-danger, #c50f1f);
+		--_v-contrast: var(--fluent-color-danger-contrast, #fff);
+		--_v-tint: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
+		--_v-emphasis: var(--fluent-color-danger-emphasis, #b10e1e);
 	}
 	.composite-badge-info {
-		--v-solid: var(--fluent-color-info, #0a94d6);
-		--v-contrast: var(--fluent-color-info-contrast, #fff);
-		--v-tint: var(--fluent-color-info-tint, rgba(10, 148, 214, 0.12));
-		--v-emphasis: var(--fluent-color-info-emphasis, #0a6a9a);
+		--_v-solid: var(--fluent-color-info, #0a94d6);
+		--_v-contrast: var(--fluent-color-info-contrast, #fff);
+		--_v-tint: var(--fluent-color-info-tint, rgba(10, 148, 214, 0.12));
+		--_v-emphasis: var(--fluent-color-info-emphasis, #0a6a9a);
 	}
 	.composite-badge-light {
-		--v-solid: var(--fluent-color-light, #f0f0f0);
-		--v-contrast: var(--fluent-color-light-contrast, #242424);
-		--v-tint: var(--fluent-color-light-tint, #f5f5f5);
-		--v-emphasis: var(--fluent-color-light-emphasis, #8a8a8a);
+		--_v-solid: var(--fluent-color-light, #f0f0f0);
+		--_v-contrast: var(--fluent-color-light-contrast, #242424);
+		--_v-tint: var(--fluent-color-light-tint, #f5f5f5);
+		--_v-emphasis: var(--fluent-color-light-emphasis, #8a8a8a);
 	}
 	.composite-badge-dark {
-		--v-solid: var(--fluent-color-dark, #242424);
-		--v-contrast: var(--fluent-color-dark-contrast, #fff);
-		--v-tint: var(--fluent-color-dark-tint, rgba(36, 36, 36, 0.1));
-		--v-emphasis: var(--fluent-color-dark-emphasis, #242424);
+		--_v-solid: var(--fluent-color-dark, #242424);
+		--_v-contrast: var(--fluent-color-dark-contrast, #fff);
+		--_v-tint: var(--fluent-color-dark-tint, rgba(36, 36, 36, 0.1));
+		--_v-emphasis: var(--fluent-color-dark-emphasis, #242424);
 	}
 
 	/* Label-section overrides */
 	.composite-badge-label-primary {
-		--lv-tint: var(--fluent-color-primary-tint, rgba(0, 120, 212, 0.12));
-		--lv-emphasis: var(--fluent-color-primary-emphasis, #0067b8);
+		--_lv-tint: var(--fluent-color-primary-tint, rgba(0, 120, 212, 0.12));
+		--_lv-emphasis: var(--fluent-color-primary-emphasis, #0067b8);
 	}
 	.composite-badge-label-secondary {
-		--lv-tint: var(--fluent-color-secondary-tint, rgba(97, 97, 97, 0.12));
-		--lv-emphasis: var(--fluent-color-secondary-emphasis, #424242);
+		--_lv-tint: var(--fluent-color-secondary-tint, rgba(97, 97, 97, 0.12));
+		--_lv-emphasis: var(--fluent-color-secondary-emphasis, #424242);
 	}
 	.composite-badge-label-success {
-		--lv-tint: var(--fluent-color-success-tint, rgba(16, 124, 16, 0.12));
-		--lv-emphasis: var(--fluent-color-success-emphasis, #0e700e);
+		--_lv-tint: var(--fluent-color-success-tint, rgba(16, 124, 16, 0.12));
+		--_lv-emphasis: var(--fluent-color-success-emphasis, #0e700e);
 	}
 	.composite-badge-label-warning {
-		--lv-tint: var(--fluent-color-warning-tint, rgba(253, 227, 0, 0.22));
-		--lv-emphasis: var(--fluent-color-warning-emphasis, #8a6d00);
+		--_lv-tint: var(--fluent-color-warning-tint, rgba(253, 227, 0, 0.22));
+		--_lv-emphasis: var(--fluent-color-warning-emphasis, #8a6d00);
 	}
 	.composite-badge-label-danger {
-		--lv-tint: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
-		--lv-emphasis: var(--fluent-color-danger-emphasis, #b10e1e);
+		--_lv-tint: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
+		--_lv-emphasis: var(--fluent-color-danger-emphasis, #b10e1e);
 	}
 	.composite-badge-label-info {
-		--lv-tint: var(--fluent-color-info-tint, rgba(10, 148, 214, 0.12));
-		--lv-emphasis: var(--fluent-color-info-emphasis, #0a6a9a);
+		--_lv-tint: var(--fluent-color-info-tint, rgba(10, 148, 214, 0.12));
+		--_lv-emphasis: var(--fluent-color-info-emphasis, #0a6a9a);
 	}
 	.composite-badge-label-light {
-		--lv-tint: var(--fluent-color-light-tint, #f5f5f5);
-		--lv-emphasis: var(--fluent-color-light-emphasis, #8a8a8a);
+		--_lv-tint: var(--fluent-color-light-tint, #f5f5f5);
+		--_lv-emphasis: var(--fluent-color-light-emphasis, #8a8a8a);
 	}
 	.composite-badge-label-dark {
-		--lv-tint: var(--fluent-color-dark-tint, rgba(36, 36, 36, 0.1));
-		--lv-emphasis: var(--fluent-color-dark-emphasis, #242424);
+		--_lv-tint: var(--fluent-color-dark-tint, rgba(36, 36, 36, 0.1));
+		--_lv-emphasis: var(--fluent-color-dark-emphasis, #242424);
 	}
 
 	/* Button-section overrides */
 	.composite-badge-btn-primary {
-		--bv-solid: var(--fluent-color-primary, #0078d4);
-		--bv-contrast: var(--fluent-color-primary-contrast, #fff);
+		--_bv-solid: var(--fluent-color-primary, #0078d4);
+		--_bv-contrast: var(--fluent-color-primary-contrast, #fff);
 	}
 	.composite-badge-btn-secondary {
-		--bv-solid: var(--fluent-color-secondary, #616161);
-		--bv-contrast: var(--fluent-color-secondary-contrast, #fff);
+		--_bv-solid: var(--fluent-color-secondary, #616161);
+		--_bv-contrast: var(--fluent-color-secondary-contrast, #fff);
 	}
 	.composite-badge-btn-success {
-		--bv-solid: var(--fluent-color-success, #107c10);
-		--bv-contrast: var(--fluent-color-success-contrast, #fff);
+		--_bv-solid: var(--fluent-color-success, #107c10);
+		--_bv-contrast: var(--fluent-color-success-contrast, #fff);
 	}
 	.composite-badge-btn-warning {
-		--bv-solid: var(--fluent-color-warning, #fde300);
-		--bv-contrast: var(--fluent-color-warning-contrast, #242424);
+		--_bv-solid: var(--fluent-color-warning, #fde300);
+		--_bv-contrast: var(--fluent-color-warning-contrast, #242424);
 	}
 	.composite-badge-btn-danger {
-		--bv-solid: var(--fluent-color-danger, #c50f1f);
-		--bv-contrast: var(--fluent-color-danger-contrast, #fff);
+		--_bv-solid: var(--fluent-color-danger, #c50f1f);
+		--_bv-contrast: var(--fluent-color-danger-contrast, #fff);
 	}
 	.composite-badge-btn-info {
-		--bv-solid: var(--fluent-color-info, #0a94d6);
-		--bv-contrast: var(--fluent-color-info-contrast, #fff);
+		--_bv-solid: var(--fluent-color-info, #0a94d6);
+		--_bv-contrast: var(--fluent-color-info-contrast, #fff);
 	}
 	.composite-badge-btn-light {
-		--bv-solid: var(--fluent-color-light, #f0f0f0);
-		--bv-contrast: var(--fluent-color-light-contrast, #242424);
+		--_bv-solid: var(--fluent-color-light, #f0f0f0);
+		--_bv-contrast: var(--fluent-color-light-contrast, #242424);
 	}
 	.composite-badge-btn-dark {
-		--bv-solid: var(--fluent-color-dark, #242424);
-		--bv-contrast: var(--fluent-color-dark-contrast, #fff);
+		--_bv-solid: var(--fluent-color-dark, #242424);
+		--_bv-contrast: var(--fluent-color-dark-contrast, #fff);
 	}
 </style>

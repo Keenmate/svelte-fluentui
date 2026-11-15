@@ -39,8 +39,8 @@
 	--fluent-sidebar-bg: #{$sidebar-bg-light};
 	--fluent-sidebar-text: #{$sidebar-text-light};
 	--fluent-sidebar-border: #{$sidebar-border-light};
-	--fluent-sidebar-hover: #{$sidebar-hover-light};
-	--fluent-sidebar-active: #{$sidebar-active-light};
+	--fluent-sidebar-link-bg-hover: #{$sidebar-hover-light};
+	--fluent-sidebar-link-bg-active: #{$sidebar-active-light};
 
 	// Header
 	--fluent-header-bg: #{$header-bg-light};
@@ -54,10 +54,10 @@
 
 	// QuickGrid
 	--fluent-quickgrid-header-bg: #{$quickgrid-header-bg-light};
-	--fluent-quickgrid-header-hover-bg: #{$quickgrid-header-hover-bg-light};
-	--fluent-quickgrid-header-sorted-bg: #{$quickgrid-header-sorted-bg-light};
-	--fluent-quickgrid-stripe-bg: #{$quickgrid-stripe-bg-light};
-	--fluent-quickgrid-row-hover-bg: #{$quickgrid-row-hover-bg-light};
+	--fluent-quickgrid-header-bg-hover: #{$quickgrid-header-hover-bg-light};
+	--fluent-quickgrid-header-bg-sorted: #{$quickgrid-header-sorted-bg-light};
+	--fluent-quickgrid-row-bg-stripe: #{$quickgrid-stripe-bg-light};
+	--fluent-quickgrid-row-bg-hover: #{$quickgrid-row-hover-bg-light};
 	--fluent-quickgrid-toolbar-shadow: #{$quickgrid-toolbar-shadow-light};
 
 	// Component spacing
@@ -144,8 +144,8 @@
 	--fluent-sidebar-bg: #{$sidebar-bg-dark};
 	--fluent-sidebar-text: #{$sidebar-text-dark};
 	--fluent-sidebar-border: #{$sidebar-border-dark};
-	--fluent-sidebar-hover: #{$sidebar-hover-dark};
-	--fluent-sidebar-active: #{$sidebar-active-dark};
+	--fluent-sidebar-link-bg-hover: #{$sidebar-hover-dark};
+	--fluent-sidebar-link-bg-active: #{$sidebar-active-dark};
 
 	// Header
 	--fluent-header-bg: #{$header-bg-dark};
@@ -159,10 +159,10 @@
 
 	// QuickGrid
 	--fluent-quickgrid-header-bg: #{$quickgrid-header-bg-dark};
-	--fluent-quickgrid-header-hover-bg: #{$quickgrid-header-hover-bg-dark};
-	--fluent-quickgrid-header-sorted-bg: #{$quickgrid-header-sorted-bg-dark};
-	--fluent-quickgrid-stripe-bg: #{$quickgrid-stripe-bg-dark};
-	--fluent-quickgrid-row-hover-bg: #{$quickgrid-row-hover-bg-dark};
+	--fluent-quickgrid-header-bg-hover: #{$quickgrid-header-hover-bg-dark};
+	--fluent-quickgrid-header-bg-sorted: #{$quickgrid-header-sorted-bg-dark};
+	--fluent-quickgrid-row-bg-stripe: #{$quickgrid-stripe-bg-dark};
+	--fluent-quickgrid-row-bg-hover: #{$quickgrid-row-hover-bg-dark};
 	--fluent-quickgrid-toolbar-shadow: #{$quickgrid-toolbar-shadow-dark};
 }
 

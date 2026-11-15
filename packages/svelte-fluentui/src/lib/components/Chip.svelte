@@ -76,8 +76,8 @@
 		display: inline-flex;
 		align-items: center;
 		gap: var(--fluent-chip-gap, 0.25rem);
-		padding: var(--fluent-chip-padding-y, 0.125rem) var(--fluent-chip-padding-x, 0.5rem);
-		background: var(--fluent-chip-background, var(--neutral-fill-secondary-rest, #f0f0f0));
+		padding: var(--fluent-chip-padding-block, 0.125rem) var(--fluent-chip-padding-inline, 0.5rem);
+		background: var(--fluent-chip-bg, var(--neutral-fill-secondary-rest, #f0f0f0));
 		border-radius: calc(var(--control-corner-radius, 4) * 1px);
 		font-size: var(--fluent-chip-font-size, 0.875rem);
 		line-height: var(--fluent-chip-line-height, 1.4);
@@ -117,15 +117,15 @@
 		cursor: pointer;
 		/* Accent by default — matches Microsoft's chips, and follows the theme accent
 		   set by the Site settings "Color" combo (--accent-fill-rest). */
-		color: var(--fluent-chip-remove-color, var(--accent-fill-rest, #0078d4));
+		color: var(--fluent-chip-remove-text, var(--accent-fill-rest, #0078d4));
 		border-radius: var(--fluent-border-radius-sm);
 		flex-shrink: 0;
 		transition: color 0.1s ease, background 0.1s ease;
 	}
 
 	.fluent-chip-remove:hover {
-		background: var(--fluent-chip-remove-background-hover, var(--neutral-fill-secondary-hover, #e0e0e0));
-		color: var(--fluent-chip-remove-color-hover, var(--accent-fill-hover, #106ebe));
+		background: var(--fluent-chip-remove-bg-hover, var(--neutral-fill-secondary-hover, #e0e0e0));
+		color: var(--fluent-chip-remove-text-hover, var(--accent-fill-hover, #106ebe));
 	}
 
 	.fluent-chip-remove:focus-visible {

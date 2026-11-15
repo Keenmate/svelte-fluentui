@@ -173,7 +173,7 @@
 	}
 
 	.column-header.sortable:hover {
-		background: var(--fluent-quickgrid-header-hover-bg, var(--neutral-layer-3, #ebebeb));
+		background: var(--fluent-quickgrid-header-bg-hover, var(--neutral-layer-3, #ebebeb));
 	}
 
 	.column-header-content {
@@ -215,7 +215,7 @@
 	}
 
 	.column-header.sorted {
-		background: var(--fluent-quickgrid-header-sorted-bg, var(--neutral-layer-3, #ebebeb));
+		background: var(--fluent-quickgrid-header-bg-sorted, var(--neutral-layer-3, #ebebeb));
 	}
 
 	.filter-row th {

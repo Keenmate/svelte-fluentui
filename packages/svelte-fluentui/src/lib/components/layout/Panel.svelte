@@ -114,7 +114,7 @@
 		class="fluent-panel-root fluent-panel-root--{side} {className || ''}"
 		class:fluent-panel-root--open={open}
 		class:fluent-panel-root--rtl={isRTL}
-		style="--panel-top: {top};"
+		style="--fluent-panel-top: {top};"
 		aria-hidden={!open}
 		use:setupRoot
 	>
@@ -144,7 +144,7 @@
 <style lang="scss">
 	.fluent-panel-root {
 		position: fixed;
-		inset-block: var(--panel-top, 0) 0;
+		inset-block: var(--fluent-panel-top, 0) 0;
 		inset-inline: 0;
 		z-index: var(--fluent-z-modal);
 		// Never block the page — only the overlay and the panel surface

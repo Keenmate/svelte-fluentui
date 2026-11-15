@@ -104,41 +104,41 @@
 	}
 
 	/* Colour variants — tinted fill + coloured line, driven by the palette.
-	   Each maps a --lc (line colour) and --tc (tint colour) so the shared
+	   Each maps a --_lc (line colour) and --_tc (tint colour) so the shared
 	   rules below stay DRY. */
 	.fluent-label-primary {
-		--lc: var(--fluent-color-primary-emphasis, #0067b8);
-		--tc: var(--fluent-color-primary-tint, rgba(0, 120, 212, 0.12));
+		--_lc: var(--fluent-color-primary-emphasis, #0067b8);
+		--_tc: var(--fluent-color-primary-tint, rgba(0, 120, 212, 0.12));
 	}
 	.fluent-label-secondary {
-		--lc: var(--fluent-color-secondary-emphasis, #424242);
-		--tc: var(--fluent-color-secondary-tint, rgba(97, 97, 97, 0.12));
+		--_lc: var(--fluent-color-secondary-emphasis, #424242);
+		--_tc: var(--fluent-color-secondary-tint, rgba(97, 97, 97, 0.12));
 	}
 	.fluent-label-success {
-		--lc: var(--fluent-color-success-emphasis, #0e700e);
-		--tc: var(--fluent-color-success-tint, rgba(16, 124, 16, 0.12));
+		--_lc: var(--fluent-color-success-emphasis, #0e700e);
+		--_tc: var(--fluent-color-success-tint, rgba(16, 124, 16, 0.12));
 	}
 	.fluent-label-warning {
-		--lc: var(--fluent-color-warning-emphasis, #8a6d00);
-		--tc: var(--fluent-color-warning-tint, rgba(253, 227, 0, 0.22));
+		--_lc: var(--fluent-color-warning-emphasis, #8a6d00);
+		--_tc: var(--fluent-color-warning-tint, rgba(253, 227, 0, 0.22));
 	}
 	.fluent-label-danger {
-		--lc: var(--fluent-color-danger-emphasis, #b10e1e);
-		--tc: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
+		--_lc: var(--fluent-color-danger-emphasis, #b10e1e);
+		--_tc: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
 	}
 	.fluent-label-info {
-		--lc: var(--fluent-color-info-emphasis, #0a6a9a);
-		--tc: var(--fluent-color-info-tint, rgba(10, 148, 214, 0.12));
+		--_lc: var(--fluent-color-info-emphasis, #0a6a9a);
+		--_tc: var(--fluent-color-info-tint, rgba(10, 148, 214, 0.12));
 	}
 
 	.fluent-label {
-		background-color: var(--tc);
-		color: var(--lc);
-		border-color: var(--lc);
+		background-color: var(--_tc);
+		color: var(--_lc);
+		border-color: var(--_lc);
 	}
 
 	.fluent-label:hover {
-		background-color: var(--tc);
+		background-color: var(--_tc);
 	}
 
 	/* Outline — transparent until hover */
@@ -147,6 +147,6 @@
 	}
 
 	.fluent-label-outline:hover {
-		background-color: var(--tc);
+		background-color: var(--_tc);
 	}
 </style>
