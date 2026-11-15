@@ -254,9 +254,7 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 	})
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <span bind:this={anchorEl} class="fluent-menu-button-anchor">
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<fluent-button
 		bind:this={triggerEl}
 		{...rest}
@@ -278,7 +276,6 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 </span>
 
 {#if open && entries.length > 0}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		use:portal
 		bind:this={menuEl}
@@ -294,7 +291,6 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 					{/if}
 				{:else}
 					{@const r = entry.resolved}
-					<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 					<fluent-menu-item
 						class={[r.isDanger && "danger", r.cssClass].filter(Boolean).join(" ") || null}
 						role={r.isToggle ? "menuitemcheckbox" : "menuitem"}

@@ -104,8 +104,6 @@ One pane of a `MultiSplitter`; renders its trailing gutter (except the last pane
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
 	{...rest}
 	bind:this={paneEl}

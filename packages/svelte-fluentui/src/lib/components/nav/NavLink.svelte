@@ -63,8 +63,8 @@ The link part of a nav row: icon, text and trailing content; an `<a>` with `href
 	}
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- Without `href` this is a <div> inside a NavItem row; the row is the tab stop
+     and forwards Enter / Space to this element as a click (NavItem.svelte). -->
 <svelte:element
 	this={renderElement}
 	{...rest}

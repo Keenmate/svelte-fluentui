@@ -9,6 +9,7 @@ Lightweight tag-style indicator: tinted fill + coloured border in one of six sem
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
+	import {buttonLike} from "../helpers/button-like.js"
 	/**
 	 * Label — a lightweight, tag-style indicator: tinted background + coloured
 	 * border in the variant colour, medium weight. Sits alongside Badge for
@@ -64,9 +65,8 @@ Lightweight tag-style indicator: tinted fill + coloured border in one of six sem
 	})
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<span {...rest} class={classes} style={style || null} onclick={onclick}>
+<!-- With `onclick` the label becomes role="button" + tab stop + Enter / Space (buttonLike). -->
+<span {...buttonLike(!!onclick)} {...rest} class={classes} style={style || null} onclick={onclick}>
 	{#if icon}<span class="fluent-label-icon">{@render icon()}</span>{/if}
 	{@render children?.()}
 </span>

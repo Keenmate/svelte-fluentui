@@ -294,6 +294,14 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		pageSize: () => listPageSize(listEl, enabledOptionEls(listEl))
 	})
 
+	// Multi mode: keyboard cursor over the inline listbox. Focus stays on the
+	// listbox; the highlighted row is announced via aria-activedescendant.
+	const inlineNav = new ListNav({
+		count: () => enabledOptionEls(inlineListEl).length,
+		itemAt: i => enabledOptionEls(inlineListEl)[i],
+		pageSize: () => listPageSize(inlineListEl, enabledOptionEls(inlineListEl))
+	})
+
 	function getOptionText(val: string): string {
 		const el = findOption(multiple ? [inlineListEl] : [listEl, sourceEl], val)
 		return el ? optionLabel(el) : ""
@@ -365,11 +373,15 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	}
 
 	function handleListClick(ev: MouseEvent) {
-		if (readonly) return
 		const target = ev.target as HTMLElement | null
 		if (!target) return
 		const optEl = target.closest(OPTION_SELECTOR) as HTMLElement | null
 		if (!optEl) return
+		// Multi mode: the clicked row becomes the keyboard cursor too.
+		if (multiple && !optEl.hasAttribute("disabled")) {
+			inlineNav.index = enabledOptionEls(inlineListEl).indexOf(optEl)
+		}
+		if (readonly) return
 		if (optEl.hasAttribute("disabled")) {
 			ev.preventDefault()
 			return
@@ -481,9 +493,40 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	// Reflects the cursor to a data-highlighted attribute on the corresponding
 	// option element, so CSS can style the keyboard-cursor row distinctly from
 	// hover and selected states.
+	// The highlighted row's id feeds `aria-activedescendant` on the trigger, so
+	// screen readers follow the cursor while focus stays on the trigger.
+	let activeOptionId = $state<string | null>(null)
 	$effect(() => {
-		markHighlighted(listEl, enabledOptionEls(listEl)[nav.index])
+		const el = enabledOptionEls(listEl)[nav.index]
+		markHighlighted(listEl, el)
+		activeOptionId = isOpen && el ? el.id || null : null
 	})
+
+	// Multi mode: same, on the inline listbox.
+	let inlineActiveOptionId = $state<string | null>(null)
+	$effect(() => {
+		const el = enabledOptionEls(inlineListEl)[inlineNav.index]
+		markHighlighted(inlineListEl, el)
+		inlineActiveOptionId = el ? el.id || null : null
+	})
+
+	// Multi mode: focus lands on the first selected (else first) row.
+	function handleInlineFocus() {
+		if (inlineNav.index >= 0) return
+		const opts = enabledOptionEls(inlineListEl)
+		const i = opts.findIndex(el => selectionState.value.includes(optionValue(el)))
+		inlineNav.set(Math.max(i, 0))
+	}
+
+	// Multi mode keyboard: arrows / Page / Home / End move the cursor, Space / Enter toggle.
+	function handleInlineKeydown(ev: KeyboardEvent) {
+		if (disabled) return
+		if (inlineNav.handleKey(ev)) return
+		if (ev.key !== " " && ev.key !== "Enter") return
+		ev.preventDefault()
+		const el = enabledOptionEls(inlineListEl)[inlineNav.index]
+		if (el) selectByValue(optionValue(el), el)
+	}
 
 	// ---------- Close on outside pointerdown / focus move ----------
 	// Focus moving outside (Tab-ing away, a modal dialog opening) closes too —
@@ -541,16 +584,18 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 
 	const hasLabel = $derived(!!(label || labelTemplate))
 
-	const listboxId = $derived(id ? `${id}-listbox` : undefined)
+	// Stable fallback so label / aria-controls wiring works without an explicit id.
+	const uid = $props.id()
+	const controlId = $derived(id ?? `fluent-select-${uid}`)
+	const listboxId = $derived(`${controlId}-listbox`)
 </script>
 
 <!-- Single DOM root so consumers see one element, not 2–4 siblings. Uses
      display:contents so it's transparent to flex/grid layout in the parent. -->
 <div {...rest} class="select-root">
 
-<!-- svelte-ignore a11y_label_has_associated_control -->
 {#if hasLabel}
-	<label class="fluent-field-label" for={id}>
+	<label class="fluent-field-label" for={controlId}>
 		{#if label}{label}{/if}
 		{#if labelTemplate}{@render labelTemplate?.()}{/if}
 		{#if required}<span class="required-indicator">*</span>{/if}
@@ -559,15 +604,16 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 
 {#if multiple}
 	<!-- ===== Multi mode: always-expanded inline listbox ===== -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
 		bind:this={inlineListEl}
-		{id}
+		id={controlId}
 		role="listbox"
-		tabindex="0"
+		tabindex={disabled ? -1 : 0}
 		aria-multiselectable="true"
 		aria-readonly={readonly ? "true" : null}
+		aria-disabled={disabled ? "true" : null}
+		aria-required={required ? "true" : null}
+		aria-activedescendant={inlineActiveOptionId}
 		aria-label={ariaLabel || label}
 		class="select-listbox-inline {appearance} {className}"
 		class:disabled
@@ -576,6 +622,8 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		{title}
 		onclickcapture={snapshotSelection}
 		onclick={handleListClick}
+		onfocus={handleInlineFocus}
+		onkeydown={handleInlineKeydown}
 	>
 		{@render children?.()}
 	</div>
@@ -593,13 +641,15 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	<button
 		bind:this={triggerEl}
 		type="button"
-		{id}
+		id={controlId}
 		role="combobox"
 		aria-haspopup="listbox"
-		aria-expanded={isOpen}
+		aria-expanded={isOpen ? "true" : "false"}
 		aria-controls={listboxId}
+		aria-activedescendant={activeOptionId}
 		aria-label={ariaLabel || label}
 		aria-readonly={readonly ? "true" : null}
+		aria-required={required ? "true" : null}
 		{disabled}
 		{autofocus}
 		{title}
@@ -633,13 +683,14 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 			matchWidth={!dropdownWidth}
 			availableHeight
 		>
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<!-- The keyboard stays on the trigger (aria-activedescendant); the list takes clicks only. -->
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<div
 				bind:this={listEl}
 				id={listboxId}
 				role="listbox"
 				tabindex="-1"
+				aria-label={ariaLabel || label}
 				class={["select-listbox-popover", dropdownClass]}
 				style={[
 					dropdownWidth ? `width: ${dropdownWidth}` : "",

@@ -100,7 +100,6 @@ Wrapper for `<fluent-radio>`. Inside a `RadioGroup` it reads and sets the group'
 	</label>
 {/if}
 
-<!-- svelte-ignore a11y_autofocus -->
 <fluent-radio
 	{...rest}
 	{value}

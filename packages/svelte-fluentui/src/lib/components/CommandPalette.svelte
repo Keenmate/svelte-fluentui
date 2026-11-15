@@ -196,12 +196,34 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 
 	const itemCount = $derived(rows.filter((r) => r.kind === "item").length)
 
+	// Rows sectioned under their header so each section renders as a labelled
+	// `role="group"` inside the listbox (a listbox may only own options / groups).
+	type ItemRow = Extract<Row, {kind: "item"}>
+	const sections = $derived.by(() => {
+		const out: {label: string | null; rows: ItemRow[]}[] = []
+		for (const row of rows) {
+			if (row.kind === "header") out.push({label: row.label, rows: []})
+			else {
+				if (out.length === 0) out.push({label: null, rows: []})
+				out[out.length - 1].rows.push(row)
+			}
+		}
+		return out
+	})
+
 	// Keyboard cursor over the result rows: clamped at both ends (no wrap).
 	const nav = new ListNav({
 		count: () => itemCount,
 		itemAt: (index) => listEl?.querySelector(`[data-idx="${index}"]`)
 	})
 	const selectedIndex = $derived(nav.index)
+
+	// ARIA: the search input is a combobox over the results listbox; the highlighted
+	// row is announced via aria-activedescendant while focus stays in the input.
+	const uid = $props.id()
+	const listboxId = `fluent-command-palette-${uid}-listbox`
+	const rowId = (index: number) => `${listboxId}-option-${index}`
+	const activeRowId = $derived(nav.index >= 0 && nav.index < itemCount ? rowId(nav.index) : null)
 
 	// Highlights the first row (when there is one) and scrolls it into view.
 	function resetHighlight() {
@@ -258,6 +280,7 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 		if (!open) return
 		open = false
 		onOpenChange?.({open: false})
+		restoreFocus()
 	}
 
 	const actionHost = {}
@@ -319,10 +342,42 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 
 	// However it was opened (shortcut, trigger, or `bind:open` from the app),
 	// start with an empty query and the search input focused.
+	// Focus returns to whatever had it before the palette opened (the trigger, or
+	// the page element the shortcut was pressed in).
+	let returnFocusEl: HTMLElement | null = null
+	function restoreFocus() {
+		const el = returnFocusEl
+		returnFocusEl = null
+		if (el?.isConnected) void tick().then(() => el.focus())
+	}
+
+	// aria-modal: Tab / Shift+Tab cycle through the panel's own focusables (the
+	// result rows are tabindex -1, so usually that is just the input).
+	function trapTab(e: KeyboardEvent) {
+		if (e.key !== "Tab") return
+		const panel = e.currentTarget as HTMLElement
+		const focusables = Array.from(panel.querySelectorAll<HTMLElement>(
+			"input, button:not([disabled]), a[href], select, textarea, [tabindex]:not([tabindex='-1'])"
+		)).filter((el) => el.tabIndex >= 0 && el.getClientRects().length > 0)
+		if (focusables.length === 0) return
+		const first = focusables[0]
+		const last = focusables[focusables.length - 1]
+		const active = document.activeElement
+		if (e.shiftKey && (active === first || !panel.contains(active))) {
+			e.preventDefault()
+			last.focus()
+		} else if (!e.shiftKey && (active === last || !panel.contains(active))) {
+			e.preventDefault()
+			first.focus()
+		}
+	}
+
 	let wasOpen = false
 	$effect(() => {
 		const isOpen = open
 		if (isOpen && !wasOpen) {
+			const active = document.activeElement
+			returnFocusEl = active instanceof HTMLElement && active !== document.body ? active : null
 			untrack(() => {
 				query = ""
 				resetHighlight()
@@ -388,6 +443,7 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 
 {#if open}
 	<div use:portal class="cp-root">
+		<!-- Pointer light-dismiss only; keyboard users close with Escape (layer stack). -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div class="cp-backdrop" onclick={closePalette}></div>
@@ -397,6 +453,7 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 			aria-label="Command palette"
 			{...rest}
 			class={["cp-panel", className]}
+			onkeydown={trapTab}
 		>
 			<div class="cp-search-row">
 				<svg class="cp-search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -407,6 +464,12 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 					bind:value={query}
 					type="text"
 					class="cp-input"
+					role="combobox"
+					aria-expanded="true"
+					aria-controls={listboxId}
+					aria-autocomplete="list"
+					aria-activedescendant={activeRowId}
+					aria-label={placeholder}
 					{placeholder}
 					autocomplete="off"
 					spellcheck="false"
@@ -414,44 +477,65 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 				<span class="cp-kbd-hint">esc to close</span>
 			</div>
 
-			<div class="cp-results" bind:this={listEl} role="listbox">
-				{#each rows as row (row.kind === "header" ? "h:" + row.label : itemKey(row.item) + ":" + row.index)}
-					{#if row.kind === "header"}
-						<div class="cp-section">{row.label}</div>
-					{:else if row.item.href && !row.item.onClick}
-						<!-- Navigation row — real <a> so the host router handles the click. -->
-						<a
-							class="cp-item"
-							class:selected={row.index === selectedIndex}
-							class:disabled={isDisabled(row.item)}
-							data-idx={row.index}
-							href={isDisabled(row.item) ? undefined : row.item.href}
-							target={row.item.target ?? null}
-							rel={row.item.rel ?? null}
-							role="option"
-							aria-selected={row.index === selectedIndex}
-							onclickcapture={(event) => selectItem(row.item, event)}
-							onmousemove={() => (nav.index = row.index)}
-						>
-							{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}
-						</a>
-					{:else}
-						<!-- Action row. -->
-						<button
-							type="button"
-							class="cp-item"
-							class:selected={row.index === selectedIndex}
-							data-idx={row.index}
-							disabled={isDisabled(row.item) || undefined}
-							role="option"
-							aria-selected={row.index === selectedIndex}
-							onclick={(event) => selectItem(row.item, event)}
-							onmousemove={() => (nav.index = row.index)}
-						>
-							{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}
-						</button>
-					{/if}
-				{/each}
+			{#snippet resultRow(row: ItemRow)}
+				{#if row.item.href && !row.item.onClick}
+					<!-- Navigation row — real <a> so the host router handles the click. -->
+					<a
+						class="cp-item"
+						class:selected={row.index === selectedIndex}
+						class:disabled={isDisabled(row.item)}
+						data-idx={row.index}
+						href={isDisabled(row.item) ? undefined : row.item.href}
+						target={row.item.target ?? null}
+						rel={row.item.rel ?? null}
+						id={rowId(row.index)}
+						role="option"
+						tabindex="-1"
+						aria-selected={row.index === selectedIndex ? "true" : "false"}
+						aria-disabled={isDisabled(row.item) ? "true" : null}
+						onclickcapture={(event) => selectItem(row.item, event)}
+						onmousemove={() => (nav.index = row.index)}
+					>
+						{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}
+					</a>
+				{:else}
+					<!-- Action row. -->
+					<button
+						type="button"
+						class="cp-item"
+						class:selected={row.index === selectedIndex}
+						data-idx={row.index}
+						disabled={isDisabled(row.item) || undefined}
+						id={rowId(row.index)}
+						role="option"
+						tabindex="-1"
+						aria-selected={row.index === selectedIndex ? "true" : "false"}
+						aria-disabled={isDisabled(row.item) ? "true" : null}
+						onclick={(event) => selectItem(row.item, event)}
+						onmousemove={() => (nav.index = row.index)}
+					>
+						{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}
+					</button>
+				{/if}
+			{/snippet}
+
+			<div class="cp-results" bind:this={listEl}>
+				<div role="listbox" id={listboxId} aria-label="Command palette results">
+					{#each sections as section, si (si + ":" + (section.label ?? ""))}
+						{#if section.label}
+							<div role="group" aria-label={section.label}>
+								<div class="cp-section" aria-hidden="true">{section.label}</div>
+								{#each section.rows as row (itemKey(row.item) + ":" + row.index)}
+									{@render resultRow(row)}
+								{/each}
+							</div>
+						{:else}
+							{#each section.rows as row (itemKey(row.item) + ":" + row.index)}
+								{@render resultRow(row)}
+							{/each}
+						{/if}
+					{/each}
+				</div>
 
 				{#if itemCount === 0}
 					{#if emptySnippet}

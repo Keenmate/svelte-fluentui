@@ -11,7 +11,7 @@ test.beforeEach(async ({page}) => {
 })
 
 const day = (page, section: string, n: number) =>
-	page.locator(`#${section} .days [role=button]`, {hasText: new RegExp(`^${n}$`)}).first()
+	page.locator(`#${section} .days [role=gridcell]`, {hasText: new RegExp(`^${n}$`)}).first()
 
 test("single: click binds value and fires onChange({value})", async ({page}) => {
 	await day(page, "single", 15).click()

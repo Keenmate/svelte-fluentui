@@ -485,7 +485,6 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <span {...rest} bind:this={wrapperEl} class={["fluent-context-menu-wrapper", className]} oncontextmenu={onContextMenu} onpointerdowncapture={onZonePointerDown}>
 	{@render children?.()}
 </span>
@@ -534,7 +533,6 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 		{/if}
 	{:else if entry.hasChildren}
 		<!-- Submenu trigger — side-opening popover on hover/focus. -->
-		<!-- svelte-ignore a11y_mouse_events_have_key_events -->
 		<button
 			type="button"
 			class="fluent-context-menu-item fluent-context-menu-submenu-trigger {entry.resolved.cssClass}"
@@ -594,7 +592,6 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	</div>
 {/if}
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 {#each Array.from(openSubmenus.entries()) as [key, submenu] (key)}
 	<div
 		use:portal

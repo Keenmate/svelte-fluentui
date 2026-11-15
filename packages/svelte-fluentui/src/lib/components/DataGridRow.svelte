@@ -40,7 +40,6 @@ Wrapper for `<fluent-data-grid-row>`: one row of `DataGridCell`s inside a `DataG
 	}: Props = $props();
 </script>
 
-<!-- svelte-ignore a11y_interactive_supports_focus -->
 <fluent-data-grid-row
 	{...rest}
 	class={className}

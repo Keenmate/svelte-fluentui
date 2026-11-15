@@ -16,7 +16,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {untrack} from "svelte"
+	import {tick, untrack} from "svelte"
 	import TextField from "./TextField.svelte"
 	import Calendar from "./Calendar.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
@@ -83,6 +83,8 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		open?: boolean
 		/** Accessible name of the calendar icon button. Default: "Open calendar". */
 		openCalendarIconAriaLabel?: string
+		/** Accessible name of the calendar popup (`role="dialog"`). Default: "Choose date". */
+		popupAriaLabel?: string
 		/** Tooltip (`title`) on the input. */
 		title?: string
 		/** Extra class on the root. */
@@ -130,6 +132,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		openOnInputClick = true,
 		open = $bindable(false),
 		openCalendarIconAriaLabel = "Open calendar",
+		popupAriaLabel = "Choose date",
 		title = undefined,
 		class: className = "",
 		style = "",
@@ -145,8 +148,32 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	let isOpen = $derived(open)
 	function setOpen(next: boolean) {
 		if (open === next) return
+		// Closing with focus inside the popup (Escape, a pick) hands focus back to the
+		// calendar button instead of dropping it on <body>.
+		const returnFocus = !next && !!popupElement?.contains(document.activeElement)
 		open = next
+		if (returnFocus) void tick().then(() => calendarButton?.focus())
 	}
+
+	// Keyboard open (Enter / Space on the calendar button, ArrowDown on the input):
+	// focus moves into the popup, onto the calendar's focused date.
+	async function openAndFocusPopup() {
+		setOpen(true)
+		await tick()
+		await tick() // PositioningRegion mounts its content a tick later
+		popupElement?.querySelector<HTMLElement>(".days [tabindex='0']")?.focus()
+	}
+
+	function handleWrapperKeydown(event: KeyboardEvent) {
+		if (disabled || readonly || event.key !== "ArrowDown") return
+		if ((event.target as HTMLElement | null)?.closest(".end-buttons")) return
+		event.preventDefault()
+		void openAndFocusPopup()
+	}
+
+	const uid = $props.id()
+	const popupId = `fluent-datepicker-${uid}-popup`
+	let calendarButton = $state<HTMLButtonElement | undefined>(undefined)
 	// onOpenChange on every real open/close transition after mount (user action or a
 	// programmatic `bind:open` change). The first run only records the initial state,
 	// so `open={true}` on mount is silent.
@@ -210,10 +237,12 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	}
 
 	// Handle input click to open calendar
-	function handleInputClick(event?: Event) {
+	function handleInputClick(event?: MouseEvent) {
 		event?.stopPropagation()
 		if (!disabled && !readonly) {
-			setOpen(!isOpen)
+			// detail 0 = activated from the keyboard (Enter / Space), not a pointer
+			if (!isOpen && event?.detail === 0) void openAndFocusPopup()
+			else setOpen(!isOpen)
 		}
 	}
 
@@ -261,9 +290,10 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		</label>
 	{/if}
 
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- Mouse convenience (a press anywhere on the field opens); keyboard users get
+	     ArrowDown on the input and the calendar button. -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="datepicker-wrapper" bind:this={wrapperElement} onclick={handleWrapperClick}>
+	<div class="datepicker-wrapper" bind:this={wrapperElement} onclick={handleWrapperClick} onkeydown={handleWrapperKeydown}>
 		<TextField
 			{id}
 			value={inputValue}
@@ -281,11 +311,15 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 				<span class="end-buttons">
 				<!-- Calendar icon -->
 				<button
+					bind:this={calendarButton}
 					type="button"
 					class="calendar-button"
 					onclick={handleInputClick}
 					disabled={disabled}
 					aria-label={openCalendarIconAriaLabel}
+					aria-haspopup="dialog"
+					aria-expanded={isOpen ? "true" : "false"}
+					aria-controls={isOpen ? popupId : null}
 				>
 					<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
 						<path d="M14 2a1 1 0 011 1v1h1.5A1.5 1.5 0 0118 5.5v11a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 16.5v-11A1.5 1.5 0 013.5 4H5V3a1 1 0 112 0v1h6V3a1 1 0 011-1zM5 6H3.5a.5.5 0 00-.5.5v10a.5.5 0 00.5.5h13a.5.5 0 00.5-.5v-10a.5.5 0 00-.5-.5H15v1a1 1 0 11-2 0V6H7v1a1 1 0 01-2 0V6zm1.5 4a.5.5 0 110 1h-1a.5.5 0 110-1h1zm0 3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm3.5-3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm0 3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm3.5-3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm0 3a.5.5 0 110 1h-1a.5.5 0 110-1h1z"/>
@@ -317,7 +351,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 				style="z-index: var(--fluent-z-popover); background: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); border-radius: var(--fluent-border-radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);"
 			>
 				<!-- Padding lives here, not on the region, so a press anywhere on the popup is "inside". -->
-				<div class="datepicker-popup" bind:this={popupElement}>
+				<div class="datepicker-popup" bind:this={popupElement} id={popupId} role="dialog" aria-label={popupAriaLabel}>
 					<Calendar
 						value={value || new Date()}
 						pickerMonth={value || new Date()}

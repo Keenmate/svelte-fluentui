@@ -9,6 +9,7 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
+	import {buttonLike} from "../helpers/button-like.js"
 	/**
 	 * CompositeBadge — a three-section chip: [icon][label][button].
 	 * Use for notification pills, status + count, or interactive/dismissible
@@ -80,9 +81,8 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 
 <div {...rest} class={classes} style={style || null}>
 	{#if icon}<span class="composite-badge-icon">{@render icon()}</span>{/if}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<span class="composite-badge-label" onclick={onLabelClick ? (event) => onLabelClick({sourceEvent: event}) : undefined}>{@render label?.()}</span>
+	<!-- With `onLabelClick` the label becomes role="button" + tab stop + Enter / Space (buttonLike). -->
+	<span {...buttonLike(!!onLabelClick)} class="composite-badge-label" onclick={onLabelClick ? (event) => onLabelClick({sourceEvent: event}) : undefined}>{@render label?.()}</span>
 	{#if showButton}
 		<button class="composite-badge-button" type="button" title={buttonTitle || null} onclick={(event) => onButtonClick?.({sourceEvent: event})}>
 			{#if button}{@render button()}{:else}&times;{/if}

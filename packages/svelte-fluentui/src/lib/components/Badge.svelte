@@ -9,6 +9,7 @@ Small status/count indicator — a themed `<span>` with palette colours, appeara
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
+	import {buttonLike} from "../helpers/button-like.js"
 	/**
 	 * Custom Badge Component - FluentUI styled
 	 *
@@ -135,9 +136,9 @@ Small status/count indicator — a themed `<span>` with palette colours, appeara
 	})
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- With `onclick` the badge becomes role="button" + tab stop + Enter / Space (buttonLike). -->
 <span
+	{...buttonLike(!!onclick)}
 	{...rest}
 	class={classes}
 	style={computedStyle || null}

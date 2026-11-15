@@ -93,7 +93,6 @@ A single collapsible panel inside an `<Accordion>` (also works standalone via `b
 </script>
 
 <div {...rest} class={["fluent-accordion-item", className]} class:expanded={isExpanded} class:disabled>
-	<!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
 	<div class="fluent-accordion-item__heading" class:toggle-start={toggleStart} role="heading" aria-level={Number(headingLevel)}>
 		{#if start}
 			<span class="fluent-accordion-item__start">{@render start()}</span>

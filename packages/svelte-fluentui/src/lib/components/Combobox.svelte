@@ -458,10 +458,18 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 
 	// Reflect the cursor onto the matching option so CSS can style the keyboard
 	// cursor distinctly from hover/selected.
+	// The row's id also feeds `aria-activedescendant` on the input, so screen
+	// readers follow the cursor while focus stays in the input.
+	let activeOptionId = $state<string | null>(null)
 	$effect(() => {
 		const _ = [nav.index, isOpen, typed] // dep tracking
-		if (!isOpen) return
-		markHighlighted(listEl, nav.index >= 0 ? visibleOptionEls()[nav.index] : undefined)
+		if (!isOpen) {
+			activeOptionId = null
+			return
+		}
+		const el = nav.index >= 0 ? visibleOptionEls()[nav.index] : undefined
+		markHighlighted(listEl, el)
+		activeOptionId = el?.id || null
 	})
 
 	// Inline autocomplete: complete the input to the first matching option's
@@ -742,6 +750,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 			<Chip
 				text={chipLabel(val)}
 				variant="external"
+				removeFocusable
 				showRemove={!disabled && !readonly}
 				removeLabel={`Remove ${chipLabel(val)}`}
 				onRemove={({sourceEvent: e}) => removeValue(val, e)}
@@ -777,7 +786,6 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 <!-- display:contents root so consumers see one element, transparent to layout. -->
 <div {...rest} class="combobox-root">
 
-	<!-- svelte-ignore a11y_label_has_associated_control -->
 	{#if hasLabel}
 		<label class="fluent-field-label" for={inputId}>
 			{#if label}{label}{/if}
@@ -797,8 +805,8 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		{@render externalChips()}
 	{/if}
 
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- Mouse convenience only: a press in the control's padding focuses the input,
+	     which owns the keyboard. -->
 	<div
 		bind:this={controlEl}
 		class="combobox-control {appearance} {className}"
@@ -838,10 +846,12 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				type="text"
 				class="combobox-input"
 				role="combobox"
-				aria-expanded={isOpen}
+				aria-expanded={isOpen ? "true" : "false"}
 				aria-controls={listboxId}
+				aria-activedescendant={activeOptionId}
 				aria-autocomplete={doInline ? (doListFilter ? "both" : "inline") : (doListFilter ? "list" : "none")}
 				aria-label={ariaLabel ?? label}
+				aria-required={required ? "true" : null}
 				value={inputDisplay}
 				placeholder={effectivePlaceholder}
 				{disabled}
@@ -882,12 +892,13 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 			matchWidth={!dropdownWidth}
 			availableHeight
 		>
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<!-- The keyboard stays on the input (aria-activedescendant); the list takes clicks only. -->
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<div
 				bind:this={listEl}
 				id={listboxId}
 				role="listbox"
+				aria-label={ariaLabel ?? label}
 				aria-multiselectable={multiple ? "true" : null}
 				tabindex="-1"
 				class={["combobox-listbox", dropdownClass]}

@@ -16,7 +16,7 @@ const datePicker = (page: Page) => page.locator(".fluent-datepicker:has(#dp)")
 const timePicker = (page: Page) => page.locator(".fluent-timepicker:has(#tp)")
 const calendarPopup = (page: Page) => page.locator(".positioning-region:has(.fluent-calendar)")
 const day = (page: Page, n: number) =>
-	calendarPopup(page).locator(".days [role=button]", {hasText: new RegExp(`^${n}$`)}).first()
+	calendarPopup(page).locator(".days [role=gridcell]", {hasText: new RegExp(`^${n}$`)}).first()
 
 async function openDatePicker(page: Page) {
 	await datePicker(page).locator(".calendar-button").click()

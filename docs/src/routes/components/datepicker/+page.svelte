@@ -59,6 +59,7 @@
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the calendar popup (matching FluentUI Blazor). Set false to require clicking the calendar icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the calendar popup."},
 		{name: "openCalendarIconAriaLabel", type: "string", default: '"Open calendar"', description: "ARIA label for the calendar trigger button."},
+		{name: "popupAriaLabel", type: "string", default: '"Choose date"', description: "Accessible name of the calendar popup (role=\"dialog\"). Opening it from the keyboard (Enter / Space on the button, ArrowDown on the input) moves focus onto the calendar's focused date; closing from inside returns focus to the button."},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip (title) on the input."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names applied to the root element."},
 		{name: "style", type: "string", default: '""', description: "Inline styles applied to the root element."},

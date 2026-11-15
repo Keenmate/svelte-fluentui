@@ -85,7 +85,7 @@ export class CalendarTitles {
 	get nextTitle(): string {
 		switch (this.view) {
 			case "days":
-				return this.calendarExtended.getMonthNameFromDate(this.calendarExtended.addYears(this.date, 1))
+				return this.calendarExtended.getMonthNameFromDate(this.calendarExtended.addMonths(this.date, 1))
 			case "months":
 				return this.calendarExtended.getYearFromDate(this.calendarExtended.addYears(this.date, 1))
 			case "years":

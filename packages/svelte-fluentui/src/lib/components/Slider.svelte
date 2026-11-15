@@ -125,7 +125,6 @@ Range slider wrapping `<fluent-slider>`; `bind:value` is a number.
 	</label>
 {/if}
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <fluent-slider
 	bind:this={element}
 	{...rest}

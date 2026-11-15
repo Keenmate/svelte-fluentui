@@ -32,6 +32,7 @@
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the popup (matching FluentUI Blazor). Set false to require clicking the clock icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the popup."},
 		{name: "openClockIconAriaLabel", type: "string", default: '"Open time picker"', description: "Accessible name of the clock button."},
+		{name: "popupAriaLabel", type: "string", default: '"Choose time"', description: "Accessible name of the time popup (role=\"dialog\"). Opening it from the keyboard moves focus onto the hour column (each column is a radio group: ArrowUp / ArrowDown select); closing from inside returns focus to the clock button."},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text on the input."},
 		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label markup, rendered after label."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names applied to the root element."},

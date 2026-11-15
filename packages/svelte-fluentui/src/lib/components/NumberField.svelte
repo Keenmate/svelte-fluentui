@@ -239,7 +239,6 @@ Wrapper for `<fluent-number-field>`: a numeric input with optional step buttons 
 	</label>
 {/if}
 
-<!-- svelte-ignore a11y_autofocus -->
 <fluent-number-field
 	bind:this={element}
 	{...rest}

@@ -21,6 +21,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 		type Placement
 	} from "@floating-ui/dom"
 	import type {RestProps} from "../types/index.js"
+	import {pushLayer} from "../helpers/layer-stack.js"
 
 	/** Logical position: `start` / `end` follow the anchor's text direction. */
 	type Position = "top" | "bottom" | "start" | "end"
@@ -88,6 +89,38 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 	let cleanupAutoUpdate: (() => void) | null = null
 
 	const shouldShow = $derived(visible === true || (visible === undefined && isVisible))
+
+	// The anchor points at the tooltip (`aria-describedby`) while it is shown, so
+	// screen readers read the hint with the focused control. A consumer `id` wins.
+	const uid = $props.id()
+	const tooltipId = $derived((rest.id as string | undefined) || `fluent-tooltip-${uid}`)
+
+	$effect(() => {
+		if (!shouldShow || !anchor) return
+		const anchorEl = getAnchorElement()
+		if (!anchorEl) return
+		const id = tooltipId
+		const tokens = (anchorEl.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean)
+		if (!tokens.includes(id)) anchorEl.setAttribute("aria-describedby", [...tokens, id].join(" "))
+		return () => {
+			const remaining = (anchorEl.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(t => t && t !== id)
+			if (remaining.length) anchorEl.setAttribute("aria-describedby", remaining.join(" "))
+			else anchorEl.removeAttribute("aria-describedby")
+		}
+	})
+
+	// Escape hides a hover / focus tooltip (WCAG 1.4.13 "dismissible"). It goes
+	// through the layer stack, so a tooltip inside a dialog takes the first Escape
+	// and the dialog stays open. Forced tooltips (`visible={true}`) belong to the consumer.
+	$effect(() => {
+		if (!hoverDriven || !isVisible) return
+		return pushLayer({
+			onEscape: () => {
+				clearShowDelay()
+				hideFn()
+			}
+		})
+	})
 
 	function getAnchorElement(): HTMLElement | null {
 		return anchor ? document.getElementById(anchor) : null
@@ -261,6 +294,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 {#if isRendered || shouldShow}
 	<div
 		{...rest}
+		id={tooltipId}
 		use:portal
 		bind:this={tooltipElement}
 		class="fluent-tooltip {placementSide} {className}"

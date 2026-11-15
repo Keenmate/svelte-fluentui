@@ -82,9 +82,7 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 		</div>
 	{/if}
 
-	<nav class="paginator-nav">
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<nav class="paginator-nav" aria-label="Pagination">
 		<fluent-button
 			onclick={() => goTo(0)}
 			{...(!backEnabled || disabled ? { disabled: true } : {})}
@@ -94,8 +92,6 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 			<span>&laquo;</span>
 		</fluent-button>
 
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<fluent-button
 			onclick={() => goTo(currentPageIndex - 1)}
 			{...(!backEnabled || disabled ? { disabled: true } : {})}
@@ -105,7 +101,8 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 			<span>&lsaquo;</span>
 		</fluent-button>
 
-		<div class="pagination-text">
+		<!-- Live: a page change is announced (the pressed button may have just become disabled). -->
+		<div class="pagination-text" aria-live="polite">
 			{#if paginationTextTemplate}
 				{@render paginationTextTemplate?.()}
 			{:else}
@@ -113,8 +110,6 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 			{/if}
 		</div>
 
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<fluent-button
 			onclick={() => goTo(currentPageIndex + 1)}
 			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}
@@ -124,8 +119,6 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 			<span>&rsaquo;</span>
 		</fluent-button>
 
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<fluent-button
 			onclick={() => goTo(lastPageIndex)}
 			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}

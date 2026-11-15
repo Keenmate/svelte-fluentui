@@ -75,6 +75,11 @@ A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div 
 
 	const selectedValue = selectedOptionsContext.get()
 
+	// Unique per instance: the parent's input / trigger points `aria-activedescendant`
+	// at the highlighted row's id (focus stays on the input). A consumer `id` wins.
+	const uid = $props.id()
+	const optionId = $derived((rest.id as string | undefined) || `fluent-option-${uid}`)
+
 	// Selection is either forced via the `selected` prop or derived from the
 	// shared context. Reading ctx.value here tracks the parent's selection state.
 	const isSelected = $derived(
@@ -95,10 +100,11 @@ A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div 
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- The keyboard lives on the parent's input / trigger (aria-activedescendant
+     pattern), so the row itself takes clicks only. -->
 <div
 	{...rest}
+	id={optionId}
 	class={`fluent-option${className ? ` ${className}` : ""}`}
 	role="option"
 	aria-selected={isSelected ? "true" : "false"}

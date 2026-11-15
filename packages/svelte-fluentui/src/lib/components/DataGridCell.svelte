@@ -55,7 +55,6 @@ Wrapper for `<fluent-data-grid-cell>`: one cell inside a `DataGridRow`.
 	}: Props = $props()
 </script>
 
-<!-- svelte-ignore a11y_no_noninteractive_tabindex a11y_click_events_have_key_events -->
 <fluent-data-grid-cell
 	{...rest}
 	class={className}

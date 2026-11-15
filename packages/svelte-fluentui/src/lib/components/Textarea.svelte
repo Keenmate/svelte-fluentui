@@ -204,7 +204,6 @@ Multi-line text input wrapping `<fluent-text-area>`; `bind:value` is a string. C
 	</label>
 {/if}
 
-<!-- svelte-ignore a11y_autofocus -->
 <fluent-text-area
 	bind:this={element}
 	{...rest}

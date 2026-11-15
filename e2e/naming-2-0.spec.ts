@@ -48,7 +48,7 @@ test("DatePicker closeOnSelect={false} stays open after a day pick", async ({pag
 	await page.locator(".fluent-datepicker:has(#dp) .calendar-button").click()
 	const popup = page.locator(".positioning-region:has(.fluent-calendar)")
 	await expect(popup).toBeVisible()
-	await popup.locator(".days [role=button]", {hasText: /^12$/}).first().click()
+	await popup.locator(".days [role=gridcell]", {hasText: /^12$/}).first().click()
 	await expect(page.locator("#dp-value")).toHaveText("2026-5-12")
 	await expect(page.locator("#dp-open")).toHaveText("true")
 	await expect(popup).toBeVisible()

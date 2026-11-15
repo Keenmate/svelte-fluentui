@@ -39,7 +39,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		view?: CalendarView
 		/** `single` (binds `value`), `multiple` or `range` (bind `selectedDates`). Default: `"single"`. */
 		selectMode?: CalendarSelectMode
-		/** Blazor-parity flag; currently has no effect. */
+		/** Single mode and month/year views: when true, picking the already-selected date (month / year) does not fire `onChange`. Default: `false` (every pick fires). */
 		checkIfSelectedValueHasChanged?: boolean
 		/** Return `true` to disable a date. */
 		getIsDateDisabledCallback?: (ctx: {date: Date}) => boolean
@@ -295,9 +295,12 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	async function onSelectDayHandlerAsync(value_: Date, dayDisabled: boolean) {
 		if (dayDisabled) return
 
+		_focusDate = value_
+
 		switch (selectMode) {
 			// Single selection
 			case "single":
+				if (checkIfSelectedValueHasChanged && value && sameDay(value, value_)) return
 				value = value_
 				onChange?.({value: value_})
 				break
@@ -418,6 +421,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 			return
 		}
 
+		if (checkIfSelectedValueHasChanged && value && value.getFullYear() === year && value.getMonth() === month) return
 		const newValue = new Date(year, month, 1, 0, 0, 0, 0)
 		value = newValue
 		onChange?.({value: newValue})
@@ -428,6 +432,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 			return
 		}
 
+		if (checkIfSelectedValueHasChanged && value && value.getFullYear() === year) return
 		const newValue = new Date(year, 0, 1, 0, 0, 0, 0)
 		value = newValue
 		onChange?.({value: newValue})
@@ -465,13 +470,159 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	}
 
 	function pickerMonthSelectAsync(month?: Date) {
+		const refocus = hasFocus()
 		pickerMonth = month ?? new Date()
 		_pickerView = "days"
+		if (refocus) void focusTabStop()
 	}
 
 	function pickerYearSelectAsync(year?: Date) {
+		const refocus = hasFocus()
 		pickerMonth = year ?? new Date()
 		_pickerView = "days"
+		if (refocus) void focusTabStop()
+	}
+
+	// ---------- Keyboard (APG date-picker grid) ----------
+	// One tab stop per grid (roving tabindex): the days grid's stop is the focused
+	// date when it is in the shown month, else the selected date, today, or the 1st.
+	// Arrows move by day / week, Home / End to the week's ends, PageUp / PageDown by
+	// month (Shift: year) — crossing into another month pages the calendar along.
+	let rootEl: HTMLDivElement | undefined = $state()
+	let _focusDate = $state<Date | null>(null)
+	const uid = $props.id()
+	const titleId = `fluent-calendar-${uid}-title`
+
+	function inShownMonth(d: Date | null | undefined): boolean {
+		return !!d && d.getFullYear() === pickerMonth.getFullYear() && d.getMonth() === pickerMonth.getMonth()
+	}
+
+	const rovingDate = $derived.by(() => {
+		if (_focusDate && inShownMonth(_focusDate)) return _focusDate
+		const selected = selectMode === "single" ? value : selectedDates?.[0]
+		if (selected && inShownMonth(selected)) return selected
+		const today = new Date()
+		if (inShownMonth(today)) return today
+		return new Date(pickerMonth.getFullYear(), pickerMonth.getMonth(), 1)
+	})
+
+	function hasFocus(): boolean {
+		const active = document.activeElement
+		return !!rootEl && rootEl.contains(active)
+	}
+
+	// Moves focus to the current view's tab stop once the DOM has updated.
+	async function focusTabStop() {
+		await tick()
+		rootEl?.querySelector<HTMLElement>(".days [tabindex='0'], .months [tabindex='0'], .years [tabindex='0']")?.focus()
+	}
+
+	function parseDayId(id: string): Date {
+		const [y, m, d] = id.split("-").map(Number)
+		return new Date(y, m - 1, d)
+	}
+
+	function isRtl(el: Element): boolean {
+		return getComputedStyle(el).direction === "rtl"
+	}
+
+	async function moveDayFocus(next: Date) {
+		_focusDate = next
+		if (!inShownMonth(next)) {
+			pickerMonth = new Date(next.getFullYear(), next.getMonth(), 1)
+			onPickerMonthChange?.({pickerMonth})
+		}
+		await tick()
+		rootEl?.querySelector<HTMLElement>(`.days [tabindex='0']`)?.focus()
+	}
+
+	// Any focused cell (click, programmatic focus) becomes the roving tab stop.
+	function onDaysFocusIn(ev: FocusEvent) {
+		const cell = (ev.target as HTMLElement).closest<HTMLElement>("[part='day'][data-value]")
+		if (cell?.hasAttribute("tabindex")) _focusDate = parseDayId(cell.dataset.value!)
+	}
+
+	function onCellsFocusIn(ev: FocusEvent) {
+		const container = ev.currentTarget as HTMLElement
+		const cells = Array.from(container.querySelectorAll<HTMLElement>("[data-value]"))
+		const i = cells.indexOf((ev.target as HTMLElement).closest<HTMLElement>("[data-value]")!)
+		if (i >= 0) _cellFocusIndex = i
+	}
+
+	function onDaysKeydown(ev: KeyboardEvent) {
+		const cell = (ev.target as HTMLElement).closest<HTMLElement>("[part='day'][data-value]")
+		if (!cell) return
+		const current = parseDayId(cell.dataset.value!)
+		const row = Array.from(cell.parentElement?.children ?? []) as HTMLElement[]
+		const addDays = (n: number) => new Date(current.getFullYear(), current.getMonth(), current.getDate() + n)
+		const addMonths = (n: number) => {
+			// Clamp the day (Jan 31 + 1 month → Feb 28/29, not Mar 3).
+			const target = new Date(current.getFullYear(), current.getMonth() + n, 1)
+			const last = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate()
+			return new Date(target.getFullYear(), target.getMonth(), Math.min(current.getDate(), last))
+		}
+		let next: Date
+		switch (ev.key) {
+			case "ArrowLeft": next = addDays(isRtl(cell) ? 1 : -1); break
+			case "ArrowRight": next = addDays(isRtl(cell) ? -1 : 1); break
+			case "ArrowUp": next = addDays(-7); break
+			case "ArrowDown": next = addDays(7); break
+			case "Home": next = parseDayId(row[0].dataset.value!); break
+			case "End": next = parseDayId(row[row.length - 1].dataset.value!); break
+			case "PageUp": next = addMonths(ev.shiftKey ? -12 : -1); break
+			case "PageDown": next = addMonths(ev.shiftKey ? 12 : 1); break
+			case "Enter":
+			case " ":
+				ev.preventDefault()
+				void onSelectDayHandlerAsync(current, cell.getAttribute("aria-disabled") === "true" || !!readonly || !!disabled)
+				return
+			default:
+				return
+		}
+		ev.preventDefault()
+		void moveDayFocus(next)
+	}
+
+	// Months / years views: roving tabindex over the 12 cells (4 per row).
+	let _cellFocusIndex = $state(-1)
+
+	function cellTabIndex(index: number, selectedIndex: number): number | null {
+		if (disabled) return null
+		const stop = _cellFocusIndex >= 0 ? _cellFocusIndex : Math.max(selectedIndex, 0)
+		return index === stop ? 0 : -1
+	}
+
+	function onCellsKeydown(ev: KeyboardEvent) {
+		const container = ev.currentTarget as HTMLElement
+		const cells = Array.from(container.querySelectorAll<HTMLElement>("[data-value]"))
+		const i = cells.indexOf((ev.target as HTMLElement).closest<HTMLElement>("[data-value]")!)
+		if (i < 0) return
+		const columns = 4
+		let n: number
+		switch (ev.key) {
+			case "ArrowLeft": n = i + (isRtl(container) ? 1 : -1); break
+			case "ArrowRight": n = i + (isRtl(container) ? -1 : 1); break
+			case "ArrowUp": n = i - columns; break
+			case "ArrowDown": n = i + columns; break
+			case "Home": n = 0; break
+			case "End": n = cells.length - 1; break
+			default: return
+		}
+		ev.preventDefault()
+		_cellFocusIndex = Math.min(Math.max(n, 0), cells.length - 1)
+		cells[_cellFocusIndex]?.focus()
+	}
+
+	function activateOnKey(ev: KeyboardEvent, action: () => unknown) {
+		if (ev.key !== "Enter" && ev.key !== " ") return
+		ev.preventDefault() // Space must not scroll the page
+		action()
+	}
+
+	function openPickerView(title: CalendarTitles) {
+		const refocus = hasFocus()
+		onTitleClicked(title)
+		if (refocus) void focusTabStop()
 	}
 
 	async function startNewAnimationAsync(position: CalendarVerticalPosition) {
@@ -510,47 +661,55 @@ Inline month calendar with single, multiple or range selection and month/year pi
 
 <div
 	{...rest}
+	bind:this={rootEl}
 	class={className || null}
 	class:fluent-calendar={view === "days"}
 	class:fluent-month={view === "months"}
 	class:fluent-year={view === "years"}
-	aria-readonly={readonly ? "true" : null}
+	data-readonly={readonly ? "true" : null}
 	aria-disabled={disabled ? "true" : null}
 	style={[sizeStyle, style].filter(Boolean).join("; ") || null}
 >
 	{#if !_pickerView || _pickerView === "days"}
 		<div>
-			<!-- Title bar (label, previous and next buttons) -->
-			<div class="title" part="title" aria-label="{titles.label}">
+			<!-- Title bar (label, previous and next buttons). The label is live so paging
+			     by keyboard announces the new month / year. -->
+			<div class="title" part="title">
 				<div
 					part="label" class={getAnimationClass('label')}
-					role="button" tabindex="0"
-					onclick={() => onTitleClicked(titles)}
-					onkeydown={(ev) => (ev.key === "Enter" || ev.key === " ") && onTitleClicked(titles)}
+					id={titleId}
+					role="button"
+					tabindex={disabled ? null : titles.readOnly ? -1 : 0}
+					aria-disabled={titles.readOnly ? "true" : null}
+					aria-live="polite"
+					onclick={() => openPickerView(titles)}
+					onkeydown={(ev) => activateOnKey(ev, () => openPickerView(titles))}
 				>
 					{titles.label}
 				</div>
 				<div part="move" class="change-period">
 					{#if titles.previousDisabled}
-						<div class="previous" aria-disabled="true"></div>
+						<div class="previous" aria-hidden="true" aria-disabled="true"></div>
 					{:else}
 						<div
 							class="previous" title="{titles.previousTitle}"
-							role="button" tabindex="0"
+							role="button" tabindex={disabled ? null : 0}
+							aria-label={titles.previousTitle}
 							onclick={onPreviousButtonClicked}
-							onkeydown={(ev) => ev.key === "Enter" || ev.key === " " ? onPreviousButtonClicked(ev as unknown as MouseEvent) : undefined}
+							onkeydown={(ev) => activateOnKey(ev, () => onPreviousButtonClicked(ev as unknown as MouseEvent))}
 						>
 							{@render arrowUp()}
 						</div>
 					{/if}
 					{#if titles.nextDisabled}
-						<div class="next" aria-disabled="true"></div>
+						<div class="next" aria-hidden="true" aria-disabled="true"></div>
 					{:else}
 						<div
 							class="next" title="{titles.nextTitle}"
-							role="button" tabindex="0"
+							role="button" tabindex={disabled ? null : 0}
+							aria-label={titles.nextTitle}
 							onclick={onNextButtonHandlerAsync}
-							onkeydown={(ev) => ev.key === "Enter" || ev.key === " " ? onNextButtonHandlerAsync(ev as unknown as MouseEvent) : undefined}
+							onkeydown={(ev) => activateOnKey(ev, () => onNextButtonHandlerAsync(ev as unknown as MouseEvent))}
 						>
 							{@render arrowDown()}
 						</div>
@@ -559,12 +718,24 @@ Inline month calendar with single, multiple or range selection and month/year pi
 			</div>
 
 			{#if view === "days"}
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="days" part="days" onmouseleave={ev => { _selectedDatesMouseOver = []; onDayHover?.({date: null}) }}>
+				<!-- APG grid: one tab stop (roving tabindex); arrows / Home / End / PageUp /
+				     PageDown move the focused date, Enter / Space select it. Focus lives on the
+				     cells, never on the grid itself. -->
+				<!-- svelte-ignore a11y_interactive_supports_focus -->
+				<div
+					class="days" part="days"
+					role="grid"
+					aria-labelledby={titleId}
+					aria-readonly={readonly ? "true" : null}
+					aria-multiselectable={selectMode !== "single" ? "true" : null}
+					onmouseleave={ev => { _selectedDatesMouseOver = []; onDayHover?.({date: null}) }}
+					onkeydown={onDaysKeydown}
+					onfocusin={onDaysFocusIn}
+				>
 					<!-- Titles: Mon, Tue, ... -->
-					<div class="week-days" part="week-days">
+					<div class="week-days" part="week-days" role="row">
 						{#each calendarExtended.getDayNames() as weekDay}
-							<div class="week-day" part="week-day" title={weekDay.name} data-abbr={weekDay.name}>
+							<div class="week-day" part="week-day" role="columnheader" aria-label={weekDay.name} title={weekDay.name} data-abbr={weekDay.name}>
 								{weekDay.shorted}
 							</div>
 						{/each}
@@ -572,30 +743,35 @@ Inline month calendar with single, multiple or range selection and month/year pi
 
 					{#each {length: 6} as _, i}
 						<!-- A week of 7 days -->
-						<div class="week">
+						<div class="week" role="row">
 							{#each calendarExtended.getDaysOfWeek(i) as day}
 								{@const dayProperties = getDayProperties(day)}
+								{@const outsideMonth = !inShownMonth(day)}
+								{@const unselectable = dayProperties.isDisabled || dayProperties.isInactive}
 
-								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+								<!-- Keys are handled once on the grid (onDaysKeydown); hover only previews a range. -->
+								<!-- svelte-ignore a11y_click_events_have_key_events -->
 								<!-- svelte-ignore a11y_mouse_events_have_key_events -->
 								<div
 									part="day"
 									class={getAnimationClass('day')}
-									role={dayProperties.isDisabled || dayProperties.isInactive ? undefined : 'button'}
-									tabindex={dayProperties.isDisabled || dayProperties.isInactive ? undefined : 0}
-									aria-disabled={dayProperties.isDisabled}
+									role="gridcell"
+									tabindex={outsideMonth || disabled ? null : sameDay(day, rovingDate) ? 0 : -1}
+									aria-disabled={!outsideMonth && (unselectable || disabled) ? "true" : null}
+									aria-selected={outsideMonth ? null : (dayProperties.isSelected && selectMode === "single") || dayProperties.isMultiDaySelected ? "true" : "false"}
+									aria-current={dayProperties.isToday ? "date" : null}
+									data-disabled={dayProperties.isDisabled}
 									data-inactive={dayProperties.isInactive}
 									data-today={dayProperties.isToday}
-									aria-selected={dayProperties.isSelected}
+									data-selected={dayProperties.isSelected}
 									data-multi-day={dayProperties.isMultiDaySelected}
 									data-multi-day-over={multipleSelection.inProgress && _selectedDatesMouseOver.some(d => sameDay(d, day))}
 									data-multi-start={multipleSelection.isMultiple && selectMode === "range" && sameDay(multipleSelection.min, day)}
 									data-multi-end={multipleSelection.isMultiple && selectMode === "range" && sameDay(multipleSelection.max, day)}
 									aria-label={dayProperties.title}
 									data-value={dayProperties.dayIdentifier}
-									onkeydown={ev => (ev.key === "Enter" || ev.key === " ") && onSelectDayHandlerAsync(day, dayProperties.isDisabled || dayProperties.isInactive || readonly || disabled || false)}
-									onclick={ev => onSelectDayHandlerAsync(day, dayProperties.isDisabled || dayProperties.isInactive || readonly || disabled || false)}
-									onmouseover={ev => onSelectDayMouseOverAsync(day, dayProperties.isDisabled || dayProperties.isInactive || readonly || disabled || false)}
+									onclick={ev => onSelectDayHandlerAsync(day, unselectable || readonly || disabled || false)}
+									onmouseover={ev => onSelectDayMouseOverAsync(day, unselectable || readonly || disabled || false)}
 								>
 									{#if daySnippet}
 										{@render daySnippet(dayProperties)}
@@ -608,8 +784,11 @@ Inline month calendar with single, multiple or range selection and month/year pi
 					{/each}
 				</div>
 			{:else if view === "months"}
-				<div class="months" part="months">
-					{#each calendarExtended.getMonthNames() as month}
+				{@const selectedMonth = calendarExtended.getMonthNames().findIndex(m => getMonthProperties(year, m.index).isSelected)}
+				<!-- Roving tabindex: arrows / Home / End move between the 12 cells. -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div class="months" part="months" onkeydown={onCellsKeydown} onfocusin={onCellsFocusIn}>
+					{#each calendarExtended.getMonthNames() as month, mi}
 						{@const monthProperties = getMonthProperties(year, month.index)}
 
 						<div
@@ -622,8 +801,8 @@ Inline month calendar with single, multiple or range selection and month/year pi
 							title={monthProperties.title}
 							data-value={monthProperties.monthIdentifier}
 							role="button"
-							tabindex={monthProperties.isDisabled || monthProperties.isReadOnly ? undefined : 0}
-							onkeydown={ev => (ev.key === "Enter" || ev.key === " ") && onSelectMonthHandlerAsync(year, month.index, monthProperties.isReadOnly)}
+							tabindex={cellTabIndex(mi, selectedMonth)}
+							onkeydown={ev => activateOnKey(ev, () => onSelectMonthHandlerAsync(year, month.index, monthProperties.isReadOnly))}
 							onclick={ev => onSelectMonthHandlerAsync(year, month.index, monthProperties.isReadOnly)}
 						>
 							{month.abbreviated}
@@ -631,12 +810,12 @@ Inline month calendar with single, multiple or range selection and month/year pi
 					{/each}
 				</div>
 			{:else if view === "years"}
-				<div class="years" part="years">
-					{#each calendarExtended.getYearsRange() as year}
+				{@const selectedYear = calendarExtended.getYearsRange().findIndex(y => getYearProperties(y.year).isSelected)}
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div class="years" part="years" onkeydown={onCellsKeydown} onfocusin={onCellsFocusIn}>
+					{#each calendarExtended.getYearsRange() as year, yi}
 						{@const yearProperties = getYearProperties(year.year)}
 
-						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div
 							class={getAnimationClass('year')}
 							class:selected={yearProperties.isSelected}
@@ -646,8 +825,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 							aria-label={String(year.year)}
 							title={String(year.year)}
 							data-value={yearProperties.yearIdentifier}
-							tabindex={yearProperties.isDisabled || yearProperties.isReadOnly ? undefined : 0}
-							onkeydown={ev => (ev.key === "Enter" || ev.key === " ") && onSelectYearHandlerAsync(year.year, yearProperties.isReadOnly)}
+							role="button"
+							tabindex={cellTabIndex(yi, selectedYear)}
+							onkeydown={ev => activateOnKey(ev, () => onSelectYearHandlerAsync(year.year, yearProperties.isReadOnly))}
 							onclick={ev => onSelectYearHandlerAsync(year.year, yearProperties.isReadOnly)}
 						>
 							{year.year}
@@ -791,11 +971,11 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		cursor: pointer;
 	}
 
-	.fluent-calendar[aria-readonly="true"] .day {
+	.fluent-calendar[data-readonly="true"] .day {
 		cursor: default;
 	}
 
-	.fluent-calendar:not([aria-readonly="true"]) .day:not([aria-disabled="true"]):not([data-inactive="true"]):not([data-today="true"]):hover {
+	.fluent-calendar:not([data-readonly="true"]) .day:not([data-disabled="true"]):not([data-inactive="true"]):not([data-today="true"]):hover {
 		background: var(--neutral-fill-stealth-hover);
 	}
 
@@ -805,12 +985,12 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		cursor: default;
 	}
 
-	.fluent-calendar .day[aria-disabled="true"] {
+	.fluent-calendar .day[data-disabled="true"] {
 		color: var(--neutral-stroke-focus);
 		cursor: default;
 	}
 
-	.fluent-calendar .day[aria-disabled="true"]::before { /* strikethrough */
+	.fluent-calendar .day[data-disabled="true"]::before { /* strikethrough */
 		transform: translate(-4px, 0px) rotate(45deg);
 		content: "";
 		display: inline-block;
@@ -824,7 +1004,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	}
 
 	/* Today */
-	.fluent-calendar .day:not([aria-selected="true"]):not([data-multi-day="true"])[data-today="true"] {
+	.fluent-calendar .day:not([data-selected="true"]):not([data-multi-day="true"])[data-today="true"] {
 		color: var(--foreground-on-accent-rest);
 		background: var(--accent-fill-rest);
 		border-radius: 50%;
@@ -832,7 +1012,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	}
 
 	/* Selected */
-	.fluent-calendar .day[aria-selected="true"] {
+	.fluent-calendar .day[data-selected="true"] {
 		color: var(--accent-fill-rest);
 		border: 1px solid var(--accent-fill-rest);
 		background: var(--fill-color);
@@ -884,7 +1064,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		animation: none;
 	}
 
-	:global([dir="rtl"]) .fluent-calendar .day[aria-disabled="true"]::before {
+	:global([dir="rtl"]) .fluent-calendar .day[data-disabled="true"]::before {
 		transform: translate(4px, 0px) rotate(45deg);
 	}
 
@@ -966,11 +1146,11 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		cursor: pointer;
 	}
 
-	.fluent-month[aria-readonly="true"] .month {
+	.fluent-month[data-readonly="true"] .month {
 		cursor: default;
 	}
 
-	.fluent-month:not([aria-readonly="true"]) .month:not([aria-disabled="true"]):hover {
+	.fluent-month:not([data-readonly="true"]) .month:not([aria-disabled="true"]):hover {
 		background: var(--neutral-fill-stealth-hover);
 	}
 
@@ -1089,11 +1269,11 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		cursor: pointer;
 	}
 
-	.fluent-year[aria-readonly="true"] .year {
+	.fluent-year[data-readonly="true"] .year {
 		cursor: default;
 	}
 
-	.fluent-year:not([aria-readonly="true"]) .year:not([aria-disabled="true"]):hover {
+	.fluent-year:not([data-readonly="true"]) .year:not([aria-disabled="true"]):hover {
 		background: var(--neutral-fill-stealth-hover);
 	}
 

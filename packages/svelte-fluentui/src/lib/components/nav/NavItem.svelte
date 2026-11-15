@@ -30,10 +30,18 @@ Generic `role="menuitem"` row of a `NavMenu`; `NavLinkItem` and `NavGroup` build
 		    class: className = undefined,
 		    ...rest
 	    }: Props = $props()
+
+	// The row is the tab stop, so Enter / Space on it act like a click on its
+	// link (navigates, or toggles a NavGroup) — or on the row itself (NavExpander).
+	function handleKeydown(ev: KeyboardEvent) {
+		if (disabled || ev.target !== ev.currentTarget || (ev.key !== "Enter" && ev.key !== " ")) return
+		ev.preventDefault()
+		const row = ev.currentTarget as HTMLElement
+		const link = row.querySelector<HTMLElement>(".fluent-nav-link")
+		;(link ?? row).click()
+	}
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div
 	role="menuitem"
 	tabindex="0"
@@ -43,6 +51,7 @@ Generic `role="menuitem"` row of a `NavMenu`; `NavLinkItem` and `NavGroup` build
 	class:fluent-nav-group={group}
 	class:disabled
 	onclick={onclick}
+	onkeydown={handleKeydown}
 >
 	{@render children?.()}
 

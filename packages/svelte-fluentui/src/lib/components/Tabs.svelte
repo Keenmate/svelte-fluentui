@@ -315,6 +315,13 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 
 	function handleTabKeydown(e: KeyboardEvent) {
 		if (orderedTabs.length === 0) return
+		// Delete closes a closable tab: the keyboard path to its (pointer-only) × control.
+		if (e.key === "Delete") {
+			const id = (e.target as HTMLElement).closest<HTMLElement>("[role='tab']")?.dataset.tabId
+			const tab = orderedTabs.find(t => t.id === id)
+			if (tab?.showClose && !tab.disabled) void handleCloseClick(tab, e)
+			return
+		}
 		// Horizontal arrows follow the reading direction: ArrowLeft is "next" in RTL.
 		const rtl = isHorizontal && readRtl()
 		const prevKey = isHorizontal ? (rtl ? "ArrowRight" : "ArrowLeft") : "ArrowUp"
@@ -331,7 +338,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	 * closed tab's `beforeCloseCallback` (if any) before firing `onTabClose`; a
 	 * `false` resolve cancels the close (a throw too, and is logged).
 	 */
-	async function handleCloseClick(tab: TabEntry, e: MouseEvent) {
+	async function handleCloseClick(tab: TabEntry, e: Event) {
 		e.stopPropagation()
 		e.preventDefault()
 		if (tab.beforeCloseCallback) {
@@ -473,10 +480,6 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 			<TabsScrollButton side="start" horizontal={isHorizontal} rtl={isRtl} onclick={() => scrollArrow(-1)} />
 		{/if}
 
-		<!--
-			 svelte-ignore a11y_no_noninteractive_element_interactions
-			 svelte-ignore a11y_interactive_supports_focus
-		-->
 		<div
 			class="fluent-tabs-tablist"
 			role="tablist"
@@ -502,6 +505,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 					aria-controls={`${tab.id}-panel`}
 					aria-label={tab.ariaLabel || undefined}
 					aria-disabled={tab.disabled || undefined}
+					aria-keyshortcuts={tab.showClose ? "Delete" : undefined}
 					disabled={tab.disabled}
 					tabindex={tab.id === activeId ? 0 : -1}
 					onclick={() => selectTab(tab.id)}
@@ -525,6 +529,8 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 					{/if}
 
 					{#if tab.showClose}
+						<!-- Can't be a <button> inside the tab <button>; keyboard users close with
+						     Delete on the tab (handleTabKeydown, advertised via aria-keyshortcuts). -->
 						<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 						<span
 							class="fluent-tab-close"

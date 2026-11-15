@@ -124,7 +124,6 @@ On/off toggle wrapping `<fluent-switch>`; `bind:checked` is a boolean.
 		</label>
 	{/if}
 
-	<!-- svelte-ignore a11y_autofocus -->
 	<!-- Bind via the public boolean `checked` attribute (not `current-checked`,
 	     which is the internal raw value). fluent-switch's `checkedChanged()`
 	     handler responds to `checked` and toggles a `.checked` class on its

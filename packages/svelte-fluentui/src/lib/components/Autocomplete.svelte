@@ -82,7 +82,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		id?: string
 		/** Native tooltip on the root element. */
 		title?: string
-		/** Accessible name (`aria-label`) of the root element. */
+		/** Accessible name (`aria-label`) of the search input (the `combobox`). Default: the `<label>` text. */
 		ariaLabel?: string
 		/** Allow several values. Default: `true` unless `maxSelectionCount` is 1. */
 		multiple?: boolean
@@ -495,7 +495,14 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 			return
 		}
 
-		if (!isOpen) return
+		if (!isOpen) {
+			// ArrowDown / Alt+ArrowDown on the closed combobox opens the list.
+			if (event.key === "ArrowDown" && !disabled && !readonly) {
+				event.preventDefault()
+				openDropdown()
+			}
+			return
+		}
 
 		switch (event.key) {
 			case "ArrowDown":
@@ -568,6 +575,18 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 			{scroll: true}
 		)
 	})
+
+	// ARIA wiring: the input is the combobox; the listbox below it lists the
+	// options, and aria-activedescendant follows the keyboard cursor while focus
+	// stays in the input. Stable fallback ids so this works without an `id`.
+	const uid = $props.id()
+	const baseId = $derived(id ?? `fluent-autocomplete-${uid}`)
+	const inputId = $derived(`${baseId}-input`)
+	const listboxId = $derived(`${baseId}-listbox`)
+	const optionId = (index: number) => `${listboxId}-option-${index}`
+	const activeOptionId = $derived(
+		isOpen && nav.index >= 0 && nav.index < filteredOptions.length ? optionId(nav.index) : null
+	)
 
 	// Check if max selections reached
 	let isMaxReached = $derived(maxSelectionCount !== undefined && selectedOptions.length >= maxSelectionCount)
@@ -645,19 +664,17 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	})
 </script>
 
-<!-- svelte-ignore a11y_label_has_associated_control -->
 <div
 	{...rest}
 	class="fluent-autocomplete {className}"
 	style="{style}{width ? ` width: ${width};` : ''}{height ? ` height: ${height};` : ''}"
 	{...id ? { id } : {}}
 	{...title ? { title } : {}}
-	{...ariaLabel ? { 'aria-label': ariaLabel } : {}}
 >
 	{#if labelTemplate}
 		{@render labelTemplate()}
 	{:else if label}
-		<label class="fluent-field-label">
+		<label class="fluent-field-label" for={inputId}>
 			{label}
 			{#if required}<span class="required-indicator">*</span>{/if}
 		</label>
@@ -671,6 +688,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 					<Chip
 						text={getOptionText(value)}
 						variant="external"
+						removeFocusable
 						showRemove={!disabled && !readonly}
 						onRemove={({sourceEvent: e}) => removeOption(value, e)}
 					/>
@@ -678,11 +696,10 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 			</div>
 		{/if}
 
-		<!-- Input container -->
+		<!-- Input container. Mouse convenience only: a press anywhere in it focuses
+		     the input, which is the combobox and owns the keyboard. -->
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<!-- svelte-ignore a11y_role_has_required_aria_props -->
-		<!-- svelte-ignore a11y_interactive_supports_focus -->
 		<div
 			class="autocomplete-input-container"
 			class:inline-mode={tagsPosition === 'inline'}
@@ -692,9 +709,6 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 			class:filled={appearance === 'filled'}
 			bind:this={containerElement}
 			onclick={handleContainerClick}
-			role="combobox"
-			aria-expanded={isOpen}
-			aria-haspopup="listbox"
 		>
 			<!-- Main box: start icon + chips + input. In inline (tags) mode this is a
 				 flex:1 wrapping box; the end slot below is a separate flex box always at
@@ -728,11 +742,19 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 				type="text"
 				class="autocomplete-native-input"
 				bind:this={inputElement}
+				id={inputId}
+				role="combobox"
+				aria-expanded={isOpen ? "true" : "false"}
+				aria-controls={listboxId}
+				aria-autocomplete="list"
+				aria-activedescendant={activeOptionId}
+				aria-label={ariaLabel || null}
+				aria-required={required ? "true" : null}
 				value={displayValue}
 				placeholder={effectivePlaceholder}
 				disabled={disabled}
 				readonly={readonly}
-				{required}
+				required={required && selectedOptions.length === 0}
 				autofocus={autofocus}
 				autocomplete={(autocomplete || 'off') as AutoFill}
 				oninput={handleInput}
@@ -795,6 +817,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 					<Chip
 						text={getOptionText(value)}
 						variant="external"
+						removeFocusable
 						showRemove={!disabled && !readonly}
 						onRemove={({sourceEvent: e}) => removeOption(value, e)}
 					/>
@@ -817,11 +840,18 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 							{@render headerContent()}
 						</div>
 					{/if}
-					{#if filteredOptions.length > 0}
+					<!-- Already-picked values are filtered out of the list, so aria-selected
+					     marks the keyboard cursor (APG editable-combobox convention). -->
+					<div class="options-listbox" id={listboxId} role="listbox" aria-label={ariaLabel || label || null}>
 						{#each filteredOptions as option, index}
 							<button
 								type="button"
 								class="option-item"
+								id={optionId(index)}
+								role="option"
+								tabindex="-1"
+								aria-selected={index === nav.index ? "true" : "false"}
+								aria-disabled={option.disabled ? "true" : null}
 								class:highlighted={index === nav.index}
 								class:disabled={option.disabled}
 								onclick={() => selectOption(option)}
@@ -834,7 +864,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 								{/if}
 							</button>
 						{/each}
-					{:else if showOverlayOnEmptyResults}
+					</div>
+					{#if filteredOptions.length === 0 && showOverlayOnEmptyResults}
 						<div class="no-results">{#if empty}{@render empty()}{:else}{emptyText}{/if}</div>
 					{/if}
 					{#if footerContent}
@@ -848,7 +879,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 
 		<!-- Max selections message - Don't show for single-select -->
 		{#if isMaxReached && !isSingleSelect}
-			<div class="max-message">
+			<div class="max-message" role="status">
 				Maximum {maxSelectionCount} selection{maxSelectionCount !== 1 ? 's' : ''} reached
 			</div>
 		{/if}
@@ -1175,6 +1206,11 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		flex-direction: column;
 		padding: 0.25rem;
 		min-width: 200px;
+	}
+
+	.options-listbox {
+		display: flex;
+		flex-direction: column;
 	}
 
 	.options-header {

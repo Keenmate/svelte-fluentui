@@ -99,8 +99,6 @@ Wrapper for `<fluent-anchor>` — a link styled like a FluentUI button or hyperl
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
 <fluent-anchor
 	bind:this={element}
 	{...rest}
