@@ -194,4 +194,16 @@ test.describe("ContextMenu", () => {
 		await page.locator("#cm-zone").click({position: {x: 10, y: 10}})
 		await expect(page.locator("#cm-open")).toHaveText("false")
 	})
+
+	// The keyboard ContextMenu key / Shift+F10 fires only `contextmenu` on the focused element (no pointerdown)
+	test("a keyboard context menu on another element closes it; on the zone it re-opens there", async ({page}) => {
+		await openContextMenu(page)
+		await page.locator("#other-zone").evaluate(el => el.dispatchEvent(new MouseEvent("contextmenu", {bubbles: true, cancelable: true})))
+		await expect(page.locator("#cm-open")).toHaveText("false")
+		await openContextMenu(page)
+		const zone = (await page.locator("#cm-zone").boundingBox())!
+		await page.locator("#cm-zone").evaluate((el, {x, y}) => el.dispatchEvent(new MouseEvent("contextmenu", {bubbles: true, cancelable: true, clientX: x, clientY: y})), {x: zone.x + 250, y: zone.y + 90})
+		await expect(page.locator("#cm-open")).toHaveText("true")
+		await expect.poll(async () => (await page.locator(".fluent-context-menu").first().boundingBox())?.x).toBeGreaterThan(zone.x + 240)
+	})
 })

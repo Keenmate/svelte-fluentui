@@ -1,6 +1,8 @@
 /**
  * Light dismiss for popups (dropdowns, pickers): close when the user presses,
- * focuses or (optionally) scrolls somewhere outside the popup's own surfaces.
+ * focuses, opens a context menu (incl. the keyboard ContextMenu key / Shift+F10,
+ * which fire no `pointerdown`) or (optionally) scrolls somewhere outside the
+ * popup's own surfaces.
  * Escape is not handled here — that goes through `pushLayer` (layer-stack.ts).
  *
  * Call it from an `$effect` while the popup is open and return the cleanup:
@@ -13,7 +15,7 @@
  * ```
  */
 
-export type DismissReason = "pointer" | "focus" | "scroll"
+export type DismissReason = "pointer" | "focus" | "scroll" | "contextmenu"
 
 export type DismissOptions = {
 	/** Close on focus moving outside (Tab-ing away, a modal opening). Default `true`. */
@@ -27,7 +29,7 @@ export type DismissOptions = {
 
 /**
  * Listens (capture phase, so handlers that stop propagation can't hide events)
- * for outside `pointerdown`, `focusin` and optionally `scroll`, and calls
+ * for outside `pointerdown`, `contextmenu`, `focusin` and optionally `scroll`, and calls
  * `onDismiss` with the reason. Returns the function that removes the listeners.
  *
  * - `inside` returns the elements that count as "inside" — the anchor first,
@@ -55,6 +57,12 @@ export function dismissOnOutside(
 		if (!isInside(event)) onDismiss("pointer", event)
 	}
 
+	// A context menu requested elsewhere: a right-click already closed through `pointerdown`,
+	// but the keyboard ContextMenu key / Shift+F10 on another element only fires this.
+	function onContextMenu(event: MouseEvent) {
+		if (!isInside(event)) onDismiss("contextmenu", event)
+	}
+
 	function onFocusIn(event: FocusEvent) {
 		if (isInside(event)) return
 		const target = event.target as Node | null
@@ -69,12 +77,14 @@ export function dismissOnOutside(
 	}
 
 	document.addEventListener("pointerdown", onPointerDown, true)
+	document.addEventListener("contextmenu", onContextMenu, true)
 	if (focusOut) document.addEventListener("focusin", onFocusIn, true)
 	// Scroll doesn't bubble; capture on window sees every scroll container.
 	if (scroll) window.addEventListener("scroll", onScroll, true)
 
 	return () => {
 		document.removeEventListener("pointerdown", onPointerDown, true)
+		document.removeEventListener("contextmenu", onContextMenu, true)
 		document.removeEventListener("focusin", onFocusIn, true)
 		window.removeEventListener("scroll", onScroll, true)
 	}

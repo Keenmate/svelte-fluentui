@@ -538,3 +538,20 @@ virtual + `pageable` not combined (paging wins); no PageUp / PageDown / Ctrl+Hom
 (none exists without virtualisation either); the remaining non-virtual costs are DOM create / destroy and table
 layout — cutting the ~10 grid-wide signals each cell reads (`invalidByKey`, `editingCell`, focus / tab-stop,
 `columnStyles`, `labels`, …) to per-row deriveds would shrink Svelte's teardown work, not attempted.
+
+### Follow-up (deferred keyboard / virtualisation items, done)
+
+- Fast arrows: `focusCell` records the target synchronously (`pendingFocus`) and focuses the `<td>` in one
+  rAF; a keydown arriving before that frame navigates from `pendingFocus`, not from the cell the event
+  fired on. Non-virtual grids `scrollIntoView({block: "nearest"})` the focused cell.
+- Focus retention under `virtualize` (APG: focus stays on the cell): the row holding focus
+  (`focusWithinRowKey`, from `focusin`; cleared after a `focusout` that really left the table) and the
+  editing row are *pinned* — rendered next to the window instead of extending it (the old editing-row
+  rule rendered every row in between); each spacer shrinks by its pinned rows so the scroll height is
+  unchanged; DOM lookups go through `rowElementAt(viewIndex)`; stripes use `.stripe-alt` by view index.
+  Rejected alternative: moving focus to the container and restoring it on scroll back — AT loses the
+  active cell and the next arrow has no origin.
+- PageUp / PageDown (rows that fit in the scrolling container, else the window, less the header;
+  clamped to the current page when paged — the pager changes pages), Home / End (row), Ctrl+Home /
+  Ctrl+End (grid). Rows mode: PageUp / PageDown. Specs: `e2e/quickgrid-keyboard.spec.ts`,
+  `e2e/quickgrid-virtual.spec.ts`.

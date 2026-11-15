@@ -1,5 +1,5 @@
 <!-- @component
-Floating overlay portalled to `<body>` and positioned against `anchor` with Floating UI (flip / shift, top layer via the Popover API). Used by Select, Combobox, DatePicker and friends for their dropdowns.
+Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, inside its focus trap) and positioned against `anchor` with Floating UI (flip / shift, top layer via the Popover API). Used by Select, Combobox, DatePicker and friends for their dropdowns.
 
 ```svelte
 <PositioningRegion anchor={inputEl} visible={open} availableHeight>…</PositioningRegion>
@@ -8,7 +8,7 @@ Floating overlay portalled to `<body>` and positioned against `anchor` with Floa
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import {portal} from "../actions/portal.js"
+	import {portal, portalHost} from "../actions/portal.js"
 	import {
 		computePosition,
 		flip,
@@ -183,7 +183,7 @@ Floating overlay portalled to `<body>` and positioned against `anchor` with Floa
 	{#if visible}
 		<div
 			{...rest}
-			use:portal
+			use:portal={portalHost(anchor)}
 			use:topLayer
 			use:position={{anchor, placement, matchWidth, availableHeight}}
 			popover="manual"

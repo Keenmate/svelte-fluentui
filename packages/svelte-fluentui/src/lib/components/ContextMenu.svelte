@@ -22,7 +22,7 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
 	import { SvelteMap } from "svelte/reactivity"
 	import Icon from "./Icon.svelte"
-	import { portal } from "../actions/portal.js"
+	import { portal, portalHost } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
 	import { dismissOnOutside } from "../helpers/dismiss.js"
 	import { ListNav } from "../helpers/listbox-nav.svelte.js"
@@ -353,9 +353,12 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	 */
 	$effect(() => {
 		if (!open || !menuEl) return
-		// Re-subscribe when offsets change so updatePosition gets the new values.
+		// Re-subscribe when offsets change so updatePosition gets the new values, and when
+		// the menu re-opens at a new spot while open (`virtualAnchor` reads `cursor` lazily).
 		void offsetMenuX
 		void offsetMenuY
+		void cursor.x
+		void cursor.y
 		const cleanup = autoUpdate(virtualAnchor, menuEl, updatePosition)
 		return cleanup
 	})
@@ -410,11 +413,10 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	}
 
 	// Focus the menu on open so the keyboard works straight away (ArrowDown lands on the
-	// first item). Not inside a modal dialog: the menu is portalled outside its focus
-	// trap, which would pull focus back to the dialog's first element.
+	// first item). Inside a Dialog the surfaces are portalled into the dialog (portalHost),
+	// within its focus trap, so this works there too.
 	$effect(() => {
 		if (!open || !menuEl) return
-		if (wrapperEl?.closest("fluent-dialog")) return
 		menuEl.focus({preventScroll: true})
 	})
 
@@ -578,7 +580,7 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 
 {#if open && entries.length > 0}
 	<div
-		use:portal
+		use:portal={portalHost(wrapperEl)}
 		bind:this={menuEl}
 		class="fluent-context-menu"
 		role="menu"
@@ -594,7 +596,7 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 
 {#each Array.from(openSubmenus.entries()) as [key, submenu] (key)}
 	<div
-		use:portal
+		use:portal={portalHost(wrapperEl)}
 		use:positionSubmenu={submenu.triggerEl}
 		class="fluent-context-menu fluent-context-submenu"
 		role="menu"

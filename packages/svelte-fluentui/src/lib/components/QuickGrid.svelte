@@ -694,25 +694,58 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	let measuredRowPitch = $state<number | null>(null)
 	let bodyOffset = $state(0)
 	let rowPitch = $derived(Math.max(1, measuredRowPitch ?? itemSize))
-	// The row being edited stays rendered (its editor would otherwise be destroyed while scrolled away).
-	let editingViewIndex = $derived(isVirtual && editingCell ? getViewIndex(editingCell.rowKey) : -1)
 	let renderRange = $derived.by(() => {
 		const count = displayRows.length
 		if (!isVirtual) return {start: 0, end: count}
 		const top = Math.max(0, virtualScrollTop - bodyOffset)
-		let start = Math.max(0, Math.floor(top / rowPitch) - overscanCount)
-		let end = Math.ceil((top + Math.max(virtualViewportHeight, rowPitch)) / rowPitch) + overscanCount
-		if (editingViewIndex >= 0) {
-			start = Math.min(start, editingViewIndex)
-			end = Math.max(end, editingViewIndex + 1)
-		}
-		start = Math.min(start - (start % 2), count)  // even: `:nth-child` stripes keep their rows
+		const start = Math.min(Math.max(0, Math.floor(top / rowPitch) - overscanCount), count)
+		const end = Math.ceil((top + Math.max(virtualViewportHeight, rowPitch)) / rowPitch) + overscanCount
 		return {start, end: Math.min(Math.max(start, end), count)}
 	})
-	let renderStart = $derived(renderRange.start)
-	let renderedRows = $derived(isVirtual ? displayRows.slice(renderRange.start, renderRange.end) : displayRows)
-	let spacerBefore = $derived(isVirtual ? renderRange.start * rowPitch : 0)
-	let spacerAfter = $derived(isVirtual ? (displayRows.length - renderRange.end) * rowPitch : 0)
+	// Rows outside the window that stay rendered (pinned): the row being edited (its editor would
+	// otherwise be destroyed) and the row holding keyboard focus (focus would drop to <body> —
+	// APG grid: focus stays on its cell, so arrows continue from it and AT keeps its place).
+	// A pinned row renders next to the window (its spacer shrinks by one row, so the scroll
+	// height is unchanged) — off-screen either way, and its keyed element (and focus) survives.
+	let focusWithinRowKey = $state<string | null>(null)
+	let pinnedViewIndexes = $derived.by(() => {
+		if (!isVirtual) return []
+		const pinned = new Set<number>()
+		if (editingCell) pinned.add(getViewIndex(editingCell.rowKey))
+		if (focusWithinRowKey !== null) pinned.add(getViewIndex(focusWithinRowKey))
+		return [...pinned].filter((i) => i >= 0).sort((a, b) => a - b)
+	})
+	let pinnedBefore = $derived(pinnedViewIndexes.filter((i) => i < renderRange.start))
+	let pinnedAfter = $derived(pinnedViewIndexes.filter((i) => i >= renderRange.end))
+	let renderedRows = $derived(isVirtual
+		? [...pinnedBefore.map((i) => displayRows[i]), ...displayRows.slice(renderRange.start, renderRange.end), ...pinnedAfter.map((i) => displayRows[i])]
+		: displayRows)
+	let spacerBefore = $derived(isVirtual ? (renderRange.start - pinnedBefore.length) * rowPitch : 0)
+	let spacerAfter = $derived(isVirtual ? (displayRows.length - renderRange.end - pinnedAfter.length) * rowPitch : 0)
+
+	// View index of the row at a position in `renderedRows` (pinned rows first / last).
+	function viewIndexAtRender(renderIndex: number): number {
+		if (!isVirtual) return renderIndex
+		const before = pinnedBefore.length
+		if (renderIndex < before) return pinnedBefore[renderIndex]
+		const windowed = renderRange.end - renderRange.start
+		if (renderIndex < before + windowed) return renderRange.start + renderIndex - before
+		return pinnedAfter[renderIndex - before - windowed]
+	}
+
+	// The rendered <tr> of a view index (null when it isn't rendered).
+	function rowElementAt(viewIndex: number): HTMLElement | null {
+		let position = viewIndex
+		if (isVirtual) {
+			const before = pinnedBefore.indexOf(viewIndex)
+			const after = pinnedAfter.indexOf(viewIndex)
+			if (before >= 0) position = before
+			else if (viewIndex >= renderRange.start && viewIndex < renderRange.end) position = pinnedBefore.length + viewIndex - renderRange.start
+			else if (after >= 0) position = pinnedBefore.length + renderRange.end - renderRange.start + after
+			else return null
+		}
+		return tableElement?.querySelectorAll<HTMLElement>(":scope > tbody > tr[data-row-key]")[position] ?? null
+	}
 	let bodyColumnCount = $derived(columns.length + (showRowToolbar && toolbarTrigger === 'button' ? 1 : 0) + (fillerColumn ? 1 : 0))
 
 	// Scroll position and viewport height of the scrolling container.
@@ -741,14 +774,16 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		void virtualViewportHeight
 		if (!isVirtual || !table || !el) return
 		untrack(() => {
-			const rows = table.querySelectorAll<HTMLElement>(":scope > tbody > tr[data-row-key]")
+			// The window's rows only (pinned rows sit outside it)
+			const all = Array.from(table.querySelectorAll<HTMLElement>(":scope > tbody > tr[data-row-key]"))
+			const rows = all.slice(pinnedBefore.length, all.length - pinnedAfter.length)
 			if (rows.length === 0) return
 			const first = rows[0].getBoundingClientRect()
 			if (rows.length > 1) {
 				const pitch = (rows[rows.length - 1].getBoundingClientRect().top - first.top) / (rows.length - 1)
 				if (pitch > 0 && Math.abs(pitch - rowPitch) > 0.5) measuredRowPitch = pitch
 			}
-			const offset = first.top - el.getBoundingClientRect().top + el.scrollTop - renderStart * rowPitch
+			const offset = first.top - el.getBoundingClientRect().top + el.scrollTop - renderRange.start * rowPitch
 			if (Math.abs(offset - bodyOffset) > 0.5) bodyOffset = offset
 		})
 	})
@@ -769,7 +804,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	function isRowRendered(rowKey: string): boolean {
 		const index = getViewIndex(rowKey)
-		return index >= renderRange.start && index < renderRange.end
+		return (index >= renderRange.start && index < renderRange.end) || pinnedViewIndexes.includes(index)
 	}
 
 	function requestData(trigger: DataRequestTrigger) {
@@ -1268,16 +1303,32 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		return resolvedTabStop?.rowKey === rowKey && resolvedTabStop.colIndex === colIndex ? 0 : -1
 	}
 
+	// A keyboard move updates `focusedCell` at once but focuses the <td> on the next frame (once
+	// the DOM caught up — a virtualised row renders first). Keys pressed before that frame move on
+	// from this pending cell, not from the cell the keydown fired on, so every fast press advances.
+	let pendingFocus: { rowKey: string; colIndex: number } | null = null
+	let pendingFocusFrame = 0
+
 	// Focus a cell of a row (by key — wherever the row is displayed after the DOM updates).
 	function focusCell(rowKey: string, colIndex: number) {
 		focusedCell = { rowKey, colIndex }
 		tabStop = { rowKey, colIndex }
+		pendingFocus = { rowKey, colIndex }
 		scrollRowIntoView(getViewIndex(rowKey))  // virtualised: renders the row if it was scrolled away
+		if (pendingFocusFrame) return  // one frame focuses the latest target
 		// Focus the td element for keyboard events
-		requestAnimationFrame(() => {
-			const row = tableElement?.querySelector(`:scope > tbody > tr[data-row-key="${CSS.escape(rowKey)}"]`)
-			const cell = row?.querySelector(`:scope > td[data-col="${colIndex}"]`) as HTMLElement | null
-			cell?.focus({ preventScroll: true })
+		pendingFocusFrame = requestAnimationFrame(() => {
+			pendingFocusFrame = 0
+			const target = pendingFocus
+			pendingFocus = null
+			// An editor opened meanwhile (Enter right after an arrow) keeps its focus
+			if (!target || document.activeElement?.closest("td.editing")) return
+			const row = tableElement?.querySelector(`:scope > tbody > tr[data-row-key="${CSS.escape(target.rowKey)}"]`)
+			const cell = row?.querySelector(`:scope > td[data-col="${target.colIndex}"]`) as HTMLElement | null
+			if (!cell) return
+			cell.focus({ preventScroll: true })
+			// Not virtualised: the page / container scrolls the cell into view (virtualised already did)
+			if (!isVirtual) cell.scrollIntoView({ block: "nearest", inline: "nearest" })
 		})
 	}
 
@@ -1314,7 +1365,27 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		if (!relatedTarget || !tableElement?.contains(relatedTarget)) {
 			focusedCell = null
 		}
+		// Unpin the focused row once focus really left the table — checked after the event, as a
+		// window blur (switching apps) also fires this but leaves the cell the active element.
+		if (isVirtual) setTimeout(() => {
+			if (!tableElement?.contains(document.activeElement)) focusWithinRowKey = null
+		})
 	}
+
+	// Virtualised: the row holding focus stays rendered while scrolled away (see `pinnedViewIndexes`).
+	$effect(() => {
+		const el = containerRef
+		if (!isVirtual || !el) return
+		const onFocusIn = (e: FocusEvent) => {
+			const tr = (e.target as Element).closest?.("tr[data-row-key]")
+			focusWithinRowKey = tr && tr.parentElement?.parentElement === tableElement ? tr.getAttribute("data-row-key") : null
+		}
+		el.addEventListener("focusin", onFocusIn)
+		return () => {
+			el.removeEventListener("focusin", onFocusIn)
+			focusWithinRowKey = null
+		}
+	})
 
 	// Keys that work on any cell (focus on the cell or a control in it, not in an editor's input):
 	// Shift+F10 / ContextMenu opens the context menu, Alt+F10 the row toolbar.
@@ -1331,7 +1402,29 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			if (row) openToolbarFromKeyboard(getRowKey(item), viewIndex, row)
 			return
 		}
+		// A move is still pending (keys faster than a frame): navigate from its target cell
+		const pending = pendingFocus
+		if (pending && isNavigateMode && !editingCell) {
+			const pendingIndex = getViewIndex(pending.rowKey)
+			if (pendingIndex >= 0 && pending.colIndex < columns.length) {
+				viewIndex = pendingIndex
+				colIndex = pending.colIndex
+				column = columns[colIndex]
+				item = displayItems[viewIndex]
+			}
+		}
 		handleNavigationKeyDown(e, viewIndex, colIndex, column, item)
+	}
+
+	// Rows that fit in the visible area — the PageUp / PageDown step (the scrolling container's
+	// height when it scrolls, else the window's, less the header).
+	function visibleRowCount(): number {
+		const el = containerRef
+		const header = tableElement?.tHead?.offsetHeight ?? 0
+		const rowHeight = isVirtual ? rowPitch : (tableElement?.querySelector<HTMLElement>(":scope > tbody > tr[data-row-key]")?.offsetHeight || itemSize)
+		const scrolls = !!el && el.scrollHeight > el.clientHeight + 1
+		const view = (scrolls ? el.clientHeight : window.innerHeight) - header
+		return Math.max(1, Math.floor(view / Math.max(1, rowHeight)))
 	}
 
 	function handleNavigationKeyDown(e: KeyboardEvent, viewIndex: number, colIndex: number, column: Column<T>, item: T) {
@@ -1350,6 +1443,28 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 				e.preventDefault()
 				if (viewIndex < displayItems.length - 1) focusCellAt(viewIndex + 1, colIndex)
 				break
+			// APG grid: PageUp / PageDown move by the rows that fit in the view (within the current
+			// page when paged), Home / End to the row's first / last cell, Ctrl+Home / Ctrl+End to
+			// the first / last cell of the grid.
+			case "PageUp":
+			case "PageDown": {
+				e.preventDefault()
+				const step = visibleRowCount() * (e.key === "PageUp" ? -1 : 1)
+				const target = Math.min(Math.max(viewIndex + step, 0), displayItems.length - 1)
+				if (target !== viewIndex) focusCellAt(target, colIndex)
+				break
+			}
+			case "Home":
+			case "End": {
+				// Text caret keys in an always-on editor's input
+				if ((e.target as Element).closest("input, textarea, [contenteditable]")) break
+				e.preventDefault()
+				const toEnd = e.key === "End"
+				const targetCol = toEnd ? columns.length - 1 : 0
+				if (e.ctrlKey || e.metaKey) focusCellAt(toEnd ? displayItems.length - 1 : 0, targetCol)
+				else if (targetCol !== colIndex) focusCell(rowKey, targetCol)
+				break
+			}
 			case "ArrowLeft":
 				e.preventDefault()
 				// Ctrl/Cmd+ArrowLeft: tree-collapse. If focused row is an expanded parent,
@@ -1638,6 +1753,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		switch (event.key) {
 			case 'ArrowDown': next = Math.min(viewIndex + 1, count - 1); break
 			case 'ArrowUp': next = Math.max(viewIndex - 1, 0); break
+			case 'PageDown': next = Math.min(viewIndex + visibleRowCount(), count - 1); break
+			case 'PageUp': next = Math.max(viewIndex - visibleRowCount(), 0); break
 			case 'Home': next = 0; break
 			case 'End': next = count - 1; break
 			case 'Enter':
@@ -1657,7 +1774,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	// Focuses the row at a view position (rows mode); virtualised, scrolls it into view first.
 	function focusRowAt(viewIndex: number) {
-		const find = () => tableElement?.querySelectorAll<HTMLElement>(':scope > tbody > tr[data-row-key]')[viewIndex - renderRange.start]
+		const find = () => rowElementAt(viewIndex)
 		if (!isVirtual) {
 			find()?.focus()
 			return
@@ -1678,7 +1795,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	$effect(() => {
 		if (hoveredAnchorViewIndex === null || !tableElement) return
 		void renderedRows
-		const el = tableElement.querySelectorAll(':scope > tbody > tr[data-row-key]')[hoveredAnchorViewIndex - renderStart] as HTMLElement | undefined
+		const el = rowElementAt(hoveredAnchorViewIndex)
 		if (el && el !== hoveredRowElement) hoveredRowElement = el
 	})
 
@@ -2045,11 +2162,12 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 				</tr>
 			{:else}
 				{#each renderedRows as {item, rowKey, eachKey}, renderIndex (eachKey)}
-					{@const viewIndex = renderStart + renderIndex}
+					{@const viewIndex = viewIndexAtRender(renderIndex)}
 					{@const rowPath = isTreeMode ? getRowPath(item) : ""}
 					{@const rowIsParent = isTreeMode && (isFiltering ? filteredParentPaths.has(rowPath) : rowHasChildren(item))}
 					<tr
 						data-row-key={rowKey}
+						class={viewIndex % 2 === 1 ? "stripe-alt" : null}
 						aria-rowindex={ariaRowCount !== undefined ? rowIndexBase + viewIndex + 1 : undefined}
 						aria-level={isTreeMode ? getRowLevel(item) - treeMinLevel + 1 : undefined}
 						aria-expanded={rowIsParent ? isFiltering || isPathExpanded(rowPath) : undefined}
@@ -2358,7 +2476,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		color: var(--fluent-quickgrid-text, var(--neutral-foreground-rest, #242424));
 	}
 
-	.quickgrid.striped tbody tr:nth-child(even) {
+	/* By view index, not :nth-child — virtualised windows start anywhere and pin rows outside them */
+	.quickgrid.striped tbody tr.stripe-alt {
 		background: var(--fluent-quickgrid-row-bg-stripe, var(--neutral-layer-2, #fafafa));
 	}
 

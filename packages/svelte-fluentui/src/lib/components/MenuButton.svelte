@@ -24,7 +24,7 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 	import {attrs} from "../helpers/attrs.js"
 	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
 	import Icon from "./Icon.svelte"
-	import { portal } from "../actions/portal.js"
+	import { portal, portalHost } from "../actions/portal.js"
 	import { pushLayer } from "../helpers/layer-stack.js"
 	import { dismissOnOutside } from "../helpers/dismiss.js"
 	import { ListNav } from "../helpers/listbox-nav.svelte.js"
@@ -136,13 +136,8 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 
 	const nav = new ListNav({count: () => enabledItems().length, itemAt: i => enabledItems()[i]})
 
-	// A portalled menu is outside a modal dialog's focus trap, which would pull focus straight
-	// back into the dialog — inside one, the menu stays mouse-only (as before).
-	const inTrappingDialog = () => !!anchorEl?.closest("fluent-dialog")
-
 	async function focusItem(which: "first" | "last") {
 		await tick()
-		if (inTrappingDialog()) return
 		if (which === "first") nav.first()
 		else nav.last()
 		enabledItems()[nav.index]?.focus()
@@ -276,8 +271,9 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 </span>
 
 {#if open && entries.length > 0}
+	<!-- Inside a Dialog the menu is portalled into the dialog, within its focus trap -->
 	<div
-		use:portal
+		use:portal={portalHost(anchorEl)}
 		bind:this={menuEl}
 		class="fluent-menu-button-menu context-menu"
 		onkeydowncapture={onMenuKeydown}

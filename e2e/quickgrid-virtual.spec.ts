@@ -64,9 +64,13 @@ test("stripes stay on the same rows while scrolling", async ({page}) => {
 	const even = await stripe(2)
 	const odd = await stripe(3)
 	expect(even).not.toBe(odd)
+	let previous = "1"
 	for (const top of [101 * 37, 333 * 37]) {
 		await scrollTo(wrap, top)
-		const first = Number(await dataRows(wrap).first().getAttribute("data-row-key"))
+		// The window re-renders on the scroll event — read its first row after that
+		await expect(dataRows(wrap).first()).not.toHaveAttribute("data-row-key", previous)
+		previous = (await dataRows(wrap).first().getAttribute("data-row-key"))!
+		const first = Number(previous)
 		await expect.poll(() => stripe(first + 1)).toBe(first % 2 === 1 ? even : odd)
 	}
 })
@@ -94,12 +98,58 @@ test("Tab into the grid after scrolling away lands on a rendered row", async ({p
 	const wrap = nav(page)
 	await row(wrap, 1).locator('td[data-col="0"]').click()
 	await scrollTo(wrap, 600 * 37)
+	await wrap.locator(".column-sort-button").last().focus()
+	// Focus left the grid: its row is no longer kept rendered
 	await expect(row(wrap, 1)).not.toBeAttached()
 	await expect(wrap.locator('tbody td[tabindex="0"]')).toHaveCount(1)
-	await wrap.locator(".column-sort-button").last().focus()
 	await page.keyboard.press("Tab")
 	const focusedKey = await page.evaluate(() => document.activeElement?.closest("tr")?.getAttribute("data-row-key"))
 	expect(Number(focusedKey)).toBeGreaterThan(550)
+})
+
+test("a focused cell scrolled out of the window keeps focus; arrows continue from it", async ({page}) => {
+	const wrap = nav(page)
+	const focusedCell = row(wrap, 2).locator('td[data-col="1"]')
+	await focusedCell.click()
+	await expect(focusedCell).toBeFocused()
+	const scrollHeight = await container(wrap).evaluate((el) => el.scrollHeight)
+	await scrollTo(wrap, 600 * 37)
+	await expect(row(wrap, 600)).toBeAttached()
+	// The focused row stays rendered (outside the window), the rest of the window is unchanged
+	await expect(focusedCell).toBeFocused()
+	expect(await dataRows(wrap).count()).toBeLessThan(45)
+	expect(Math.abs(await container(wrap).evaluate((el) => el.scrollHeight) - scrollHeight)).toBeLessThan(2)
+	// Stripes still follow the rows' positions
+	const stripe = (key: number) => row(wrap, key).evaluate((tr) => getComputedStyle(tr).backgroundColor)
+	expect(await stripe(600)).not.toBe(await stripe(601))
+	expect(await stripe(600)).toBe(await stripe(2))
+	// The next arrow moves on from the focused cell and scrolls it back into view
+	await page.keyboard.press("ArrowDown")
+	await expect(row(wrap, 3).locator('td[data-col="1"]')).toBeFocused()
+	await expectInView(wrap, 3)
+	// The other way: the focused row below the window
+	await scrollTo(wrap, 600 * 37)
+	await row(wrap, 605).locator('td[data-col="0"]').click()
+	await scrollTo(wrap, 0)
+	await expect(row(wrap, 1)).toBeAttached()
+	await expect(row(wrap, 605).locator('td[data-col="0"]')).toBeFocused()
+	await page.keyboard.press("ArrowUp")
+	await expect(row(wrap, 604).locator('td[data-col="0"]')).toBeFocused()
+	await expectInView(wrap, 604)
+})
+
+test("rows mode: a focused row scrolled away keeps focus; PageDown / PageUp move by the rows in view", async ({page}) => {
+	const wrap = page.locator("#rows-wrap")
+	await row(wrap, 1).focus()
+	await scrollTo(wrap, "end")
+	await expect(row(wrap, 60)).toBeAttached()
+	await expect(row(wrap, 1)).toBeFocused()
+	await scrollTo(wrap, 0)
+	const step = await container(wrap).evaluate((el) => Math.floor((el.clientHeight - el.querySelector("thead")!.offsetHeight) / (el.querySelector("tbody tr[data-row-key]") as HTMLElement).getBoundingClientRect().height))
+	await page.keyboard.press("PageDown")
+	await expect(row(wrap, 1 + step)).toBeFocused()
+	await page.keyboard.press("PageUp")
+	await expect(row(wrap, 1)).toBeFocused()
 })
 
 test("sorting and filtering work on all rows", async ({page}) => {

@@ -7,7 +7,7 @@
 
 <script lang="ts" generics="T">
 	import Icon from "../Icon.svelte"
-	import {portal} from "../../actions/portal.js"
+	import {portal, portalHost} from "../../actions/portal.js"
 	import {computePosition, flip, shift, autoUpdate} from "@floating-ui/dom"
 	import type {MenuItem, ResolvedMenuEntry} from "../../action-items/index.js"
 	import type {QuickGridContextMenuAction as ContextMenuAction, QuickGridContextMenuContext as ContextMenuContext} from "../QuickGrid.types.js"
@@ -64,7 +64,7 @@
 </script>
 
 <div
-	use:portal
+	use:portal={portalHost(anchor.cell)}
 	use:placeContextMenu={anchor}
 	bind:this={element}
 	class="context-menu"
