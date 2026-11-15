@@ -1,6 +1,6 @@
 <!--
  * InputFile — card selector
- * Internal sub-component used by InputFile.svelte. Renders the bordered
+ * Internal (InputFile) sub-component. Renders the bordered
  * drop-zone "card" used as the primary file-picker entry point. The inner
  * content (icon, message, Browse button, hint lines) is supplied via the
  * `content` snippet so the parent can render the same content inside its
@@ -10,7 +10,7 @@
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import type {InputFileCardSize} from "./InputFile.types.js"
+	import type {InputFileCardSize} from "../InputFile.types.js"
 
 	type Props = {
 		cardSize: InputFileCardSize

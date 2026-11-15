@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {TabInfo} from "./Tabs.svelte"
+	import type {TabInfo} from "./tabs/tabs.types.js"
 	import {tabsContext} from "../contexts.js"
 	import type {Snippet} from "svelte"
 	import { onDestroy, untrack } from "svelte"

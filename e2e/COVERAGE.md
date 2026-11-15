@@ -48,7 +48,7 @@ specs (closeOnSelect, etc.).
 | Component | Status | Spec | Fixture |
 | --- | :---: | --- | --- |
 | Autocomplete | ✓ | `autocomplete.spec.ts` | `autocomplete/+page.svelte`, `autocomplete/initial-query/+page.svelte` |
-| InputFile | ✗ | | |
+| InputFile | ✓ | `inputfile.spec.ts`, `inputfile-behaviour.spec.ts`, `popup-inputfile.spec.ts` | `inputfile/`, `inputfile-behaviour/`, `popup-inputfile/` |
 | QuickGrid — sort & filter | ✗ | | |
 | QuickGrid — pagination | ✗ | | |
 | QuickGrid — selection | ✗ | | |
@@ -57,7 +57,7 @@ specs (closeOnSelect, etc.).
 | Calendar | ✗ | | |
 | TimePicker | ✗ | | |
 | Paginator | ✗ | | |
-| Tab / Tabs | ✗ | | |
+| Tab / Tabs | ✓ | `tabs.spec.ts`, `tabs-behaviour.spec.ts`, `popup-tabs.spec.ts` | `tabs/`, `tabs-behaviour/`, `popup-tabs/` |
 | Toast + ToastContainer + store | ✗ | | |
 | Card | ✗ | | |
 
@@ -65,7 +65,7 @@ specs (closeOnSelect, etc.).
 
 | Component | Status | Spec | Fixture |
 | --- | :---: | --- | --- |
-| MultiSplitter (drag resize) | ✗ | | |
+| MultiSplitter (drag resize) | ✓ | `multi-splitter.spec.ts`, `persistence.spec.ts` | `multi-splitter/`, `persistence/` |
 | TopNav (mobile toggle, sidebar) | ✗ | | |
 | AppBar / NavMenu / NavGroup / NavLinkItem / NavItem | ✗ | | |
 

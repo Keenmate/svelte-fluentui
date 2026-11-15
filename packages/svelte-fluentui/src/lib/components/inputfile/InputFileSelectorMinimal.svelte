@@ -1,6 +1,6 @@
 <!--
  * InputFile — minimal selector
- * Internal sub-component used by InputFile.svelte. Renders a compact icon
+ * Internal (InputFile) sub-component. Renders a compact icon
  * button with an item-count badge. The badge colour reflects the aggregate
  * upload status (pending, uploading, completed, error) so the consumer can
  * tell at a glance whether attention is needed without expanding the picker.
@@ -8,7 +8,7 @@
 -->
 
 <script lang="ts">
-	import type {InputFileStatus} from "./InputFile.types.js"
+	import type {InputFileStatus} from "../InputFile.types.js"
 
 	type Props = {
 		disabled?: boolean

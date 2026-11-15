@@ -126,6 +126,8 @@ reboot opt-in, `prefers-reduced-motion`.
 
 ## Phase 6 — Splits & docs
 
+Status 2026-11-15: InputFile / Tabs / MultiSplitter split, no API or behaviour change — internals in `components/inputfile/` (upload-queue.svelte.ts, summary.ts, dom.ts, selector + list / row / chips / footer / card-content components), `components/tabs/` (tabs.types.ts, order.ts, measure.ts, swipe.ts, TabsScrollButton, TabsOverflowMenu), `components/layout/multi-splitter/` (splitter.svelte.ts engine, drag.ts, size-math.ts, persistence.ts); new e2e `multi-splitter`, `tabs-behaviour`, `inputfile-behaviour`; docs screenshots pixel-identical light/dark. JSDoc / dead code / docs items still open.
+
 - Split QuickGrid, InputFile, Tabs, MultiSplitter; GridCellEditor reuses real dropdown components.
 - JSDoc on every prop (47 components have none).
 - Remove dead/commented code (NavGroup 194 lines, `fluent-ui/setup.ts`, calendar comments).

@@ -1,11 +1,11 @@
 <!--
  * InputFile — button selector
- * Internal sub-component used by InputFile.svelte. Renders a single Fluent
+ * Internal (InputFile) sub-component. Renders a single Fluent
  * Button that opens the file picker. Not exported from the package barrel.
 -->
 
 <script lang="ts">
-	import Button from "./Button.svelte"
+	import Button from "../Button.svelte"
 
 	type Props = {
 		disabled?: boolean

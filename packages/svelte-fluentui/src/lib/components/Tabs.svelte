@@ -1,73 +1,32 @@
+<!--
+ * Tabs
+ *
+ * Custom tabbed interface: `<Tab>` children register through the
+ * `fluent-tabs` context and Tabs renders the real tablist + panels.
+ *
+ * Internals live in ./tabs/: tabs.types.ts (Tab ⇄ Tabs types), order.ts
+ * (display order, overflow swap, keyboard / swipe targets), measure.ts
+ * (menu-mode fit, indicator geometry, scroll state), swipe.ts (gesture
+ * tracking), TabsScrollButton.svelte and TabsOverflowMenu.svelte.
+-->
+
 <script lang="ts" module>
-	import {fluentMenu, fluentMenuItem} from "@fluentui/web-components"
-	import {registerFluentElements} from "../fluent-ui/register.js"
-
-	registerFluentElements(fluentMenu(), fluentMenuItem())
-
-	import type {Snippet} from "svelte"
-
-	/**
-	 * Shape of a registered tab entry inside the Tabs context. Tab.svelte
-	 * populates this and calls `register`; Tabs.svelte reads the array and
-	 * renders the real tablist + panels from it.
-	 */
-	export type TabEntry = {
-		id: string
-		label?: string
-		icon?: Snippet
-		header?: Snippet
-		content?: Snippet
-		children?: Snippet
-		disabled?: boolean
-		ariaLabel?: string
-		labelEditable?: boolean
-		showClose?: boolean
-		visible?: boolean
-		data?: Record<string, unknown>
-		/**
-		 * Called on the *currently active* tab before Tabs navigates away from
-		 * it. Return `false` (or a Promise resolving to `false`) to veto the
-		 * switch — e.g. when the tab holds unsaved data. May be async.
-		 */
-		beforeLeaveCallback?: (ctx: {tab: TabInfo; newTab: TabInfo}) => unknown
-		/**
-		 * Called before this tab's close (×) button fires `onTabClose`. Return
-		 * `false` (or a Promise resolving to `false`) to veto the close.
-		 * Independent of leaving: leaving keeps the tab alive, closing destroys
-		 * it. Guards the tab being closed (not necessarily the active one).
-		 */
-		beforeCloseCallback?: (ctx: {tab: TabInfo}) => unknown
-		/** Fires when the user closes this tab with its × button. */
-		onTabClose?: (ctx: {tab: TabInfo}) => void
-		class?: string
-		style?: string
-	}
-
-	export type TabsContext = {
-		register: (entry: TabEntry) => void
-		unregister: (id: string) => void
-	}
-
-	/** The tab a callback or event is about. */
-	export type TabInfo = {
-		id: string
-		label?: string
-		data?: Record<string, unknown>
-	}
-
+	export type {TabEntry, TabsContext, TabInfo} from "./tabs/tabs.types.js"
 </script>
 
 <script lang="ts">
 	import {tabsContext} from "../contexts.js"
-	import { untrack } from "svelte"
-	import PositioningRegion from "./PositioningRegion.svelte"
+	import type {Snippet} from "svelte"
+	import {untrack} from "svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import type {Orientation, RestProps} from "../types/index.js"
-
-	function toTabInfo(tab: TabEntry): TabInfo {
-		return {id: tab.id, label: tab.label, data: tab.data}
-	}
+	import {toTabInfo, type TabEntry, type TabInfo} from "./tabs/tabs.types.js"
+	import {adjacentEnabledTab, keyboardTarget, orderTabs, swapIntoStrip} from "./tabs/order.js"
+	import {cssIdSelector, indicatorStyle as computeIndicatorStyle, measureVisibleCount, scrollState} from "./tabs/measure.js"
+	import {SwipeTracker} from "./tabs/swipe.js"
+	import TabsScrollButton from "./tabs/TabsScrollButton.svelte"
+	import TabsOverflowMenu from "./tabs/TabsOverflowMenu.svelte"
 
 	type OwnProps = {
 		id?: string
@@ -160,25 +119,7 @@
 	 */
 	let displayOrder = $state<string[]>([])
 
-	const orderedTabs = $derived.by(() => {
-		const filtered = tabs.filter(t => t.visible !== false)
-		if (displayOrder.length === 0) return filtered
-		const byId = new Map(filtered.map(t => [t.id, t]))
-		const seen = new Set<string>()
-		const result: TabEntry[] = []
-		for (const id of displayOrder) {
-			const tab = byId.get(id)
-			if (tab) {
-				result.push(tab)
-				seen.add(id)
-			}
-		}
-		// Append newly-registered tabs that displayOrder doesn't know about yet.
-		for (const tab of filtered) {
-			if (!seen.has(tab.id)) result.push(tab)
-		}
-		return result
-	})
+	const orderedTabs = $derived(orderTabs(tabs, displayOrder))
 
 	const isHorizontal = $derived(orientation === "horizontal")
 	const isMenuMode = $derived(responsive === "menu")
@@ -201,7 +142,6 @@
 	 * its label with an ellipsis. 0 = no truncation applied.
 	 */
 	let truncateLastTabSize = $state(0)
-	const MIN_TRUNCATED_TAB_SIZE = 60
 
 	const renderedTabs = $derived(
 		isMenuMode ? orderedTabs.slice(0, visibleCount) : orderedTabs
@@ -231,10 +171,6 @@
 		return isRtl
 	}
 
-	function cssIdSelector(tabId: string): string {
-		return `[data-tab-id="${CSS.escape(tabId)}"]`
-	}
-
 	function updateIndicator() {
 		if (!tablistRef || !activeId || !showActiveIndicator) {
 			indicatorStyle = "opacity: 0;"
@@ -243,37 +179,7 @@
 		const activeBtn = tablistRef.querySelector<HTMLButtonElement>(
 			`button${cssIdSelector(activeId)}`
 		)
-		if (!activeBtn) {
-			indicatorStyle = "opacity: 0;"
-			return
-		}
-		const thickness = 2
-		// Use translate(x, y) on BOTH axes so the indicator tracks the
-		// active tab's row/column in wrap mode — not just its horizontal
-		// (or vertical) position. Without both axes, in a wrap-mode layout
-		// the indicator would appear under the entire tablist's bottom edge
-		// even when the active tab is on an earlier row.
-		if (isHorizontal) {
-			const x = activeBtn.offsetLeft
-			const y = activeBtn.offsetTop + activeBtn.offsetHeight - thickness
-			indicatorStyle =
-				`opacity: 1;` +
-				`transform: translate(${x}px, ${y}px);` +
-				`width: ${activeBtn.offsetWidth}px;` +
-				`height: ${thickness}px;`
-		} else {
-			// The indicator sits on the tab's inline-end edge (facing the panels):
-			// the right edge in LTR, the left edge in RTL.
-			const x = readRtl()
-				? activeBtn.offsetLeft
-				: activeBtn.offsetLeft + activeBtn.offsetWidth - thickness
-			const y = activeBtn.offsetTop
-			indicatorStyle =
-				`opacity: 1;` +
-				`transform: translate(${x}px, ${y}px);` +
-				`width: ${thickness}px;` +
-				`height: ${activeBtn.offsetHeight}px;`
-		}
+		indicatorStyle = computeIndicatorStyle(activeBtn, isHorizontal, readRtl)
 	}
 
 	// Indicator reposition — runs on activeId / orientation / tabs change.
@@ -292,29 +198,16 @@
 	let canScrollEnd = $state(false)
 
 	function updateScrollState() {
-		if (!tablistRef) {
+		if (!tablistRef || responsive !== "scroll") {
 			canScrollStart = false
 			canScrollEnd = false
 			return
 		}
-		if (responsive !== "scroll") {
-			canScrollStart = false
-			canScrollEnd = false
-			return
-		}
-		if (isHorizontal) {
-			readRtl()
-			// RTL scrollLeft is 0 at the start and goes negative toward the end,
-			// so the distance from the start is its magnitude in both directions.
-			const { clientWidth, scrollWidth } = tablistRef
-			const scrolled = Math.abs(tablistRef.scrollLeft)
-			canScrollStart = scrolled > 0
-			canScrollEnd = scrollWidth > clientWidth && scrolled + clientWidth < scrollWidth - 1
-		} else {
-			const { scrollTop, clientHeight, scrollHeight } = tablistRef
-			canScrollStart = scrollTop > 0
-			canScrollEnd = scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 1
-		}
+		// Horizontal scroll offsets are physical: refresh the resolved direction.
+		if (isHorizontal) readRtl()
+		const state = scrollState(tablistRef, isHorizontal)
+		canScrollStart = state.canScrollStart
+		canScrollEnd = state.canScrollEnd
 	}
 
 	function onTablistScroll() {
@@ -406,33 +299,14 @@
 
 	function handleTabKeydown(e: KeyboardEvent) {
 		if (orderedTabs.length === 0) return
-		const idx = orderedTabs.findIndex(t => t.id === activeId)
-		if (idx < 0) return
-
 		// Horizontal arrows follow the reading direction: ArrowLeft is "next" in RTL.
 		const rtl = isHorizontal && readRtl()
 		const prevKey = isHorizontal ? (rtl ? "ArrowRight" : "ArrowLeft") : "ArrowUp"
 		const nextKey = isHorizontal ? (rtl ? "ArrowLeft" : "ArrowRight") : "ArrowDown"
-		let targetIdx = idx
-		let step = 0
-
-		if (e.key === nextKey) step = 1
-		else if (e.key === prevKey) step = -1
-		else if (e.key === "Home") { targetIdx = -1; step = 1 }
-		else if (e.key === "End") { targetIdx = orderedTabs.length; step = -1 }
-		else return
-
+		const target = keyboardTarget(orderedTabs, activeId, e.key, prevKey, nextKey)
+		if (target === null) return
 		e.preventDefault()
-
-		// Step until we find a non-disabled tab or loop back to start.
-		const total = orderedTabs.length
-		for (let guard = 0; guard < total; guard++) {
-			targetIdx = (targetIdx + step + total) % total
-			if (!orderedTabs[targetIdx].disabled) {
-				selectTab(orderedTabs[targetIdx].id, true)
-				return
-			}
-		}
+		if (target) selectTab(target.id, true)
 	}
 
 	/*
@@ -455,170 +329,26 @@
 		tab.onTabClose?.({tab: toTabInfo(tab)})
 	}
 
-	/*
-	 * Swipe-to-navigate on the tabpanels container. Touch start/end pair;
-	 * we measure the net displacement on touchend rather than attempting
-	 * to preview the swipe — that would require sliding-panel animation
-	 * and momentum handling that's out of scope for the MVP.
-	 *
-	 * The dominant-axis check (MIN_RATIO) is what keeps vertical content
-	 * scrolls from triggering tab changes: if the gesture has significant
-	 * perpendicular motion, we treat it as scroll, not swipe.
-	 *
-	 * Interactive-target check aborts the swipe if the touch originated
-	 * on an input/button/range/contenteditable so form controls keep
-	 * working — a horizontal drag on a <input type="range"> inside a panel
-	 * would otherwise steal the interaction and flip tabs instead.
-	 */
-	const SWIPE_THRESHOLD_PX = 50
-	const SWIPE_MIN_RATIO = 1.5
-	let swipeStart: { x: number; y: number; aborted: boolean } | null = null
-
-	function isInteractiveSwipeTarget(target: EventTarget | null): boolean {
-		if (!(target instanceof HTMLElement)) return false
-		return !!target.closest(
-			"input, textarea, select, button, a[href], [contenteditable='true'], [contenteditable=''], [role='slider'], [role='spinbutton']"
-		)
-	}
+	// Swipe-to-navigate on the tabpanels container (gesture rules in tabs/swipe.ts).
+	const swipeTracker = new SwipeTracker()
 
 	function onPanelsTouchStart(e: TouchEvent) {
-		if (!swipe || e.touches.length !== 1) {
-			swipeStart = null
-			return
-		}
-		const t = e.touches[0]
-		swipeStart = {
-			x: t.clientX,
-			y: t.clientY,
-			aborted: isInteractiveSwipeTarget(e.target)
-		}
+		swipeTracker.onTouchStart(e, swipe)
 	}
 
 	function onPanelsTouchEnd(e: TouchEvent) {
-		if (!swipeStart || swipeStart.aborted) {
-			swipeStart = null
-			return
-		}
-		const t = e.changedTouches[0]
-		const dx = t.clientX - swipeStart.x
-		const dy = t.clientY - swipeStart.y
-		swipeStart = null
-
-		const absDx = Math.abs(dx)
-		const absDy = Math.abs(dy)
-
-		if (isHorizontal) {
-			if (absDx < SWIPE_THRESHOLD_PX) return
-			if (absDx < absDy * SWIPE_MIN_RATIO) return
-			if (dx > 0) goToAdjacentTab(-1)
-			else goToAdjacentTab(1)
-		} else {
-			if (absDy < SWIPE_THRESHOLD_PX) return
-			if (absDy < absDx * SWIPE_MIN_RATIO) return
-			if (dy > 0) goToAdjacentTab(-1)
-			else goToAdjacentTab(1)
-		}
+		const direction = swipeTracker.onTouchEnd(e, isHorizontal)
+		if (direction === 0) return
+		const tab = adjacentEnabledTab(orderedTabs, activeId, direction)
+		if (tab) selectTab(tab.id)
 	}
 
-	function goToAdjacentTab(direction: 1 | -1) {
-		if (orderedTabs.length === 0) return
-		const currentIdx = orderedTabs.findIndex(t => t.id === activeId)
-		if (currentIdx < 0) return
-		for (let i = currentIdx + direction; i >= 0 && i < orderedTabs.length; i += direction) {
-			if (!orderedTabs[i].disabled) {
-				selectTab(orderedTabs[i].id)
-				return
-			}
-		}
-	}
-
-	/*
-	 * Menu-mode measurement. The shadow tablist holds every tab at its
-	 * natural width in the same CSS layout, positioned off-screen with
-	 * visibility: hidden so it takes no visible space but provides stable
-	 * per-tab dimensions. We cumulative-sum those dimensions against the
-	 * real tablist's clientWidth/clientHeight and fix `visibleCount` —
-	 * when not everything fits, we also subtract the shadow `⋯` button's
-	 * size so the real overflow button has somewhere to sit.
-	 *
-	 * Measuring in a shadow pass (not the real tablist) is what breaks
-	 * the classic feedback loop where showing the overflow button would
-	 * shrink the tablist, change the overflow condition, hide the
-	 * button, restore the width, etc.
-	 */
-	function measureVisibleCount() {
+	// Menu-mode measurement against the off-screen shadow tablist (see tabs/measure.ts).
+	function updateVisibleCount() {
 		if (!tablistRef || !isMenuMode || !shadowTablistRef) return
-
-		const shadowBtns = Array.from(
-			shadowTablistRef.querySelectorAll<HTMLElement>("[data-shadow-tab-id]")
-		)
-		const shadowMoreBtn = shadowTablistRef.querySelector<HTMLElement>("[data-shadow-more]")
-
-		if (shadowBtns.length === 0) {
-			visibleCount = 0
-			truncateLastTabSize = 0
-			return
-		}
-
-		const containerSize = isHorizontal ? tablistRef.clientWidth : tablistRef.clientHeight
-		const moreBtnSize = shadowMoreBtn
-			? (isHorizontal ? shadowMoreBtn.offsetWidth : shadowMoreBtn.offsetHeight)
-			: 40
-
-		// First pass: does everything fit without the `⋯` button at all?
-		let cumulative = 0
-		let fitAll = true
-		for (const btn of shadowBtns) {
-			cumulative += isHorizontal ? btn.offsetWidth : btn.offsetHeight
-			if (cumulative > containerSize) {
-				fitAll = false
-				break
-			}
-		}
-		if (fitAll) {
-			visibleCount = shadowBtns.length
-			truncateLastTabSize = 0
-			return
-		}
-
-		/*
-		 * Second pass: reserve space for the `⋯` button, then walk tabs.
-		 *  - Tab fully fits → include at full width
-		 *  - Tab doesn't fit but remaining space >= MIN_TRUNCATED_TAB_SIZE
-		 *    → include the tab as the last visible, capped to the remaining
-		 *    space; CSS handles the label ellipsis
-		 *  - Tab doesn't fit and too little remaining → push to overflow
-		 *
-		 * This keeps partially-fitting tabs visible (and interactable)
-		 * instead of collapsing them into the `⋯` menu just because the
-		 * prior tabs happened to be wide.
-		 */
-		const available = Math.max(0, containerSize - moreBtnSize)
-		cumulative = 0
-		let fit = 0
-		let truncate = 0
-		for (const btn of shadowBtns) {
-			const size = isHorizontal ? btn.offsetWidth : btn.offsetHeight
-			if (cumulative + size > available) {
-				const remaining = available - cumulative
-				if (remaining >= MIN_TRUNCATED_TAB_SIZE) {
-					fit++
-					truncate = remaining
-				}
-				break
-			}
-			cumulative += size
-			fit++
-		}
-		// Always show at least one tab if any are registered, even if the
-		// first tab alone is wider than available — the single tab gets
-		// truncated to `available`.
-		if (fit === 0 && shadowBtns.length > 0) {
-			fit = 1
-			truncate = available
-		}
-		visibleCount = fit
-		truncateLastTabSize = truncate
+		const fit = measureVisibleCount(tablistRef, shadowTablistRef, isHorizontal)
+		visibleCount = fit.visibleCount
+		truncateLastTabSize = fit.truncate
 	}
 
 	// Re-measure on container size change, shadow size change, or tabs change.
@@ -636,10 +366,10 @@
 		void isHorizontal
 		void orderedTabs.length
 
-		const ro = new ResizeObserver(() => measureVisibleCount())
+		const ro = new ResizeObserver(() => updateVisibleCount())
 		ro.observe(realList)
 		ro.observe(shadowList)
-		const frame = requestAnimationFrame(() => measureVisibleCount())
+		const frame = requestAnimationFrame(() => updateVisibleCount())
 		return () => {
 			cancelAnimationFrame(frame)
 			ro.disconnect()
@@ -662,17 +392,8 @@
 			? [...displayOrder]
 			: orderedTabs.map(t => t.id)
 
-		const selectedIdx = currentOrder.indexOf(tabId)
-		const lastVisibleIdx = Math.max(0, Math.min(visibleCount - 1, currentOrder.length - 1))
-		if (selectedIdx < 0 || selectedIdx === lastVisibleIdx) {
-			overflowOpen = false
-			if (activeId !== tabId) activate(tab)
-			return
-		}
-
-		const next = [...currentOrder]
-		;[next[selectedIdx], next[lastVisibleIdx]] = [next[lastVisibleIdx], next[selectedIdx]]
-		displayOrder = next
+		const next = swapIntoStrip(currentOrder, tabId, visibleCount)
+		if (next) displayOrder = next
 
 		overflowOpen = false
 		if (activeId !== tabId) activate(tab)
@@ -733,23 +454,7 @@
 >
 	<div class="fluent-tabs-strip" style={stripStyle}>
 		{#if responsive === "scroll" && canScrollStart}
-			<button
-				type="button"
-				class="fluent-tabs-scroll-btn fluent-tabs-scroll-btn-start"
-				onclick={() => scrollArrow(-1)}
-				aria-label={isHorizontal ? (isRtl ? "Scroll tabs right" : "Scroll tabs left") : "Scroll tabs up"}
-				tabindex="-1"
-			>
-				{#if isHorizontal}
-					<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
-						<path d="M10.3 3.3a1 1 0 0 1 0 1.4L7 8l3.3 3.3a1 1 0 1 1-1.4 1.4l-4-4a1 1 0 0 1 0-1.4l4-4a1 1 0 0 1 1.4 0z"/>
-					</svg>
-				{:else}
-					<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
-						<path d="M3.3 10.3a1 1 0 0 0 1.4 0L8 7l3.3 3.3a1 1 0 1 0 1.4-1.4l-4-4a1 1 0 0 0-1.4 0l-4 4a1 1 0 0 0 0 1.4z"/>
-					</svg>
-				{/if}
-			</button>
+			<TabsScrollButton side="start" horizontal={isHorizontal} rtl={isRtl} onclick={() => scrollArrow(-1)} />
 		{/if}
 
 		<!--
@@ -881,49 +586,19 @@
 		{/if}
 
 		{#if responsive === "scroll" && canScrollEnd}
-			<button
-				type="button"
-				class="fluent-tabs-scroll-btn fluent-tabs-scroll-btn-end"
-				onclick={() => scrollArrow(1)}
-				aria-label={isHorizontal ? (isRtl ? "Scroll tabs left" : "Scroll tabs right") : "Scroll tabs down"}
-				tabindex="-1"
-			>
-				{#if isHorizontal}
-					<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
-						<path d="M5.7 3.3a1 1 0 0 0 0 1.4L9 8l-3.3 3.3a1 1 0 1 0 1.4 1.4l4-4a1 1 0 0 0 0-1.4l-4-4a1 1 0 0 0-1.4 0z"/>
-					</svg>
-				{:else}
-					<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
-						<path d="M3.3 5.7a1 1 0 0 1 1.4 0L8 9l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/>
-					</svg>
-				{/if}
-			</button>
+			<TabsScrollButton side="end" horizontal={isHorizontal} rtl={isRtl} onclick={() => scrollArrow(1)} />
 		{/if}
 	</div>
 
 	{#if isMenuMode && moreBtnRef}
-		<PositioningRegion
+		<TabsOverflowMenu
 			anchor={moreBtnRef}
 			visible={overflowOpen && overflowTabs.length > 0}
-			matchWidth={false}
-			position={isHorizontal ? "bottom" : "end"}
-		>
-			<div class="fluent-tabs-overflow-menu context-menu" bind:this={overflowMenuRef}>
-				<fluent-menu>
-					{#each overflowTabs as tab (tab.id)}
-						<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-						<fluent-menu-item
-							class={tab.disabled ? "disabled" : ""}
-							role="menuitem"
-							tabindex="-1"
-							onclick={() => onOverflowTabClick(tab.id)}
-						>
-							{tab.label || tab.id}
-						</fluent-menu-item>
-					{/each}
-				</fluent-menu>
-			</div>
-		</PositioningRegion>
+			horizontal={isHorizontal}
+			tabs={overflowTabs}
+			bind:menuEl={overflowMenuRef}
+			onPick={onOverflowTabClick}
+		/>
 	{/if}
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -931,7 +606,7 @@
 		class="fluent-tabs-panels"
 		ontouchstart={swipe ? onPanelsTouchStart : undefined}
 		ontouchend={swipe ? onPanelsTouchEnd : undefined}
-		ontouchcancel={() => swipeStart = null}
+		ontouchcancel={() => swipeTracker.cancel()}
 	>
 		{#each orderedTabs as tab (tab.id)}
 			<div
@@ -1118,23 +793,6 @@
 		flex: 0 1 auto;
 	}
 
-	/* Overflow menu — reuses the context-menu look from QuickGrid.
-	 * Transparent wrapper + matching border-radius so the inner
-	 * `<fluent-menu>`'s rounded corners aren't framed by gray pixels. */
-	.fluent-tabs-overflow-menu {
-		z-index: var(--fluent-z-popover, 1060);
-		background: transparent;
-		border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
-		/* Popover elevation on the wrapper for visible separation on dark
-		 * themes (fluent-menu's own shadow is too subtle). Matches
-		 * ContextMenu's elevation. */
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
-	}
-
-	.fluent-tabs-overflow-menu fluent-menu {
-		min-width: 160px;
-	}
-
 	/* justify: stretch tabs to divide the row equally. */
 	.fluent-tabs-justify .fluent-tab {
 		flex: 1 1 0;
@@ -1260,72 +918,6 @@
 		border-radius: 0;
 		border-start-start-radius: var(--fluent-border-radius-sm);
 		border-end-start-radius: var(--fluent-border-radius-sm);
-	}
-
-	/*
-	 * Scroll arrow buttons — absolute-positioned over the strip edges so
-	 * toggling their visibility does NOT change the tablist's client width.
-	 *
-	 * When scroll arrows are flex siblings of the tablist, showing an arrow
-	 * shrinks the tablist by ~32px. At borderline widths (e.g. scrollWidth
-	 * ≈ clientWidth + 32), this flips the overflow condition, which flips
-	 * the arrow visibility, which flips the condition — oscillating forever
-	 * as a reactive feedback loop. Overlaying them fixes the loop because
-	 * the tablist's size is invariant to arrow visibility.
-	 */
-	.fluent-tabs-scroll-btn {
-		position: absolute;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: color-mix(in srgb, var(--neutral-layer-1, #fff) 85%, transparent);
-		backdrop-filter: blur(4px);
-		border: none;
-		color: var(--neutral-foreground-rest);
-		cursor: pointer;
-		padding: 0;
-		z-index: 2;
-	}
-
-	.fluent-tabs-horizontal .fluent-tabs-scroll-btn {
-		top: 0;
-		bottom: 0;
-		width: 32px;
-	}
-
-	.fluent-tabs-horizontal .fluent-tabs-scroll-btn-start {
-		inset-inline-start: 0;
-	}
-
-	.fluent-tabs-horizontal .fluent-tabs-scroll-btn-end {
-		inset-inline-end: 0;
-	}
-
-	/* The chevrons point toward their side; mirror them in RTL. */
-	.fluent-tabs-horizontal .fluent-tabs-scroll-btn:dir(rtl) svg {
-		transform: scaleX(-1);
-	}
-
-	.fluent-tabs-vertical .fluent-tabs-scroll-btn {
-		inset-inline: 0;
-		height: 32px;
-	}
-
-	.fluent-tabs-vertical .fluent-tabs-scroll-btn-start {
-		top: 0;
-	}
-
-	.fluent-tabs-vertical .fluent-tabs-scroll-btn-end {
-		bottom: 0;
-	}
-
-	.fluent-tabs-scroll-btn:hover {
-		background: var(--neutral-fill-stealth-hover);
-	}
-
-	.fluent-tabs-scroll-btn:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer);
-		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
 	}
 
 	/* Panels */
