@@ -48,7 +48,7 @@ Monorepo: the library lives in `packages/svelte-fluentui/`, the docs/demo site i
 - Main styles: `packages/svelte-fluentui/src/lib/main.scss`
 - Component styles: `packages/svelte-fluentui/src/lib/assets/styles/components.scss`
 - FluentUI-specific styles: `packages/svelte-fluentui/src/lib/assets/styles/fluent-ui/`
-- Shared style primitives: `assets/styles/components/_primitives.scss` (`.fluent-field-control`, `.fluent-popup-surface`, `.fluent-required-indicator`, `.fluent-focus-ring`, danger menu items, `fluent-spin` / `fluent-pulse`) — use these instead of copying field/popup/focus styles
+- Shared style primitives: `assets/styles/components/_primitives.scss` (`.fluent-field-control`, `.fluent-field-clear`, `.fluent-popup-surface`, `.fluent-required-indicator`, `.fluent-focus-ring`, danger menu items, `fluent-spin` / `fluent-pulse`) — use these instead of copying field/popup/focus styles
 - Reboot (element normalisation) is opt-in since 2.0: `import "svelte-fluentui/reboot.css"` (`src/lib/reboot.css`), not part of the main bundle
 - Colours come from the `--fluent-color-<name>(-foreground|-contrast|-tint)` palette; z-index from the `--fluent-z-*` scale (no numeric fallbacks)
 

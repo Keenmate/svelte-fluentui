@@ -10,7 +10,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 <!--
  * Combobox Component (rewrite)
  *
- * Custom single-select combobox that replaces the previous <fluent-combobox>
+ * Custom single- or multi-select combobox that replaces the previous <fluent-combobox>
  * wrapper. Like Select, the dropdown is portalled out via PositioningRegion,
  * so it (a) never grows past the viewport — its max-height is capped to the
  * available space — and (b) escapes any ancestor with overflow clipping
@@ -164,6 +164,9 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		openOnFocus?: boolean
 		/** Tab on the open list picks the highlighted option before focus moves on. */
 		selectValueOnTab?: boolean
+		/** A clear (×) button before the chevron while something is selected; it empties the
+		 * value (all chips in `multiple` mode) and the filter text. Default: `false`. */
+		showClear?: boolean
 		/** Single-select free-text entry: when the list closes without a pick (an outside
 		 * click, Tab, the indicator) the typed text stays in the input instead of reverting to
 		 * the selected option's label; Escape still reverts it. Read it via `bind:currentValue`. */
@@ -228,6 +231,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		valueText = undefined,
 		openOnFocus = false,
 		selectValueOnTab = false,
+		showClear = false,
 		freeText = false,
 		dropdownClass = undefined,
 		embedded = false,
@@ -599,6 +603,21 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		if (refocus) inputEl?.focus()
 	}
 
+	// `showClear`: empty the whole value and the filter. The × is out of the Tab
+	// order and doesn't take focus (pointerdown is prevented), so the input keeps it.
+	const canClear = $derived(showClear && !disabled && !readonly && selectionState.value.length > 0)
+	function clearValue(ev: MouseEvent) {
+		ev.stopPropagation()
+		if (!canClear) return
+		selectionState.value = []
+		selectedLabel = ""
+		typed = ""
+		isFiltering = false
+		closeDropdown(false)
+		emitChange()
+		inputEl?.focus()
+	}
+
 	// Keyboard access to the inline chips (see helpers/chip-nav.ts).
 	const chipNav: ChipNavOptions = {
 		chips: () => inlineTags ? Array.from(mainEl?.querySelectorAll<HTMLElement>(".fluent-chip-remove") ?? []) : [],
@@ -721,7 +740,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	function handleControlClick(ev: MouseEvent) {
 		if (disabled || readonly) return
 		const target = ev.target as HTMLElement | null
-		if (target?.closest(".combobox-indicator, .fluent-chip-remove")) return
+		if (target?.closest(".combobox-indicator, .combobox-clear, .fluent-chip-remove")) return
 		inputEl?.focus()
 		if (!isOpen) openDropdown()
 	}
@@ -885,6 +904,21 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				onclick={handleInputClick}
 			/>
 		</div>
+		{#if canClear}
+			<button
+				type="button"
+				class="combobox-clear fluent-field-clear"
+				tabindex="-1"
+				aria-label={labels.clearSelection}
+				title={labels.clearSelection}
+				onpointerdown={(ev) => ev.preventDefault()}
+				onclick={clearValue}
+			>
+				<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+					<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
+				</svg>
+			</button>
+		{/if}
 		<button
 			type="button"
 			class="combobox-indicator"

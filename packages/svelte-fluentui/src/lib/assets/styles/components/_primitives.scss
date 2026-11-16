@@ -129,6 +129,28 @@ $control-radius: calc(var(--control-corner-radius, 4) * 1px);
 	border-radius: $control-radius;
 }
 
+/* ---------- Field clear (×) button ----------
+   The `showClear` button of Select, Combobox and Autocomplete, just before the
+   chevron. Out of the Tab order (Delete / Backspace clear from the keyboard). */
+.fluent-field-clear {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	padding: 4px;
+	border: none;
+	border-radius: var(--fluent-border-radius-sm);
+	background: transparent;
+	color: var(--neutral-foreground-hint, #717171);
+	cursor: pointer;
+	transition: background 0.1s ease, color 0.1s ease;
+}
+
+.fluent-field-clear:hover {
+	background: var(--neutral-fill-secondary-hover, #e0e0e0);
+	color: var(--neutral-foreground-rest, #242424);
+}
+
 /* ---------- Danger menu item ----------
    `danger: true` items in ContextMenu, MenuButton and QuickGrid's context menu.
    Dark theme comes from the palette tokens. */

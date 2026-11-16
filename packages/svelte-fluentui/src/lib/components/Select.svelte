@@ -49,6 +49,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		listPageSize
 	} from "../helpers/option-dom.js"
 	import type {RestProps} from "../types/index.js"
+	import {defaultSelectLabels, type SelectLabels} from "./Select.labels.js"
 
 	/** The option the user picked, as passed to `onChange`. */
 	type SelectChangeOption = {
@@ -116,6 +117,11 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		valueText?: string
 		/** Single mode: Tab on the open list picks the highlighted option before focus moves on. */
 		selectValueOnTab?: boolean
+		/** Single mode: a clear (×) button before the chevron while a value is selected;
+		 * Delete / Backspace on the trigger clears too. Default: `false`. */
+		showClear?: boolean
+		/** User-facing strings; merged over `defaultSelectLabels`. */
+		labels?: Partial<SelectLabels>
 		/** Single mode: extra class on the portalled dropdown listbox (it renders outside the
 		 * component, so a parent's scoped styles can't reach it otherwise). */
 		dropdownClass?: string
@@ -166,6 +172,8 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		placeholder = undefined,
 		valueText = undefined,
 		selectValueOnTab = false,
+		showClear = false,
+		labels: labelsProp = undefined,
 		dropdownClass = undefined,
 		embedded = false,
 		labelTemplate = undefined,
@@ -362,6 +370,20 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		selectionBeforeClick = [...selectionState.value]
 	}
 
+	const labels = $derived<SelectLabels>({...defaultSelectLabels, ...(labelsProp ?? {})})
+
+	// `showClear`: the × (or Delete / Backspace on the trigger) empties the value.
+	const canClear = $derived(showClear && !disabled && !readonly && selectedSingle !== "")
+	function clearValue(ev?: Event) {
+		ev?.stopPropagation()
+		if (!canClear) return
+		const before = [...selectionState.value]
+		selectionState.value = []
+		emitChange(before, undefined)
+		closeDropdown()
+		triggerEl?.focus()
+	}
+
 	function emitChange(before: string[], optEl: HTMLElement | undefined) {
 		const after = selectionState.value
 		if (after.length === before.length && after.every((v, i) => v === before[i])) return
@@ -434,6 +456,12 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 
 		if (!isOpen) {
 			switch (ev.key) {
+				case "Delete":
+				case "Backspace":
+					if (!canClear) return
+					ev.preventDefault()
+					clearValue()
+					return
 				case "ArrowDown":
 				case "ArrowUp":
 					// Embedded: the host (a grid cell) moves on closed-list arrows
@@ -657,6 +685,22 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		<span class="select-trigger-value" class:placeholder={!displayText}>
 			{displayText || placeholder || ""}
 		</span>
+		<!-- A <button> can't nest another; the × is a pointer target only (the
+		     trigger takes Delete / Backspace) and keeps focus on the trigger. -->
+		{#if canClear}
+			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+			<span
+				class="select-clear fluent-field-clear"
+				aria-hidden="true"
+				title={labels.clearSelection}
+				onpointerdown={(ev) => ev.preventDefault()}
+				onclick={clearValue}
+			>
+				<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+					<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
+				</svg>
+			</span>
+		{/if}
 		<span class="select-trigger-indicator" aria-hidden="true">
 			{#if indicatorTemplate}
 				{@render indicatorTemplate()}

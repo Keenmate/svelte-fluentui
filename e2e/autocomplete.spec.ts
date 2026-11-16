@@ -9,7 +9,7 @@ import {test, expect, type Page, type Locator} from "@playwright/test"
  *
  * Selectors target the wrapper DOM in the Autocomplete component
  * (`.fluent-autocomplete`, `.autocomplete-native-input`, `.option-item`,
- * `.inline-chip`, `.fluent-chip-remove`, `.clear-button`).
+ * `.inline-chip`, `.fluent-chip-remove`, `.autocomplete-clear`).
  */
 
 const PAGE = "/test/autocomplete"
@@ -551,14 +551,14 @@ test("loading indicator: visible while searchCallback promise is in flight", asy
 // clear button (single mode)
 // =============================================================================
 
-test("clear button (single mode): appears after pick; click clears the input", async ({page}) => {
+test("showClear (single mode): appears after pick; click clears the input", async ({page}) => {
 	const wrap = await open(page, "single")
 
 	await inputOf(wrap).fill("ban")
 	await optionByText(page, "Banana").click()
 	await expect(inputOf(wrap)).toHaveValue("Banana")
 
-	const clear = wrap.locator(".clear-button")
+	const clear = wrap.locator(".autocomplete-clear")
 	await expect(clear).toBeVisible()
 	await clear.click()
 

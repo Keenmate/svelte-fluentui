@@ -152,6 +152,7 @@ export {defaultDialogLabels, type DialogLabels} from "./components/Dialog.labels
 export {DEFAULT_LABELS as defaultInputFileLabels} from "./components/InputFile.utils.js"
 export {defaultPaginatorLabels, type PaginatorLabels} from "./components/Paginator.labels.js"
 export {defaultPanelLabels, type PanelLabels} from "./components/layout/Panel.labels.js"
+export {defaultSelectLabels, type SelectLabels} from "./components/Select.labels.js"
 export {defaultSiteSettingsLabels, type SiteSettingsLabels} from "./components/SiteSettings.labels.js"
 export {defaultTabsLabels, type TabsLabels} from "./components/Tabs.labels.js"
 export {defaultTimePickerLabels, type TimePickerLabels} from "./components/TimePicker.labels.js"

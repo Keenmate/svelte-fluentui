@@ -6,11 +6,14 @@ export type ComboboxLabels = {
 	loadingText: string
 	/** Accessible name / tooltip of a selected-value chip's × button (multiple mode). */
 	removeChip: (label: string) => string
+	/** Accessible name / tooltip of the `showClear` (×) button. */
+	clearSelection: string
 }
 
 /** Combobox's English strings; spread a partial over them via the `labels` prop. */
 export const defaultComboboxLabels: ComboboxLabels = {
 	emptyText: "No results found",
 	loadingText: "Searching…",
-	removeChip: (label) => `Remove ${label}`
+	removeChip: (label) => `Remove ${label}`,
+	clearSelection: "Clear selection"
 }

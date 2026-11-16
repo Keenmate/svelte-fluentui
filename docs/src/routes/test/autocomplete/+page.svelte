@@ -94,6 +94,7 @@
 	<div id="single-wrap" style="max-width: 320px">
 		<Autocomplete
 			id="single"
+			showClear
 			options={fruits}
 			bind:value={singleSelected}
 			maxSelectionCount={1}

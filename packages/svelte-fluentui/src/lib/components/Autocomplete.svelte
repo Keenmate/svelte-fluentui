@@ -109,13 +109,16 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		empty?: Snippet
 		/** Decorative content (typically an icon) at the start of the input. */
 		start?: Snippet
-		/** Decorative content at the end of the input; renders only when neither the clear
-		 * button nor the loading spinner is showing. */
+		/** Decorative content at the end of the input; renders only while the loading
+		 * spinner isn't showing. */
 		end?: Snippet
 		/** Show a built-in accent-coloured magnifier in the end slot (FluentUI Blazor look).
-		 * Renders by default when nothing higher-priority occupies the slot (clear button,
-		 * loading spinner, or a custom `end` all take precedence). Set false to hide it. */
+		 * Renders by default when nothing higher-priority occupies the slot (the loading
+		 * spinner or a custom `end` take precedence). Set false to hide it. */
 		showSearchIcon?: boolean
+		/** A clear (×) button before the end slot while something is selected; it empties the
+		 * value (every chip in multi-select) and the search text. Default: `false`. */
+		showClear?: boolean
 		/** Extra classes for the root element. */
 		class?: string
 		/** Inline style for the root element. */
@@ -182,6 +185,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		start = undefined,
 		end = undefined,
 		showSearchIcon = true,
+		showClear = false,
 		class: className = "",
 		style = "",
 		initialSearchQuery = "",
@@ -587,7 +591,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	function handleContainerClick(event: MouseEvent) {
 		// Don't focus if clicking remove button or clear button
 		const target = event.target as HTMLElement
-		if (target.closest('.fluent-chip-remove, .clear-button')) {
+		if (target.closest('.fluent-chip-remove, .autocomplete-clear')) {
 			return
 		}
 		inputElement?.focus()
@@ -653,14 +657,17 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		filterOptions(searchText)
 	}
 
-	// Clear selection for single-select mode
-	function clearSingleSelection(event: MouseEvent) {
+	// `showClear`: empty the whole value and the search. The × is out of the Tab
+	// order and doesn't take focus (pointerdown is prevented), so the input keeps it.
+	let canClear = $derived(showClear && !disabled && !readonly && selectedOptions.length > 0)
+	function clearSelection(event: MouseEvent) {
 		event.stopPropagation()
-		if (!disabled && !readonly) {
-			selectedOptions = []
-			searchText = ""
-			onChange?.({value: selectedOptions})
-		}
+		if (!canClear) return
+		selectedOptions = []
+		searchText = ""
+		closeDropdown()
+		onChange?.({value: selectedOptions})
+		inputElement?.focus()
 	}
 
 	// Should show tags - only for multi-select with selections
@@ -802,25 +809,29 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 				/>
 			</div>
 
-			<!-- End slot: clear button OR loading indicator OR custom end OR the built-in
-				 search magnifier (in that priority). Only renders when something will show
-				 inside, so the `:has(.input-end)` padding rule on the input doesn't reserve
-				 space for an empty slot. -->
-			{#if (hasSingleSelection && !disabled && !readonly) || showLoading || end || showSearchIcon}
+			{#if canClear}
+				<button
+					type="button"
+					class="autocomplete-clear fluent-field-clear"
+					tabindex="-1"
+					aria-label={labels.clearSelection}
+					title={labels.clearSelection}
+					onpointerdown={(ev) => ev.preventDefault()}
+					onclick={clearSelection}
+				>
+					<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+						<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
+					</svg>
+				</button>
+			{/if}
+
+			<!-- End slot: loading indicator OR custom end OR the built-in search magnifier
+				 (in that priority). Only renders when something will show inside, so the
+				 `:has(.input-end)` padding rule on the input doesn't reserve space for an
+				 empty slot. -->
+			{#if showLoading || end || showSearchIcon}
 				<div class="input-end">
-					{#if hasSingleSelection && !disabled && !readonly}
-						<button
-							type="button"
-							class="clear-button fluent-focus-ring"
-							onclick={clearSingleSelection}
-							aria-label={labels.clearSelection}
-							title={labels.clearSelection}
-						>
-							<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-								<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
-							</svg>
-						</button>
-					{:else if showLoading}
+					{#if showLoading}
 						<div class="loading-indicator" role="img" aria-label={labels.loading}>
 							<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" class="spinner">
 								<circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none" opacity="0.25"/>
@@ -1068,8 +1079,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		margin-inline-end: calc(var(--design-unit, 4) * -2 * 1px);
 	}
 
-	.autocomplete-input-container.inline-mode .search-button,
-	.autocomplete-input-container.inline-mode .clear-button {
+	.autocomplete-input-container.inline-mode .search-button {
 		height: 100%;
 	}
 
@@ -1102,6 +1112,28 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		padding-inline-end: 44px;
 	}
 
+	/* The `showClear` ×. Inline mode: a flex item before the end slot. Non-inline:
+	   placed just before the control-height end slot (or at the edge without one),
+	   with the input padded so text doesn't run under it. */
+	.autocomplete-input-container:not(.inline-mode) .autocomplete-clear {
+		position: absolute;
+		inset-inline-end: 4px;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	.autocomplete-input-container:not(.inline-mode):has(.input-end) .autocomplete-clear {
+		inset-inline-end: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+	}
+
+	.autocomplete-input-container:not(.inline-mode):has(.autocomplete-clear) .autocomplete-native-input {
+		padding-inline-end: 32px;
+	}
+
+	.autocomplete-input-container:not(.inline-mode):has(.autocomplete-clear):has(.input-end) .autocomplete-native-input {
+		padding-inline-end: 64px;
+	}
+
 	/* ===== Selected Options Container (above/below modes) ===== */
 	.selected-options {
 		display: flex;
@@ -1131,27 +1163,6 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	.search-button:disabled {
 		cursor: not-allowed;
 	}
-
-	/* ===== Clear Button ===== */
-	.clear-button {
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		padding: 4px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: var(--neutral-foreground-hint, #717171);
-		border-radius: var(--fluent-border-radius-sm);
-		transition: background 0.1s ease, color 0.1s ease;
-	}
-
-	.clear-button:hover {
-		background: var(--neutral-fill-secondary-hover, #e0e0e0);
-		color: var(--neutral-foreground-rest, #242424);
-	}
-
-	/* Keyboard focus outline: `.fluent-focus-ring` (_primitives.scss). */
 
 	/* ===== Loading Indicator ===== */
 	.loading-indicator {

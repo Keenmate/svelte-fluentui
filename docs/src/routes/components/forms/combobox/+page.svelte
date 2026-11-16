@@ -76,6 +76,8 @@
 	// State for each example
 	let readonlyValue = $state<string[]>(["medium"])
 	let readonlyMultiValue = $state<string[]>(["small", "large"])
+	let clearValue = $state<string[]>(["medium"])
+	let clearMultiValue = $state<string[]>(["small", "large"])
 	let multiValue = $state<string[]>(["3"])
 	let multiClosingValue = $state<string[]>([])
 	let tagsInlineValue = $state<string[]>(["1", "3"])
@@ -195,6 +197,7 @@
 		{name: "valueText", type: "string", default: "undefined", description: "Single-select: text the input shows for a value no rendered option has (e.g. a result of an earlier async search)."},
 		{name: "openOnFocus", type: "boolean", default: "false", description: "Open the dropdown when the input receives focus from outside the control."},
 		{name: "selectValueOnTab", type: "boolean", default: "false", description: "Tab on the open list picks the highlighted option before focus moves on."},
+		{name: "showClear", type: "boolean", default: "false", description: "A clear (×) button before the chevron while something is selected; empties the value (every chip in multi-select) and the filter, fires onChange({value: []}). Not a Tab stop; focus stays in the input."},
 		{name: "freeText", type: "boolean", default: "false", description: "Single-select free-text entry: closing the list without a pick (outside click, Tab, the indicator) keeps the typed text instead of reverting to the selected label; Escape still reverts. Read it via bind:currentValue."},
 		{name: "dropdownClass", type: "string", default: "undefined", description: "Extra class on the portalled dropdown listbox (a parent's scoped styles can't reach it otherwise)."},
 		{name: "embedded", type: "boolean", default: "false", description: "For hosting inside a component that owns the keyboard and draws the frame (QuickGrid cells). Borderless, transparent, fills its container; ArrowUp / ArrowDown on the closed list bubble to the host, Enter opens it."},
@@ -215,7 +218,7 @@
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
-		{name: "labels", type: "Partial<ComboboxLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultComboboxLabels. Keys: emptyText, loadingText, removeChip(label). The emptyText / loadingText props win when set."},
+		{name: "labels", type: "Partial<ComboboxLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultComboboxLabels. Keys: emptyText, loadingText, removeChip(label), clearSelection. The emptyText / loadingText props win when set."},
 	]
 
 	const callbacks: Property[] = [
@@ -411,6 +414,26 @@
 				<Stack orientation="vertical" gap="0.5rem">
 					<strong>Readonly (multi)</strong>
 					<Combobox id="readonly-multi" bind:value={readonlyMultiValue} options={sizes} multiple readonly label="Sizes" />
+				</Stack>
+			</GridItem>
+		</Grid>
+
+		<h3>Clear button</h3>
+		<p>
+			<code>showClear</code> (default <code>false</code>) adds a × before the chevron while something is selected.
+			It empties the whole value — every chip in multi-select — and the filter text.
+		</p>
+		<Grid columns={2} gap="1rem">
+			<GridItem>
+				<Stack orientation="vertical" gap="0.5rem">
+					<strong>showClear (single)</strong>
+					<Combobox id="clear-single" bind:value={clearValue} options={sizes} showClear label="Size" />
+				</Stack>
+			</GridItem>
+			<GridItem>
+				<Stack orientation="vertical" gap="0.5rem">
+					<strong>showClear (multi)</strong>
+					<Combobox id="clear-multi" bind:value={clearMultiValue} options={sizes} multiple showClear label="Sizes" />
 				</Stack>
 			</GridItem>
 		</Grid>
