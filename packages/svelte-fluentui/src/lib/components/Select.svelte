@@ -117,8 +117,9 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		valueText?: string
 		/** Single mode: Tab on the open list picks the highlighted option before focus moves on. */
 		selectValueOnTab?: boolean
-		/** Single mode: a clear (×) button before the chevron while a value is selected;
-		 * Delete / Backspace on the trigger clears too. Default: `false`. */
+		/** Single mode: a clear (×) button before the chevron while a value is selected, shown
+		 * while the trigger is hovered or focused; Delete / Backspace on the trigger clears too.
+		 * Default: `true`. */
 		showClear?: boolean
 		/** User-facing strings; merged over `defaultSelectLabels`. */
 		labels?: Partial<SelectLabels>
@@ -172,7 +173,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		placeholder = undefined,
 		valueText = undefined,
 		selectValueOnTab = false,
-		showClear = false,
+		showClear = true,
 		labels: labelsProp = undefined,
 		dropdownClass = undefined,
 		embedded = false,
@@ -674,7 +675,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		{disabled}
 		{autofocus}
 		{title}
-		class="select-trigger fluent-field-control {appearance} {className}"
+		class="select-trigger fluent-field-control fluent-field-clear-host {appearance} {className}"
 		class:open={isOpen}
 		class:readonly
 		class:embedded

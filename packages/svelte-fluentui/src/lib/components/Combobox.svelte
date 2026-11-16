@@ -164,8 +164,9 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		openOnFocus?: boolean
 		/** Tab on the open list picks the highlighted option before focus moves on. */
 		selectValueOnTab?: boolean
-		/** A clear (×) button before the chevron while something is selected; it empties the
-		 * value (all chips in `multiple` mode) and the filter text. Default: `false`. */
+		/** A clear (×) button before the chevron while something is selected or typed, shown
+		 * while the control is hovered or focused; it empties the value (all chips in
+		 * `multiple` mode) and the filter text. Default: `true`. */
 		showClear?: boolean
 		/** Single-select free-text entry: when the list closes without a pick (an outside
 		 * click, Tab, the indicator) the typed text stays in the input instead of reverting to
@@ -231,7 +232,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		valueText = undefined,
 		openOnFocus = false,
 		selectValueOnTab = false,
-		showClear = false,
+		showClear = true,
 		freeText = false,
 		dropdownClass = undefined,
 		embedded = false,
@@ -605,7 +606,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 
 	// `showClear`: empty the whole value and the filter. The × is out of the Tab
 	// order and doesn't take focus (pointerdown is prevented), so the input keeps it.
-	const canClear = $derived(showClear && !disabled && !readonly && selectionState.value.length > 0)
+	const canClear = $derived(showClear && !disabled && !readonly && (selectionState.value.length > 0 || (isFiltering && typed !== "")))
 	function clearValue(ev: MouseEvent) {
 		ev.stopPropagation()
 		if (!canClear) return
@@ -845,7 +846,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	     which owns the keyboard. -->
 	<div
 		bind:this={controlEl}
-		class="combobox-control fluent-field-control fluent-field-control--focus-within {appearance} {className}"
+		class="combobox-control fluent-field-control fluent-field-control--focus-within fluent-field-clear-host {appearance} {className}"
 		class:open={isOpen}
 		class:disabled
 		class:readonly

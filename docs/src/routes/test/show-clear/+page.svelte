@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {Select, Combobox, Autocomplete, Option} from "svelte-fluentui"
+	import {Select, Combobox, Autocomplete, Option, DatePicker, TimePicker} from "svelte-fluentui"
 
 	const fruits = [
 		{value: "apple", label: "Apple"},
@@ -15,6 +15,9 @@
 	let ac = $state<string[]>(["apple"])
 	let acLog = $state<string[]>([])
 	let acMulti = $state<string[]>(["apple", "banana"])
+	let date = $state<Date | null>(new Date(2026, 0, 15))
+	let time = $state<string | null>("10:30")
+	let def = $state<string | string[] | undefined>("a")
 </script>
 
 <p>Targeted by <code>e2e/show-clear.spec.ts</code>.</p>
@@ -28,7 +31,7 @@
 </section>
 
 <section id="sel-plain">
-	<Select id="sel-noclear" bind:value={plain}>
+	<Select id="sel-noclear" showClear={false} bind:value={plain}>
 		<Option value="a">Alpha</Option>
 	</Select>
 </section>
@@ -48,7 +51,7 @@
 </section>
 
 <section id="combo-plain">
-	<Combobox id="combo-noclear" value={["c1"]}>
+	<Combobox id="combo-noclear" showClear={false} value={["c1"]}>
 		<Option value="c1">Charlie</Option>
 	</Combobox>
 </section>
@@ -67,10 +70,34 @@
 </section>
 
 <section id="ac-plain">
-	<Autocomplete id="ac-noclear" options={fruits} maxSelectionCount={1} value={["apple"]} />
+	<Autocomplete id="ac-noclear" showClear={false} options={fruits} maxSelectionCount={1} value={["apple"]} />
 </section>
 
 <section id="ac-multi">
 	<Autocomplete id="ac-multi-clear" showClear options={fruits} bind:value={acMulti} />
 	<output id="ac-multi-value">{JSON.stringify(acMulti)}</output>
 </section>
+
+<section id="sel-default">
+	<Select id="sel-def" bind:value={def}>
+		<Option value="a">Alpha</Option>
+	</Select>
+</section>
+
+<section id="combo-empty">
+	<Combobox id="combo-typed">
+		<Option value="c1">Charlie</Option>
+	</Combobox>
+</section>
+
+<section id="dp">
+	<DatePicker id="dp-clear" bind:value={date} />
+	<output id="dp-value">{date ? "set" : "null"}</output>
+</section>
+
+<section id="tp">
+	<TimePicker id="tp-clear" bind:value={time} />
+	<output id="tp-value">{time ?? "null"}</output>
+</section>
+
+<button id="outside">outside</button>

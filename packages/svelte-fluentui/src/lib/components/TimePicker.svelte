@@ -36,6 +36,9 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		disabled?: boolean
 		/** Shows the value but blocks opening the popup. Default: `false`. */
 		readonly?: boolean
+		/** A clear (×) button before the picker icon while a value is set, shown while the field
+		 * is hovered or focused; Delete / Backspace on the field clears too. Default: `true`. */
+		showClear?: boolean
 		/** Marks the field required and shows a `*` after the label. Default: `false`. */
 		required?: boolean
 		/** Focus the input on mount. */
@@ -97,6 +100,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		placeholder = undefined,
 		disabled = false,
 		readonly = false,
+		showClear = true,
 		required = false,
 		autofocus = undefined,
 		label = undefined,
@@ -155,8 +159,14 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 	}
 
 	function handleWrapperKeydown(event: KeyboardEvent) {
-		if (disabled || readonly || event.key !== "ArrowDown") return
+		if (disabled || readonly) return
 		if ((event.target as HTMLElement | null)?.closest(".end-buttons")) return
+		if ((event.key === "Delete" || event.key === "Backspace") && showClear && value) {
+			event.preventDefault()
+			handleClear()
+			return
+		}
+		if (event.key !== "ArrowDown") return
 		event.preventDefault()
 		void openAndFocusPopup()
 	}
@@ -464,7 +474,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 	<!-- Mouse convenience (a press anywhere on the field opens); keyboard users get
 	     ArrowDown on the input and the clock button. -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="timepicker-wrapper" bind:this={wrapperElement} onclick={handleWrapperClick} onkeydown={handleWrapperKeydown} style:cursor={openOnInputClick && !disabled && !readonly ? "pointer" : undefined}>
+	<div class="timepicker-wrapper fluent-field-clear-host" bind:this={wrapperElement} onclick={handleWrapperClick} onkeydown={handleWrapperKeydown} style:cursor={openOnInputClick && !disabled && !readonly ? "pointer" : undefined}>
 		<TextField
 			{id}
 			value={displayValue}
@@ -479,6 +489,23 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		>
 			{#snippet end()}
 				<span class="end-buttons">
+				<!-- Clear (×): out of the Tab order (Delete / Backspace on the field clears) and
+				     doesn't take focus; shown while the field is hovered or focused. -->
+				{#if showClear && value && !disabled && !readonly}
+					<button
+						type="button"
+						class="clear-button fluent-field-clear"
+						tabindex="-1"
+						onpointerdown={(e) => e.preventDefault()}
+						onclick={handleClearClick}
+						aria-label={labels.clear}
+						title={labels.clear}
+					>
+						<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+							<path d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"/>
+						</svg>
+					</button>
+				{/if}
 				<!-- Clock icon -->
 				<button
 					bind:this={clockButton}
@@ -496,19 +523,6 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 					</svg>
 				</button>
 
-				{#if value && !disabled && !readonly}
-					<!-- Clear button -->
-					<button
-						type="button"
-						class="clear-button"
-						onclick={handleClearClick}
-						aria-label={labels.clear}
-					>
-						<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-							<path d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"/>
-						</svg>
-					</button>
-				{/if}
 				</span>
 			{/snippet}
 		</TextField>
@@ -660,8 +674,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		gap: 0.25rem;
 	}
 
-	.clock-button,
-	.clear-button {
+	.clock-button {
 		background: transparent;
 		border: none;
 		cursor: pointer;
@@ -673,18 +686,13 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		border-radius: var(--fluent-border-radius-md);
 	}
 
-	.clock-button:hover:not(:disabled),
-	.clear-button:hover {
+	.clock-button:hover:not(:disabled) {
 		background: var(--neutral-fill-secondary-hover);
 	}
 
 	.clock-button:disabled {
 		cursor: not-allowed;
 		opacity: 0.5;
-	}
-
-	.clear-button {
-		margin-inline-start: 0.25rem;
 	}
 
 	/* Surface (`.fluent-popup-surface`) + padding live here, not on the region, so a

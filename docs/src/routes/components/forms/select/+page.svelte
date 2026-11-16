@@ -129,7 +129,7 @@
 		{name: "placeholder", type: "string", default: "undefined", description: "Single mode: text shown in the trigger while nothing is selected."},
 		{name: "valueText", type: "string", default: "undefined", description: "Single mode: text shown in the trigger when value is set but no option has it (e.g. options that load later)."},
 		{name: "selectValueOnTab", type: "boolean", default: "false", description: "Single mode: Tab on the open list picks the highlighted option before focus moves on."},
-		{name: "showClear", type: "boolean", default: "false", description: "Single mode: a clear (×) button before the chevron while a value is selected; Delete / Backspace on the focused trigger clears too. Fires onChange with value \"\"."},
+		{name: "showClear", type: "boolean", default: "true", description: "Single mode: a clear (×) button before the chevron while a value is selected, visible while the trigger is hovered or focused (like fluent-search). Not a Tab stop; Delete / Backspace on the focused trigger clears too. Fires onChange with value \"\"."},
 		{name: "labels", type: "Partial<SelectLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultSelectLabels. Keys: clearSelection (the × tooltip)."},
 		{name: "dropdownClass", type: "string", default: "undefined", description: "Single mode: extra class on the portalled dropdown listbox (a parent's scoped styles can't reach it otherwise)."},
 		{name: "embedded", type: "boolean", default: "false", description: "Single mode: for hosting inside a component that owns the keyboard and draws the frame (QuickGrid cells). Borderless, transparent, fills its container; ArrowUp / ArrowDown on the closed trigger bubble to the host instead of opening the list."},
@@ -599,10 +599,11 @@
 
 		<h3>Clear button</h3>
 		<p>
-			<code>showClear</code> (default <code>false</code>) adds a × before the chevron while a value is selected.
-			It isn't a Tab stop: with the trigger focused, <kbd>Delete</kbd> or <kbd>Backspace</kbd> clears instead.
+			While a value is selected, a × appears before the chevron when the trigger is hovered or focused
+			(<code>showClear</code>, default <code>true</code>; set <code>showClear={"{false}"}</code> for a value that must
+			stay set). It isn't a Tab stop: with the trigger focused, <kbd>Delete</kbd> or <kbd>Backspace</kbd> clears instead.
 		</p>
-		<Select label="Fruit" showClear bind:value={clearableFruit} placeholder="Pick a fruit" width="220px">
+		<Select label="Fruit" bind:value={clearableFruit} placeholder="Pick a fruit" width="220px">
 			<Option value="apple">Apple</Option>
 			<Option value="banana">Banana</Option>
 			<Option value="cherry">Cherry</Option>

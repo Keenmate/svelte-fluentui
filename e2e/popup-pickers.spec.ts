@@ -33,11 +33,11 @@ async function openTimePicker(page: Page) {
 test("DatePicker: Tab out of the picker closes the calendar; Tab within it doesn't", async ({page}) => {
 	await openDatePicker(page)
 	await expect(datePicker(page).locator(".calendar-button")).toBeFocused()
-	// calendar button → clear button: still inside the picker
-	await page.keyboard.press("Tab")
-	await expect(datePicker(page).locator(".clear-button")).toBeFocused()
+	// Shift+Tab: calendar button → the field itself: still inside the picker
+	await page.keyboard.press("Shift+Tab")
 	await expect(page.locator("#dp-open")).toHaveText("true")
-	// → next field on the page: focus left the picker
+	// Tab, Tab → past the calendar button (the clear × isn't a Tab stop): focus left the picker
+	await page.keyboard.press("Tab")
 	await page.keyboard.press("Tab")
 	await expect(page.locator("#dp-open")).toHaveText("false")
 	await expect(calendarPopup(page)).toHaveCount(0)

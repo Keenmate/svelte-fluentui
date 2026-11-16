@@ -15,6 +15,7 @@
 		{name: "placeholder", type: "string", default: '"Select time"', description: "Placeholder text shown in the input when no time is selected. Wins over labels.placeholder."},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the time picker, preventing user interaction."},
 		{name: "readonly", type: "boolean", default: "false", description: "Makes the time picker read-only; the popup cannot be opened."},
+		{name: "showClear", type: "boolean", default: "true", description: "A clear (×) button before the picker icon while a value is set, visible while the field is hovered or focused (like fluent-search). Not a Tab stop; Delete / Backspace on the field clears too."},
 		{name: "required", type: "boolean", default: "false", description: "Marks the field as required, showing a * indicator next to the label."},
 		{name: "autofocus", type: "boolean", default: "undefined", description: "Automatically focuses the input on mount."},
 		{name: "label", type: "string", default: "undefined", description: "Label text displayed above the time picker input."},

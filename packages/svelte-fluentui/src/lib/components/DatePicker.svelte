@@ -41,6 +41,9 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		disabled?: boolean
 		/** Show the value but don't allow changing it (no popup, no clear). */
 		readonly?: boolean
+		/** A clear (×) button before the picker icon while a value is set, shown while the field
+		 * is hovered or focused; Delete / Backspace on the field clears too. Default: `true`. */
+		showClear?: boolean
 		/** Mark the input as required. */
 		required?: boolean
 		/** Focus the input on mount. */
@@ -114,6 +117,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		placeholder = undefined,
 		disabled = false,
 		readonly = false,
+		showClear = true,
 		required = false,
 		autofocus = undefined,
 		label = undefined,
@@ -172,8 +176,14 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	}
 
 	function handleWrapperKeydown(event: KeyboardEvent) {
-		if (disabled || readonly || event.key !== "ArrowDown") return
+		if (disabled || readonly) return
 		if ((event.target as HTMLElement | null)?.closest(".end-buttons")) return
+		if ((event.key === "Delete" || event.key === "Backspace") && showClear && value) {
+			event.preventDefault()
+			handleClear()
+			return
+		}
+		if (event.key !== "ArrowDown") return
 		event.preventDefault()
 		void openAndFocusPopup()
 	}
@@ -294,7 +304,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	<!-- Mouse convenience (a press anywhere on the field opens); keyboard users get
 	     ArrowDown on the input and the calendar button. -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="datepicker-wrapper" bind:this={wrapperElement} onclick={handleWrapperClick} onkeydown={handleWrapperKeydown}>
+	<div class="datepicker-wrapper fluent-field-clear-host" bind:this={wrapperElement} onclick={handleWrapperClick} onkeydown={handleWrapperKeydown}>
 		<TextField
 			{id}
 			value={inputValue}
@@ -310,6 +320,23 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		>
 			{#snippet end()}
 				<span class="end-buttons">
+				<!-- Clear (×): out of the Tab order (Delete / Backspace on the field clears) and
+				     doesn't take focus; shown while the field is hovered or focused. -->
+				{#if showClear && value && !disabled && !readonly}
+					<button
+						type="button"
+						class="clear-button fluent-field-clear"
+						tabindex="-1"
+						onpointerdown={(e) => e.preventDefault()}
+						onclick={handleClear}
+						aria-label={labels.clear}
+						title={labels.clear}
+					>
+						<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+							<path d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"/>
+						</svg>
+					</button>
+				{/if}
 				<!-- Calendar icon -->
 				<button
 					bind:this={calendarButton}
@@ -327,19 +354,6 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 					</svg>
 				</button>
 
-				{#if value && !disabled && !readonly}
-					<!-- Clear button -->
-					<button
-						type="button"
-						class="clear-button"
-						onclick={handleClear}
-						aria-label={labels.clear}
-					>
-						<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-							<path d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"/>
-						</svg>
-					</button>
-				{/if}
 				</span>
 			{/snippet}
 		</TextField>
@@ -398,8 +412,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		gap: 0.25rem;
 	}
 
-	.calendar-button,
-	.clear-button {
+	.calendar-button {
 		background: transparent;
 		border: none;
 		cursor: pointer;
@@ -411,17 +424,12 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		border-radius: var(--fluent-border-radius-md);
 	}
 
-	.calendar-button:hover:not(:disabled),
-	.clear-button:hover {
+	.calendar-button:hover:not(:disabled) {
 		background: var(--neutral-fill-secondary-hover);
 	}
 
 	.calendar-button:disabled {
 		cursor: not-allowed;
 		opacity: 0.5;
-	}
-
-	.clear-button {
-		margin-inline-start: 0.25rem;
 	}
 </style>

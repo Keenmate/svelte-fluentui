@@ -1,9 +1,10 @@
 import {test, expect, type Page} from "@playwright/test"
 
 /**
- * `showClear` on Select, Combobox and Autocomplete (fixture: /test/show-clear).
- * Opt-in (default false); shown only with a value on an enabled control; empties the
- * value, fires onChange once, keeps focus in the control and leaves the list closed.
+ * `showClear` on Select, Combobox, Autocomplete, DatePicker and TimePicker (fixture:
+ * /test/show-clear). Default true; rendered only with something to clear on an enabled
+ * control and, like <fluent-search>, visible only while the field is hovered or focused;
+ * empties the value, fires onChange once, keeps focus in the control, list stays closed.
  */
 
 test.beforeEach(async ({page}) => {
@@ -12,7 +13,7 @@ test.beforeEach(async ({page}) => {
 
 const section = (page: Page, id: string) => page.locator(`section#${id}`)
 
-test("no clear button without showClear (default false)", async ({page}) => {
+test("showClear={false} renders no clear button", async ({page}) => {
 	await expect(section(page, "sel-plain").locator(".fluent-field-clear")).toHaveCount(0)
 	await expect(section(page, "combo-plain").locator(".fluent-field-clear")).toHaveCount(0)
 	await expect(section(page, "ac-plain").locator(".fluent-field-clear")).toHaveCount(0)
@@ -81,4 +82,52 @@ test("Autocomplete multi: × removes every chip", async ({page}) => {
 	const sec = section(page, "ac-multi")
 	await sec.locator(".autocomplete-clear").click()
 	await expect(page.locator("#ac-multi-value")).toHaveText("[]")
+})
+
+test("default is on; the × is transparent until the field is hovered or focused", async ({page}) => {
+	const clear = section(page, "sel-default").locator(".fluent-field-clear")
+	await expect(clear).toHaveCount(1)
+	await page.locator("#outside").focus()
+	await page.mouse.move(0, 0)
+	await expect(clear).toHaveCSS("opacity", "0")
+	await page.locator("#sel-def").hover()
+	await expect(clear).toHaveCSS("opacity", "1")
+	await page.mouse.move(0, 0)
+	await expect(clear).toHaveCSS("opacity", "0")
+	await page.locator("#sel-def").focus()
+	await expect(clear).toHaveCSS("opacity", "1")
+})
+
+test("Combobox: typed filter text alone counts as something to clear", async ({page}) => {
+	const sec = section(page, "combo-empty")
+	const input = page.locator("#combo-typed")
+	await expect(sec.locator(".combobox-clear")).toHaveCount(0)
+	await input.fill("Cha")
+	await sec.locator(".combobox-clear").click()
+	await expect(input).toHaveValue("")
+	await expect(sec.locator(".combobox-clear")).toHaveCount(0)
+})
+
+test("DatePicker: × clears without opening; not a Tab stop", async ({page}) => {
+	const sec = section(page, "dp")
+	const clear = sec.locator(".clear-button")
+	await expect(clear).toHaveAttribute("tabindex", "-1")
+	await clear.click()
+	await expect(page.locator("#dp-value")).toHaveText("null")
+	await expect(page.locator(".fluent-calendar")).toHaveCount(0)
+})
+
+test("DatePicker / TimePicker: Delete on the focused field clears", async ({page}) => {
+	await page.locator("#dp-clear").focus()
+	await page.keyboard.press("Delete")
+	await expect(page.locator("#dp-value")).toHaveText("null")
+	await page.locator("#tp-clear").focus()
+	await page.keyboard.press("Backspace")
+	await expect(page.locator("#tp-value")).toHaveText("null")
+})
+
+test("TimePicker: × clears", async ({page}) => {
+	await section(page, "tp").locator(".clear-button").click()
+	await expect(page.locator("#tp-value")).toHaveText("null")
+	await expect(page.locator(".time-picker-panel")).toHaveCount(0)
 })

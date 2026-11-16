@@ -194,7 +194,7 @@
 		{name: "maxDropdownHeight", type: "string", default: '"300px"', description: "Cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "showSearchIcon", type: "boolean", default: "true", description: "Built-in magnifier in the end slot when nothing higher-priority (spinner, custom end) occupies it"},
-		{name: "showClear", type: "boolean", default: "false", description: "A clear (×) button before the end slot while something is selected; empties the value (every chip in multi-select) and the search text, fires onChange({value: []}). Not a Tab stop; focus stays in the input."},
+		{name: "showClear", type: "boolean", default: "true", description: "A clear (×) button before the end slot while something is selected or typed, visible while the control is hovered or focused (like fluent-search); empties the value (every chip in multi-select) and the search text, fires onChange({value: []}). Not a Tab stop; focus stays in the input."},
 		{name: "initialSearchQuery", type: "string", default: '""', description: "Text to prefill and search with on mount (opens the dropdown)"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
@@ -724,7 +724,7 @@
 		<h3>Start &amp; End Icons</h3>
 		<p>
 			Use the <code>start</code> and <code>end</code> snippets to render decorative content (typically icons) inside the input.
-			The loading spinner takes precedence over <code>end</code>. With <code>showClear</code>, the clear (×) button appears before the end icon once something is selected.
+			The loading spinner takes precedence over <code>end</code>. The clear (×) button (<code>showClear</code>) sits before the end icon.
 		</p>
 		<Grid columns={2} gap="1rem">
 			<GridItem>
@@ -751,7 +751,6 @@
 					<strong>Filter icon (end)</strong>
 					<Autocomplete
 						bind:value={endIconValue}
-						showClear
 						options={colors}
 						showInitialOptions={true}
 						label="Filter colors"
@@ -763,7 +762,7 @@
 							</svg>
 						{/snippet}
 					</Autocomplete>
-					<small>Selected: {endIconValue.join(", ") || "None"} &nbsp;<em style="color: var(--neutral-foreground-hint);">(pick a value — showClear adds a × before the filter icon)</em></small>
+					<small>Selected: {endIconValue.join(", ") || "None"} &nbsp;<em style="color: var(--neutral-foreground-hint);">(pick a value, then hover — the × sits before the filter icon)</em></small>
 				</Stack>
 			</GridItem>
 		</Grid>

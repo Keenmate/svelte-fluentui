@@ -116,8 +116,9 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		 * Renders by default when nothing higher-priority occupies the slot (the loading
 		 * spinner or a custom `end` take precedence). Set false to hide it. */
 		showSearchIcon?: boolean
-		/** A clear (×) button before the end slot while something is selected; it empties the
-		 * value (every chip in multi-select) and the search text. Default: `false`. */
+		/** A clear (×) button before the end slot while something is selected or typed, shown
+		 * while the control is hovered or focused; it empties the value (every chip in
+		 * multi-select) and the search text. Default: `true`. */
 		showClear?: boolean
 		/** Extra classes for the root element. */
 		class?: string
@@ -185,7 +186,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		start = undefined,
 		end = undefined,
 		showSearchIcon = true,
-		showClear = false,
+		showClear = true,
 		class: className = "",
 		style = "",
 		initialSearchQuery = "",
@@ -659,7 +660,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 
 	// `showClear`: empty the whole value and the search. The × is out of the Tab
 	// order and doesn't take focus (pointerdown is prevented), so the input keeps it.
-	let canClear = $derived(showClear && !disabled && !readonly && selectedOptions.length > 0)
+	let canClear = $derived(showClear && !disabled && !readonly && (selectedOptions.length > 0 || searchText !== ""))
 	function clearSelection(event: MouseEvent) {
 		event.stopPropagation()
 		if (!canClear) return
@@ -736,7 +737,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			class="autocomplete-input-container"
+			class="autocomplete-input-container fluent-field-clear-host"
 			class:inline-mode={tagsPosition === 'inline'}
 			class:fluent-field-control={tagsPosition === 'inline'}
 			class:focused={isFocused}
