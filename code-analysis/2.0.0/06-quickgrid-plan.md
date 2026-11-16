@@ -12,7 +12,7 @@ e2e test, which doubles as verification.
 
 Rule for every item: a Playwright test that fails before and passes after (swap files by writing
 content — the dev server's watcher misses `git checkout`; confirm via
-`curl localhost:12900/@fs/<path> | grep <marker>`).
+`curl localhost:19100/@fs/<path> | grep <marker>`).
 
 ---
 
@@ -415,9 +415,9 @@ Next, in order (original list):
 
 Way of working that worked: one background agent per phase with a precise spec + mandatory
 fail-before/pass-after tests; I review the diff, run both `npm run check`s and the full suite, then commit.
-Testing gotcha: the dev server (port 12900, started from repo root with `npm run dev` in the
+Testing gotcha: the dev server (port 19100, started from repo root with `npm run dev` in the
 background) misses `git checkout` — swap file contents and confirm with
-`curl -s localhost:12900/@fs/<abs path> | grep -c <marker>`. Known flake: Autocomplete
+`curl -s localhost:19100/@fs/<abs path> | grep -c <marker>`. Known flake: Autocomplete
 outside-click test under full-suite load (passes alone).
 
 **Reuse step status — done 2026-11-15.** GridCellEditor's dropdown editors are the library's components:

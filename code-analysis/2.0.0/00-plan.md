@@ -151,7 +151,7 @@ Status 2026-11-15 (later): JSDoc + dead code done, no type/behaviour change — 
 
 State: everything committed and pushed to `origin/prod` (last pushed commit `b8aa608`). Library and
 docs `npm run check` at 0 errors; full e2e 125/125. Docs dev server: `npm run dev` from repo root
-(port 12900); Playwright uses it (`npx playwright test`).
+(port 19100); Playwright uses it (`npx playwright test`).
 
 Working method that worked well: two background agents in parallel on **disjoint file sets** (they
 never run git; report release-note rows); I verify (both checks + full e2e), log renames with
@@ -201,8 +201,8 @@ fail-before/pass-after e2e per bug, **scratch files only in the system temp dir 
 once left `C:\tmp_qg`), no commits by agents. I review the diff, run `npm run check` in
 `packages/svelte-fluentui` and `docs`, run the full `npx playwright test` from the repo root, then
 commit with CHANGELOG + `release-notes/2.0.0-rc01.md` rows for breaking changes. Dev server: background
-`npm run dev` from repo root on port 12900 (watcher misses git checkout — swap file contents and
-confirm with `curl -s localhost:12900/@fs/<abs path> | grep -c <marker>`). Known flakes under load
+`npm run dev` from repo root on port 19100 (watcher misses git checkout — swap file contents and
+confirm with `curl -s localhost:19100/@fs/<abs path> | grep -c <marker>`). Known flakes under load
 (pass alone): Autocomplete outside-click, AppBar count badge, Combobox open-at-load.
 
 ## Handoff — 2026-11-15 evening (unattended run; resume here)

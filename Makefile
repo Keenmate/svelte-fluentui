@@ -9,7 +9,7 @@ SHELL := cmd.exe
 endif
 
 # Dev server port (docs vite dev). Override: make kill-port PORT=3000
-PORT ?= 12900
+PORT ?= 19100
 
 # Docker image settings
 DOCKER_IMAGE_NAME = registry.km8.es/svelte-fluentui-showcase

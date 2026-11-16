@@ -27,7 +27,7 @@ export default defineConfig({
 	reporter: process.env.CI ? "github" : "list",
 
 	use: {
-		baseURL: "http://localhost:12900",
+		baseURL: "http://localhost:19100",
 		trace: "on-first-retry",
 		screenshot: "only-on-failure",
 		video: "retain-on-failure"
@@ -45,7 +45,7 @@ export default defineConfig({
 
 	webServer: {
 		command: "npm run dev",
-		url: "http://localhost:12900",
+		url: "http://localhost:19100",
 		reuseExistingServer: !process.env.CI,
 		timeout: 60_000,
 		stdout: "ignore",

@@ -34,8 +34,14 @@ export default defineConfig({
 			'svelte-fluentui/styles.scss': path.resolve(__dirname, '../packages/svelte-fluentui/src/lib/main.scss')
 		}
 	},
+	// 19100 (dev) / 19101 (preview): outside the 12000–17999 block reserved for the
+	// KeenMate web components (../web-components README, "Ports"), so both run side by side.
+	preview: {
+		port: 19101,
+		strictPort: true
+	},
 	server: {
-		port: 12900,
+		port: 19100,
 		strictPort: true,
 		fs: {
 			// Allow Vite to read files from the workspace root (one level above docs/),
