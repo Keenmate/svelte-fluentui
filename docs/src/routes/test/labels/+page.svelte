@@ -72,7 +72,7 @@
 			{#snippet label()}Stav{/snippet}
 		</CompositeBadge>
 
-		<Alert id="{kind}-alert" dismissible labels={c ? {dismiss: "Skrýt"} : undefined}>Upozornění</Alert>
+		<Alert id="{kind}-alert" dismissible labels={c ? {dismissAriaLabel: "Skrýt"} : undefined}>Upozornění</Alert>
 
 		<Toast id="{kind}-toast" title="Uloženo" topCTAType="dismiss" labels={c ? {dismiss: "Zavřít oznámení", dismissTitle: "Zavřít"} : undefined} />
 

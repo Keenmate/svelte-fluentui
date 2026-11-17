@@ -137,9 +137,11 @@ export {default as Field} from "./components/Field.svelte"
 export type {FieldValidationState} from "./components/Field.svelte"
 export {default as ValidationSummary} from "./components/ValidationSummary.svelte"
 
-// Localisable labels: each component's `labels` prop takes a partial of its type,
-// merged over the exported English defaults.
-export {defaultAlertLabels, type AlertLabels} from "./components/Alert.labels.js"
+// Translations (svelte-i18n): built-in text lives in one `svelteFluentUI.*` dictionary
+// (English + German); a component's `labels` prop overrides its keys for one instance.
+export * from "./i18n/index.js"
+
+export type {AlertLabels} from "./i18n/labels.js"
 export {defaultAutocompleteLabels, type AutocompleteLabels} from "./components/Autocomplete.labels.js"
 export {defaultBadgeGroupLabels, type BadgeGroupLabels} from "./components/BadgeGroup.labels.js"
 export {defaultCalendarLabels, type CalendarLabels} from "./components/Calendar.labels.js"

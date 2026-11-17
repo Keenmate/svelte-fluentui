@@ -99,6 +99,7 @@
 	"dependencies": {
 		"@floating-ui/dom": "^1.7.6",
 		"@fluentui/svg-icons": "^1.1.313",
-		"esm-env": "^1.2.2"
+		"esm-env": "^1.2.2",
+		"svelte-i18n": "^4.0.1"
 	}
 }

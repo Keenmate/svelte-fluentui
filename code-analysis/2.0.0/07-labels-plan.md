@@ -184,9 +184,9 @@ Default-value fix on the way: Paginator `itemCount` says "1 items" — becomes a
 
 Stay standalone: `placeholder` and `emptyText` / the `empty` snippet (per-instance content).
 
-## Open questions
+## Decisions (formerly open questions)
 
-- T2. Should `i18n.currentLocale` also become the default `locale` of Calendar / DatePicker /
+- T2. **Decided 2026-11-17: yes** — `i18n.currentLocale` becomes the default `culture` of Calendar / DatePicker /
   TimePicker (month / weekday names via `Intl`)? Today they default to `navigator.language`.
 
 (T1 service name → `i18n`, as pure-admin; T3 SSR → accepted as in pure-admin. Both settled 2026-11-17.)

@@ -16,7 +16,7 @@
 		{name: "class", type: "string", default: "undefined", description: "Custom CSS classes"},
 		{name: "style", type: "string", default: "undefined", description: "Inline styles"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"},
-		{name: "labels", type: "Partial<AlertLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultAlertLabels. Keys: dismiss (× button name)."},
+		{name: "labels", type: "AlertLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.alert.* keys; see Guides → Translations). Keys: dismissAriaLabel (× button name)."},
 	]
 
 	const slots: Property[] = [
