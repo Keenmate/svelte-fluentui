@@ -224,7 +224,8 @@ tests skipped; both checks clean):
 **Questions for the user (collected overnight):**
 1. Fold the single-string props into `labels` (breaking): DatePicker/TimePicker `openCalendarIconAriaLabel` /
    `openClockIconAriaLabel` / `popupAriaLabel`, Combobox `loadingText`, BadgeGroup `moreLabel`/`lessLabel`,
-   Chip `removeLabel`? (Today they win over `labels`.)
+   Chip `removeLabel`? (Today they win over `labels`.) → 2026-11-17: `labels` stays (renaming or
+   dropping it was discussed and rejected); folded into the key cleanup in `07-labels-plan.md`.
 2. AppBar vertical active indicator never rendered (rules keyed on a non-existent attribute; removed).
    Restore it on `data-orientation` (visible change) or leave it gone?
 3. Stores → runes (decided in principle, Q7): which API shape?
