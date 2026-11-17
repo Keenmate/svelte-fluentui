@@ -27,7 +27,7 @@ ${scriptClose}
 
 <select value={i18n.currentLocale} onchange={(e) => i18n.setLocale(e.currentTarget.value)}>
   {#each i18n.languages as lang}
-    <option value={lang.code}>{lang.nativeNameText ?? lang.code}</option>
+    <option value={lang.code}>{lang.nativeLabel ?? lang.code}</option>
   {/each}
 </select>`
 	const sample2 = `// src/routes/+layout.svelte
@@ -36,7 +36,7 @@ import {i18n} from "svelte-fluentui"
 i18n.init({
   locale: "de",
   fallbackLocale: "en",
-  languages: ["en", "de", {code: "fr", nameText: "French", nativeNameText: "Français"}],
+  languages: ["en", "de", {code: "fr", label: "French", nativeLabel: "Français"}],
   translations: {
     de: {
       "app.dashboard.title": "Übersicht",

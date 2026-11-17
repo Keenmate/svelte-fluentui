@@ -19,8 +19,8 @@ import type {I18nInitOptions, Language} from "./types.js"
 const builtInLocales: Record<string, Record<string, string>> = {en, de}
 
 const defaultLanguages: Language[] = [
-	{code: "en", nameText: "English", nativeNameText: "English"},
-	{code: "de", nameText: "German", nativeNameText: "Deutsch"}
+	{code: "en", label: "English", nativeLabel: "English"},
+	{code: "de", label: "German", nativeLabel: "Deutsch"}
 ]
 
 function normalizeLanguage(lang: string | Language): Language {
@@ -173,7 +173,7 @@ function createI18nService() {
  *
  * <select value={i18n.currentLocale} onchange={(e) => i18n.setLocale(e.currentTarget.value)}>
  *   {#each i18n.languages as lang}
- *     <option value={lang.code}>{lang.nativeNameText ?? lang.code}</option>
+ *     <option value={lang.code}>{lang.nativeLabel ?? lang.code}</option>
  *   {/each}
  * </select>
  * ```

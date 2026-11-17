@@ -89,7 +89,7 @@ src/lib/i18n/
   - `setLocale(code)` (async; runs the loader for a locale not loaded yet);
   - `addTranslations(code, obj)`, `setTranslationLoader(fn)`;
   - `addLanguage` / `removeLanguage` / `setLanguages` / `getLanguage` / `isLocaleLoaded`.
-- **`Language`**: `{code, nameText?, nativeNameText?}` (pure-admin naming); built-ins English /
+- **`Language`**: `{code, label?, nativeLabel?}` (our `label` convention, not pure-admin's `nameText`); built-ins English /
   Deutsch.
 - **Re-exports** from svelte-i18n: `_`, `locale`, `locales`, `isLoading`, `addMessages`, `register`,
   `init`, `getLocaleFrom*` — the app imports them from `svelte-fluentui` so `autoInit` has run.

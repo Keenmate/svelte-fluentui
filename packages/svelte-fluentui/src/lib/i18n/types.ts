@@ -8,9 +8,9 @@ export interface Language {
 	/** Language code (`"en"`, `"de"`, `"fr"`). */
 	code: string
 	/** Display name (`"German"`). */
-	nameText?: string
+	label?: string
 	/** Native name (`"Deutsch"`). */
-	nativeNameText?: string
+	nativeLabel?: string
 }
 
 /** Options of `i18n.init()`. */
