@@ -30,7 +30,7 @@ Monorepo: the library lives in `packages/svelte-fluentui/`, the docs/demo site i
 - `packages/svelte-fluentui/src/lib/helpers/` - Shared helpers: `layer-stack.ts` (Escape routing), `dismiss.ts` (`dismissOnOutside` light dismiss), `listbox-nav.svelte.ts` (`ListNav` keyboard cursor), `text.ts` (`searchBehavior` matching), `debounce.ts`, `async-search.svelte.ts`, `option-dom.ts` / `option-groups.ts`, `chip-nav.ts`, `button-like.ts`, `attrs.ts`, `locale.ts`, `date.ts`
 - `packages/svelte-fluentui/src/lib/actions/portal.ts` - `portal` / `portalHost` (popups portal into the anchor's `fluent-dialog`, else `<body>`)
 - Large components are split into internal folders: `components/quickgrid/`, `components/inputfile/`, `components/tabs/`, `components/layout/multi-splitter/` (not exported; the entry `.svelte` file stays the public component)
-- Built-in user-facing strings go through a `labels` prop (`Partial<XLabels>` merged over an exported `defaultXLabels`, in `X.labels.ts`)
+- Built-in user-facing strings live in one svelte-i18n dictionary, `packages/svelte-fluentui/src/lib/i18n/` (`locales/en.ts` + `de.ts`, keys `svelteFluentUI.<component>.<purpose><Surface>`, Surface = none / `Placeholder` / `Tooltip` / `AriaLabel`, ICU values; service `i18n` mirrors svelte-pure-admin's). Components read them with `const t = useTranslations("<component>", () => labels)`; the `labels` prop (`XLabels` in `i18n/labels.ts`) overrides one instance. Plan: `code-analysis/2.0.0/07-labels-plan.md`
 - `docs/src/routes/` - Demo/showcase pages for development and testing
 
 ### Component Organization

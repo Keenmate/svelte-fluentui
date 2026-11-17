@@ -21,7 +21,7 @@
 			id="{kind}-tp"
 			hourCycle="h12"
 			value="09:30"
-			labels={c ? {placeholder: "Vyberte čas", openPicker: "Otevřít hodiny", popup: "Zvolte čas", clear: "Vymazat čas",
+			labels={c ? {placeholder: "Vyberte čas", openPopupAriaLabel: "Otevřít hodiny", popupAriaLabel: "Zvolte čas", clearAriaLabel: "Vymazat čas", clearTooltip: "Vymazat čas",
 				hour: "Hodina", minute: "Minuta", period: "Část dne", am: "dop.", pm: "odp.", apply: "Použít"} : undefined}
 		/>
 		<TimePicker id="{kind}-tp-empty" labels={c ? {placeholder: "Vyberte čas"} : undefined} />
@@ -29,15 +29,15 @@
 		<DatePicker
 			id="{kind}-dp"
 			value={new Date(2026, 4, 10)}
-			labels={c ? {openCalendar: "Otevřít kalendář", popup: "Zvolte datum", clear: "Vymazat datum",
-				previousPeriod: (t) => `Předchozí: ${t}`} : undefined}
+			labels={c ? {openPopupAriaLabel: "Otevřít kalendář", popupAriaLabel: "Zvolte datum", clearAriaLabel: "Vymazat datum",
+				clearTooltip: "Vymazat datum", previousPeriodAriaLabel: "Předchozí: {title}"} : undefined}
 		/>
 		<DatePicker id="{kind}-dp-empty" labels={c ? {placeholder: "Vyberte datum"} : undefined} />
 
 		<div id="{kind}-cal">
 			<Calendar
 				pickerMonth={new Date(2026, 4, 1)}
-				labels={c ? {previousPeriod: (t) => `Předchozí: ${t}`, nextPeriod: (t) => `Další: ${t}`} : undefined}
+				labels={c ? {previousPeriodAriaLabel: "Předchozí: {title}", nextPeriodAriaLabel: "Další: {title}", nextPeriodTooltip: "Další: {title}"} : undefined}
 			/>
 		</div>
 
@@ -45,9 +45,9 @@
 			id="{kind}-pg"
 			totalItemCount={200}
 			lastPageIndex={9}
-			labels={c ? {pagination: "Stránkování", firstPage: "První strana", previousPage: "Předchozí strana",
-				nextPage: "Další strana", lastPage: "Poslední strana",
-				pageInfo: (p, n) => `Strana ${p} z ${n}`, itemCount: (n) => `${n} položek`} : undefined}
+			labels={c ? {paginationAriaLabel: "Stránkování", firstPageAriaLabel: "První strana", previousPageAriaLabel: "Předchozí strana",
+				nextPageAriaLabel: "Další strana", lastPageAriaLabel: "Poslední strana", lastPageTooltip: "Poslední strana",
+				pageInfo: "Strana {page} z {pageCount}", itemCount: "{count} položek"} : undefined}
 		/>
 
 		<Combobox
@@ -55,35 +55,35 @@
 			multiple
 			options={fruits}
 			value={["a"]}
-			labels={c ? {removeChip: (l) => `Odebrat ${l}`, emptyText: "Nic nenalezeno"} : undefined}
+			labels={c ? {removeAriaLabel: "Odebrat {item}", noMatches: "Nic nenalezeno"} : undefined}
 		/>
 
 		<Autocomplete
 			id="{kind}-ac"
 			options={fruits}
 			value={["a"]}
-			labels={c ? {removeChip: (l) => `Odebrat ${l}`, showOptions: "Zobrazit možnosti", emptyText: "Nic nenalezeno"} : undefined}
+			labels={c ? {removeAriaLabel: "Odebrat {item}", openPopupAriaLabel: "Zobrazit možnosti", noMatches: "Nic nenalezeno"} : undefined}
 		/>
 		<Autocomplete id="{kind}-ac-empty" options={fruits} labels={c ? {placeholder: "Hledejte..."} : undefined} />
 
-		<Chip id="{kind}-chip" text="Praha" labels={c ? {remove: (t) => `Smazat ${t}`} : undefined} />
+		<Chip id="{kind}-chip" text="Praha" labels={c ? {removeAriaLabel: "Smazat {item}", removeTooltip: "Smazat {item}"} : undefined} />
 
-		<CompositeBadge id="{kind}-cbadge" labels={c ? {dismiss: "Zavřít"} : undefined}>
+		<CompositeBadge id="{kind}-cbadge" labels={c ? {dismissAriaLabel: "Zavřít"} : undefined}>
 			{#snippet label()}Stav{/snippet}
 		</CompositeBadge>
 
 		<Alert id="{kind}-alert" dismissible labels={c ? {dismissAriaLabel: "Skrýt"} : undefined}>Upozornění</Alert>
 
-		<Toast id="{kind}-toast" title="Uloženo" topCTAType="dismiss" labels={c ? {dismiss: "Zavřít oznámení", dismissTitle: "Zavřít"} : undefined} />
+		<Toast id="{kind}-toast" title="Uloženo" topCTAType="dismiss" labels={c ? {dismissAriaLabel: "Zavřít oznámení", dismissTooltip: "Zavřít"} : undefined} />
 
 		<div id="{kind}-tabs">
-			<Tabs labels={c ? {closeTab: "Zavřít kartu", closeTabTitle: "Zavřít"} : undefined}>
+			<Tabs labels={c ? {closeAriaLabel: "Zavřít kartu", closeTooltip: "Zavřít"} : undefined}>
 				<Tab id="{kind}-tab-1" label="Jedna" showClose>Obsah</Tab>
 			</Tabs>
 		</div>
 
 		<div id="{kind}-bg">
-			<BadgeGroup maxVisibleBadgeCount={1} expandable labels={c ? {more: (n) => `+${n} další`} : undefined}>
+			<BadgeGroup maxVisibleBadgeCount={1} expandable labels={c ? {showMore: "+{count} další"} : undefined}>
 				<Badge>A</Badge>
 				<Badge>B</Badge>
 				<Badge>C</Badge>
@@ -92,7 +92,7 @@
 
 		<div id="{kind}-dialog">
 			<Button id="{kind}-dialog-open" onclick={() => (dialogOpen[kind] = true)}>Dialog</Button>
-			<Dialog id="{kind}-dlg" bind:open={dialogOpen[kind]} modal={false} title="Titulek" dismissible labels={c ? {close: "Zavřít dialog", dismiss: "Zrušit"} : undefined}>
+			<Dialog id="{kind}-dlg" bind:open={dialogOpen[kind]} modal={false} title="Titulek" dismissible labels={c ? {closeAriaLabel: "Zavřít dialog", dismiss: "Zrušit"} : undefined}>
 				Obsah
 			</Dialog>
 		</div>
@@ -111,6 +111,6 @@
 	items={[]}
 	bind:open={paletteCustom}
 	enableShortcut={false}
-	labels={{dialog: "Paleta příkazů", placeholder: "Hledat…", results: "Výsledky", escapeHint: "esc zavře",
-		noItems: "Žádné položky", navigateHint: "pohyb", selectHint: "výběr", toggleHint: "přepnout"}}
+	labels={{dialogAriaLabel: "Paleta příkazů", placeholder: "Hledat…", resultsAriaLabel: "Výsledky", escapeHint: "esc zavře",
+		empty: "Žádné položky", navigateHint: "pohyb", selectHint: "výběr", toggleHint: "přepnout"}}
 />

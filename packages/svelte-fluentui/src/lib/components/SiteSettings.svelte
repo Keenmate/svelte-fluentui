@@ -12,7 +12,8 @@ App-specific settings can be added as `children`; they render below the built-in
 	import {Dialog, Select, Option, Switch, Button, Divider, TextField, Stack} from "../index.js"
 	import {settings, accentColors, type ThemeMode} from "../stores/settings.js"
 	import type {RestProps} from "../types/index.js"
-	import {defaultSiteSettingsLabels, type SiteSettingsLabels} from "./SiteSettings.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {SiteSettingsLabels} from "../i18n/labels.js"
 
 	type OwnProps = {
 		/** Whether the settings dialog is open (bindable). */
@@ -21,8 +22,8 @@ App-specific settings can be added as `children`; they render below the built-in
 		onOpenChange?: (ctx: {open: boolean}) => void
 		/** Extra, app-specific settings rendered below the built-in ones (after the Direction switch). */
 		children?: Snippet
-		/** User-facing strings; merged over `defaultSiteSettingsLabels`. */
-		labels?: Partial<SiteSettingsLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.siteSettings.*` keys) for this instance. */
+		labels?: SiteSettingsLabels
 	}
 
 	/** Other native attributes and events go to the underlying `<Dialog>` (`<fluent-dialog>`). */
@@ -40,7 +41,7 @@ App-specific settings can be added as `children`; they render below the built-in
 	// HTMLAttributes (no `null`), so hand the spread over untyped.
 	const forwarded = $derived(rest as Record<string, unknown>)
 
-	const labels = $derived<SiteSettingsLabels>({...defaultSiteSettingsLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("siteSettings", () => labelsProp)
 
 	let localSettings = $derived($settings)
 
@@ -67,13 +68,13 @@ App-specific settings can be added as `children`; they render below the built-in
 </script>
 
 <Dialog {...forwarded} bind:open modal={true} {onOpenChange} size="small">
-	<h4 style="margin: 0 0 1.5rem 0;">{labels.title}</h4>
+	<h4 style="margin: 0 0 1.5rem 0;">{t("heading")}</h4>
 
 	<Stack orientation="vertical" gap="1rem">
 		<!-- Theme Selection -->
 		<div>
 			<label for="theme-select" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-				{labels.theme}
+				{t("theme")}
 			</label>
 			<Select
 				id="theme-select"
@@ -81,16 +82,16 @@ App-specific settings can be added as `children`; they render below the built-in
 				style="width: 100%; margin-bottom: 1.5rem;"
 				onChange={handleThemeChange}
 			>
-				<Option value="system">{labels.themeSystem}</Option>
-				<Option value="light">{labels.themeLight}</Option>
-				<Option value="dark">{labels.themeDark}</Option>
+				<Option value="system">{t("themeSystem")}</Option>
+				<Option value="light">{t("themeLight")}</Option>
+				<Option value="dark">{t("themeDark")}</Option>
 			</Select>
 		</div>
 
 		<!-- Accent Color Selection -->
 		<div>
 			<label for="color-select" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-				{labels.color}
+				{t("color")}
 			</label>
 			<Select
 				id="color-select"
@@ -114,7 +115,7 @@ App-specific settings can be added as `children`; they render below the built-in
 		<!-- Neutral Base Color -->
 		<div>
 			<label for="neutral-color" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-				{labels.neutralColor}
+				{t("neutralColor")}
 			</label>
 			<div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
 				<TextField
@@ -138,12 +139,12 @@ App-specific settings can be added as `children`; they render below the built-in
 				checked={localSettings.direction === 'ltr'}
 				onChange={handleDirectionChange}
 			>
-				{labels.direction}
+				{t("direction")}
 				{#snippet checkedMessage()}
-					{labels.leftToRight}
+					{t("leftToRight")}
 				{/snippet}
 				{#snippet uncheckedMessage()}
-					{labels.rightToLeft}
+					{t("rightToLeft")}
 				{/snippet}
 			</Switch>
 		</div>
@@ -156,9 +157,9 @@ App-specific settings can be added as `children`; they render below the built-in
 
 		<!-- Info Text -->
 		<p style="margin: 0; font-size: 0.875rem; line-height: 1.5; color: var(--neutral-foreground-rest);">
-			{labels.persistenceNote}
+			{t("persistenceNote")}
 			<br /><br />
-			{labels.resetNote}
+			{t("resetNote")}
 		</p>
 
 		<Divider />
@@ -166,7 +167,7 @@ App-specific settings can be added as `children`; they render below the built-in
 		<!-- Reset Button -->
 		<div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
 			<Button appearance="neutral" onclick={handleReset} style="width: 150px;">
-				{labels.reset}
+				{t("reset")}
 			</Button>
 			<svg style="width: 24px; fill: var(--accent-fill-rest);" viewBox="0 0 24 24">
 				<path
@@ -177,7 +178,7 @@ App-specific settings can be added as `children`; they render below the built-in
 
 		<!-- OK Button -->
 		<div style="display: flex; justify-content: flex-end;">
-			<Button appearance="accent" onclick={() => { open = false; onOpenChange?.({open: false}) }}>{labels.ok}</Button>
+			<Button appearance="accent" onclick={() => { open = false; onOpenChange?.({open: false}) }}>{t("ok")}</Button>
 		</div>
 	</Stack>
 </Dialog>

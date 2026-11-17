@@ -45,9 +45,9 @@
 
 <div id="labels-wrap">
 	<QuickGrid items={rows.slice(0, 4)} {columns} filterable pageable pageSize={2} ariaLabelledby="labels-caption"
-		labels={{filterPlaceholder: "Filtrovat…", previousPage: "Předchozí", nextPage: "Další", pageInfo: (p, t) => `Strana ${p} z ${t}`}} />
+		labels={{filterPlaceholder: "Filtrovat…", previousPage: "Předchozí", nextPage: "Další", pageInfo: "Strana {page} z {pageCount}"}} />
 	<p id="labels-caption">Localised grid</p>
-	<QuickGrid items={[]} {columns} labels={{emptyText: "Žádné položky"}} />
+	<QuickGrid items={[]} {columns} labels={{empty: "Žádné položky"}} />
 </div>
 
 <!-- 6.2 / 6.3 / 6.5: navigate mode, context menu, hover toolbar -->

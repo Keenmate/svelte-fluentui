@@ -1,9 +1,9 @@
 import {test, expect, type Page} from "@playwright/test"
 
 /**
- * Localisable `labels` prop (2.0.0): each component renders the strings passed in
- * `labels` (partial, merged over its exported `default<X>Labels`), and keeps its
- * English defaults without it. The fixture renders every component twice: `def-*`
+ * Per-instance `labels` prop (2.0.0): each component renders the strings passed in
+ * `labels` (its `svelteFluentUI.<component>.*` keys, ICU syntax), and keeps the
+ * English dictionary text without it. The fixture renders every component twice: `def-*`
  * without labels, `cus-*` with Czech labels.
  * Fixture: docs/src/routes/test/labels/+page.svelte
  */

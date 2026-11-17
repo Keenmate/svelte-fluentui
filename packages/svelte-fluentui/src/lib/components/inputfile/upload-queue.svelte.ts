@@ -5,19 +5,20 @@ import type {
 	FileUploadResult,
 	InputFileDedupeMode,
 	InputFileItem,
-	InputFileLabels,
 	InputFileRejectionMode,
 	InputFileRetryPolicy,
 	InputFileStatus,
 	InputFileValidator
 } from "../InputFile.types.js"
+import type {Translate} from "../../i18n/translate.svelte.js"
 import {clampPercent, formatInputFileSize, genId, hashFile, isAcceptedType} from "../InputFile.utils.js"
 
 /** Live view of the InputFile state and props the queue works on (getters over `$props()`). */
 export type UploadQueueHost = {
 	/** The bindable `items` prop — read and reassigned through this accessor. */
 	items: InputFileItem[]
-	readonly labels: InputFileLabels
+	/** Text lookup (`svelteFluentUI.inputFile.*`, instance `labels` first). */
+	readonly t: Translate<"inputFile">
 	readonly accept: string | undefined
 	readonly multiple: boolean
 	readonly disabled: boolean
@@ -84,12 +85,12 @@ export class UploadQueue {
 	}
 
 	private async validateFile(file: File): Promise<string | null> {
-		const {labels, maxFileSize, minFileSize, accept, customValidator} = this.host
+		const {t, maxFileSize, minFileSize, accept, customValidator} = this.host
 		if (maxFileSize && file.size > maxFileSize)
-			return labels.fileTooLarge(formatInputFileSize(maxFileSize))
+			return t("fileTooLarge", {max: formatInputFileSize(maxFileSize)})
 		if (minFileSize && file.size < minFileSize)
-			return labels.fileTooSmall(formatInputFileSize(minFileSize))
-		if (!isAcceptedType(file, accept)) return labels.fileTypeNotAccepted(accept ?? "")
+			return t("fileTooSmall", {min: formatInputFileSize(minFileSize)})
+		if (!isAcceptedType(file, accept)) return t("fileTypeNotAccepted", {accept: accept ?? ""})
 		if (customValidator) {
 			const r = await customValidator(file)
 			if (r) return r
@@ -150,7 +151,7 @@ export class UploadQueue {
 		if (host.maxFileCount && this.items.length + incoming.length > host.maxFileCount) {
 			const room = Math.max(0, host.maxFileCount - this.items.length)
 			const overflow = incoming.slice(room)
-			for (const f of overflow) this.emitRejection(f, host.labels.tooManyFiles(host.maxFileCount))
+			for (const f of overflow) this.emitRejection(f, host.t("tooManyFiles", {max: host.maxFileCount}))
 			incoming.length = room
 			if (incoming.length === 0) return
 		}
@@ -162,7 +163,7 @@ export class UploadQueue {
 		const accepted: InputFileItem[] = []
 		for (const file of incoming) {
 			if (await this.isDuplicate(file)) {
-				this.emitRejection(file, host.labels.duplicate)
+				this.emitRejection(file, host.t("duplicate"))
 				continue
 			}
 			const err = await this.validateFile(file)
@@ -171,7 +172,7 @@ export class UploadQueue {
 				continue
 			}
 			if (host.totalMaxSize > 0 && runningTotal + file.size > host.totalMaxSize) {
-				this.emitRejection(file, host.labels.totalSizeExceeded(formatInputFileSize(host.totalMaxSize)))
+				this.emitRejection(file, host.t("totalSizeExceeded", {max: formatInputFileSize(host.totalMaxSize)}))
 				continue
 			}
 			runningTotal += file.size
@@ -238,7 +239,7 @@ export class UploadQueue {
 			const updated = this.items[fileIndex]
 			if (updated && updated.file) {
 				this.host.onFileUpload?.({file: updated, fileIndex})
-				this.liveAnnouncement = this.host.labels.uploadedAnnouncement(updated.name)
+				this.liveAnnouncement = this.host.t("uploadedAnnouncement", {name: updated.name})
 			}
 		} catch (err) {
 			if (ctrl.signal.aborted) {
@@ -259,7 +260,7 @@ export class UploadQueue {
 			const failed = this.items.find((i) => i.id === itemId)
 			if (failed) {
 				this.host.onFileError?.({file: failed, error: msg})
-				this.liveAnnouncement = this.host.labels.failedAnnouncement(failed.name, msg)
+				this.liveAnnouncement = this.host.t("failedAnnouncement", {name: failed.name, error: msg})
 			}
 		} finally {
 			this.controllers.delete(itemId)

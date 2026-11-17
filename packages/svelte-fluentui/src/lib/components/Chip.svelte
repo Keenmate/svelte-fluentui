@@ -26,7 +26,8 @@ Theme it with the `--fluent-chip-*` custom properties.
 
 <script lang="ts">
 	import type {RestProps} from "../types/index.js"
-	import {defaultChipLabels, type ChipLabels} from "./Chip.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {ChipLabels} from "../i18n/labels.js"
 
 	type OwnProps = {
 		/** Chip text. */
@@ -37,15 +38,13 @@ Theme it with the `--fluent-chip-*` custom properties.
 		contrast?: boolean
 		/** Render the × remove button. Default: `true`. */
 		showRemove?: boolean
-		/** Accessible label/tooltip of the × button. Default: `labels.remove(text)` (`Remove <text>`). */
-		removeLabel?: string
 		/** Put the × button in the Tab order. Default: `false` (hosts like Combobox move focus onto chips with the arrow keys);
 		 * set `true` for standalone chips so keyboard users can reach it. */
 		removeFocusable?: boolean
 		/** Native tooltip on the chip. */
 		title?: string
-		/** User-facing strings; merged over `defaultChipLabels`. An explicit `removeLabel` wins. */
-		labels?: Partial<ChipLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.chip.*` keys) for this instance. `removeAriaLabel` / `removeTooltip` receive `{item}` (the chip text). */
+		labels?: ChipLabels
 		/** Fires when the user activates the remove (×) button. */
 		onRemove?: (ctx: {sourceEvent: MouseEvent}) => void
 	}
@@ -58,7 +57,6 @@ Theme it with the `--fluent-chip-*` custom properties.
 		variant = "inline",
 		contrast = false,
 		showRemove = true,
-		removeLabel = undefined,
 		removeFocusable = false,
 		title = undefined,
 		onRemove = undefined,
@@ -67,8 +65,7 @@ Theme it with the `--fluent-chip-*` custom properties.
 		...rest
 	}: Props = $props()
 
-	const labels = $derived<ChipLabels>({...defaultChipLabels, ...(labelsProp ?? {})})
-	const effectiveRemoveLabel = $derived(removeLabel ?? labels.remove(text))
+	const t = useTranslations("chip", () => labelsProp)
 </script>
 
 <span
@@ -84,8 +81,8 @@ Theme it with the `--fluent-chip-*` custom properties.
 			type="button"
 			class="fluent-chip-remove"
 			tabindex={removeFocusable ? 0 : -1}
-			aria-label={effectiveRemoveLabel}
-			title={effectiveRemoveLabel}
+			aria-label={t("removeAriaLabel", {item: text})}
+			title={t("removeTooltip", {item: text})}
 			onclick={(event) => onRemove?.({sourceEvent: event})}
 		>
 			<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">

@@ -63,7 +63,7 @@
 		{name: "allowReorder", type: "boolean", default: "false", description: "Drag-to-reorder file rows."},
 		{name: "maxVisibleFileCount", type: "number", default: "undefined (all)", description: "Show at most this many rows, with a Show more / Show less toggle."},
 		{name: "listMaxHeight", type: "string | number", default: "undefined", description: "Max height of the file list before it scrolls (number = px)."},
-		{name: "labels", type: "Partial<InputFileLabels>", default: "undefined", description: "Override any built-in string for i18n."},
+		{name: "labels", type: "InputFileLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.inputFile.* keys; see Guides → Translations)."},
 		{name: "formatLimits", type: "(info) => string | null", default: "undefined", description: "Compose the limits hint shown under Browse. Receives {minFileSize, maxFileSize, totalMaxSize, maxFileCount, minFileCount, multiple, currentCount, currentTotalSize} (maxFileSize is per file). Replaces ALL size/count lines; the Accepted-types line is unaffected. Return null/empty to keep the default per-limit lines."},
 		{name: "id / aria-label / aria-describedby / aria-labelledby", type: "string", default: "undefined", description: "Standard a11y plumbing. Pair id with <Field id=\"\"> for label-for."},
 		{name: "class", type: "string", default: "\"\"", description: "Additional CSS classes."},
@@ -347,10 +347,14 @@
 		}
 	]
 
-	const czechLabels: Partial<InputFileLabels> = {
+	// ICU MessageFormat strings: `{max}`, `{count}`… are filled in by the component;
+	// `{count, plural, …}` picks the Czech plural form.
+	const czechLabels: InputFileLabels = {
 		dropHere: "Pusťte soubory zde",
 		dragAndDrop: "Přetáhněte soubory sem nebo",
 		browse: "Procházet",
+		browseAriaLabel: "Procházet",
+		browseTooltip: "Procházet",
 		selectFiles: "Vybrat soubory",
 		clearAll: "Smazat vše",
 		uploadAll: "Nahrát vše",
@@ -360,22 +364,25 @@
 		completed: "Hotovo",
 		error: "Chyba",
 		cancelled: "Zrušeno",
-		remove: "Odebrat soubor",
-		retry: "Zkusit znovu",
-		pause: "Pozastavit",
-		resume: "Pokračovat",
-		cancel: "Zrušit",
-		fileTooLarge: (m) => `Soubor je větší než ${m}`,
-		totalSizeExceeded: (m) => `Celková velikost by překročila ${m}`,
-		tooManyFiles: (m) => `Maximálně ${m} souborů`,
+		removeAriaLabel: "Odebrat {item}",
+		removeTooltip: "Odebrat {item}",
+		retryAriaLabel: "Zkusit znovu",
+		pauseAriaLabel: "Pozastavit",
+		resumeAriaLabel: "Pokračovat",
+		cancelAriaLabel: "Zrušit",
+		fileTooLarge: "Soubor je větší než {max}",
+		totalSizeExceeded: "Celková velikost by překročila {max}",
+		tooManyFiles: "Maximálně {max} souborů",
 		duplicate: "Duplicitní soubor",
-		fileCount: (n) => `${n} ${n === 1 ? "soubor" : n < 5 ? "soubory" : "souborů"}`,
-		accepted: (a) => `Povolené typy: ${a}`,
-		maxSize: (s) => `Max velikost: ${s}`,
-		minSize: (s) => `Min velikost: ${s}`,
-		totalMaxSize: (s) => `Celková max velikost: ${s}`,
-		maxFilesHint: (n) => `Max souborů: ${n}`,
-		minFileCountHint: (n) => `Min souborů: ${n}`
+		fileCount: "{count, plural, one {# soubor} few {# soubory} other {# souborů}}",
+		accepted: "Povolené typy: {accept}",
+		maxSize: "Max velikost: {size}",
+		minSize: "Min velikost: {size}",
+		totalMaxSize: "Celková max velikost: {size}",
+		totalMaxSizeRemaining: "Celková max velikost: {size} · zbývá {remaining}",
+		maxFiles: "Max souborů: {max}",
+		maxFilesRemaining: "Max souborů: {max} · ještě {remaining}",
+		minFiles: "Min souborů: {min}"
 	}
 
 	function submitForm() {

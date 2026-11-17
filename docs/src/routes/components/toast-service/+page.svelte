@@ -267,8 +267,8 @@
 		A programmatic toast notification system with FluentUI styling. Add <code>&lt;ToastContainer /&gt;</code>
 		once in your layout, then call <code>toast.success()</code> from anywhere. For inline notifications see
 		the declarative <code>Toast</code> component. <code>ToastContainer</code>'s only prop is
-		<code>labels</code> (<code>Partial&lt;ToastContainerLabels&gt;</code>, merged over
-		<code>defaultToastContainerLabels</code>): <code>close</code> names each toast's × button.
+		<code>labels</code> (<code>ToastContainerLabels</code>, overrides of the
+		<code>svelteFluentUI.toastContainer.*</code> keys; see Guides → Translations): <code>closeAriaLabel</code> names each toast's × button.
 	</p>
 
 	<References links={[

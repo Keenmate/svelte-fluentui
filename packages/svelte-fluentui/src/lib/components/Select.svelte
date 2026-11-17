@@ -49,7 +49,8 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		listPageSize
 	} from "../helpers/option-dom.js"
 	import type {RestProps} from "../types/index.js"
-	import {defaultSelectLabels, type SelectLabels} from "./Select.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {SelectLabels} from "../i18n/labels.js"
 
 	/** The option the user picked, as passed to `onChange`. */
 	type SelectChangeOption = {
@@ -121,8 +122,8 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		 * while the trigger is hovered or focused; Delete / Backspace on the trigger clears too.
 		 * Default: `true`. */
 		showClear?: boolean
-		/** User-facing strings; merged over `defaultSelectLabels`. */
-		labels?: Partial<SelectLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.select.*` keys) for this instance. */
+		labels?: SelectLabels
 		/** Single mode: extra class on the portalled dropdown listbox (it renders outside the
 		 * component, so a parent's scoped styles can't reach it otherwise). */
 		dropdownClass?: string
@@ -371,7 +372,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		selectionBeforeClick = [...selectionState.value]
 	}
 
-	const labels = $derived<SelectLabels>({...defaultSelectLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("select", () => labelsProp)
 
 	// `showClear`: the × (or Delete / Backspace on the trigger) empties the value.
 	const canClear = $derived(showClear && !disabled && !readonly && selectedSingle !== "")
@@ -693,7 +694,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 			<span
 				class="select-clear fluent-field-clear"
 				aria-hidden="true"
-				title={labels.clearSelection}
+				title={t("clearTooltip")}
 				onpointerdown={(ev) => ev.preventDefault()}
 				onclick={clearValue}
 			>

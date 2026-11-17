@@ -1,21 +1,20 @@
 <!-- Internal (Tabs): start / end scroll-arrow button overlaid on the tab strip edge (responsive="scroll"). Not exported from the package. -->
 
 <script lang="ts">
-	import type {TabsLabels} from "../Tabs.labels.js"
+	import type {Translate} from "../../i18n/translate.svelte.js"
 
 	type Props = {
 		side: "start" | "end"
 		horizontal: boolean
-		rtl: boolean
-		labels: TabsLabels
+		/** The parent Tabs' text lookup. */
+		t: Translate<"tabs">
 		onclick: () => void
 	}
 
-	let {side, horizontal, rtl, labels, onclick}: Props = $props()
+	let {side, horizontal, t, onclick}: Props = $props()
 
-	const ariaLabel = $derived(side === "start"
-		? (horizontal ? (rtl ? labels.scrollRight : labels.scrollLeft) : labels.scrollUp)
-		: (horizontal ? (rtl ? labels.scrollLeft : labels.scrollRight) : labels.scrollDown))
+	// Logical, not physical: the start / top button scrolls backward, the end / bottom one forward.
+	const ariaLabel = $derived(t(side === "start" ? "scrollBackwardAriaLabel" : "scrollForwardAriaLabel"))
 </script>
 
 <button

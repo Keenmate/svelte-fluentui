@@ -23,14 +23,15 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import type {RestProps} from "../types/index.js"
-	import {defaultTimePickerLabels, type TimePickerLabels} from "./TimePicker.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {TimePickerLabels} from "../i18n/labels.js"
 
 	type OwnProps = {
 		/** Id of the input (also the label's `for`). */
 		id?: string
 		/** Selected time, 24-hour `"HH:mm"` (or `"HH:mm:ss"` with `showSeconds`) regardless of `hourCycle`; `null` when empty. Bindable. */
 		value?: string | null // HH:mm:ss or HH:mm format
-		/** Hint text shown while empty. Default: `labels.placeholder` (`"Select time"`). */
+		/** Hint text shown while empty. Default: the `placeholder` text (`svelteFluentUI.timePicker.placeholder`, `"Select time"`). */
 		placeholder?: string
 		/** Disables the input and the clock button. Default: `false`. */
 		disabled?: boolean
@@ -73,12 +74,8 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		openOnInputClick?: boolean
 		/** Bindable popup open state. */
 		open?: boolean
-		/** Accessible name of the clock button. Default: `labels.openPicker` (`"Open time picker"`). */
-		openClockIconAriaLabel?: string
-		/** Accessible name of the time popup (`role="dialog"`). Default: `labels.popup` (`"Choose time"`). */
-		popupAriaLabel?: string
-		/** User-facing strings; merged over `defaultTimePickerLabels`. Explicit `placeholder` / `openClockIconAriaLabel` / `popupAriaLabel` props win. */
-		labels?: Partial<TimePickerLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.timePicker.*` keys) for this instance. An explicit `placeholder` prop wins. */
+		labels?: TimePickerLabels
 		/** Tooltip text on the input (`title`). */
 		title?: string
 		/** Extra CSS class on the root element. */
@@ -118,8 +115,6 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		closeOnSelect = true,
 		openOnInputClick = true,
 		open = $bindable(false),
-		openClockIconAriaLabel = undefined,
-		popupAriaLabel = undefined,
 		labels: labelsProp = undefined,
 		title = undefined,
 		class: className = "",
@@ -129,7 +124,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		...rest
 	}: Props = $props()
 
-	const labels = $derived<TimePickerLabels>({...defaultTimePickerLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("timePicker", () => labelsProp)
 
 	const effective24h = $derived(hourCycle !== "h12")
 
@@ -352,7 +347,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 			formatted += `:${secondStr}`
 		}
 		if (!effective24h) {
-			formatted += ` ${selectedPeriod === "AM" ? labels.am : labels.pm}`
+			formatted += ` ${selectedPeriod === "AM" ? t("am") : t("pm")}`
 		}
 
 		return formatted
@@ -478,7 +473,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		<TextField
 			{id}
 			value={displayValue}
-			placeholder={placeholder ?? labels.placeholder}
+			placeholder={placeholder ?? t("placeholder")}
 			{disabled}
 			readonly={true}
 			{required}
@@ -498,8 +493,8 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 						tabindex="-1"
 						onpointerdown={(e) => e.preventDefault()}
 						onclick={handleClearClick}
-						aria-label={labels.clear}
-						title={labels.clear}
+						aria-label={t("clearAriaLabel")}
+						title={t("clearTooltip")}
 					>
 						<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
 							<path d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"/>
@@ -513,7 +508,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 					class="clock-button"
 					onclick={handleClockButtonClick}
 					disabled={disabled}
-					aria-label={openClockIconAriaLabel ?? labels.openPicker}
+					aria-label={t("openPopupAriaLabel")}
 					aria-haspopup="dialog"
 					aria-expanded={isOpen ? "true" : "false"}
 					aria-controls={isOpen ? popupId : null}
@@ -537,11 +532,11 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 				<!-- The click handler only stops propagation (keeps the field's open-on-click
 				     from re-firing); it is not an interaction. -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<div class="time-picker-panel fluent-popup-surface fluent-popup--layer" bind:this={popupElement} id={popupId} role="dialog" tabindex="-1" aria-label={popupAriaLabel ?? labels.popup} onclick={handlePopupClick}>
+				<div class="time-picker-panel fluent-popup-surface fluent-popup--layer" bind:this={popupElement} id={popupId} role="dialog" tabindex="-1" aria-label={t("popupAriaLabel")} onclick={handlePopupClick}>
 					<div class="time-selectors">
 						<!-- Hour selector -->
 						<div class="time-column">
-							<div class="column-label" id="{popupId}-hour">{labels.hour}</div>
+							<div class="column-label" id="{popupId}-hour">{t("hour")}</div>
 							<div class="time-list" role="radiogroup" aria-labelledby="{popupId}-hour" tabindex="-1" onkeydown={handleColumnKeydown}>
 								{#each hours as hour}
 									{@const hourDisabled = isHourCellDisabled(hour)}
@@ -563,7 +558,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 
 						<!-- Minute selector -->
 						<div class="time-column">
-							<div class="column-label" id="{popupId}-minute">{labels.minute}</div>
+							<div class="column-label" id="{popupId}-minute">{t("minute")}</div>
 							<div class="time-list" role="radiogroup" aria-labelledby="{popupId}-minute" tabindex="-1" onkeydown={handleColumnKeydown}>
 								{#each minutes as minute}
 									{@const minuteDisabled = isMinuteCellDisabled(minute)}
@@ -586,7 +581,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 						<!-- Second selector (optional) -->
 						{#if showSeconds}
 							<div class="time-column">
-								<div class="column-label" id="{popupId}-second">{labels.second}</div>
+								<div class="column-label" id="{popupId}-second">{t("second")}</div>
 								<div class="time-list" role="radiogroup" aria-labelledby="{popupId}-second" tabindex="-1" onkeydown={handleColumnKeydown}>
 									{#each seconds as second}
 										{@const secondDisabled = isSecondCellDisabled(second)}
@@ -612,7 +607,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 							{@const amDisabled = isPeriodCellDisabled("AM")}
 							{@const pmDisabled = isPeriodCellDisabled("PM")}
 							<div class="time-column period-column">
-								<div class="column-label" id="{popupId}-period">{labels.period}</div>
+								<div class="column-label" id="{popupId}-period">{t("period")}</div>
 								<div class="time-list" role="radiogroup" aria-labelledby="{popupId}-period" tabindex="-1" onkeydown={handleColumnKeydown}>
 									<button
 										type="button"
@@ -624,7 +619,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 										disabled={amDisabled}
 										onclick={() => { if (!amDisabled) selectedPeriod = "AM" }}
 									>
-										{labels.am}
+										{t("am")}
 									</button>
 									<button
 										type="button"
@@ -636,7 +631,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 										disabled={pmDisabled}
 										onclick={() => { if (!pmDisabled) selectedPeriod = "PM" }}
 									>
-										{labels.pm}
+										{t("pm")}
 									</button>
 								</div>
 							</div>
@@ -645,7 +640,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 
 					<div class="time-actions">
 						<Button appearance="accent" onclick={handleApply} disabled={currentSelectionDisabled} style="flex: 1;">
-							{labels.apply}
+							{t("apply")}
 						</Button>
 					</div>
 				</div>

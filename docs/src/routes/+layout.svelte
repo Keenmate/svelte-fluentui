@@ -6,7 +6,7 @@
 	import {Layout, Footer, BodyContent, Button, NavMenu, NavGroup, NavLinkItem, ToastContainer, Icon, TopNav, CommandPalette, CommandPaletteTrigger} from "svelte-fluentui"
 	import type {CommandPaletteItem} from "svelte-fluentui"
 	import SiteSettings from "../lib/components/SiteSettings.svelte"
-	import {settings, accentColors} from "svelte-fluentui"
+	import {settings, accentColors, i18n} from "svelte-fluentui"
 	import {onMount, tick} from "svelte"
 	import {baseLayerLuminance, StandardLuminance, accentBaseColor, neutralBaseColor, SwatchRGB} from "@fluentui/web-components"
 	import {page} from "$app/stores"
@@ -43,6 +43,26 @@
 			parseInt(result[3], 16) / 255
 		)
 	}
+
+	// Docs language switch: the components' built-in text (English / German), kept across reloads.
+	const LOCALE_KEY = "docs-locale"
+	function toggleLocale() {
+		const next = i18n.currentLocale === "de" ? "en" : "de"
+		i18n.setLocale(next)
+		try {
+			localStorage.setItem(LOCALE_KEY, next)
+		} catch {
+			// storage unavailable — the switch just isn't remembered
+		}
+	}
+	onMount(() => {
+		try {
+			const saved = localStorage.getItem(LOCALE_KEY)
+			if (saved && saved !== i18n.currentLocale) i18n.setLocale(saved)
+		} catch {
+			// storage unavailable
+		}
+	})
 
 	// Set data-theme attribute and colors immediately for CSS (before render to avoid FOUC)
 	if (typeof window !== "undefined") {
@@ -267,7 +287,7 @@
 			items: [
 				{label: "Getting Started", href: "/getting-started"},
 				{label: "Working with Icons", href: "/guides/icons"},
-				{label: "Localisation", href: "/guides/localisation"},
+				{label: "Translations", href: "/guides/translations"},
 				{label: "Layout Example", href: "/layout-example"}
 			]
 		},
@@ -561,6 +581,9 @@
 		{/snippet}
 
 		<CommandPaletteTrigger placeholder="Search…" onclick={() => (paletteOpen = true)} />
+		<Button appearance="stealth" onclick={toggleLocale} aria-label="Language: {i18n.currentLocale === 'de' ? 'Deutsch' : 'English'}" title="Switch the components' built-in text between English and German">
+			<span class="docs-locale-toggle">{i18n.currentLocale === "de" ? "DE" : "EN"}</span>
+		</Button>
 		<Button appearance="stealth" onclick={toggleTheme}>
 			{#if effectiveTheme === "light"}
 				<Icon name="weather_moon" size={20} />
@@ -642,6 +665,12 @@
 		padding: 0.25rem 0.625rem;
 		border-radius: 4px;
 		font-weight: 500;
+	}
+
+	.docs-locale-toggle {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		min-width: 1.5rem;
 	}
 
 	/* Footer sections — inline gap between items in each snippet, plus a

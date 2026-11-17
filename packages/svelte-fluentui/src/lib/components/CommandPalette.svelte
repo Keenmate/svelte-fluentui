@@ -17,14 +17,15 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 	import type {CommandPaletteItem, CommandPaletteFilter, CommandPaletteActionDetail} from "./CommandPalette.types.js"
 	import {createLinkActivation, resolveActionItem, runAction} from "../action-items/index.js"
 	import type {RestProps} from "../types/index.js"
-	import {defaultCommandPaletteLabels, type CommandPaletteLabels} from "./CommandPalette.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {CommandPaletteLabels} from "../i18n/labels.js"
 
 	type OwnProps = {
 		/** Items to search. Each is either navigation (`href`) or an action (`onClick`). */
 		items: CommandPaletteItem[]
 		/** Controlled open state. Bind it to drive the palette from your own trigger. */
 		open?: boolean
-		/** Input placeholder (also the input's accessible name). Default: `labels.placeholder` ("Search…"). */
+		/** Input placeholder (also the input's accessible name). Default: the `placeholder` text ("Search…"). */
 		placeholder?: string
 		/** Items shown on the idle screen (no query yet), grouped by `group`. Defaults to the first `maxResultCount` of `items`. */
 		homeItems?: CommandPaletteItem[]
@@ -55,14 +56,14 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 		/** Replace a result row's rendering. Receives the item and whether it's the active row. */
 		item?: Snippet<[item: CommandPaletteItem, selected: boolean]>
 		/** Text shown when nothing matches (used when no `empty` snippet is given). Defaults to
-		 * `labels.noMatches(query)` (`No matches for "<query>"`), or `labels.noItems` with an empty query. */
+		 * the `noMatches` text (`No matches for "<query>"`), or the `empty` text with an empty query. */
 		emptyText?: string
 		/** Replace the empty-state body. Receives the current query. */
 		empty?: Snippet<[query: string]>
 		/** Replace the footer hints. */
 		footer?: Snippet
-		/** User-facing strings; merged over `defaultCommandPaletteLabels`. Explicit `placeholder` / `emptyText` props and an `aria-label` attribute win. */
-		labels?: Partial<CommandPaletteLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.commandPalette.*` keys) for this instance. Explicit `placeholder` / `emptyText` props and an `aria-label` attribute win. */
+		labels?: CommandPaletteLabels
 	}
 
 	/** Other native attributes and events (`id`, `class`, `aria-label`, …) go to the palette panel (`role="dialog"`). */
@@ -91,8 +92,8 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 		...rest
 	}: Props = $props()
 
-	const labels = $derived<CommandPaletteLabels>({...defaultCommandPaletteLabels, ...(labelsProp ?? {})})
-	const effectivePlaceholder = $derived(placeholder ?? labels.placeholder)
+	const t = useTranslations("commandPalette", () => labelsProp)
+	const effectivePlaceholder = $derived(placeholder ?? t("placeholder"))
 
 	let query = $state("")
 	let inputEl = $state<HTMLInputElement | undefined>(undefined)
@@ -457,7 +458,7 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 		<div
 			role="dialog"
 			aria-modal="true"
-			aria-label={labels.dialog}
+			aria-label={t("dialogAriaLabel")}
 			{...rest}
 			class={["cp-panel", className]}
 			onkeydown={trapTab}
@@ -481,7 +482,7 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 					autocomplete="off"
 					spellcheck="false"
 				/>
-				<span class="cp-kbd-hint">{labels.escapeHint}</span>
+				<span class="cp-kbd-hint">{t("escapeHint")}</span>
 			</div>
 
 			{#snippet resultRow(row: ItemRow)}
@@ -527,7 +528,7 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 			{/snippet}
 
 			<div class="cp-results" bind:this={listEl}>
-				<div role="listbox" id={listboxId} aria-label={labels.results}>
+				<div role="listbox" id={listboxId} aria-label={t("resultsAriaLabel")}>
 					{#each sections as section, si (si + ":" + (section.label ?? ""))}
 						{#if section.label}
 							<div role="group" aria-label={section.label}>
@@ -549,7 +550,7 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 						{@render emptySnippet(trimmedQuery)}
 					{:else}
 						<div class="cp-empty">
-							{#if emptyText}{emptyText}{:else if trimmedQuery}{labels.noMatches(trimmedQuery)}{:else}{labels.noItems}{/if}
+							{#if emptyText}{emptyText}{:else if trimmedQuery}{t("noMatches", {query: trimmedQuery})}{:else}{t("empty")}{/if}
 						</div>
 					{/if}
 				{/if}
@@ -559,9 +560,9 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 				{@render footerSnippet()}
 			{:else}
 				<div class="cp-footer">
-					<span><kbd>↑</kbd><kbd>↓</kbd> {labels.navigateHint}</span>
-					<span><kbd>↵</kbd> {labels.selectHint}</span>
-					<span><kbd>{modKey}</kbd><kbd>{parsedShortcut.key.toUpperCase()}</kbd> {labels.toggleHint}</span>
+					<span><kbd>↑</kbd><kbd>↓</kbd> {t("navigateHint")}</span>
+					<span><kbd>↵</kbd> {t("selectHint")}</span>
+					<span><kbd>{modKey}</kbd><kbd>{parsedShortcut.key.toUpperCase()}</kbd> {t("toggleHint")}</span>
 				</div>
 			{/if}
 		</div>

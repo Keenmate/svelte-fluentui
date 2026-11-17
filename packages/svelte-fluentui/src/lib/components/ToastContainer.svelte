@@ -12,14 +12,15 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 	import {onDestroy} from "svelte"
 	import DismissIcon from "./icons/DismissIcon.svelte"
 	import {portal} from "../actions/portal.js"
-	import {defaultToastContainerLabels, type ToastContainerLabels} from "./ToastContainer.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {ToastContainerLabels} from "../i18n/labels.js"
 
 	let {
-		/** User-facing strings; merged over `defaultToastContainerLabels`. */
+		/** Overrides of the built-in text (`svelteFluentUI.toastContainer.*` keys) for this instance. */
 		labels: labelsProp = undefined
-	}: {labels?: Partial<ToastContainerLabels>} = $props()
+	}: {labels?: ToastContainerLabels} = $props()
 
-	const labels = $derived<ToastContainerLabels>({...defaultToastContainerLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("toastContainer", () => labelsProp)
 
 	// Promote the toast container into the browser top layer via the Popover API.
 	// The top layer paints above ALL z-indexed content — including elements that
@@ -133,7 +134,7 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 					</div>
 					<button
 						class="fluent-toast__close"
-						aria-label={labels.close}
+						aria-label={t("closeAriaLabel")}
 						onclick={(e) => {
 							e.stopPropagation()
 							handleDismiss(toastItem.id)

@@ -16,7 +16,8 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
-	import {defaultPaginatorLabels, type PaginatorLabels} from "./Paginator.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {PaginatorLabels} from "../i18n/labels.js"
 
 	type OwnProps = {
 		/** Extra CSS class on the root `<div>`. */
@@ -41,8 +42,8 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 		summaryTemplate?: Snippet
 		/** Replaces the default "Page X of Y" text. */
 		paginationTextTemplate?: Snippet
-		/** User-facing strings; merged over `defaultPaginatorLabels`. */
-		labels?: Partial<PaginatorLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.paginator.*` keys) for this instance. */
+		labels?: PaginatorLabels
 	}
 
 	/** Other native attributes and events go to the root `<div>`. */
@@ -64,11 +65,13 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 		...rest
 	}: Props = $props()
 
-	const labels = $derived<PaginatorLabels>({...defaultPaginatorLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("paginator", () => labelsProp)
 
-	// Label text split into digit runs (rendered bold) and the words around them.
+	// Label text split into numbers (rendered bold) and the words around them. A number keeps its
+	// locale group separators ("1,234", "1.234", "1 234"), so it stays one bold run.
+	const NUMBER = /(\d+(?:[.,\s]\d{3})*)/
 	function numberParts(text: string): {text: string; isNumber: boolean}[] {
-		return text.split(/(\d+)/).filter(Boolean).map((part) => ({text: part, isNumber: /^\d+$/.test(part)}))
+		return text.split(NUMBER).filter(Boolean).map((part) => ({text: part, isNumber: /^\d/.test(part)}))
 	}
 
 	const backEnabled = $derived(canGoBack ?? currentPageIndex > 0)
@@ -92,17 +95,17 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 			{#if summaryTemplate}
 				{@render summaryTemplate?.()}
 			{:else}
-				{@render boldNumbers(labels.itemCount(totalItemCount))}
+				{@render boldNumbers(t("itemCount", {count: totalItemCount}))}
 			{/if}
 		</div>
 	{/if}
 
-	<nav class="paginator-nav" aria-label={labels.pagination}>
+	<nav class="paginator-nav" aria-label={t("paginationAriaLabel")}>
 		<fluent-button
 			onclick={() => goTo(0)}
 			{...(!backEnabled || disabled ? { disabled: true } : {})}
-			title={labels.firstPage}
-			aria-label={labels.firstPage}
+			title={t("firstPageTooltip")}
+			aria-label={t("firstPageAriaLabel")}
 		>
 			<span>&laquo;</span>
 		</fluent-button>
@@ -110,8 +113,8 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 		<fluent-button
 			onclick={() => goTo(currentPageIndex - 1)}
 			{...(!backEnabled || disabled ? { disabled: true } : {})}
-			title={labels.previousPage}
-			aria-label={labels.previousPage}
+			title={t("previousPageTooltip")}
+			aria-label={t("previousPageAriaLabel")}
 		>
 			<span>&lsaquo;</span>
 		</fluent-button>
@@ -121,15 +124,15 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 			{#if paginationTextTemplate}
 				{@render paginationTextTemplate?.()}
 			{:else}
-				{@render boldNumbers(labels.pageInfo(currentPageIndex + 1, lastPageIndex + 1))}
+				{@render boldNumbers(t("pageInfo", {page: currentPageIndex + 1, pageCount: lastPageIndex + 1}))}
 			{/if}
 		</div>
 
 		<fluent-button
 			onclick={() => goTo(currentPageIndex + 1)}
 			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}
-			title={labels.nextPage}
-			aria-label={labels.nextPage}
+			title={t("nextPageTooltip")}
+			aria-label={t("nextPageAriaLabel")}
 		>
 			<span>&rsaquo;</span>
 		</fluent-button>
@@ -137,8 +140,8 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 		<fluent-button
 			onclick={() => goTo(lastPageIndex)}
 			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}
-			title={labels.lastPage}
-			aria-label={labels.lastPage}
+			title={t("lastPageTooltip")}
+			aria-label={t("lastPageAriaLabel")}
 		>
 			<span>&raquo;</span>
 		</fluent-button>

@@ -25,7 +25,7 @@
 		{name: "stripHeight", type: "string (CSS length)", default: "undefined", description: "Fixed height for the tab strip (symmetric counterpart to stripWidth). Rarely needed"},
 		{name: "swipe", type: "boolean", default: "true", description: "Enable swipe-left/right (or swipe-up/down in vertical orientation) on the tabpanels to navigate prev/next tab. Touches starting on interactive elements (input, button, slider, contenteditable) are ignored so form controls keep their gestures"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div"},
-		{name: "labels", type: "Partial<TabsLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultTabsLabels. Keys: closeTab, closeTabTitle, editTabName, moreTabs, scrollLeft, scrollRight, scrollUp, scrollDown."},
+		{name: "labels", type: "TabsLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.tabs.* keys; see Guides → Translations). Keys: closeAriaLabel, closeTooltip, editNameTooltip, moreTabsAriaLabel, scrollBackwardAriaLabel, scrollForwardAriaLabel (scroll arrows toward the start / end)."},
 	]
 
 	const tabsCallbacks: Property[] = [

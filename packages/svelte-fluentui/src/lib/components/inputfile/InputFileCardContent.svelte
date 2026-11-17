@@ -2,17 +2,17 @@
 
 <script lang="ts">
 	import Button from "../Button.svelte"
-	import type {InputFileLabels} from "../InputFile.types.js"
+	import type {Translate} from "../../i18n/translate.svelte.js"
 
 	type Props = {
-		labels: InputFileLabels
+		t: Translate<"inputFile">
 		isDragging: boolean
 		disabled: boolean
 		hints: string[]
 		onBrowse: () => void
 	}
 
-	let {labels, isDragging, disabled, hints, onBrowse}: Props = $props()
+	let {t, isDragging, disabled, hints, onBrowse}: Props = $props()
 </script>
 
 <div class="drop-zone-content">
@@ -32,7 +32,7 @@
 		</svg>
 	</div>
 	<p class="drop-zone-text">
-		{isDragging ? labels.dropHere : labels.dragAndDrop}
+		{isDragging ? t("dropHere") : t("dragAndDrop")}
 	</p>
 	<div class="drop-zone-action">
 		<Button
@@ -43,7 +43,7 @@
 			}}
 			{disabled}
 		>
-			{labels.browse}
+			{t("browse")}
 		</Button>
 	</div>
 	{#if hints.length > 0}

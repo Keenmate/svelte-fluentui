@@ -12,7 +12,7 @@
 	const properties: Property[] = [
 		{name: "id", type: "string", default: "undefined", description: "Id of the input (also the label's for)."},
 		{name: "value", type: "string | null", default: "null", description: "The selected time value in 24-hour HH:mm or HH:mm:ss format (also with hourCycle h12). Bindable."},
-		{name: "placeholder", type: "string", default: '"Select time"', description: "Placeholder text shown in the input when no time is selected. Wins over labels.placeholder."},
+		{name: "placeholder", type: "string", default: '"Select time"', description: "Placeholder text shown in the input when no time is selected. Wins over the placeholder text (labels.placeholder)."},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the time picker, preventing user interaction."},
 		{name: "readonly", type: "boolean", default: "false", description: "Makes the time picker read-only; the popup cannot be opened."},
 		{name: "showClear", type: "boolean", default: "true", description: "A clear (×) button before the picker icon while a value is set, visible while the field is hovered or focused (like fluent-search). Not a Tab stop; Delete / Backspace on the field clears too."},
@@ -32,13 +32,11 @@
 		{name: "closeOnSelect", type: "boolean", default: "true", description: "When true, the popup closes when the user clicks OK."},
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the popup (matching FluentUI Blazor). Set false to require clicking the clock icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the popup."},
-		{name: "openClockIconAriaLabel", type: "string", default: '"Open time picker"', description: "Accessible name of the clock button. Wins over labels.openPicker."},
-		{name: "popupAriaLabel", type: "string", default: '"Choose time"', description: "Accessible name of the time popup (role=\"dialog\"). Opening it from the keyboard moves focus onto the hour column (each column is a radio group: ArrowUp / ArrowDown select); closing from inside returns focus to the clock button. Wins over labels.popup."},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text on the input."},
 		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label markup, rendered after label."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names applied to the root element."},
 		{name: "style", type: "string", default: '""', description: "Inline styles applied to the root element."},
-		{name: "labels", type: "Partial<TimePickerLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultTimePickerLabels. Keys: placeholder, openPicker, popup, clear, hour, minute, second, period, am, pm, apply. The placeholder / openClockIconAriaLabel / popupAriaLabel props win when set."},
+		{name: "labels", type: "TimePickerLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.timePicker.* keys; see Guides → Translations). Keys: placeholder, openPopupAriaLabel (clock button), popupAriaLabel (the role=\"dialog\" popup — opening it from the keyboard moves focus onto the hour column, each column a radio group; closing from inside returns focus to the clock button), clearAriaLabel, clearTooltip, hour, minute, second, period, am, pm, apply. The placeholder prop wins when set."},
 	]
 
 	const callbacks: Property[] = [

@@ -1,13 +1,14 @@
 <script lang="ts" generics="T">
 	import Icon from "../Icon.svelte"
-	import type {QuickGridColumn as Column, QuickGridLabels, QuickGridSortMode, QuickGridSortState} from "../QuickGrid.types.js"
+	import type {QuickGridColumn as Column, QuickGridSortMode, QuickGridSortState} from "../QuickGrid.types.js"
 	import {isColumnSortable, type ColumnStyles} from "./columns.js"
+	import type {Translate} from "../../i18n/translate.svelte.js"
 
 	// QuickGrid's `<thead>` (internal): the optional filter row and the header row with sort buttons.
 	type Props = {
 		columns: Column<T>[]
 		columnStyles: ColumnStyles[]
-		labels: QuickGridLabels
+		t: Translate<"quickGrid">
 		sortMode: QuickGridSortMode
 		sort: QuickGridSortState[]
 		filterable: boolean
@@ -25,7 +26,7 @@
 	}
 
 	let {
-		columns, columnStyles, labels, sortMode, sort, filterable, filters, filterValidity,
+		columns, columnStyles, t, sortMode, sort, filterable, filters, filterValidity,
 		actionsColumn, fillerColumn, headerRowIndex, onSortRequest, filterChangeCallback
 	}: Props = $props()
 
@@ -63,8 +64,8 @@
 							type="text"
 							class="filter-input"
 							class:invalid={filterValidity[String(column.field)] === false}
-							placeholder={labels.filterPlaceholder}
-							aria-label={labels.filterAriaLabel(column.title)}
+							placeholder={t("filterPlaceholder")}
+							aria-label={t("filterAriaLabel", {column: column.title})}
 							value={filters[String(column.field)] || ""}
 							oninput={(e) => handleFilterInput(String(column.field), e.currentTarget)}
 						/>

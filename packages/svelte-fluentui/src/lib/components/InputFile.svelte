@@ -32,12 +32,12 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 		InputFileRejectionMode,
 		InputFileDedupeMode,
 		InputFileRetryPolicy,
-		InputFileLabels,
 		InputFileSelectorAppearance,
 		InputFileListAppearance,
 		InputFileCardSize,
 		InputFileChipsPosition
 	} from "./InputFile.types.js"
+	export type {InputFileLabels} from "../i18n/labels.js"
 	export {formatInputFileSize} from "./InputFile.utils.js"
 </script>
 
@@ -65,7 +65,6 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 	import {droppedFiles, positionOverlay, positionPopover} from "./inputfile/dom.js"
 	import type {
 		InputFileItem,
-		InputFileLabels,
 		InputFileSelectorAppearance,
 		InputFileListAppearance,
 		InputFileCardSize,
@@ -76,7 +75,8 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 		InputFileRetryPolicy,
 		FileUploadHandler
 	} from "./InputFile.types.js"
-	import {DEFAULT_LABELS} from "./InputFile.utils.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {InputFileLabels} from "../i18n/labels.js"
 
 	type Props = {
 		/** The file list (status, progress, metadata) — the source of truth. Bindable. */
@@ -152,8 +152,8 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 		/** Max height of the file list before it scrolls (number = px). */
 		listMaxHeight?: string | number
 
-		/** Overrides for the built-in UI texts (partial; merged over the English defaults). */
-		labels?: Partial<InputFileLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.inputFile.*` keys) for this instance. */
+		labels?: InputFileLabels
 
 		/** Compose the limits hint under the selector. A non-empty result replaces all per-limit
 		 * lines (max/min size, max/min files); the accepted-types line is unaffected. */
@@ -289,7 +289,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 		style = ""
 	}: Props = $props()
 
-	const labels = $derived<InputFileLabels>({...DEFAULT_LABELS, ...(labelsProp ?? {})})
+	const t = useTranslations("inputFile", () => labelsProp)
 	// Bytes already accepted toward the totalMaxSize cap. Mirrors the
 	// `runningTotal` seed inside addFiles() — errored items don't count since
 	// they won't upload, so the "remaining" hint matches what the next add
@@ -308,7 +308,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 		}) ?? null
 	)
 	const dropZoneHints = $derived(dropZoneHintLines(
-		labels,
+		t,
 		{accept, minFileSize, maxFileSize, totalMaxSize, maxFileCount, minFileCount, multiple},
 		limitsHint,
 		items.length,
@@ -336,7 +336,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 	const queue = new UploadQueue({
 		get items() { return items },
 		set items(value) { items = value },
-		get labels() { return labels },
+		t,
 		get accept() { return accept },
 		get multiple() { return multiple },
 		get disabled() { return disabled },
@@ -454,7 +454,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 		}
 	})
 
-	const validityReasons = $derived(validityReasonList(labels, items, minFileCount, maxFileCount))
+	const validityReasons = $derived(validityReasonList(t, items, minFileCount, maxFileCount))
 	const isValid = $derived(validityReasons.length === 0)
 
 	$effect(() => {
@@ -589,7 +589,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 	/>
 
 	{#snippet cardContent()}
-		<InputFileCardContent {labels} {isDragging} {disabled} hints={dropZoneHints} onBrowse={openFileDialog} />
+		<InputFileCardContent {t} {isDragging} {disabled} hints={dropZoneHints} onBrowse={openFileDialog} />
 	{/snippet}
 
 	{#snippet selectorBlock()}
@@ -603,7 +603,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 				popoverExpanded={listAppearance === "popover" && items.length > 0
 					? popoverOpen
 					: undefined}
-				ariaLabel={labels.browse}
+				ariaLabel={t("browseAriaLabel")}
 				ondragenter={handleDragEnter}
 				ondragover={handleDragOver}
 				ondragleave={handleDragLeave}
@@ -615,7 +615,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 		{:else if selectorAppearance === "button"}
 			<InputFileSelectorButton
 				{disabled}
-				label={labels.selectFiles}
+				label={t("selectFiles")}
 				onclick={handleSelectorClick}
 			/>
 		{:else if selectorAppearance === "minimal"}
@@ -625,10 +625,10 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 				popoverExpanded={listAppearance === "popover" && items.length > 0
 					? popoverOpen
 					: undefined}
-				ariaLabel={items.length > 0 ? labels.viewFiles : labels.browse}
+				ariaLabel={items.length > 0 ? t("viewFilesAriaLabel") : t("browseAriaLabel")}
 				title={items.length > 0
-					? `${labels.fileCount(items.length)} — ${statusLabel(labels, minimalBadgeStatus)}`
-					: labels.browse}
+					? `${t("fileCount", {count: items.length})} — ${statusLabel(t, minimalBadgeStatus)}`
+					: t("browseTooltip")}
 				badgeStatus={minimalBadgeStatus}
 				onclick={(e) => {
 					e.stopPropagation()
@@ -640,7 +640,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 
 	{#snippet overallFooter()}
 		{#if uploadCallback && items.length > 0}
-			<InputFileFooter {items} {labels} onPauseAll={pauseAll} onResumeAll={resumeAll} onRetryAll={retryAll} />
+			<InputFileFooter {items} {t} onPauseAll={pauseAll} onResumeAll={resumeAll} onRetryAll={retryAll} />
 		{/if}
 	{/snippet}
 
@@ -665,7 +665,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 					{visibleItems}
 					{hiddenCount}
 					{canCollapse}
-					{labels}
+					{t}
 					onRemove={removeById}
 					onShowAll={setShowAll}
 				/>
@@ -686,7 +686,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 			{hiddenCount}
 			{canCollapse}
 			{queue}
-			{labels}
+			{t}
 			{disabled}
 			canUpload={!!uploadCallback}
 			{autoUpload}
@@ -719,7 +719,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 				bind:this={popoverEl}
 				use:positionPopover={selectorWrapEl}
 				class="minimal-popover"
-				aria-label={labels.viewFiles}
+				aria-label={t("viewFilesAriaLabel")}
 			>
 				{@render fileListPanel(true)}
 			</div>

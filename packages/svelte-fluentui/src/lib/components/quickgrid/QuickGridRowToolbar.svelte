@@ -3,12 +3,12 @@
 	import PositioningRegion from "../PositioningRegion.svelte"
 	import {resolveMenuEntries, type ActionItem, type ResolvedActionItem} from "../../action-items/index.js"
 	import type {
-		QuickGridLabels,
 		QuickGridRowContext as RowContext,
 		QuickGridRowToolbarAction as RowToolbarAction,
 		QuickGridRowToolbarConfig as RowToolbarConfig,
 		QuickGridRowToolbarItem as RowToolbarItem
 	} from "../QuickGrid.types.js"
+	import type {Translate} from "../../i18n/translate.svelte.js"
 
 	// QuickGrid's floating row toolbar (internal): positioned beside / above the row it opened at,
 	// with a connector to the row once an action moved it. Arrow / Home / End rove its buttons.
@@ -22,7 +22,7 @@
 		/** Changes on every open (even of the same row): forgets that the row moved. */
 		session: number
 		align: 'center' | 'top'
-		labels: QuickGridLabels
+		t: Translate<"quickGrid">
 		entries: RowToolbarConfig<T>[]
 		rowContext: RowContext<T>
 		/** Built-in presets (icon, text) for an item's `action`. */
@@ -39,7 +39,7 @@
 	}
 
 	let {
-		anchor, table, target, session, align, labels, entries, rowContext, presets,
+		anchor, table, target, session, align, t, entries, rowContext, presets,
 		element = $bindable(), focused = $bindable(false), onItemClick, onCloseRequest, onpointerenter, onpointerleave
 	}: Props = $props()
 
@@ -159,7 +159,7 @@
 		class="row-toolbar"
 		role="toolbar"
 		tabindex="-1"
-		aria-label={labels.rowActions}
+		aria-label={t("rowActionsAriaLabel")}
 		{onpointerenter}
 		{onpointerleave}
 		onkeydown={handleKeyDown}

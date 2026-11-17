@@ -9,7 +9,8 @@ Slide-in side panel (drawer) portalled to `<body>`, with optional backdrop; or, 
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {pushLayer} from "../../helpers/layer-stack.js"
-	import {defaultPanelLabels, type PanelLabels} from "./Panel.labels.js"
+	import {useTranslations} from "../../i18n/translate.svelte.js"
+	import type {PanelLabels} from "../../i18n/labels.js"
 
 	/** Logical edge: `start`/`end` follow the writing direction. */
 	type Side = "start" | "end"
@@ -39,8 +40,8 @@ Slide-in side panel (drawer) portalled to `<body>`, with optional backdrop; or, 
 		class?: string
 		/** Inline style on the panel surface, after `width`. */
 		style?: string
-		/** User-facing strings; merged over `defaultPanelLabels`. */
-		labels?: Partial<PanelLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.panel.*` keys) for this instance. */
+		labels?: PanelLabels
 	}
 
 	let {
@@ -59,7 +60,7 @@ Slide-in side panel (drawer) portalled to `<body>`, with optional backdrop; or, 
 		labels: labelsProp = undefined
 	}: Props = $props()
 
-	const labels = $derived<PanelLabels>({...defaultPanelLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("panel", () => labelsProp)
 
 	let panelEl: HTMLElement | undefined = $state()
 	let isRTL = $state(false)
@@ -148,7 +149,7 @@ Slide-in side panel (drawer) portalled to `<body>`, with optional backdrop; or, 
 				class="fluent-panel-overlay"
 				role="button"
 				tabindex={-1}
-				aria-label={labels.close}
+				aria-label={t("closeAriaLabel")}
 				onclick={onOverlayClick}
 				onkeydown={(e) => (e.key === "Enter" || e.key === " ") && onOverlayClick()}
 			></div>

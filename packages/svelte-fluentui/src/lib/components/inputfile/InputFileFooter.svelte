@@ -1,18 +1,20 @@
 <!-- Internal (InputFile): overall upload progress bar, totals line and Pause / Resume / Retry all buttons. Not exported from the package. -->
 
 <script lang="ts">
-	import type {InputFileItem, InputFileLabels} from "../InputFile.types.js"
+	import type {InputFileItem} from "../InputFile.types.js"
+	import type {Translate} from "../../i18n/translate.svelte.js"
+	import {formatInputFileSize} from "../InputFile.utils.js"
 	import {uploadTotals} from "./summary.js"
 
 	type Props = {
 		items: InputFileItem[]
-		labels: InputFileLabels
+		t: Translate<"inputFile">
 		onPauseAll: () => void
 		onResumeAll: () => void
 		onRetryAll: () => void
 	}
 
-	let {items, labels, onPauseAll, onResumeAll, onRetryAll}: Props = $props()
+	let {items, t, onPauseAll, onResumeAll, onRetryAll}: Props = $props()
 
 	// Batch buttons only show when they'd do something: Pause all while
 	// something uploads, Resume all with a paused item, Retry all with a failure.
@@ -32,13 +34,12 @@
 	</div>
 	<div class="footer-stats">
 		<span class="footer-stats-text">
-			{labels.totalProgress({
+			{t(totals.failed > 0 ? "totalProgressWithFailed" : "totalProgress", {
 				completed: totals.completed,
 				failed: totals.failed,
 				total: items.length,
-				uploadedBytes: totals.uploadedBytes,
-				totalBytes: totals.totalBytes,
-				percent: totals.percent
+				uploadedSize: formatInputFileSize(totals.uploadedBytes),
+				totalSize: formatInputFileSize(totals.totalBytes)
 			})}
 		</span>
 		{#if totals.anyUploading || totals.anyPaused || anyFailed}
@@ -52,7 +53,7 @@
 							onPauseAll()
 						}}
 					>
-						{labels.pauseAll}
+						{t("pauseAll")}
 					</button>
 				{/if}
 				{#if totals.anyPaused}
@@ -64,7 +65,7 @@
 							onResumeAll()
 						}}
 					>
-						{labels.resumeAll}
+						{t("resumeAll")}
 					</button>
 				{/if}
 				{#if anyFailed}
@@ -76,7 +77,7 @@
 							onRetryAll()
 						}}
 					>
-						{labels.retryAll}
+						{t("retryAll")}
 					</button>
 				{/if}
 			</div>

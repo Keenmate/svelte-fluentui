@@ -66,7 +66,6 @@ export {formatInputFileSize} from "./components/InputFile.utils.js"
 export type {
 	InputFileItem,
 	InputFileStatus,
-	InputFileLabels,
 	InputFileSelectorAppearance,
 	InputFileListAppearance,
 	InputFileCardSize,
@@ -120,10 +119,8 @@ export type {
 	QuickGridDataRequestDetail,
 	QuickGridPageChangeTrigger,
 	QuickGridBeforePageChangeContext,
-	QuickGridBeforePageChangeResult,
-	QuickGridLabels
+	QuickGridBeforePageChangeResult
 } from "./components/QuickGrid.types.js"
-export {defaultQuickGridLabels} from "./components/quickgrid/labels.js"
 export {default as SiteSettings} from "./components/SiteSettings.svelte"
 export {default as Tab} from "./components/Tab.svelte"
 export {default as TabPanel} from "./components/TabPanel.svelte"
@@ -140,27 +137,30 @@ export {default as ValidationSummary} from "./components/ValidationSummary.svelt
 // Translations (svelte-i18n): built-in text lives in one `svelteFluentUI.*` dictionary
 // (English + German); a component's `labels` prop overrides its keys for one instance.
 export * from "./i18n/index.js"
+export type {
+	AlertLabels,
+	AutocompleteLabels,
+	BadgeGroupLabels,
+	CalendarLabels,
+	ChipLabels,
+	ComboboxLabels,
+	CommandPaletteLabels,
+	CompositeBadgeLabels,
+	DatePickerLabels,
+	DialogLabels,
+	InputFileLabels,
+	PaginatorLabels,
+	PanelLabels,
+	QuickGridLabels,
+	SelectLabels,
+	SiteSettingsLabels,
+	TabsLabels,
+	TimePickerLabels,
+	ToastContainerLabels,
+	ToastLabels,
+	TopNavLabels
+} from "./i18n/labels.js"
 
-export type {AlertLabels} from "./i18n/labels.js"
-export {defaultAutocompleteLabels, type AutocompleteLabels} from "./components/Autocomplete.labels.js"
-export {defaultBadgeGroupLabels, type BadgeGroupLabels} from "./components/BadgeGroup.labels.js"
-export {defaultCalendarLabels, type CalendarLabels} from "./components/Calendar.labels.js"
-export {defaultChipLabels, type ChipLabels} from "./components/Chip.labels.js"
-export {defaultComboboxLabels, type ComboboxLabels} from "./components/Combobox.labels.js"
-export {defaultCommandPaletteLabels, type CommandPaletteLabels} from "./components/CommandPalette.labels.js"
-export {defaultCompositeBadgeLabels, type CompositeBadgeLabels} from "./components/CompositeBadge.labels.js"
-export {defaultDatePickerLabels, type DatePickerLabels} from "./components/DatePicker.labels.js"
-export {defaultDialogLabels, type DialogLabels} from "./components/Dialog.labels.js"
-export {DEFAULT_LABELS as defaultInputFileLabels} from "./components/InputFile.utils.js"
-export {defaultPaginatorLabels, type PaginatorLabels} from "./components/Paginator.labels.js"
-export {defaultPanelLabels, type PanelLabels} from "./components/layout/Panel.labels.js"
-export {defaultSelectLabels, type SelectLabels} from "./components/Select.labels.js"
-export {defaultSiteSettingsLabels, type SiteSettingsLabels} from "./components/SiteSettings.labels.js"
-export {defaultTabsLabels, type TabsLabels} from "./components/Tabs.labels.js"
-export {defaultTimePickerLabels, type TimePickerLabels} from "./components/TimePicker.labels.js"
-export {defaultToastLabels, type ToastLabels} from "./components/Toast.labels.js"
-export {defaultToastContainerLabels, type ToastContainerLabels} from "./components/ToastContainer.labels.js"
-export {defaultTopNavLabels, type TopNavLabels} from "./components/layout/TopNav.labels.js"
 
 // Actions
 export {portal} from "./actions/portal.js"

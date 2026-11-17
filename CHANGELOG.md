@@ -11,6 +11,29 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 [`release-notes/2.0.0-rc01.md`](release-notes/2.0.0-rc01.md).
 
 ### Changed — BREAKING
+
+- **Built-in text comes from one svelte-i18n dictionary.** Every text a component renders on its own
+  (aria-labels, tooltips, placeholders, empty / loading messages, pager text, …) is a
+  `svelteFluentUI.<component>.<key>` entry, English and German built in; `i18n.setLocale("de")`
+  switches open components. New dependency `svelte-i18n`. Service `i18n` with the same API as
+  svelte-pure-admin's (`init`, `setLocale`, `addTranslations`, `setTranslationLoader`, …); `_`,
+  `locale`, `init`, … re-exported. Upgrade guide: release notes, *Translations*.
+- **InputFile `labels`:** values are ICU strings instead of functions (`fileCount: "{count, plural, one {# file} other {# files}}"`),
+  keys renamed: `maxFilesHint` → `maxFiles` / `maxFilesRemaining`, `minFilesHint` → `minFiles`,
+  `totalMaxSize` (with `remaining`) → `totalMaxSize` / `totalMaxSizeRemaining`, `totalProgress` →
+  `totalProgress` / `totalProgressWithFailed`, `emptyState` → `empty`, `viewFiles` → `viewFilesAriaLabel`,
+  `remove` → `removeAriaLabel` + `removeTooltip` (now "Remove {item}", the file name),
+  `retry` / `pause` / `resume` / `cancel` / `download` → `…AriaLabel`, `browse` → `browse` (visible) +
+  `browseAriaLabel` + `browseTooltip`. `DEFAULT_LABELS` / `defaultInputFileLabels` removed — the English
+  text is the `en` dictionary.
+- **Removed single-string props, now `labels` keys:** DatePicker `openCalendarIconAriaLabel` →
+  `labels.openPopupAriaLabel`; TimePicker `openClockIconAriaLabel` → `labels.openPopupAriaLabel`;
+  Combobox `loadingText` → `labels.loading`; BadgeGroup `moreLabel` / `lessLabel` → `labels.showMore`
+  (`"+{count} more"`) / `labels.showLess`; Chip `removeLabel` → `labels.removeAriaLabel` / `labels.removeTooltip`.
+- **Calendar, DatePicker, QuickGrid `culture`** defaults to the i18n locale (`i18n.currentLocale`; the
+  browser's own locale when it is the same language, so `en-GB` / `de-AT` keep their region) and follows
+  `setLocale()` — was `navigator.language`. Without `i18n.init()` that is English: a Czech browser now
+  gets English month names unless the app sets the locale or passes `culture`.
 - CSS: Alert / Toast `warning` use Fluent 2 orange via `--fluent-color-warning-foreground` (`#bc4b09`, dark `#faa06b`) instead of the v8 yellow `#ffb900`.
 - CSS: logical properties throughout (RTL mirrors correctly); undefined `--error-*` / `--success-*` variables replaced by the `--fluent-color-*` palette (error red is now `#d13438`).
 - CSS: reboot (element reset) removed from `svelte-fluentui/styles` — opt in with `import "svelte-fluentui/reboot"`; its dark rules now match `[data-theme]` on `<html>`.
@@ -29,7 +52,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **BadgeGroup:** `limit` → `maxVisibleBadgeCount`
 - **Calendar:** `maxSelectableDays` → `maxSelectedDayCount`
 - **InputFile:** `minFiles` / `maxVisible` → `minFileCount` / `maxVisibleFileCount`
-- **InputFile (labels, `formatLimits` info):** `minFilesHint` / `minFiles` → `minFileCountHint` / `minFileCount`
+- **InputFile (`formatLimits` info):** `minFiles` → `minFileCount`
 - **Select:** `maxVisibleOptions` → `maxVisibleOptionCount`
 - **MultiSplitter (`id`):** also the localStorage key (layout always saved) → plain DOM id; saving is opt-in via `persistKey` (same key format: `persistKey="<old id>"` keeps saved layouts)
 - **NavGroup (`title`):** also the saved-expanded-state key, not rendered → native `title` attribute; saving is opt-in via `persistKey` (`persistKey="<old title>"` keeps saved state)
@@ -168,8 +191,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **DatePicker, TimePicker:** `autoClose` → `closeOnSelect` (default `true`, same meaning)
 - **Autocomplete, Combobox:** `keepOpen` → `closeOnSelect`, inverted (default `!multiple`: multi-select still stays open; `keepOpen={false}` → `closeOnSelect={true}`)
 - **Combobox:** `noDataText` / `noDataTemplate` → `emptyText` / `empty`
-- **InputFile:** `emptyState` snippet / `labels.emptyState` → `empty` / `labels.emptyText`
-- **QuickGrid (labels):** `noItems` / `editorNoOptions` / `editorNoMatches` → `emptyText` / `editorEmptyText` / `editorFilterEmptyText`
+- **InputFile:** `emptyState` snippet → `empty`
 - **Field (exported type):** `FieldOrientation` → `Orientation` (shared by every `orientation` prop)
 - **Removed placeholder components `Menu`, `MenuItem`, `Tree`, `TreeItem`, `ProgressBar`.** They
   rendered an empty FluentUI element and accepted no props.
@@ -201,13 +223,23 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **Action items** (`ActionItem`, `MenuItem`, `MenuDivider`, `MenuEntry`, `resolveMenuEntries`,
   `runAction`, …) — one item model + `onAction` / `beforeActionCallback` for menus and toolbars
   (port of web-components-core `/actions`). MenuButton and ContextMenu use it.
-- QuickGrid `labels` (`Partial<QuickGridLabels>`, merged over the exported `defaultQuickGridLabels`): every user-facing string — filter placeholder / accessible name, empty message, pager, tree chevrons, toolbar and context-menu built-ins, editing / validating / loading indicators, editor dropdown texts, screen-reader announcements. `ariaLabel` / `ariaLabelledby` name the `<table>`.
-- Localisable labels: a `labels` prop (`Partial<XLabels>`, merged over the exported `defaultXLabels`, as on QuickGrid) on Alert, Autocomplete, BadgeGroup, Calendar, Chip, Combobox, CommandPalette, CompositeBadge, DatePicker (includes the Calendar keys, forwarded to its popup), Dialog, Paginator, Panel, Select, SiteSettings, Tabs, TimePicker, Toast, ToastContainer and TopNav — every built-in aria-label, tooltip, placeholder, empty / loading text and visible string (TimePicker column headings, AM / PM and OK; Paginator "Page X of Y" / "N items"; CommandPalette hints; chip "Remove X"). Parametrised strings are functions (`pageInfo: (page, pageCount) => string`). Existing single-string props (`placeholder`, `popupAriaLabel`, `openCalendarIconAriaLabel` / `openClockIconAriaLabel`, `emptyText`, `loadingText`, `removeLabel`, `buttonTitle`, `moreLabel` / `lessLabel`) are kept and win over `labels`. `defaultInputFileLabels` is now exported too.
-- CompositeBadge: the built-in × button has an accessible name (`labels.dismiss`, default "Dismiss"; `buttonTitle` wins) — it had none without `buttonTitle`.
+- QuickGrid `ariaLabel` / `ariaLabelledby` name the `<table>`.
+- Translations: built-in text in one `svelteFluentUI.*` dictionary (English + German, svelte-i18n) — every
+  aria-label, tooltip, placeholder, empty / loading text and visible string of Alert, Autocomplete,
+  BadgeGroup, Calendar, Chip, Combobox, CommandPalette, CompositeBadge, DatePicker, Dialog, InputFile,
+  Paginator, Panel, QuickGrid, Select, SiteSettings, Tabs, TimePicker, Toast, ToastContainer and TopNav.
+  Keys end in what they render: none = visible text, `Placeholder`, `Tooltip`, `AriaLabel` (a caption,
+  its tooltip and its screen-reader name can differ). Values are ICU MessageFormat (`{page}`, plurals).
+  Each of these components takes `labels` (`XLabels`, its keys without the prefix) to override one
+  instance. Exports: `i18n`, `en`, `de`, the `XLabels` types, `ComponentLabels`, `useTranslations`.
+  Docs: *Guides → Translations* (full key table) and an EN / DE switch in the header.
+  Text changes on the way: Tabs scroll buttons say "Scroll to previous / next tabs" (no left / right),
+  Paginator "1 item" (was "1 items"), numbers are locale-grouped ("1,234"; Paginator keeps them one bold run).
+- CompositeBadge: the built-in × button has an accessible name (`labels.dismissAriaLabel`, default "Dismiss"; `buttonTitle` wins) — it had none without `buttonTitle`.
 - QuickGrid keyboard: Shift+F10 / ContextMenu key opens the context menu at the focused cell (focus on the first item, arrows, Enter / Space, Escape returns focus); Alt+F10 opens the row toolbar from a cell and focuses it (arrows / Home / End, Escape or Tab return); rows of a hover / click toolbar grid without navigate mode are one tab stop (↑ / ↓ / Home / End, Enter opens the toolbar); Enter on the ⋮ trigger moves focus into the toolbar.
 - QuickGrid accessibility: `aria-rowcount` / `aria-rowindex` on paged and server grids (server: from `totalItems`), filter inputs named after their column, a polite live region announcing the row count after filtering, the page after paging and the sort after a header change; tree mode is a `treegrid` with `aria-level` / `aria-expanded` rows; the ⋮ trigger has `aria-label` / `aria-haspopup` / `aria-expanded`, the toolbar `role="toolbar"`.
 
-- Select, Combobox, Autocomplete, DatePicker, TimePicker: `showClear` (default `true`) — one clear (×) button modelled on `<fluent-search>`'s: rendered while there is something to clear, visible while the field is hovered or focused, empties the value (every chip in multi-select) and the filter; not a Tab stop, focus stays in the control; Select and the pickers also clear on Delete / Backspace. Autocomplete's × now sits before the search icon / `end` instead of replacing it (class `.autocomplete-clear`); the pickers' × moved before the icon and left the Tab order. Select `labels` (`SelectLabels` / `defaultSelectLabels`, key `clearSelection`); Combobox `labels.clearSelection`. Shared `.fluent-field-clear` style.
+- Select, Combobox, Autocomplete, DatePicker, TimePicker: `showClear` (default `true`) — one clear (×) button modelled on `<fluent-search>`'s: rendered while there is something to clear, visible while the field is hovered or focused, empties the value (every chip in multi-select) and the filter; not a Tab stop, focus stays in the control; Select and the pickers also clear on Delete / Backspace. Autocomplete's × now sits before the search icon / `end` instead of replacing it (class `.autocomplete-clear`); the pickers' × moved before the icon and left the Tab order. Keys `clearAriaLabel` / `clearTooltip` (Select: `clearTooltip`; its × is `aria-hidden`). Shared `.fluent-field-clear` style.
 - Select: `placeholder`, `valueText` (trigger text for a value no option has), `selectValueOnTab`, `dropdownClass`, `embedded` (borderless, closed-list arrows left to the host). Combobox: `valueText`, `openOnFocus`, `selectValueOnTab`, `freeText` (typed text survives closing the list; Escape reverts), `dropdownClass`, `embedded`. QuickGrid editor options take a `group` (option groups in the select / combobox / autocomplete editors).
 - QuickGrid dropdown editors are the library's components: `select` → `Select`, `combobox` and `autocomplete` → `Combobox` (embedded). Shared with them: multi-letter type-ahead, Home / End / PageUp / PageDown in the list, option groups, `searchBehavior`, light dismiss, listbox styling (selected row bold, rounded rows, chevron glyph). Behaviour changes: the combobox / autocomplete input selects its text on focus (typing replaces it); Escape on an open autocomplete list reverts the typed text (it used to keep it and commit it on blur); the list aligns with the editor's content box instead of the cell edges; the page no longer stops wheel-scrolling while a list is open (the list follows its cell).
 - QuickGrid CSS variables (theme hooks, each falling back to the FluentUI token): `--fluent-quickgrid-bg` / `-border` / `-text`, `-focus-stroke`, `-focused-cell-stroke` / `-focused-cell-bg`, `-editable-bg-hover` / `-editable-border-hover`, `-editing-bg` / `-editing-stroke`, `-toolbar-bg` / `-toolbar-border` / `-toolbar-text` / `-toolbar-bg-hover` / `-toolbar-shadow` (light / dark in theme.scss), `-connector-stroke` (was a hard-coded `#0078d4` fallback), `-menu-shadow`, `-dropdown-bg` / `-dropdown-border` / `-dropdown-highlight-bg` (cell editor dropdowns). They replace QuickGrid's and GridCellEditor's `[data-theme="dark"]` selector blocks — a theme overrides variables, not selectors.

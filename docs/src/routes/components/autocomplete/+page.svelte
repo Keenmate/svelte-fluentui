@@ -181,7 +181,7 @@
 		{name: "showInitialOptions", type: "boolean", default: "false", description: "Show options on focus when empty"},
 		{name: "initialOptionsCount", type: "number", default: "maxResultCount", description: "Initial options count limit"},
 		{name: "closeOnSelect", type: "boolean", default: "!multiple", description: "Close the dropdown after a pick. Multi-select defaults to false (stays open so several can be chosen in a row); set true to close on each selection. Single-select always closes."},
-		{name: "emptyText", type: "string", default: "\"No results found\"", description: "Text shown in the dropdown when the search matches no options (with showOverlayOnEmptyResults) Wins over labels.emptyText."},
+		{name: "emptyText", type: "string", default: "\"No results found\"", description: "Text shown in the dropdown when the search matches no options (with showOverlayOnEmptyResults) Wins over labels.noMatches."},
 		{name: "selectValueOnTab", type: "boolean", default: "true", description: "Select highlighted option on Tab key"},
 		{name: "tagsPosition", type: '"inline" | "top" | "bottom"', default: '"inline"', description: "Position of selected tags: inside input (inline), above input, or below input"},
 		{name: "searchDelay", type: "number", default: "0", description: "Debounce delay in ms before search"},
@@ -198,7 +198,7 @@
 		{name: "initialSearchQuery", type: "string", default: '""', description: "Text to prefill and search with on mount (opens the dropdown)"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
-		{name: "labels", type: "Partial<AutocompleteLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultAutocompleteLabels. Keys: placeholder, emptyText, loading, clearSelection, showOptions, closeOptions, removeChip(label), maxSelectionReached(max). The placeholder / emptyText props win when set."},
+		{name: "labels", type: "AutocompleteLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.autocomplete.* keys; see Guides → Translations). Keys: placeholder, noMatches ({query}), loadingAriaLabel, clearAriaLabel, clearTooltip, openPopupAriaLabel, closePopupAriaLabel, removeAriaLabel ({item}), removeTooltip ({item}), maxSelectionReached ({max}, ICU plural). The placeholder / emptyText props win when set."},
 	]
 
 	const callbacks: Property[] = [
@@ -899,7 +899,7 @@ ${'<'}Autocomplete
 			<li>Typing a character — back to the input, which receives it.</li>
 			<li><kbd>Backspace</kbd> in an empty input still removes the last chip.</li>
 		</ul>
-		<p>Each × is named by <code>labels.removeChip(label)</code> (default <code>"Remove &lt;label&gt;"</code>).</p>
+		<p>Each × is named by <code>labels.removeAriaLabel</code> / <code>labels.removeTooltip</code> (default <code>"Remove {"{item}"}"</code>).</p>
 	</Card>
 
 	<Grid spacing={3}>

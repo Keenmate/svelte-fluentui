@@ -2,7 +2,8 @@
 
 <script lang="ts">
 	import DismissIcon from "../icons/DismissIcon.svelte"
-	import type {InputFileItem, InputFileLabels} from "../InputFile.types.js"
+	import type {InputFileItem} from "../InputFile.types.js"
+	import type {Translate} from "../../i18n/translate.svelte.js"
 	import {formatInputFileSize, iconCategory} from "../InputFile.utils.js"
 	import {statusLabel} from "./summary.js"
 	import type {UploadQueue} from "./upload-queue.svelte.js"
@@ -11,7 +12,7 @@
 		item: InputFileItem
 		index: number
 		queue: UploadQueue
-		labels: InputFileLabels
+		t: Translate<"inputFile">
 		disabled: boolean
 		/** Whether an `uploadCallback` is set (retry needs one). */
 		canUpload: boolean
@@ -28,7 +29,7 @@
 		item,
 		index,
 		queue,
-		labels,
+		t,
 		disabled,
 		canUpload,
 		allowReorder,
@@ -58,7 +59,7 @@
 	class:drag-over={dragOver}
 	tabindex="0"
 	role="listitem"
-	aria-label="{item.name}, {statusLabel(labels, item.status)}"
+	aria-label="{item.name}, {statusLabel(t, item.status)}"
 	onkeydown={handleKeyDown}
 	draggable={allowReorder}
 	{ondragstart}
@@ -96,17 +97,17 @@
 			</div>
 			<span class="status-text">
 				{item.progress}% — {item.status === "paused"
-					? labels.paused
-					: labels.uploading}
+					? t("paused")
+					: t("uploading")}
 			</span>
 		{:else if item.status === "completed"}
-			<span class="status-text success">✓ {labels.completed}</span>
+			<span class="status-text success">✓ {t("completed")}</span>
 		{:else if item.status === "error"}
-			<span class="status-text error">✗ {item.error ?? labels.error}</span>
+			<span class="status-text error">✗ {item.error ?? t("error")}</span>
 		{:else if item.status === "cancelled"}
-			<span class="status-text muted">⊘ {labels.cancelled}</span>
+			<span class="status-text muted">⊘ {t("cancelled")}</span>
 		{:else}
-			<span class="status-text muted">{labels.pending}</span>
+			<span class="status-text muted">{t("pending")}</span>
 		{/if}
 	</div>
 
@@ -116,7 +117,7 @@
 				class="action-button"
 				href={item.downloadUrl}
 				download={item.name}
-				aria-label={labels.download}
+				aria-label={t("downloadAriaLabel")}
 			>
 				↓
 			</a>
@@ -126,7 +127,7 @@
 				type="button"
 				class="action-button"
 				onclick={() => queue.pause(item.id)}
-				aria-label={labels.pause}
+				aria-label={t("pauseAriaLabel")}
 			>
 				‖
 			</button>
@@ -134,7 +135,7 @@
 				type="button"
 				class="action-button"
 				onclick={() => queue.cancel(item.id)}
-				aria-label={labels.cancel}
+				aria-label={t("cancelAriaLabel")}
 			>
 				<DismissIcon size={14} />
 			</button>
@@ -143,7 +144,7 @@
 				type="button"
 				class="action-button"
 				onclick={() => queue.resume(item.id)}
-				aria-label={labels.resume}
+				aria-label={t("resumeAriaLabel")}
 			>
 				▶
 			</button>
@@ -152,7 +153,7 @@
 				type="button"
 				class="action-button"
 				onclick={() => queue.retry(item.id)}
-				aria-label={labels.retry}
+				aria-label={t("retryAriaLabel")}
 			>
 				↻
 			</button>
@@ -162,7 +163,7 @@
 			class="remove-button"
 			onclick={() => queue.removeAt(index)}
 			{disabled}
-			aria-label={labels.remove}
+			aria-label={t("removeAriaLabel", {item: item.name})}
 		>
 			<DismissIcon size={16} />
 		</button>

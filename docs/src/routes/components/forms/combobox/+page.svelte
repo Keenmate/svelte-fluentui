@@ -186,14 +186,13 @@
 		{name: "placeholder", type: "string", default: "undefined", description: "Placeholder text"},
 		{name: "autocomplete", type: '"inline" | "list" | "both" | "none"', default: "undefined", description: "Autocomplete behavior"},
 		{name: "minSearchLength", type: "number", default: "undefined", description: "Keep dropdown closed until the typed text reaches this length. Useful with large/async option sets to avoid opening on a single character."},
-		{name: "emptyText", type: "string", default: '"No results found"', description: "Text shown inside the dropdown when the filter matches no options. Wins over labels.emptyText."},
+		{name: "emptyText", type: "string", default: '"No results found"', description: "Text shown inside the dropdown when the filter matches no options. Wins over labels.noMatches."},
 		{name: "empty", type: "Snippet", default: "undefined", description: "Custom content shown when the filter matches no options; overrides emptyText."},
 		{name: "onSearch", type: "(ctx: {term: string}) => void", default: "undefined", description: "Debounced notification that the search term changed. When set, update options with the results yourself; the component skips its own client-side filtering."},
 		{name: "searchDelay", type: "number", default: "250", description: "Debounce in ms before onSearch fires. Ignored without onSearch."},
 		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How filtering and inline completion compare text: normalized ignores case and diacritics (zurich finds Zürich), case-insensitive ignores case only, exact matches both. No effect on filterCallback or onSearch."},
 		{name: "filterCallback", type: "(ctx: {term, option}) => boolean", default: "undefined", description: "Custom client-side matcher replacing the built-in substring match. Ignored when onSearch is set."},
-		{name: "loading", type: "boolean", default: "undefined", description: "Parent-controlled loading flag for async onSearch; shows loadingText instead of the empty-state message while true."},
-		{name: "loadingText", type: "string", default: '"Searching…"', description: "Text shown while loading is true. Wins over labels.loadingText."},
+		{name: "loading", type: "boolean", default: "undefined", description: "Parent-controlled loading flag for async onSearch; shows labels.loading (\"Searching…\") instead of the empty-state message while true."},
 		{name: "valueText", type: "string", default: "undefined", description: "Single-select: text the input shows for a value no rendered option has (e.g. a result of an earlier async search)."},
 		{name: "openOnFocus", type: "boolean", default: "false", description: "Open the dropdown when the input receives focus from outside the control."},
 		{name: "selectValueOnTab", type: "boolean", default: "false", description: "Tab on the open list picks the highlighted option before focus moves on."},
@@ -218,7 +217,7 @@
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
-		{name: "labels", type: "Partial<ComboboxLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultComboboxLabels. Keys: emptyText, loadingText, removeChip(label), clearSelection. The emptyText / loadingText props win when set."},
+		{name: "labels", type: "ComboboxLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.combobox.* keys; see Guides → Translations). Keys: noMatches ({query}), loading, removeAriaLabel ({item}), removeTooltip ({item}), clearAriaLabel, clearTooltip. The emptyText prop wins over noMatches when set."},
 	]
 
 	const callbacks: Property[] = [
@@ -692,7 +691,7 @@
 			<li>Typing a character — back to the input, which receives it.</li>
 			<li><kbd>Backspace</kbd> in an empty input still removes the last chip.</li>
 		</ul>
-		<p>Each × is named by <code>labels.removeChip(label)</code> (default <code>"Remove &lt;label&gt;"</code>).</p>
+		<p>Each × is named by <code>labels.removeAriaLabel</code> / <code>labels.removeTooltip</code> (default <code>"Remove {"{item}"}"</code>).</p>
 	</Card>
 
 	<Grid spacing={3}>

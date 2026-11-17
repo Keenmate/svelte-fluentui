@@ -9,7 +9,8 @@ Flex-wrap container that hides child badges past `maxVisibleBadgeCount`, optiona
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
-	import {defaultBadgeGroupLabels, type BadgeGroupLabels} from "./BadgeGroup.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {BadgeGroupLabels} from "../i18n/labels.js"
 	/**
 	 * BadgeGroup — a flex-wrap container that limits how many child badges are
 	 * visible. Ported from pure-admin's `pa-badge-group`, with the visible limit
@@ -35,12 +36,8 @@ Flex-wrap container that hides child badges past `maxVisibleBadgeCount`, optiona
 		showAll?: boolean
 		/** Render a built-in clickable "+N more" / "Show less" toggle. */
 		expandable?: boolean
-		/** Label for the collapsed toggle; receives the hidden count. Default: `labels.more` (`+N more`). */
-		moreLabel?: (hiddenCount: number) => string
-		/** Label for the expanded toggle. Default: `labels.less` (`"Show less"`). */
-		lessLabel?: string
-		/** User-facing strings; merged over `defaultBadgeGroupLabels`. Explicit `moreLabel` / `lessLabel` props win. */
-		labels?: Partial<BadgeGroupLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.badgeGroup.*` keys) for this instance. `showMore` receives `{count}` (hidden badges). */
+		labels?: BadgeGroupLabels
 		/** Gap between badges (any CSS length). Default: `"0.5rem"`. */
 		gap?: string
 		/** The badges. */
@@ -58,8 +55,6 @@ Flex-wrap container that hides child badges past `maxVisibleBadgeCount`, optiona
 		maxVisibleBadgeCount = 5,
 		showAll = $bindable(false),
 		expandable = false,
-		moreLabel = undefined,
-		lessLabel = undefined,
 		labels: labelsProp = undefined,
 		gap = "0.5rem",
 		children = undefined,
@@ -68,7 +63,7 @@ Flex-wrap container that hides child badges past `maxVisibleBadgeCount`, optiona
 		...rest
 	}: Props = $props()
 
-	const labels = $derived<BadgeGroupLabels>({...defaultBadgeGroupLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("badgeGroup", () => labelsProp)
 
 	let containerEl: HTMLDivElement | undefined = $state()
 	let hiddenCount = $state(0)
@@ -124,7 +119,7 @@ Flex-wrap container that hides child badges past `maxVisibleBadgeCount`, optiona
 	{@render children?.()}
 	{#if expandable && hiddenCount > 0}
 		<button type="button" class="badge-group-toggle" aria-expanded={showAll} onclick={toggle}>
-			{showAll ? (lessLabel ?? labels.less) : (moreLabel ?? labels.more)(hiddenCount)}
+			{showAll ? t("showLess") : t("showMore", {count: hiddenCount})}
 		</button>
 	{/if}
 </div>

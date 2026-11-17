@@ -90,7 +90,7 @@
 		{name: "selectedDates", type: "Date[]", default: "[]", description: "Selected dates for multi/range mode (bindable)"},
 		{name: "pickerMonth", type: "Date", default: "new Date()", description: "Currently displayed month (bindable)"},
 		{name: "class / style", type: "string", default: "undefined", description: "Applied to the root <div> (style is merged with the cellSize/gap variables)"},
-		{name: "culture", type: "Intl.Locale", default: "browser locale", description: "Locale for formatting and the default first day of the week"},
+		{name: "culture", type: "Intl.Locale", default: "i18n.currentLocale", description: "Locale for formatting and the default first day of the week. Default: the i18n locale (the browser's region when it is the same language); follows i18n.setLocale()"},
 		{name: "firstDayOfWeek", type: "number | null", default: "undefined", description: "First day of the week (0 = Sunday … 6 = Saturday); overrides the culture default"},
 		{name: "cellSize", type: "string | number", default: "28px", description: "Day-cell edge length (number = px); resizes the whole grid"},
 		{name: "gap", type: "string | number", default: "2px", description: "Gap between cells (number = px)"},
@@ -108,7 +108,7 @@
 		{name: "getDatesToHighlightCallback", type: "(ctx: {date: Date}) => Date[]", default: "undefined", description: "Hover preview — returns the dates to highlight when the cursor is over a day"},
 		{name: "getDatesToSelectCallback", type: "(ctx: {date: Date}) => Date[]", default: "undefined", description: "Click selection — returns the dates to select on click. Multiple mode unions with existing; range mode replaces"},
 		{name: "maxSelectedDayCount", type: "number", default: "undefined", description: "Upper bound on selected dates (multiple/range). Exceeding fires onSelectionReject and leaves the selection untouched"},
-		{name: "labels", type: "Partial<CalendarLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultCalendarLabels. Keys: previousPeriod(title, view) / nextPeriod(title, view) (arrow names; default: the localised target month / year / range), maxSelectedDayCountExceeded(max) (onSelectionReject message). Month and weekday names follow culture."},
+		{name: "labels", type: "CalendarLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.calendar.* keys; see Guides → Translations). Keys: previousPeriodAriaLabel / previousPeriodTooltip / nextPeriodAriaLabel / nextPeriodTooltip (arrows; ICU params {title} = the localised target month / year / range, {view}; default \"{title}\"), maxSelectedDayCountExceeded ({max}; the onSelectionReject message). Month and weekday names follow culture."},
 	]
 
 	const actions: Property[] = []

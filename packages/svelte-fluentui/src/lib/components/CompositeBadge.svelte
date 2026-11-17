@@ -10,7 +10,8 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 	import type {Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
 	import {buttonLike} from "../helpers/button-like.js"
-	import {defaultCompositeBadgeLabels, type CompositeBadgeLabels} from "./CompositeBadge.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {CompositeBadgeLabels} from "../i18n/labels.js"
 	/**
 	 * CompositeBadge — a three-section chip: [icon][label][button].
 	 * Use for notification pills, status + count, or interactive/dismissible
@@ -39,10 +40,10 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 		button?: Snippet
 		/** Render the button section. Default: `true`. */
 		showButton?: boolean
-		/** Tooltip of the button; with the built-in × also its accessible name (default `labels.dismiss`). */
+		/** Tooltip of the button; with the built-in × also its accessible name (default `labels.dismissAriaLabel`). */
 		buttonTitle?: string
-		/** User-facing strings; merged over `defaultCompositeBadgeLabels`. An explicit `buttonTitle` wins. */
-		labels?: Partial<CompositeBadgeLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.compositeBadge.*` keys) for this instance. An explicit `buttonTitle` wins. */
+		labels?: CompositeBadgeLabels
 		/** Fires when the user clicks the label section (makes it look clickable). */
 		onLabelClick?: (ctx: {sourceEvent: MouseEvent}) => void
 		/** Fires when the user clicks the button section. */
@@ -73,9 +74,9 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 		...rest
 	}: Props = $props()
 
-	const labels = $derived<CompositeBadgeLabels>({...defaultCompositeBadgeLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("compositeBadge", () => labelsProp)
 	// The built-in × glyph needs a name; custom `button` content names itself.
-	const buttonAriaLabel = $derived(button ? null : (buttonTitle || labels.dismiss))
+	const buttonAriaLabel = $derived(button ? null : (buttonTitle || t("dismissAriaLabel")))
 
 	let classes = $derived.by(() => {
 		let cls = ["composite-badge", `composite-badge-${color}`]

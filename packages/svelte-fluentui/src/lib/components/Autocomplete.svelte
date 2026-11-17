@@ -22,7 +22,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	import FieldLabel from "./FieldLabel.svelte"
 	import Chip from "./Chip.svelte"
 	import {chipNavFromChip, chipNavFromInput, type ChipNavOptions} from "../helpers/chip-nav.js"
-	import {defaultAutocompleteLabels, type AutocompleteLabels} from "./Autocomplete.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {AutocompleteLabels} from "../i18n/labels.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
@@ -103,7 +104,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		footerContent?: Snippet
 		/** Custom option row; receives the option. */
 		optionTemplate?: Snippet<[OptionItem<T>]>
-		/** Text shown in the dropdown when the search matches no options (with `showOverlayOnEmptyResults`). Default: `labels.emptyText` (`"No results found"`). */
+		/** Text shown in the dropdown when the search matches no options (with `showOverlayOnEmptyResults`). Default: `labels.noMatches` (`"No results found"`). */
 		emptyText?: string
 		/** Custom content shown when the search matches no options; overrides `emptyText`. */
 		empty?: Snippet
@@ -140,8 +141,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		/** Fires on every open/close transition of the dropdown after mount (user
 		 * interaction or `bind:open`); not on initial render. */
 		onOpenChange?: (ctx: {open: boolean}) => void
-		/** User-facing strings; merged over `defaultAutocompleteLabels`. Explicit `placeholder` / `emptyText` props win. */
-		labels?: Partial<AutocompleteLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.autocomplete.*` keys) for this instance. Explicit `placeholder` / `emptyText` props win. */
+		labels?: AutocompleteLabels
 	}
 
 	/** Other native attributes and events go to the root `<div>`. */
@@ -199,7 +200,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		...rest
 	}: Props = $props()
 
-	const labels = $derived<AutocompleteLabels>({...defaultAutocompleteLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("autocomplete", () => labelsProp)
 
 	let searchText = $state("")
 	let isOpen = $state(false)
@@ -640,7 +641,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	let effectivePlaceholder = $derived(
 		(tagsPosition === 'inline' && selectedOptions.length > 0 && effectiveMultiple)
 			? ''
-			: (placeholder ?? labels.placeholder)
+			: (placeholder ?? t("placeholder"))
 	)
 
 	// Handle input change
@@ -725,7 +726,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 						variant="external"
 						removeFocusable
 						showRemove={!disabled && !readonly}
-						removeLabel={labels.removeChip(getOptionText(value))}
+						labels={{removeAriaLabel: t("removeAriaLabel", {item: getOptionText(value)}), removeTooltip: t("removeTooltip", {item: getOptionText(value)})}}
 						onRemove={({sourceEvent: e}) => removeOption(value, e)}
 					/>
 				{/each}
@@ -774,7 +775,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 						variant="inline"
 						contrast={readonly || appearance === 'filled'}
 						showRemove={!disabled && !readonly}
-						removeLabel={labels.removeChip(getOptionText(value))}
+						labels={{removeAriaLabel: t("removeAriaLabel", {item: getOptionText(value)}), removeTooltip: t("removeTooltip", {item: getOptionText(value)})}}
 						onRemove={({sourceEvent: e}) => removeOptionFromChip(value, e)}
 					/>
 				{/each}
@@ -815,8 +816,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 					type="button"
 					class="autocomplete-clear fluent-field-clear"
 					tabindex="-1"
-					aria-label={labels.clearSelection}
-					title={labels.clearSelection}
+					aria-label={t("clearAriaLabel")}
+					title={t("clearTooltip")}
 					onpointerdown={(ev) => ev.preventDefault()}
 					onclick={clearSelection}
 				>
@@ -833,7 +834,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 			{#if showLoading || end || showSearchIcon}
 				<div class="input-end">
 					{#if showLoading}
-						<div class="loading-indicator" role="img" aria-label={labels.loading}>
+						<div class="loading-indicator" role="img" aria-label={t("loadingAriaLabel")}>
 							<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" class="spinner">
 								<circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" fill="none" opacity="0.25"/>
 								<path d="M8 1a7 7 0 0 1 7 7" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -847,7 +848,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 							class="search-button"
 							tabindex="-1"
 							onclick={toggleDropdown}
-							aria-label={isOpen ? labels.closeOptions : labels.showOptions}
+							aria-label={isOpen ? t("closePopupAriaLabel") : t("openPopupAriaLabel")}
 							disabled={disabled || readonly}
 						>
 							<!-- FluentUI ic_fluent_search_16_regular -->
@@ -869,7 +870,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 						variant="external"
 						removeFocusable
 						showRemove={!disabled && !readonly}
-						removeLabel={labels.removeChip(getOptionText(value))}
+						labels={{removeAriaLabel: t("removeAriaLabel", {item: getOptionText(value)}), removeTooltip: t("removeTooltip", {item: getOptionText(value)})}}
 						onRemove={({sourceEvent: e}) => removeOption(value, e)}
 					/>
 				{/each}
@@ -917,7 +918,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 						{/each}
 					</div>
 					{#if filteredOptions.length === 0 && showOverlayOnEmptyResults}
-						<div class="no-results">{#if empty}{@render empty()}{:else}{emptyText ?? labels.emptyText}{/if}</div>
+						<div class="no-results">{#if empty}{@render empty()}{:else}{emptyText ?? t("noMatches", {query: searchText})}{/if}</div>
 					{/if}
 					{#if footerContent}
 						<div class="options-footer">
@@ -931,7 +932,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		<!-- Max selections message - Don't show for single-select -->
 		{#if isMaxReached && !isSingleSelect}
 			<div class="max-message" role="status">
-				{labels.maxSelectionReached(maxSelectionCount as number)}
+				{t("maxSelectionReached", {max: maxSelectionCount as number})}
 			</div>
 		{/if}
 	</div>

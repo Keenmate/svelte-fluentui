@@ -10,7 +10,7 @@
 	import {groupSegments} from "../helpers/option-groups.js"
 	import {optionValue} from "../helpers/option-dom.js"
 	import {parseLocalDate, toLocalDateString} from "../helpers/date.js"
-	import {defaultQuickGridLabels} from "./quickgrid/labels.js"
+	import {useTranslations, type Translate} from "../i18n/translate.svelte.js"
 	import {OptionKeys, EMPTY_KEY} from "./quickgrid/option-keys.js"
 	import type {OptionItem} from "../types/index.js"
 	import type {ComboboxFilter} from "../types/combobox.js"
@@ -18,12 +18,8 @@
 	import type {
 		QuickGridEditorType as EditorType,
 		QuickGridEditorOption as EditorOption,
-		GridCellEditorOptions as EditorOptions,
-		QuickGridLabels
+		GridCellEditorOptions as EditorOptions
 	} from "./QuickGrid.types.js"
-
-	type EditorLabels = Pick<QuickGridLabels, "editorEmptyOption" | "editorSelectPlaceholder" | "editorSearchPlaceholder" |
-		"editorLoading" | "editorSearching" | "editorEmptyText" | "editorFilterEmptyText">
 
 	type Props = {
 		type: EditorType
@@ -44,8 +40,8 @@
 		autofocus?: boolean
 		/** What the cell shows for `value` — the dropdown text when no option has the value. */
 		displayText?: string
-		/** Dropdown strings (QuickGrid passes its resolved `labels`). */
-		labels?: EditorLabels
+		/** Text lookup for the dropdown strings (`svelteFluentUI.quickGrid.editor*` keys); QuickGrid passes its own so its `labels` overrides apply. */
+		t?: Translate<"quickGrid">
 	}
 
 	let {
@@ -60,7 +56,7 @@
 		initialSearchQuery = "",
 		autofocus = false,
 		displayText = undefined,
-		labels = defaultQuickGridLabels
+		t = useTranslations("quickGrid", () => undefined)
 	}: Props = $props()
 
 	// Internal state
@@ -511,13 +507,13 @@
 			maxDropdownHeight="200px"
 			bind:open={dropdownOpen}
 			value={currentKey}
-			placeholder={options.emptyLabel || labels.editorEmptyOption}
+			placeholder={options.emptyLabel || t("editorEmptyOption")}
 			{valueText}
 			searchBehavior={options.searchBehavior}
 			onChange={({value: key}) => pick(key as string)}
 		>
 			{#if options.allowEmpty}
-				<Option value={EMPTY_KEY} onclick={() => pick(EMPTY_KEY)}>{options.emptyLabel || labels.editorEmptyOption}</Option>
+				<Option value={EMPTY_KEY} onclick={() => pick(EMPTY_KEY)}>{options.emptyLabel || t("editorEmptyOption")}</Option>
 			{/if}
 			{#if selectSegments}
 				{#each selectSegments as segment, i (i)}
@@ -533,7 +529,7 @@
 				{#each dropdownOptions as opt (opt.value)}{@render selectOption(opt)}{/each}
 			{/if}
 			{#if dropdownOptions.length === 0}
-				<div class="cell-dropdown-empty">{isLoadingOptions ? labels.editorLoading : labels.editorEmptyText}</div>
+				<div class="cell-dropdown-empty">{isLoadingOptions ? t("editorLoading") : t("editorEmpty")}</div>
 			{/if}
 		</Select>
 	{:else if type === "date"}
@@ -564,14 +560,14 @@
 				value={currentKey ? [currentKey] : []}
 				options={dropdownOptions}
 				{valueText}
-				placeholder={options.placeholder || (autocomplete ? labels.editorSearchPlaceholder : labels.editorSelectPlaceholder)}
+				placeholder={options.placeholder || (autocomplete ? t("editorSearchPlaceholder") : t("editorSelectPlaceholder"))}
 				searchBehavior={options.searchBehavior}
 				filterCallback={autocomplete ? localFilter : undefined}
 				onSearch={autocomplete && options.onSearch ? handleAutocompleteSearch : undefined}
 				searchDelay={options.searchDelay ?? 300}
 				loading={isLoadingOptions || search.loading}
-				loadingText={isLoadingOptions ? labels.editorLoading : labels.editorSearching}
-				emptyText={autocomplete ? labels.editorEmptyText : labels.editorFilterEmptyText}
+				labels={{loading: isLoadingOptions ? t("editorLoading") : t("editorSearching")}}
+				emptyText={autocomplete ? t("editorEmpty") : t("editorNoMatches")}
 				onChange={({value: picked}) => { if (picked.length) pick(picked[0]) }}
 			/>
 		{/key}

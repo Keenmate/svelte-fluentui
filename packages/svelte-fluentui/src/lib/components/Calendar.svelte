@@ -21,9 +21,10 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	import {CalendarVerticalPosition} from "../fluent-ui/constants/calendar-vertical-position.js"
 	import {tick} from "svelte"
 	import {getLargest, getSmallest} from "../helpers/array.js"
-	import {defaultLocale} from "../helpers/locale.js"
+	import {defaultCulture} from "../helpers/locale.js"
 	import type {RestProps} from "../types/index.js"
-	import {defaultCalendarLabels, type CalendarLabels} from "./Calendar.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {CalendarLabels} from "../i18n/labels.js"
 
 	type OwnProps = {
 		/** Selected date in single mode. Bindable. Default: today. */
@@ -32,7 +33,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		selectedDates?: Date[]
 		/** Month currently shown. Bindable. Default: the current month. */
 		pickerMonth?: Date
-		/** Locale for month/day names and the default first day of the week. Default: the browser locale. */
+		/** Locale for month/day names and the default first day of the week. Default: the i18n locale (`i18n.currentLocale`; the browser's region when it is the same language), following locale switches. */
 		culture?: Intl.Locale
 		/** First day of the week (0=Sunday, 1=Monday, …, 6=Saturday). Overrides culture's default when set. */
 		firstDayOfWeek?: number | null
@@ -78,8 +79,8 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		onDayHover?: (ctx: {date: Date | null}) => void
 		/** Custom day-cell content; receives the `CalendarDay`. */
 		day?: Snippet<[day: CalendarDay]>
-		/** User-facing strings; merged over `defaultCalendarLabels`. Month and weekday names follow `culture`. */
-		labels?: Partial<CalendarLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.calendar.*` keys) for this instance. Month and weekday names follow `culture`. */
+		labels?: CalendarLabels
 		/** Extra classes for the root `<div>`. */
 		class?: string
 		/** Inline style for the root `<div>` (appended after the size variables). */
@@ -94,7 +95,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		    selectedDates                   = $bindable([]),
 		    pickerMonth                     = $bindable(new Date()),
 		    view                            = "days",
-		    culture                         = defaultLocale(),
+		    culture: cultureProp            = undefined,
 		    firstDayOfWeek                  = undefined,
 		    disabledCheckAllDaysOfMonthYear = undefined,
 		    animatePeriodChanges            = undefined,
@@ -122,7 +123,8 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		    ...rest
 	    }: Props = $props()
 
-	const labels = $derived<CalendarLabels>({...defaultCalendarLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("calendar", () => labelsProp)
+	const culture = $derived(cultureProp ?? defaultCulture())
 
 	let _rangeSelector                      = $state(new RangeOfDates())
 	let _rangeSelectorMouseOver             = $state(new RangeOfDates())
@@ -217,7 +219,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	function fireMaxExceeded(attempted: Date[]) {
 		onSelectionReject?.({
 			code:      "max-selected-day-count-exceeded",
-			message:   labels.maxSelectedDayCountExceeded(maxSelectedDayCount as number),
+			message:   t("maxSelectedDayCountExceeded", {max: maxSelectedDayCount as number}),
 			attempted,
 			current:   selectedDates,
 			max:       maxSelectedDayCount as number
@@ -698,9 +700,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 						<div class="previous" aria-hidden="true" aria-disabled="true"></div>
 					{:else}
 						<div
-							class="previous" title={labels.previousPeriod(titles.previousTitle, titles.view)}
+							class="previous" title={t("previousPeriodTooltip", {title: titles.previousTitle, view: titles.view})}
 							role="button" tabindex={disabled ? null : 0}
-							aria-label={labels.previousPeriod(titles.previousTitle, titles.view)}
+							aria-label={t("previousPeriodAriaLabel", {title: titles.previousTitle, view: titles.view})}
 							onclick={onPreviousButtonClicked}
 							onkeydown={(ev) => activateOnKey(ev, () => onPreviousButtonClicked(ev as unknown as MouseEvent))}
 						>
@@ -711,9 +713,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 						<div class="next" aria-hidden="true" aria-disabled="true"></div>
 					{:else}
 						<div
-							class="next" title={labels.nextPeriod(titles.nextTitle, titles.view)}
+							class="next" title={t("nextPeriodTooltip", {title: titles.nextTitle, view: titles.view})}
 							role="button" tabindex={disabled ? null : 0}
-							aria-label={labels.nextPeriod(titles.nextTitle, titles.view)}
+							aria-label={t("nextPeriodAriaLabel", {title: titles.nextTitle, view: titles.view})}
 							onclick={onNextButtonHandlerAsync}
 							onkeydown={(ev) => activateOnKey(ev, () => onNextButtonHandlerAsync(ev as unknown as MouseEvent))}
 						>

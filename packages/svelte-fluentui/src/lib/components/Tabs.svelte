@@ -36,7 +36,8 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	import {cssIdSelector, indicatorStyle as computeIndicatorStyle, measureVisibleCount, scrollState} from "./tabs/measure.js"
 	import {SwipeTracker} from "./tabs/swipe.js"
 	import TabsScrollButton from "./tabs/TabsScrollButton.svelte"
-	import {defaultTabsLabels, type TabsLabels} from "./Tabs.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {TabsLabels} from "../i18n/labels.js"
 	import TabsOverflowMenu from "./tabs/TabsOverflowMenu.svelte"
 
 	type OwnProps = {
@@ -83,8 +84,8 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 		swipe?: boolean
 		/** Fires when the user activates another tab. `tab` is the newly active one. */
 		onActiveIdChange?: (ctx: {activeId: string; oldActiveId: string | undefined; tab: TabInfo}) => void
-		/** User-facing strings; merged over `defaultTabsLabels`. */
-		labels?: Partial<TabsLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.tabs.*` keys) for this instance. */
+		labels?: TabsLabels
 	}
 
 	/** Other native attributes and events (`aria-label`, `data-*`, …) go to the root `<div>`. */
@@ -108,7 +109,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 		...rest
 	}: Props = $props()
 
-	const labels = $derived<TabsLabels>({...defaultTabsLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("tabs", () => labelsProp)
 
 	const stripStyle = $derived.by(() => {
 		const parts: string[] = []
@@ -186,11 +187,8 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	 * ancestor). Scroll offsets and offsetLeft are physical, so the scroll
 	 * buttons, arrow keys and the vertical indicator flip on it.
 	 */
-	let isRtl = $state(false)
-
 	function readRtl(): boolean {
-		isRtl = !!tablistRef && getComputedStyle(tablistRef).direction === "rtl"
-		return isRtl
+		return !!tablistRef && getComputedStyle(tablistRef).direction === "rtl"
 	}
 
 	function updateIndicator() {
@@ -483,7 +481,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 >
 	<div class="fluent-tabs-strip" style={stripStyle}>
 		{#if responsive === "scroll" && canScrollStart}
-			<TabsScrollButton side="start" horizontal={isHorizontal} rtl={isRtl} {labels} onclick={() => scrollArrow(-1)} />
+			<TabsScrollButton side="start" horizontal={isHorizontal} {t} onclick={() => scrollArrow(-1)} />
 		{/if}
 
 		<div
@@ -528,7 +526,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 							autocapitalize="off"
 							spellcheck="false"
 							class="fluent-tab-label editable-label"
-							title={labels.editTabName}
+							title={t("editNameTooltip")}
 						>{tab.label}</span>
 					{:else if tab.label}
 						<span class="fluent-tab-label">{tab.label}</span>
@@ -542,8 +540,8 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 							class="fluent-tab-close"
 							role="button"
 							tabindex="-1"
-							title={labels.closeTabTitle}
-							aria-label={labels.closeTab}
+							title={t("closeTooltip")}
+							aria-label={t("closeAriaLabel")}
 							onclick={(e) => handleCloseClick(tab, e)}
 						>
 							<svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" aria-hidden="true">
@@ -561,7 +559,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 					class="fluent-tab fluent-tabs-more-btn fluent-focus-ring"
 					class:active={overflowOpen}
 					onclick={() => overflowOpen = !overflowOpen}
-					aria-label={labels.moreTabs}
+					aria-label={t("moreTabsAriaLabel")}
 					aria-haspopup="menu"
 					aria-expanded={overflowOpen}
 				>
@@ -614,7 +612,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 		{/if}
 
 		{#if responsive === "scroll" && canScrollEnd}
-			<TabsScrollButton side="end" horizontal={isHorizontal} rtl={isRtl} {labels} onclick={() => scrollArrow(1)} />
+			<TabsScrollButton side="end" horizontal={isHorizontal} {t} onclick={() => scrollArrow(1)} />
 		{/if}
 	</div>
 

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type {QuickGridLabels} from "../QuickGrid.types.js"
+	import type {Translate} from "../../i18n/translate.svelte.js"
 
 	// QuickGrid's pager (internal): previous / next, "Page x of y (n items)", optional page-size select.
 	type Props = {
-		labels: QuickGridLabels
+		t: Translate<"quickGrid">
 		/** 1-based, already clamped. */
 		page: number
 		pageCount: number
@@ -18,7 +18,7 @@
 		pageSizeChangeCallback: (ctx: {pageSize: number}) => Promise<boolean>
 	}
 
-	let {labels, page, pageCount, itemCount, pageSize, pageSizes, busy, onPageRequest, pageSizeChangeCallback}: Props = $props()
+	let {t, page, pageCount, itemCount, pageSize, pageSizes, busy, onPageRequest, pageSizeChangeCallback}: Props = $props()
 
 	function changePageSize(select: HTMLSelectElement) {
 		const size = Number(select.value)
@@ -29,7 +29,7 @@
 	}
 </script>
 
-<nav class="pagination" aria-label={labels.pagination} aria-busy={busy || null}>
+<nav class="pagination" aria-label={t("paginationAriaLabel")} aria-busy={busy || null}>
 	{#if pageSizes.length > 0}
 		<label class="pagination-size">
 			<select
@@ -42,7 +42,7 @@
 					<option value={size}>{size}</option>
 				{/each}
 			</select>
-			{labels.perPage}
+			{t("perPage")}
 		</label>
 	{/if}
 
@@ -51,13 +51,13 @@
 		disabled={page <= 1 || busy}
 		onclick={() => onPageRequest({page: page - 1})}
 	>
-		{labels.previousPage}
+		{t("previousPage")}
 	</button>
 
 	<div class="pagination-info">
-		{labels.pageInfo(page, pageCount)}
+		{t("pageInfo", {page, pageCount})}
 		<span class="item-count">
-			({labels.itemCount(itemCount)})
+			({t("itemCount", {count: itemCount})})
 		</span>
 	</div>
 
@@ -66,7 +66,7 @@
 		disabled={page >= pageCount || busy}
 		onclick={() => onPageRequest({page: page + 1})}
 	>
-		{labels.nextPage}
+		{t("nextPage")}
 	</button>
 </nav>
 

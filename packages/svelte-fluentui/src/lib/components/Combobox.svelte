@@ -44,7 +44,8 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	import {debounce} from "../helpers/debounce.js"
 	import {groupSegments} from "../helpers/option-groups.js"
 	import {chipNavFromChip, chipNavFromInput, type ChipNavOptions} from "../helpers/chip-nav.js"
-	import {defaultComboboxLabels, type ComboboxLabels} from "./Combobox.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {ComboboxLabels} from "../i18n/labels.js"
 	import {normalizeForSearch, startsWithText, type SearchBehavior} from "../helpers/text.js"
 	import {
 		OPTION_SELECTOR,
@@ -134,7 +135,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		tagsPosition?: "inline" | "top" | "bottom"
 		/** Minimum typed characters before the dropdown opens / filters (and `onSearch` fires). Default: no minimum. */
 		minSearchLength?: number
-		/** Text shown inside the dropdown when the filter matches no options. Default: `labels.emptyText` ("No results found"). */
+		/** Text shown inside the dropdown when the filter matches no options. Default: `labels.noMatches` ("No results found"). */
 		emptyText?: string
 		/** Custom content shown when the filter matches no options; overrides `emptyText`. */
 		empty?: Snippet
@@ -151,12 +152,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		/** Custom client-side matcher, replacing the built-in substring match. Return `true` to keep the option. Ignored when `onSearch` is set. */
 		filterCallback?: ComboboxFilter
 		/** Parent-controlled loading flag (for async `onSearch`). While true the
-		 * dropdown shows `loadingText` instead of the empty-state message. */
+		 * dropdown shows `labels.loading` ("Searching…") instead of the empty-state message. */
 		loading?: boolean
-		/** Text shown while `loading` is true. Default: `labels.loadingText` ("Searching…"). */
-		loadingText?: string
-		/** User-facing strings; merged over `defaultComboboxLabels`. Explicit `emptyText` / `loadingText` props win. */
-		labels?: Partial<ComboboxLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.combobox.*` keys) for this instance. An explicit `emptyText` wins over `noMatches` (which receives `{query}`). */
+		labels?: ComboboxLabels
 		/** Single-select: text the input shows for a `value` no rendered option has (e.g. a
 		 * result of an earlier async search). Default: empty. */
 		valueText?: string
@@ -227,7 +226,6 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		searchBehavior = "normalized",
 		filterCallback = undefined,
 		loading = undefined,
-		loadingText = undefined,
 		labels: labelsProp = undefined,
 		valueText = undefined,
 		openOnFocus = false,
@@ -331,7 +329,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	// doesn't flash before results arrive — even if the parent doesn't drive `loading`.
 	let searchPending = $state(false)
 
-	const labels = $derived<ComboboxLabels>({...defaultComboboxLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("combobox", () => labelsProp)
 
 	let inputEl: HTMLInputElement | undefined = $state()
 	let mainEl: HTMLElement | undefined = $state()
@@ -795,7 +793,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				variant="external"
 				removeFocusable
 				showRemove={!disabled && !readonly}
-				removeLabel={labels.removeChip(chipLabel(val))}
+				labels={{removeAriaLabel: t("removeAriaLabel", {item: chipLabel(val)}), removeTooltip: t("removeTooltip", {item: chipLabel(val)})}}
 				onRemove={({sourceEvent: e}) => removeValue(val, e)}
 			/>
 		{/each}
@@ -874,7 +872,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 						variant="inline"
 						contrast={readonly || appearance === "filled"}
 						showRemove={!disabled && !readonly}
-						removeLabel={labels.removeChip(chipLabel(val))}
+						labels={{removeAriaLabel: t("removeAriaLabel", {item: chipLabel(val)}), removeTooltip: t("removeTooltip", {item: chipLabel(val)})}}
 						onRemove={({sourceEvent: e}) => removeValue(val, e)}
 					/>
 				{/each}
@@ -910,8 +908,8 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				type="button"
 				class="combobox-clear fluent-field-clear"
 				tabindex="-1"
-				aria-label={labels.clearSelection}
-				title={labels.clearSelection}
+				aria-label={t("clearAriaLabel")}
+				title={t("clearTooltip")}
 				onpointerdown={(ev) => ev.preventDefault()}
 				onclick={clearValue}
 			>
@@ -974,11 +972,11 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				{#if displayedCount === 0}
 					<div class="combobox-no-data">
 						{#if loading || searchPending}
-							{loadingText ?? labels.loadingText}
+							{t("loading")}
 						{:else if empty}
 							{@render empty()}
 						{:else}
-							{emptyText ?? labels.emptyText}
+							{emptyText ?? t("noMatches", {query: typed})}
 						{/if}
 					</div>
 				{/if}

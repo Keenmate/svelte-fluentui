@@ -23,7 +23,7 @@
 		{name: "lastPageIndex", type: "number", default: "0", description: "Last page (0-based)"},
 		{name: "canGoBack", type: "boolean", default: "currentPageIndex > 0", description: "Allow navigating backwards"},
 		{name: "canGoForwards", type: "boolean", default: "currentPageIndex < lastPageIndex", description: "Allow navigating forwards"},
-		{name: "labels", type: "Partial<PaginatorLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultPaginatorLabels. Keys: pagination (nav name), firstPage, previousPage, nextPage, lastPage, pageInfo(page, pageCount), itemCount(count). Digit runs in pageInfo / itemCount render bold."},
+		{name: "labels", type: "PaginatorLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.paginator.* keys; see Guides → Translations). Keys: paginationAriaLabel (nav name), firstPageAriaLabel / firstPageTooltip, previousPageAriaLabel / previousPageTooltip, nextPageAriaLabel / nextPageTooltip, lastPageAriaLabel / lastPageTooltip, pageInfo ({page}, {pageCount}), itemCount ({count}, ICU plural). Digit runs in pageInfo / itemCount render bold."},
 	]
 
 	const callbacks: Property[] = [

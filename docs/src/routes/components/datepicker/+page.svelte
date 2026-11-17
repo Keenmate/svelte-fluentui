@@ -35,7 +35,7 @@
 	const properties: Property[] = [
 		{name: "id", type: "string", default: "undefined", description: "Id of the input (also the label's for)."},
 		{name: "value", type: "Date | null", default: "null", description: "The currently selected date. Supports two-way binding with bind:value."},
-		{name: "placeholder", type: "string", default: '"Select a date"', description: "Placeholder text shown in the text field when no date is selected. Wins over labels.placeholder."},
+		{name: "placeholder", type: "string", default: '"Select a date"', description: "Placeholder text shown in the text field when no date is selected. Wins over the placeholder text (labels.placeholder)."},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the date picker, preventing interaction."},
 		{name: "readonly", type: "boolean", default: "false", description: "Makes the date picker read-only; calendar cannot be opened."},
 		{name: "showClear", type: "boolean", default: "true", description: "A clear (×) button before the picker icon while a value is set, visible while the field is hovered or focused (like fluent-search). Not a Tab stop; Delete / Backspace on the field clears too."},
@@ -43,7 +43,7 @@
 		{name: "autofocus", type: "boolean", default: "undefined", description: "Automatically focuses the input on mount."},
 		{name: "label", type: "string", default: "undefined", description: "Label text displayed above the input field."},
 		{name: "appearance", type: "string", default: "undefined", description: "Visual appearance of the text field (e.g. 'outline', 'filled-darker')."},
-		{name: "culture", type: "Intl.Locale", default: "navigator.language", description: "Locale used for date formatting and calendar display."},
+		{name: "culture", type: "Intl.Locale", default: "i18n.currentLocale", description: "Locale used for date formatting and calendar display. Default: the i18n locale (i18n.currentLocale; the browser's region when it is the same language); follows i18n.setLocale()."},
 		{name: "dateFormat", type: "Intl.DateTimeFormatOptions", default: '{ year: "numeric", month: "long", day: "numeric" }', description: "Format options passed to Intl.DateTimeFormat to control how the selected date is displayed."},
 		{name: "minDate", type: "Date", default: "undefined", description: "Minimum selectable date. Dates before this are disabled in the calendar."},
 		{name: "maxDate", type: "Date", default: "undefined", description: "Maximum selectable date. Dates after this are disabled in the calendar."},
@@ -59,12 +59,10 @@
 		{name: "closeOnSelect", type: "boolean", default: "true", description: "When true, the popup closes immediately after a date is picked."},
 		{name: "openOnInputClick", type: "boolean", default: "true", description: "When true, clicking anywhere on the input area opens the calendar popup (matching FluentUI Blazor). Set false to require clicking the calendar icon."},
 		{name: "open", type: "boolean", default: "false", description: "Bindable open state of the calendar popup."},
-		{name: "openCalendarIconAriaLabel", type: "string", default: '"Open calendar"', description: "ARIA label for the calendar trigger button. Wins over labels.openCalendar."},
-		{name: "popupAriaLabel", type: "string", default: '"Choose date"', description: "Accessible name of the calendar popup (role=\"dialog\"). Opening it from the keyboard (Enter / Space on the button, ArrowDown on the input) moves focus onto the calendar's focused date; closing from inside returns focus to the button. Wins over labels.popup."},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip (title) on the input."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class names applied to the root element."},
 		{name: "style", type: "string", default: '""', description: "Inline styles applied to the root element."},
-		{name: "labels", type: "Partial<DatePickerLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultDatePickerLabels. Keys: placeholder, openCalendar, popup, clear, plus the CalendarLabels keys (previousPeriod, nextPeriod, maxSelectedDayCountExceeded), forwarded to the popup Calendar. The placeholder / openCalendarIconAriaLabel / popupAriaLabel props win when set."},
+		{name: "labels", type: "DatePickerLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.datePicker.* and svelteFluentUI.calendar.* keys; see Guides → Translations). Keys: placeholder, openPopupAriaLabel (calendar button), popupAriaLabel (the role=\"dialog\" popup — opening it from the keyboard moves focus onto the calendar's focused date; closing from inside returns focus to the button), clearAriaLabel, clearTooltip, plus the Calendar keys (previousPeriodAriaLabel, previousPeriodTooltip, nextPeriodAriaLabel, nextPeriodTooltip, maxSelectedDayCountExceeded), forwarded to the popup Calendar. The placeholder prop wins when set."},
 	]
 
 	const callbacks: Property[] = [

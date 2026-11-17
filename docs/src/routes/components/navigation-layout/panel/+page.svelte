@@ -27,7 +27,7 @@
 		{name: "pinned", type: "boolean", default: "false", description: "Render in place as a static <aside> (no portal, overlay, Escape or outside-click handling)"},
 		{name: "class", type: "string", default: "undefined", description: "Additional CSS class on the root"},
 		{name: "style", type: "string", default: "undefined", description: "Inline style appended on the panel surface"},
-		{name: "labels", type: "Partial<PanelLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultPanelLabels. Keys: close (overlay name)."},
+		{name: "labels", type: "PanelLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.panel.* keys; see Guides → Translations). Keys: closeAriaLabel (overlay name)."},
 	]
 
 	const panelCallbacks: Property[] = [

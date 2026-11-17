@@ -1,6 +1,6 @@
 # 07 — Translations: one app-wide dictionary (2.0.0)
 
-Status: **proposal, revised 2026-11-17** after the user's review. Nothing changed in code yet.
+Status: **done 2026-11-17** (commit after 13a6890). All components converted; docs guide `/guides/translations`.
 
 Decided by the user:
 - Built-in UI text moves to **one flat, app-wide dictionary** in the pure-admin style

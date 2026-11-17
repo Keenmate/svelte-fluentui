@@ -1,6 +1,7 @@
 // Internal (InputFile): pure derivations over the file list — hint lines, validity, progress totals, status labels. Not exported from the package.
 
-import type {InputFileItem, InputFileLabels, InputFileStatus} from "../InputFile.types.js"
+import type {InputFileItem, InputFileStatus} from "../InputFile.types.js"
+import type {Translate} from "../../i18n/translate.svelte.js"
 import {formatInputFileSize} from "../InputFile.utils.js"
 
 /** Bytes already accepted toward totalMaxSize — errored items don't count (they won't upload). */
@@ -23,50 +24,47 @@ export type LimitsInfo = {
 // the popover header where the card (and its inline hints) isn't visible.
 // A non-empty `limitsHint` (formatLimits) replaces every per-limit line.
 export function dropZoneHints(
-	labels: InputFileLabels,
+	t: Translate<"inputFile">,
 	limits: LimitsInfo,
 	limitsHint: string | null,
 	itemCount: number,
 	currentTotalSize: number
 ): string[] {
 	const parts: string[] = []
-	if (limits.accept) parts.push(labels.accepted(limits.accept))
+	if (limits.accept) parts.push(t("accepted", {accept: limits.accept}))
 	if (limitsHint) {
 		parts.push(limitsHint)
 	} else {
 		const {maxFileSize, minFileSize, totalMaxSize, multiple, maxFileCount, minFileCount} = limits
-		if (maxFileSize) parts.push(labels.maxSize(formatInputFileSize(maxFileSize)))
-		if (minFileSize) parts.push(labels.minSize(formatInputFileSize(minFileSize)))
+		if (maxFileSize) parts.push(t("maxSize", {size: formatInputFileSize(maxFileSize)}))
+		if (minFileSize) parts.push(t("minSize", {size: formatInputFileSize(minFileSize)}))
 		if (totalMaxSize > 0) {
-			parts.push(labels.totalMaxSize(
-				formatInputFileSize(totalMaxSize),
-				itemCount > 0
-					? formatInputFileSize(Math.max(0, totalMaxSize - currentTotalSize))
-					: undefined
-			))
+			const size = formatInputFileSize(totalMaxSize)
+			parts.push(itemCount > 0
+				? t("totalMaxSizeRemaining", {size, remaining: formatInputFileSize(Math.max(0, totalMaxSize - currentTotalSize))})
+				: t("totalMaxSize", {size}))
 		}
 		if (multiple && maxFileCount) {
-			parts.push(labels.maxFilesHint(
-				maxFileCount,
-				itemCount > 0 ? Math.max(0, maxFileCount - itemCount) : undefined
-			))
+			parts.push(itemCount > 0
+				? t("maxFilesRemaining", {max: maxFileCount, remaining: Math.max(0, maxFileCount - itemCount)})
+				: t("maxFiles", {max: maxFileCount}))
 		}
-		if (minFileCount > 0) parts.push(labels.minFileCountHint(minFileCount))
+		if (minFileCount > 0) parts.push(t("minFiles", {min: minFileCount}))
 	}
 	return parts
 }
 
 export function validityReasons(
-	labels: InputFileLabels,
+	t: Translate<"inputFile">,
 	items: InputFileItem[],
 	minFileCount: number,
 	maxFileCount: number
 ): string[] {
 	const reasons: string[] = []
-	if (minFileCount && items.length < minFileCount) reasons.push(labels.tooFewFiles(minFileCount))
+	if (minFileCount && items.length < minFileCount) reasons.push(t("tooFewFiles", {min: minFileCount}))
 	if (maxFileCount && items.length > maxFileCount)
-		reasons.push(labels.tooManyFiles(maxFileCount))
-	if (items.some((i) => i.status === "error")) reasons.push(labels.error)
+		reasons.push(t("tooManyFiles", {max: maxFileCount}))
+	if (items.some((i) => i.status === "error")) reasons.push(t("error"))
 	return reasons
 }
 
@@ -110,19 +108,19 @@ export function badgeStatus(items: InputFileItem[]): InputFileStatus {
 	return "pending"
 }
 
-export function statusLabel(labels: InputFileLabels, status: InputFileStatus): string {
+export function statusLabel(t: Translate<"inputFile">, status: InputFileStatus): string {
 	switch (status) {
 		case "pending":
-			return labels.pending
+			return t("pending")
 		case "uploading":
-			return labels.uploading
+			return t("uploading")
 		case "paused":
-			return labels.paused
+			return t("paused")
 		case "completed":
-			return labels.completed
+			return t("completed")
 		case "error":
-			return labels.error
+			return t("error")
 		case "cancelled":
-			return labels.cancelled
+			return t("cancelled")
 	}
 }

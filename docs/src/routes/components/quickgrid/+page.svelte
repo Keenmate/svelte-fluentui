@@ -19,7 +19,7 @@
 		{name: "filters", type: "Record<string, string>", default: "{}", description: "Bindable. Filter text per field"},
 		{name: "filterMode", type: '"client" | "server"', default: '"client"', description: "\"server\": the grid doesn't filter items — it reports the filters (onFiltersChange / onDataRequest) and you replace items. paginationMode=\"server\" implies it"},
 		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How filter inputs match the cell's displayed text (getDisplayValueCallback): normalized ignores case and diacritics (zurich finds Zürich). A column can override it"},
-		{name: "culture", type: "Intl.Locale", default: "browser locale", description: "Locale for sorting text and showing Date values"},
+		{name: "culture", type: "Intl.Locale", default: "i18n.currentLocale", description: "Locale for sorting text and showing Date values. Default: the i18n locale (the browser's region when it is the same language); follows i18n.setLocale()"},
 		{name: "pageable", type: "boolean", default: "false", description: "Show the pager"},
 		{name: "pageSize", type: "number", default: "10", description: "Bindable. Rows per page"},
 		{name: "pageSizes", type: "number[]", default: "undefined", description: "Page sizes offered in the pager (the pager then always shows)"},
@@ -45,7 +45,7 @@
 		{name: "contextMenu", type: "QuickGridContextMenuConfig<T>[]", default: "undefined", description: 'Context menu entries shown on right-click — built-in names ("expand-all", "collapse-all", "expand-tree", "collapse-tree"), menu items, or {divider: true}'},
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessible name of the <table>"},
 		{name: "ariaLabelledby", type: "string", default: "undefined", description: "Id of the element that names the <table> (e.g. a heading)"},
-		{name: "labels", type: "Partial<QuickGridLabels>", default: "defaultQuickGridLabels", description: "User-facing strings (filter row, pager, tree chevrons, toolbar / menu built-ins, indicators, screen-reader announcements, editor dropdowns), merged over the English defaults — see Labels below"},
+		{name: "labels", type: "QuickGridLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.quickGrid.* keys; see Guides → Translations): filter row, pager, tree chevrons, toolbar / menu built-ins, indicators, screen-reader announcements, editor dropdowns — see Labels below"},
 		{name: "class", type: "string", default: '""', description: "Additional CSS class applied to the grid wrapper"},
 		{name: "style", type: "string", default: '""', description: "Inline CSS style applied to the grid wrapper"}
 	]
@@ -539,18 +539,18 @@
 	</Card>
 	<Card>
 		<h2>Labels</h2>
-		<p>Every user-facing string comes from <code>labels</code> (type <code>QuickGridLabels</code>); pass the keys you want to change, the rest stay English. <code>defaultQuickGridLabels</code> is exported from the package root.</p>
+		<p>Every user-facing string is a <code>svelteFluentUI.quickGrid.*</code> key of the app-wide translations (see Guides → Translations). <code>labels</code> (type <code>QuickGridLabels</code>) overrides some of them for one grid; the rest come from the current locale. Values are ICU messages — <code>&#123;page&#125;</code>, <code>&#123;count&#125;</code>… are filled in by the grid.</p>
 		<pre><code>{`<QuickGrid {items} {columns} pageable labels={{
 	filterPlaceholder: "Filtrovat…",
 	previousPage: "Předchozí",
 	nextPage: "Další",
-	pageInfo: (page, pageCount) => \`Strana \${page} z \${pageCount}\`
+	pageInfo: "Strana {page} z {pageCount}"
 }} />`}</code></pre>
 		<table class="member-table">
 			<thead>
 				<tr>
 					<th>Key</th>
-					<th>Type</th>
+					<th>Params</th>
 					<th>Default</th>
 					<th>Used for</th>
 				</tr>
@@ -558,145 +558,145 @@
 			<tbody>
 				<tr>
 					<td>filterPlaceholder</td>
-					<td>string</td>
+					<td>—</td>
 					<td>&quot;Filter...&quot;</td>
 					<td>Filter input placeholder</td>
 				</tr>
 				<tr>
 					<td>filterAriaLabel</td>
-					<td>(columnTitle) =&gt; string</td>
-					<td>`Filter $&#123;title&#125;`</td>
-					<td>Filter input accessible name</td>
+					<td>&#123;column&#125;</td>
+					<td>&quot;Filter &#123;column&#125;&quot;</td>
+					<td>Filter input accessible name (column = column title)</td>
 				</tr>
 				<tr>
-					<td>emptyText</td>
-					<td>string</td>
+					<td>empty</td>
+					<td>—</td>
 					<td>&quot;No items to display&quot;</td>
 					<td>Empty grid message</td>
 				</tr>
 				<tr>
 					<td>previousPage / nextPage</td>
-					<td>string</td>
+					<td>—</td>
 					<td>&quot;Previous&quot; / &quot;Next&quot;</td>
 					<td>Pager buttons</td>
 				</tr>
 				<tr>
 					<td>pageInfo</td>
-					<td>(page, pageCount) =&gt; string</td>
-					<td>`Page $&#123;page&#125; of $&#123;pageCount&#125;`</td>
+					<td>&#123;page&#125;, &#123;pageCount&#125;</td>
+					<td>&quot;Page &#123;page&#125; of &#123;pageCount&#125;&quot;</td>
 					<td>Pager text; announced after a page change</td>
 				</tr>
 				<tr>
 					<td>itemCount</td>
-					<td>(count) =&gt; string</td>
-					<td>`$&#123;count&#125; item(s)`</td>
+					<td>&#123;count&#125;</td>
+					<td>&quot;&#123;count, plural, one &#123;# item&#125; other &#123;# items&#125;&#125;&quot;</td>
 					<td>Pager item count (shown in parentheses); announced after a filter change</td>
 				</tr>
 				<tr>
 					<td>perPage</td>
-					<td>string</td>
+					<td>—</td>
 					<td>&quot;per page&quot;</td>
 					<td>After the page-size selector</td>
 				</tr>
 				<tr>
-					<td>pagination</td>
-					<td>string</td>
+					<td>paginationAriaLabel</td>
+					<td>—</td>
 					<td>&quot;Pagination&quot;</td>
 					<td>Accessible name of the pager (&lt;nav&gt;)</td>
 				</tr>
 				<tr>
 					<td>sortedBy</td>
-					<td>(columnTitle, &quot;ascending&quot; | &quot;descending&quot;) =&gt; string</td>
-					<td>`Sorted by $&#123;title&#125;, $&#123;direction&#125;`</td>
+					<td>&#123;column&#125;, &#123;direction&#125; (&quot;ascending&quot; | &quot;descending&quot;)</td>
+					<td>&quot;Sorted by &#123;column&#125;, &#123;direction, select, ascending &#123;ascending&#125; other &#123;descending&#125;&#125;&quot;</td>
 					<td>Announced after a header sorted</td>
 				</tr>
 				<tr>
 					<td>sortCleared</td>
-					<td>(columnTitle) =&gt; string</td>
-					<td>`Sort removed from $&#123;title&#125;`</td>
+					<td>&#123;column&#125;</td>
+					<td>&quot;Sort removed from &#123;column&#125;&quot;</td>
 					<td>Announced after a header removed its column from the sort</td>
 				</tr>
 				<tr>
-					<td>expand / collapse</td>
-					<td>string</td>
+					<td>expandAriaLabel / expandTooltip, collapseAriaLabel / collapseTooltip</td>
+					<td>—</td>
 					<td>&quot;Expand&quot; / &quot;Collapse&quot;</td>
-					<td>Tree chevron name</td>
+					<td>Tree chevron name / tooltip</td>
 				</tr>
 				<tr>
-					<td>clearFilterToCollapse</td>
-					<td>string</td>
+					<td>clearFilterToCollapseTooltip</td>
+					<td>—</td>
 					<td>&quot;Clear the filter to collapse&quot;</td>
 					<td>Tree chevron tooltip while filtering</td>
 				</tr>
 				<tr>
-					<td>rowActions</td>
-					<td>string</td>
+					<td>rowActionsAriaLabel / rowActionsTooltip</td>
+					<td>—</td>
 					<td>&quot;Row actions&quot;</td>
-					<td>Row toolbar and its ⋮ trigger</td>
+					<td>Row toolbar and its ⋮ trigger (name / tooltip)</td>
 				</tr>
 				<tr>
 					<td>addRow / deleteRow / duplicateRow / moveRowUp / moveRowDown</td>
-					<td>string</td>
+					<td>—</td>
 					<td>&quot;Add row below&quot; / &quot;Delete row&quot; / &quot;Duplicate row&quot; / &quot;Move row up&quot; / &quot;Move row down&quot;</td>
 					<td>Built-in toolbar items</td>
 				</tr>
 				<tr>
 					<td>expandAll / collapseAll / expandTree / collapseTree</td>
-					<td>string</td>
+					<td>—</td>
 					<td>&quot;Expand all&quot; / &quot;Collapse all&quot; / &quot;Expand entire tree&quot; / &quot;Collapse entire tree&quot;</td>
 					<td>Built-in context-menu items</td>
 				</tr>
 				<tr>
 					<td>editing</td>
-					<td>string</td>
+					<td>—</td>
 					<td>&quot;Editing...&quot;</td>
 					<td>A custom editor is open</td>
 				</tr>
 				<tr>
-					<td>validating</td>
-					<td>string</td>
+					<td>validatingAriaLabel / validatingTooltip</td>
+					<td>—</td>
 					<td>&quot;Validating&quot;</td>
-					<td>Name of the validation indicator</td>
+					<td>Validation indicator (name / tooltip)</td>
 				</tr>
 				<tr>
-					<td>loadingOptions</td>
-					<td>string</td>
+					<td>loadingOptionsAriaLabel / loadingOptionsTooltip</td>
+					<td>—</td>
 					<td>&quot;Loading options&quot;</td>
-					<td>Name of the options-loading indicator</td>
+					<td>Options-loading indicator (name / tooltip)</td>
 				</tr>
 				<tr>
-					<td>edit</td>
-					<td>string</td>
+					<td>editAriaLabel / editTooltip</td>
+					<td>—</td>
 					<td>&quot;Edit&quot;</td>
-					<td>Cell edit button</td>
+					<td>Cell edit button (name / tooltip)</td>
 				</tr>
 				<tr>
-					<td>invalidValue</td>
-					<td>string</td>
+					<td>invalidValueTooltip</td>
+					<td>—</td>
 					<td>&quot;Invalid value&quot;</td>
 					<td>Error indicator tooltip without a message</td>
 				</tr>
 				<tr>
 					<td>editorEmptyOption</td>
-					<td>string</td>
+					<td>—</td>
 					<td>&quot;-- Select --&quot;</td>
 					<td>Select editor empty row (editorOptions.emptyLabel wins)</td>
 				</tr>
 				<tr>
 					<td>editorSelectPlaceholder / editorSearchPlaceholder</td>
-					<td>string</td>
+					<td>—</td>
 					<td>&quot;Select...&quot; / &quot;Type to search...&quot;</td>
 					<td>Combobox / autocomplete editor placeholder (editorOptions.placeholder wins)</td>
 				</tr>
 				<tr>
 					<td>editorLoading / editorSearching</td>
-					<td>string</td>
+					<td>—</td>
 					<td>&quot;Loading...&quot; / &quot;Searching...&quot;</td>
 					<td>Editor dropdown while loading options / searching</td>
 				</tr>
 				<tr>
-					<td>editorEmptyText / editorFilterEmptyText</td>
-					<td>string</td>
+					<td>editorEmpty / editorNoMatches</td>
+					<td>—</td>
 					<td>&quot;No options&quot; / &quot;No matching options&quot;</td>
 					<td>Empty editor dropdown (select/autocomplete) / combobox filter with no match</td>
 				</tr>

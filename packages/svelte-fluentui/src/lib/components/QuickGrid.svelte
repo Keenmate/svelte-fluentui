@@ -45,13 +45,13 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		QuickGridDataRequestTrigger as DataRequestTrigger,
 		QuickGridPageChangeTrigger as PageChangeTrigger,
 		QuickGridBeforePageChangeContext as BeforePageChangeContext,
-		QuickGridBeforePageChangeResult as BeforePageChangeResult,
-		QuickGridLabels
+		QuickGridBeforePageChangeResult as BeforePageChangeResult
 	} from "./QuickGrid.types.js"
-	import {defaultQuickGridLabels} from "./quickgrid/labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {QuickGridLabels} from "../i18n/labels.js"
 	import type {RestProps} from "../types/index.js"
 	import type {SearchBehavior} from "../helpers/text.js"
-	import {defaultLocale} from "../helpers/locale.js"
+	import {defaultCulture} from "../helpers/locale.js"
 	import {
 		createRowComparator, createRowFilter, nextSort, sortRows, treeOrder, filterTreeRows,
 		visibleTreeRows, getPageCount, clampPage, pageSlice, SearchTextCache, type TreeAccess
@@ -87,7 +87,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		filterMode?: FilterMode
 		/** How filter inputs match the cell text: `normalized` (default; ignores case and diacritics), `case-insensitive`, `exact`. Columns can override. */
 		searchBehavior?: SearchBehavior
-		/** Locale for sorting text (numeric-aware) and showing Date values. Default: the browser's. */
+		/** Locale for sorting text (numeric-aware) and showing Date values. Default: the i18n locale (`i18n.currentLocale`; the browser's region when it is the same language), following locale switches. */
 		culture?: Intl.Locale
 		/** Shows the pager. */
 		pageable?: boolean
@@ -211,8 +211,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		ariaLabel?: string
 		/** Id of the element naming the `<table>`. */
 		ariaLabelledby?: string
-		/** User-facing strings; merged over `defaultQuickGridLabels`. */
-		labels?: Partial<QuickGridLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.quickGrid.*` keys) for this instance. */
+		labels?: QuickGridLabels
 	}
 
 	/** Other native attributes and events go to the root `<div class="quickgrid-container">`. */
@@ -228,7 +228,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		filters = $bindable({}),
 		filterMode = "client",
 		searchBehavior = "normalized",
-		culture = defaultLocale(),
+		culture: cultureProp = undefined,
 		pageable = false,
 		pageSize = $bindable(10),
 		pageSizes = undefined,
@@ -290,7 +290,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		...rest
 	}: Props<T> = $props()
 
-	const labels = $derived<QuickGridLabels>({...defaultQuickGridLabels, ...(labelsProp ?? {})})
+	const culture = $derived(cultureProp ?? defaultCulture())
+
+	const t = useTranslations("quickGrid", () => labelsProp)
 
 	const resolvedToolbarConfig = $derived(rowToolbar ?? (['add', 'delete', 'duplicate'] as RowToolbarConfig<T>[]))
 	const actionHost = {}
@@ -855,7 +857,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		if (target === effectivePage) return
 		void guardPageChange("page", target, (p) => {
 			setPage(p, "page")
-			void tick().then(() => announce(labels.pageInfo(effectivePage, totalPages)))
+			void tick().then(() => announce(t("pageInfo", {page: effectivePage, pageCount: totalPages})))
 		})
 	}
 
@@ -874,14 +876,14 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	let countAnnouncementPending = false
 	function announceCount() {
 		if (filterMode === "server" || isServerPaging) countAnnouncementPending = true
-		else void tick().then(() => announce(labels.itemCount(pagedTotal)))
+		else void tick().then(() => announce(t("itemCount", {count: pagedTotal})))
 	}
 	$effect(() => {
 		void items
 		untrack(() => {
 			if (!countAnnouncementPending) return
 			countAnnouncementPending = false
-			announce(labels.itemCount(pagedTotal))
+			announce(t("itemCount", {count: pagedTotal}))
 		})
 	})
 
@@ -919,7 +921,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			if (pageable) setPage(page, null)
 			requestData("sort")
 			const entry = next.find((s) => s.column === field)
-			announce(entry ? labels.sortedBy(column.title, entry.direction === "asc" ? "ascending" : "descending") : labels.sortCleared(column.title))
+			announce(entry ? t("sortedBy", {column: column.title, direction: entry.direction === "asc" ? "ascending" : "descending"}) : t("sortCleared", {column: column.title}))
 		}
 		if (isServerPaging && pageable) void guardPageChange("sort", 1, apply)
 		else apply(1)
@@ -1899,11 +1901,11 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	// Built-in toolbar presets: icon, text (tooltip), danger styling. Your item fields win.
 	const toolbarPresets: Record<RowToolbarAction, Partial<ResolvedActionItem<RowToolbarAction>>> = $derived({
-		add: { icon: 'add', text: labels.addRow },
-		delete: { icon: 'delete', text: labels.deleteRow, isDanger: true },
-		duplicate: { icon: 'copy', text: labels.duplicateRow },
-		'move-up': { icon: 'arrow_up', text: labels.moveRowUp },
-		'move-down': { icon: 'arrow_down', text: labels.moveRowDown }
+		add: { icon: 'add', text: t("addRow") },
+		delete: { icon: 'delete', text: t("deleteRow"), isDanger: true },
+		duplicate: { icon: 'copy', text: t("duplicateRow") },
+		'move-up': { icon: 'arrow_up', text: t("moveRowUp") },
+		'move-down': { icon: 'arrow_down', text: t("moveRowDown") }
 	})
 
 	// While the toolbar is open: an outside press / focus closes it.
@@ -2009,13 +2011,13 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		if ('divider' in item) return undefined
 		switch (item.action) {
 			case 'expand-all':
-				return { text: labels.expandAll, icon: 'arrow_expand_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
+				return { text: t("expandAll"), icon: 'arrow_expand_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
 			case 'collapse-all':
-				return { text: labels.collapseAll, icon: 'arrow_collapse_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
+				return { text: t("collapseAll"), icon: 'arrow_collapse_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
 			case 'expand-tree':
-				return { text: labels.expandTree, icon: 'arrow_expand_all', isVisible: isTreeMode && treeParentPathSet.size > 0 }
+				return { text: t("expandTree"), icon: 'arrow_expand_all', isVisible: isTreeMode && treeParentPathSet.size > 0 }
 			case 'collapse-tree':
-				return { text: labels.collapseTree, icon: 'arrow_collapse_all', isVisible: isTreeMode && resolvedExpandedPaths.size > 0 }
+				return { text: t("collapseTree"), icon: 'arrow_collapse_all', isVisible: isTreeMode && resolvedExpandedPaths.size > 0 }
 		}
 		return undefined
 	}
@@ -2103,7 +2105,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			target={hoveredRow}
 			session={toolbarSession}
 			align={toolbarAlign}
-			{labels}
+			{t}
 			entries={resolvedToolbarConfig}
 			rowContext={{row: hoveredRow.row, ...getRowIdentity(hoveredRow.row)}}
 			presets={toolbarPresets}
@@ -2138,7 +2140,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		<QuickGridHeader
 			{columns}
 			{columnStyles}
-			{labels}
+			{t}
 			{sortMode}
 			{sort}
 			{filterable}
@@ -2157,7 +2159,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			{#if displayItems.length === 0}
 				<tr>
 					<td colspan={bodyColumnCount} class="empty-message">
-						{labels.emptyText}
+						{t("empty")}
 					</td>
 				</tr>
 			{:else}
@@ -2186,8 +2188,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 									class="toolbar-trigger-btn"
 									class:active={hoveredRowKey === rowKey}
 									onclick={(e) => handleToolbarButtonClick(rowKey, viewIndex, e)}
-									title={labels.rowActions}
-									aria-label={labels.rowActions}
+									title={t("rowActionsTooltip")}
+									aria-label={t("rowActionsAriaLabel")}
 									aria-haspopup="true"
 									aria-expanded={hoveredRowKey === rowKey}
 									tabindex={isNavigateMode ? -1 : undefined}
@@ -2220,7 +2222,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 								{#if cellEditing}
 									{#if column.editor === "custom"}
 										<!-- Custom editor - handled via callback, show indicator -->
-										<span class="custom-editing-indicator">{labels.editing}</span>
+										<span class="custom-editing-indicator">{t("editing")}</span>
 									{:else if editingCell}
 										{@const editToken = editingCell.token}
 										{@const isValidating = validatingToken === editToken}
@@ -2233,7 +2235,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 											{#key editToken}
 												<GridCellEditor
 													bind:this={activeEditor}
-													{labels}
+													{t}
 													autofocus
 													type={getEditorType(column)}
 													value={getCellRawValue(item, rowKey, cellField)}
@@ -2248,7 +2250,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 												/>
 											{/key}
 											{#if isValidating}
-												<span class="validating-indicator" role="img" aria-label={labels.validating} title={labels.validating}>...</span>
+												<span class="validating-indicator" role="img" aria-label={t("validatingAriaLabel")} title={t("validatingTooltip")}>...</span>
 											{/if}
 										</div>
 										<!-- The cell's current validation error (set by an earlier invalid commit). -->
@@ -2258,7 +2260,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 									{/if}
 								{:else if cellEditable && getColumnEditTrigger(column) === "always"}
 									<GridCellEditor
-										{labels}
+										{t}
 										type={getEditorType(column)}
 										value={getCellRawValue(item, rowKey, cellField)}
 										displayText={getEditorDisplayText(item, column, rowKey)}
@@ -2277,7 +2279,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 											<!-- Checkbox in navigate mode: either always editable or disabled display -->
 											{#if checkboxAlwaysEditable}
 												<GridCellEditor
-													{labels}
+													{t}
 													type="checkbox"
 													value={getCellRawValue(item, rowKey, cellField)}
 													options={optionsLoader.editorOptionsFor(column, item, rowKey)}
@@ -2297,18 +2299,18 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 											<span class="cell-text">{getCellValue(item, column, rowKey)}</span>
 										{/if}
 										{#if optionsLoadingEdit?.rowKey === rowKey && optionsLoadingEdit.field === cellField}
-											<span class="options-loading-indicator" role="img" aria-label={labels.loadingOptions} title={labels.loadingOptions}>...</span>
+											<span class="options-loading-indicator" role="img" aria-label={t("loadingOptionsAriaLabel")} title={t("loadingOptionsTooltip")}>...</span>
 										{/if}
 										{#if cellInvalid}
-											<span class="cell-error-indicator" title={cellError || labels.invalidValue}>⚠</span>
+											<span class="cell-error-indicator" title={cellError || t("invalidValueTooltip")}>⚠</span>
 										{/if}
 										{#if cellEditable && shouldShowEditButton(column)}
 											<button
 												type="button"
 												class="cell-edit-btn"
 												onclick={(e) => handleEditButtonClick(e, colIndex, column, item)}
-												title={labels.edit}
-												aria-label={labels.edit}
+												title={t("editTooltip")}
+												aria-label={t("editAriaLabel")}
 												tabindex={isNavigateMode ? -1 : undefined}
 											>
 												<span aria-hidden="true">✎</span>
@@ -2342,8 +2344,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 												disabled={isFiltering}
 												onclick={(e) => { e.stopPropagation(); toggleExpand(rowPath) }}
 												ondblclick={(e) => e.stopPropagation()}
-												aria-label={_expanded ? labels.collapse : labels.expand}
-												title={isFiltering ? labels.clearFilterToCollapse : _expanded ? labels.collapse : labels.expand}
+												aria-label={_expanded ? t("collapseAriaLabel") : t("expandAriaLabel")}
+												title={isFiltering ? t("clearFilterToCollapseTooltip") : _expanded ? t("collapseTooltip") : t("expandTooltip")}
 												tabindex={isNavigateMode ? -1 : undefined}
 											>
 												<span aria-hidden="true">▶</span>
@@ -2372,7 +2374,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	{#if pageable && (totalPages > 1 || pageSizeChoices.length > 0)}
 		<QuickGridPager
-			{labels}
+			{t}
 			page={effectivePage}
 			pageCount={totalPages}
 			itemCount={pagedTotal}

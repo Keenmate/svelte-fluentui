@@ -119,7 +119,7 @@ test("chips list: chips with +N toggle, chip remove, button selector", async ({p
 	await chips.locator(".chip-more").click()
 	await expect(chips.locator(".chip:not(.chip-more)")).toHaveCount(3)
 	await expect(chips.locator(".chip-more")).toHaveText("−")
-	await chips.locator(".chip", {hasText: "2.txt"}).getByRole("button", {name: "Remove file"}).click()
+	await chips.locator(".chip", {hasText: "2.txt"}).getByRole("button", {name: "Remove 2.txt"}).click()
 	await expect(chips.locator(".chip-name")).toHaveText(["1.txt", "3.txt"])
 	await expect(chips.locator(".file-list")).toHaveCount(0)
 })

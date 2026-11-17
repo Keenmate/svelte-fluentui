@@ -2,7 +2,8 @@
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
-	import type {InputFileItem, InputFileLabels} from "../InputFile.types.js"
+	import type {InputFileItem} from "../InputFile.types.js"
+	import type {Translate} from "../../i18n/translate.svelte.js"
 	import InputFileRow from "./InputFileRow.svelte"
 	import type {InputFileRowApi, UploadQueue} from "./upload-queue.svelte.js"
 
@@ -15,7 +16,7 @@
 		/** True when the list is expanded past `maxVisibleFileCount` and can collapse again. */
 		canCollapse: boolean
 		queue: UploadQueue
-		labels: InputFileLabels
+		t: Translate<"inputFile">
 		disabled: boolean
 		/** Whether an `uploadCallback` is set. */
 		canUpload: boolean
@@ -44,7 +45,7 @@
 		hiddenCount,
 		canCollapse,
 		queue,
-		labels,
+		t,
 		disabled,
 		canUpload,
 		autoUpload,
@@ -94,7 +95,7 @@
 <div class="file-list">
 	<div class="file-list-sticky">
 	<div class="file-list-header">
-		<span class="file-count">{labels.fileCount(items.length)}</span>
+		<span class="file-count">{t("fileCount", {count: items.length})}</span>
 		{#if actions}
 			{@render actions({clearAll: onClear, uploadAll, pauseAll, resumeAll, retryAll})}
 		{:else}
@@ -109,16 +110,16 @@
 						}}
 						{disabled}
 					>
-						{labels.addMore}
+						{t("addMore")}
 					</button>
 				{/if}
 				{#if canUpload && !autoUpload && items.some((i) => i.status === "pending")}
 					<button type="button" class="text-button" onclick={uploadAll} {disabled}>
-						{labels.uploadAll}
+						{t("uploadAll")}
 					</button>
 				{/if}
 				<button type="button" class="text-button" onclick={onClear} {disabled}>
-					{labels.clearAll}
+					{t("clearAll")}
 				</button>
 			</div>
 		{/if}
@@ -142,7 +143,7 @@
 					{item}
 					{index}
 					{queue}
-					{labels}
+					{t}
 					{disabled}
 					{canUpload}
 					{allowReorder}
@@ -162,7 +163,7 @@
 				class="show-more-toggle"
 				onclick={() => onShowAll(true)}
 			>
-				{labels.showMore(hiddenCount)}
+				{t("showMore", {count: hiddenCount})}
 			</button>
 		{:else if canCollapse}
 			<button
@@ -170,7 +171,7 @@
 				class="show-more-toggle"
 				onclick={() => onShowAll(false)}
 			>
-				{labels.showLess}
+				{t("showLess")}
 			</button>
 		{/if}
 	</div>

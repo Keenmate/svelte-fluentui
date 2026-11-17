@@ -22,20 +22,21 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	import PositioningRegion from "./PositioningRegion.svelte"
 	import FieldLabel from "./FieldLabel.svelte"
 	import type DayFormat from "../fluent-ui/calendar/day-format.js"
-	import {defaultLocale} from "../helpers/locale.js"
+	import {defaultCulture} from "../helpers/locale.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
 	import {isAfterDay, isBeforeDay} from "../helpers/date.js"
 	import type {CalendarDay} from "../fluent-ui/calendar/calendar-day.js"
 	import type {RestProps} from "../types/index.js"
-	import {defaultDatePickerLabels, type DatePickerLabels} from "./DatePicker.labels.js"
+	import {useTranslations} from "../i18n/translate.svelte.js"
+	import type {DatePickerLabels} from "../i18n/labels.js"
 
 	type OwnProps = {
 		/** Id of the input (also the label's `for`). */
 		id?: string
 		/** Selected date (`null` when empty). Bindable. */
 		value?: Date | null
-		/** Input placeholder. Default: `labels.placeholder` ("Select a date"). */
+		/** Input placeholder. Default: the `placeholder` text (`svelteFluentUI.datePicker.placeholder`, "Select a date"). */
 		placeholder?: string
 		/** Disable the input and the popup. */
 		disabled?: boolean
@@ -54,7 +55,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		labelTemplate?: Snippet
 		/** TextField appearance (`outline` / `filled`). */
 		appearance?: string
-		/** Locale for formatting and calendar names. Default: browser locale. */
+		/** Locale for formatting and calendar names. Default: the i18n locale (`i18n.currentLocale`; the browser's region when it is the same language), following locale switches. */
 		culture?: Intl.Locale
 		/** How the date is shown in the input. Default: `{year: "numeric", month: "long", day: "numeric"}`. */
 		dateFormat?: Intl.DateTimeFormatOptions
@@ -86,12 +87,8 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		openOnInputClick?: boolean
 		/** Bindable open state of the calendar popup. */
 		open?: boolean
-		/** Accessible name of the calendar icon button. Default: `labels.openCalendar` ("Open calendar"). */
-		openCalendarIconAriaLabel?: string
-		/** Accessible name of the calendar popup (`role="dialog"`). Default: `labels.popup` ("Choose date"). */
-		popupAriaLabel?: string
-		/** User-facing strings (also the popup Calendar's); merged over `defaultDatePickerLabels`. Explicit `placeholder` / `openCalendarIconAriaLabel` / `popupAriaLabel` props win. */
-		labels?: Partial<DatePickerLabels>
+		/** Overrides of the built-in text (`svelteFluentUI.datePicker.*` keys, plus the popup Calendar's `svelteFluentUI.calendar.*` keys) for this instance. An explicit `placeholder` prop wins. */
+		labels?: DatePickerLabels
 		/** Tooltip (`title`) on the input. */
 		title?: string
 		/** Extra class on the root. */
@@ -123,7 +120,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		label = undefined,
 		labelTemplate = undefined,
 		appearance = undefined,
-		culture = defaultLocale(),
+		culture: cultureProp = undefined,
 		dateFormat = { year: 'numeric', month: 'long', day: 'numeric' },
 		minDate = undefined,
 		maxDate = undefined,
@@ -139,8 +136,6 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		closeOnSelect = true,
 		openOnInputClick = true,
 		open = $bindable(false),
-		openCalendarIconAriaLabel = undefined,
-		popupAriaLabel = undefined,
 		labels: labelsProp = undefined,
 		title = undefined,
 		class: className = "",
@@ -152,7 +147,8 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		...rest
 	}: Props = $props()
 
-	const labels = $derived<DatePickerLabels>({...defaultDatePickerLabels, ...(labelsProp ?? {})})
+	const t = useTranslations("datePicker", () => labelsProp)
+	const culture = $derived(cultureProp ?? defaultCulture())
 
 	let inputValue = $state("")
 	// Bridge `open` prop with internal logic so $effect and bindable prop stay consistent.
@@ -308,7 +304,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		<TextField
 			{id}
 			value={inputValue}
-			placeholder={placeholder ?? labels.placeholder}
+			placeholder={placeholder ?? t("placeholder")}
 			{disabled}
 			readonly={true}
 			{required}
@@ -329,8 +325,8 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 						tabindex="-1"
 						onpointerdown={(e) => e.preventDefault()}
 						onclick={handleClear}
-						aria-label={labels.clear}
-						title={labels.clear}
+						aria-label={t("clearAriaLabel")}
+						title={t("clearTooltip")}
 					>
 						<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
 							<path d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"/>
@@ -344,7 +340,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 					class="calendar-button"
 					onclick={handleInputClick}
 					disabled={disabled}
-					aria-label={openCalendarIconAriaLabel ?? labels.openCalendar}
+					aria-label={t("openPopupAriaLabel")}
 					aria-haspopup="dialog"
 					aria-expanded={isOpen ? "true" : "false"}
 					aria-controls={isOpen ? popupId : null}
@@ -365,7 +361,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 				matchWidth={false}
 			>
 				<!-- Surface + padding live here, not on the region, so a press anywhere on the popup is "inside". -->
-				<div class="datepicker-popup fluent-popup-surface fluent-popup--layer" bind:this={popupElement} id={popupId} role="dialog" aria-label={popupAriaLabel ?? labels.popup}>
+				<div class="datepicker-popup fluent-popup-surface fluent-popup--layer" bind:this={popupElement} id={popupId} role="dialog" aria-label={t("popupAriaLabel")}>
 					<Calendar
 						value={value || new Date()}
 						pickerMonth={value || new Date()}
@@ -383,7 +379,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 						onChange={({value}) => handleDateSelected(value as Date)}
 						{onPickerMonthChange}
 						day={daySnippet}
-						{labels}
+						labels={labelsProp}
 					/>
 				</div>
 			</PositioningRegion>

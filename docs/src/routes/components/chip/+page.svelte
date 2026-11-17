@@ -14,12 +14,11 @@
 		{name: "variant", type: '"inline" | "external"', default: '"inline"', description: "inline sits inside a field's border (no border of its own); external is standalone with its own 1px border"},
 		{name: "contrast", type: "boolean", default: "false", description: "White fill + inset ring, for hosts whose background equals the default chip fill (readonly / filled fields)"},
 		{name: "showRemove", type: "boolean", default: "true", description: "Render the × remove button"},
-		{name: "removeLabel", type: "string", default: '"Remove <text>"', description: "Accessible label and tooltip of the × button Wins over labels.remove."},
 		{name: "removeFocusable", type: "boolean", default: "false", description: "Put the × button in the Tab order. Off by default because Combobox / Autocomplete move focus onto their inline chips with the arrow keys (Backspace / Delete remove the focused chip); set it for standalone chips"},
 		{name: "title", type: "string", default: "undefined", description: "Native tooltip on the chip"},
 		{name: "class", type: "string", default: '""', description: "Extra class on the root span"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root span"},
-		{name: "labels", type: "Partial<ChipLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultChipLabels. Keys: remove(text). The removeLabel prop wins when set."},
+		{name: "labels", type: "ChipLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.chip.* keys; see Guides → Translations). Keys: removeAriaLabel (accessible name of the × button), removeTooltip (its tooltip); both receive {item} = the chip text, default \"Remove {item}\"."},
 	]
 
 	const callbacks: Property[] = [

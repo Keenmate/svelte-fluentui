@@ -130,7 +130,7 @@
 		{name: "valueText", type: "string", default: "undefined", description: "Single mode: text shown in the trigger when value is set but no option has it (e.g. options that load later)."},
 		{name: "selectValueOnTab", type: "boolean", default: "false", description: "Single mode: Tab on the open list picks the highlighted option before focus moves on."},
 		{name: "showClear", type: "boolean", default: "true", description: "Single mode: a clear (×) button before the chevron while a value is selected, visible while the trigger is hovered or focused (like fluent-search). Not a Tab stop; Delete / Backspace on the focused trigger clears too. Fires onChange with value \"\"."},
-		{name: "labels", type: "Partial<SelectLabels>", default: "undefined", description: "User-facing strings, merged over the exported defaultSelectLabels. Keys: clearSelection (the × tooltip)."},
+		{name: "labels", type: "SelectLabels", default: "undefined", description: "Overrides the built-in text for this instance (svelteFluentUI.select.* keys; see Guides → Translations). Keys: clearTooltip (the × tooltip)."},
 		{name: "dropdownClass", type: "string", default: "undefined", description: "Single mode: extra class on the portalled dropdown listbox (a parent's scoped styles can't reach it otherwise)."},
 		{name: "embedded", type: "boolean", default: "false", description: "Single mode: for hosting inside a component that owns the keyboard and draws the frame (QuickGrid cells). Borderless, transparent, fills its container; ArrowUp / ArrowDown on the closed trigger bubble to the host instead of opening the list."},
 		{name: "multiple", type: "boolean", default: "false", description: "Allow multiple selections"},
