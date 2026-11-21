@@ -144,7 +144,7 @@ Vertical (or horizontal) application bar of `AppBarItem` icon links. Items that 
 		if (!open) return
 		await tick()
 		if (searchRef) searchRef.focus()
-		else popupEl?.querySelector<HTMLElement>("a")?.focus()
+		else popupEl?.querySelector<HTMLElement>(".fluent-appbar-item-link")?.focus()
 	}
 
 	const computedClasses = $derived(classList("fluent-appbar", orientation, className))

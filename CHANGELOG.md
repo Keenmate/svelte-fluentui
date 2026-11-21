@@ -219,7 +219,8 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - Autocomplete bindable `open`; `onOpenChange` consistent across Select/Combobox/Autocomplete/DatePicker/TimePicker (real changes only, incl. `bind:open`).
 - AppBarItem `countLabel` and `--fluent-appbar-count-*` CSS variables; NavLinkItem `linkProps`.
 - AppBar overflow: items that don't fit move into a "…" popover (`showSearch`, `searchBehavior`,
-  `onOverflowOpenChange`, `labels`; keys `svelteFluentUI.appBar.*`). AppBarItem `active` shows the accent
+  `onOverflowOpenChange`, `labels`; keys `svelteFluentUI.appBar.*`). AppBarItem without `href` renders a
+  `<button type="button">` (an `onclick`-only item was an `<a>` without `href`: not focusable, no role). AppBarItem `active` shows the accent
   indicator (start edge / bottom; the 1.x rule never matched), `tooltip` prop (our Tooltip); the
   `icon-rest` / `icon-active` pair swaps reliably. Spacing from `--design-unit`, overridable via
   `--fluent-appbar-item-block-size`, `-padding-block`, `-popover-padding`, `-popover-gap`, `-indicator-color`.

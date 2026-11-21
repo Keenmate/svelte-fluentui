@@ -17,9 +17,9 @@
 		{label: "Help", count: 0}
 	]
 
-	function onAppBarItemClicked(ev: Event) {
-		console.log("Nav appbar item clicked", ev)
-	}
+	// Regular / horizontal demos: clicking an item makes it the active one.
+	let activeRegular = $state("Home")
+	let activeHorizontal = $state("Item 1")
 
 	type Property = {
 		name: string
@@ -45,7 +45,7 @@
 	]
 
 	const appBarItemProperties: Property[] = [
-		{name: "href", type: "string", default: "undefined", description: "URL — renders the item as a link"},
+		{name: "href", type: "string", default: "undefined", description: "URL — renders the item as a link. Without it the item is a <button type=\"button\"> (keyboard-operable onclick items)."},
 		{name: "count", type: "number", default: "undefined", description: "Counter badge on the icon (danger fill, top end corner). Hidden when 0 or undefined. The full count is appended to the link's accessible name as visually hidden text (and to a consumer aria-label / aria-labelledby). Restyle via the --fluent-appbar-count-* CSS variables."},
 		{name: "maxCount", type: "number", default: "99", description: "Largest count shown verbatim; above it the badge reads e.g. \"99+\". The accessible name always carries the full count."},
 		{name: "countLabel", type: "(count: number) => string", default: "undefined", description: "Localisable wording for the count in the accessible name, e.g. (count) => `${count} unread`. Receives the full, uncapped count. Default: the bare number."},
@@ -136,28 +136,32 @@
 	]} />
 
 	<Card>
-		<h2>Examples</h2>
+		<h2 id="examples">Examples</h2>
 		<div class="examples-container">
 			<div class="example-item">
 				<h3>Regular AppBar</h3>
-				<p>"Item 2" and "Item 4" show the <code>count</code> badge (250 is capped to "99+" by <code>maxCount</code>).</p>
+				<p>
+					Click an item to make it active. "Microsoft" is an external link (new tab); "Home" and "Item 4" are
+					links (<code>href</code>); "Item 2" and "Item 5" have only <code>onclick</code>, so they render as
+					buttons. "Item 2" and "Item 4" show the <code>count</code> badge (250 is capped to "99+" by
+					<code>maxCount</code>).
+				</p>
 
 				<Stack verticalAlign="start" horizontalAlign="start">
 					<AppBar>
 						<AppBarItem href="https://microsoft.com" rel="noopener noreferrer" target="_blank" icon={commonItemIcon}>
 							Microsoft
 						</AppBarItem>
-
-						<AppBarItem href="/" icon={commonItemIcon}>
+						<AppBarItem href="#examples" icon={commonItemIcon} active={activeRegular === "Home"} onclick={() => (activeRegular = "Home")}>
 							Home
 						</AppBarItem>
-						<AppBarItem onclick={onAppBarItemClicked} icon={commonItemIcon} count={3}>
+						<AppBarItem icon={commonItemIcon} count={3} active={activeRegular === "Item 2"} onclick={() => (activeRegular = "Item 2")}>
 							Item 2
 						</AppBarItem>
-						<AppBarItem href="https://microsoft.com" icon={commonItemIcon} count={250}>
+						<AppBarItem href="#examples" icon={commonItemIcon} count={250} active={activeRegular === "Item 4"} onclick={() => (activeRegular = "Item 4")}>
 							Item 4
 						</AppBarItem>
-						<AppBarItem icon={commonItemIcon}>
+						<AppBarItem icon={commonItemIcon} active={activeRegular === "Item 5"} onclick={() => (activeRegular = "Item 5")}>
 							Item 5
 						</AppBarItem>
 					</AppBar>
@@ -165,18 +169,18 @@
 			</div>
 			<div class="example-item">
 				<h3>Horizontal AppBar menu</h3>
+				<p>Click an item to make it active; hover for its <code>tooltip</code>.</p>
 
 				<Stack verticalAlign="start" horizontalAlign="start">
 					<AppBar orientation={AppBarOrientation.Horizontal}>
-						<AppBarItem tooltip="Item 1 tooltip" icon={commonItemIcon} active>
-							Item 1
-						</AppBarItem>
-						<AppBarItem tooltip="Item 2 tooltip" icon={commonItemIcon}>
-							Item 2
-						</AppBarItem>
-						<AppBarItem tooltip="Item 4 tooltip" icon={commonItemIcon}>
-							Item 4
-						</AppBarItem>
+						{#each ["Item 1", "Item 2", "Item 3"] as label (label)}
+							<AppBarItem
+								tooltip="{label} tooltip"
+								icon={commonItemIcon}
+								active={activeHorizontal === label}
+								onclick={() => (activeHorizontal = label)}
+							>{label}</AppBarItem>
+						{/each}
 					</AppBar>
 				</Stack>
 			</div>

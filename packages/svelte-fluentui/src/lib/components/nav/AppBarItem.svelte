@@ -1,18 +1,16 @@
 <!-- @component
-One `AppBar` entry: an icon link with a label and an optional count badge. Shows the active indicator when `active`; moves into the bar's "…" popover when it doesn't fit.
+One `AppBar` entry: an icon link (a button when it has no `href`) with a label and an optional count badge. Shows the active indicator when `active`; moves into the bar's "…" popover when it doesn't fit.
 -->
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {getContext, untrack} from "svelte"
 	import type {AnchorRestProps} from "../../types/index.js"
-	import Stack from "../layout/Stack.svelte"
 	import Tooltip from "../Tooltip.svelte"
-	import {StackHorizontalAlign, StackOrientation, StackVerticalAlign} from "../../fluent-ui/constants/stack.js"
 	import {APP_BAR_CONTEXT, type AppBarContext} from "./appbar.context.js"
 
 	type OwnProps = {
-		/** Link URL. */
+		/** Link URL. Without it the item renders a `<button type="button">` (for `onclick`-only items). */
 		href?: string
 		/** Counter shown as a small badge on the icon (e.g. unread items). Hidden when 0 / undefined. */
 		count?: number
@@ -34,7 +32,7 @@ One `AppBar` entry: an icon link with a label and an optional count badge. Shows
 		class?: string
 	}
 
-	/** Other native attributes and events (`id`, `target`, `rel`, `download`, `title`, `aria-current`, `onkeydown`, …) go to the inner `<a>`. */
+	/** Other native attributes and events (`id`, `target`, `rel`, `download`, `title`, `aria-current`, `onkeydown`, …) go to the inner `<a>` (or `<button>`). */
 	type Props = OwnProps & AnchorRestProps<OwnProps>
 
 	let {
@@ -87,28 +85,22 @@ One `AppBar` entry: an icon link with a label and an optional count badge. Shows
 	}
 </script>
 
-<!-- The link with icon, count badge and label: in the bar and as an overflow popover tile. -->
+<!-- The link (a <button> without `href`) with icon, count badge and label: in the bar and as an overflow popover tile. -->
 {#snippet link(inPopover: boolean)}
 	{@const countTextId = `${uid}-count${inPopover ? "-popover" : ""}`}
-	<a
+	<svelte:element
+		this={href ? "a" : "button"}
 		{...rest}
 		id={inPopover ? null : linkId}
-		{href}
+		href={href || null}
+		type={href ? null : "button"}
 		aria-label={ariaLabel && showCount ? `${ariaLabel}, ${countSpoken}` : ariaLabel}
 		aria-labelledby={ariaLabelledby && showCount ? `${ariaLabelledby} ${countTextId}` : ariaLabelledby}
-		class="fluent-focus-ring"
+		class="fluent-appbar-item-link fluent-focus-ring"
 		class:active
 		onclick={inPopover ? handlePopoverClick : onclick}
 	>
-		<Stack
-			orientation={StackOrientation.Vertical}
-			verticalAlign={StackVerticalAlign.Center}
-			horizontalAlign={StackHorizontalAlign.Center}
-			horizontalGap="10px"
-			verticalGap="0"
-			width="100%"
-			height="100%"
-		>
+		<span class="fluent-appbar-item-body">
 			{#if icon || showCount}
 				<span class="fluent-appbar-item-icon">
 					{@render icon?.()}
@@ -118,12 +110,12 @@ One `AppBar` entry: an icon link with a label and an optional count badge. Shows
 				</span>
 			{/if}
 
-			<div part="label">
+			<span part="label">
 				<span class="fluent-appbar-item-label">{@render children?.()}</span>
 				{#if showCount}<span id={countTextId} class="fluent-appbar-item-count-text">, {countSpoken}</span>{/if}
-			</div>
-		</Stack>
-	</a>
+			</span>
+		</span>
+	</svelte:element>
 {/snippet}
 
 {#snippet popoverTile()}
@@ -167,7 +159,13 @@ One `AppBar` entry: an icon link with a label and an optional count badge. Shows
 		background-color: var(--neutral-fill-secondary-rest);
 	}
 
-	a {
+	.fluent-appbar-item-link {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		font-family: inherit;
+		cursor: pointer;
 		color: inherit;
 		text-decoration: none;
 		font-size: var(--type-ramp-minus-2-font-size);
@@ -180,34 +178,39 @@ One `AppBar` entry: an icon link with a label and an optional count badge. Shows
 		border-radius: calc(var(--control-corner-radius, 4) * 1px);
 	}
 
-	a :global(.stack-vertical) {
-		padding: calc(var(--design-unit) * 1px) calc(var(--fluent-appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
-		height: 100%;
+	.fluent-appbar-item-body {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		block-size: 100%;
 		box-sizing: border-box;
+		padding: calc(var(--design-unit) * 1px) calc(var(--fluent-appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
 	}
 
 	/* Active indicator: an accent bar on the start edge (vertical) or the bottom (horizontal).
 	   Not in the overflow popover. */
-	.fluent-appbar-item[data-orientation] a.active::before {
+	.fluent-appbar-item[data-orientation] .fluent-appbar-item-link.active::before {
 		content: "";
 		position: absolute;
 		background-color: var(--fluent-appbar-indicator-color, var(--accent-fill-rest));
 		border-radius: calc(var(--control-corner-radius, 4) * 1px);
 	}
 
-	.fluent-appbar-item[data-orientation="vertical"] a.active::before {
+	.fluent-appbar-item[data-orientation="vertical"] .fluent-appbar-item-link.active::before {
 		inset-block: 0;
 		inset-inline-start: calc(var(--design-unit) * 0.5px);
 		inline-size: var(--fluent-appbar-active-indicator-width);
 	}
 
-	.fluent-appbar-item[data-orientation="horizontal"] a.active::before {
+	.fluent-appbar-item[data-orientation="horizontal"] .fluent-appbar-item-link.active::before {
 		inset-inline: calc(var(--design-unit) * 2px);
 		inset-block-end: calc(var(--design-unit) * 0.5px);
 		block-size: var(--fluent-appbar-active-indicator-width);
 	}
 
-	div[part="label"] {
+	[part="label"] {
+		display: block;
 		color: var(--neutral-foreground-rest);
 		overflow: hidden;
 		text-overflow: ellipsis;

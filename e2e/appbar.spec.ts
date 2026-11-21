@@ -185,3 +185,15 @@ test("count badge defaults to the danger palette", async ({page}) => {
 	const bg = await badge(page, "inbox").evaluate((el) => getComputedStyle(el).backgroundColor)
 	expect(bg).toBe("rgb(197, 15, 31)")
 })
+
+test("an item without href is a button: focusable and activated by Enter / Space", async ({page}) => {
+	const action = page.locator("button#action")
+	await expect(action).toHaveAttribute("type", "button")
+	await expect(page.getByRole("button", {name: "Action"})).toHaveCount(1)
+	await action.focus()
+	await page.keyboard.press("Enter")
+	await page.keyboard.press(" ")
+	await action.click()
+	await expect(page.locator("#action-count")).toHaveText("3")
+	await expect(action).not.toHaveAttribute("href")
+})

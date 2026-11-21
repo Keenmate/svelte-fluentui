@@ -3,6 +3,7 @@
 
 	let count = $state(3)
 	let barHeight = $state(200)
+	let actionCount = $state(0)
 	let activeId = $state("ov-1")
 	let clicked = $state("")
 	let overflowEvents = $state<boolean[]>([])
@@ -66,6 +67,11 @@
 		{/each}
 	</AppBar>
 </div>
+
+<span id="action-count">{actionCount}</span>
+<AppBar id="btn-bar">
+	<AppBarItem id="action" icon={itemIcon} onclick={() => (actionCount += 1)}>Action</AppBarItem>
+</AppBar>
 
 <div id="h-box" style="inline-size: 260px">
 	<AppBar id="h-bar" orientation="horizontal">
