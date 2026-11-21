@@ -12,7 +12,7 @@ endif
 PORT ?= 19100
 
 # Docker image settings
-DOCKER_IMAGE_NAME = registry.km8.es/svelte-fluentui-showcase
+DOCKER_IMAGE_NAME = registry.keenmate.dev/svelte-fluentui-showcase
 DOCKER_TAG = production
 DOCKER_CONTAINER_NAME = svelte-fluentui-docs
 DOCKER_PORT = 8080

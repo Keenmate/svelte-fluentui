@@ -54,7 +54,7 @@ Dead (no class matches): `.fluent-wizard*` (fc 3383–3643), `.fluent-messagebar
 Proposed rule:
 1. Markup a component renders → its own `<style>`; `:global()` only under the component's root class (portalled/snippet children).
 2. Upstream `<fluent-*>` styling (`::part`, attrs) → wrapper `<style>`, scoped by wrapper class; truly app-wide → one small `fluent-ui/_overrides.scss`.
-3. Global SCSS = tokens/theme vars, shared primitives (§5), field/value label utilities, opt-in reboot.
+3. Global SCSS = tokens/theme vars, shared primitives (§5), field/value label utilities, opt-in reboot. The reboot must ship in `@layer reset` and drop `border: 1px solid black` on inputs — it breaks layered light-DOM libraries (svelte-treeview rc16 checkbox in GSD Forms): see [08-css-layers-reboot.md](08-css-layers-reboot.md).
 4. Delete fc wholesale after moving live bits (Calendar, NavMenu, AppBar, Paginator, CounterBadge, Toast bits); trim compat to real `fluent-*` overrides.
 
 ## 3. Physical → logical properties
