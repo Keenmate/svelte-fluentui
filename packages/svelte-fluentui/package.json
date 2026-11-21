@@ -20,8 +20,8 @@
 		"prepublishOnly": "npm run package",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"format": "prettier --write src",
+		"lint": "prettier --check src"
 	},
 	"files": [
 		"dist",
@@ -77,6 +77,8 @@
 		"chokidar-cli": "^3.0.0",
 		"concurrently": "^10.0.3",
 		"five-server": "^0.4.5",
+		"prettier": "^3.10.1",
+		"prettier-plugin-svelte": "^4.2.0",
 		"publint": "^0.3.13",
 		"sass-embedded": "^1.93.2",
 		"svelte": "^5.39.8",
