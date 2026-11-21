@@ -235,6 +235,7 @@ tests skipped; both checks clean):
    applies design tokens itself, `effectiveTheme`, `toggleTheme()`), `toast.items`, `navigationStore`
    → `navigation`; translated toast default titles. e2e/services.spec.ts.
 4. Q5 Prettier pass over the package — yes/no?
+   → 2026-11-22: done (90fd1a2 config, d39cd1e format-only, `.git-blame-ignore-revs`); `npm run format` / `lint` in the package.
 5. Popup surfaces: Autocomplete/pickers/menus keep `--neutral-layer-1` + 16px shadow (`.fluent-popup--layer`);
    unify on `--neutral-layer-floating` + flyout shadow (needs Autocomplete highlighted-row recolour in dark)?
 6. `PositioningRegion availableHeight` documents the private `--_available-height`; make it public
