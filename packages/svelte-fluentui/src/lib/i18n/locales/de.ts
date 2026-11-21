@@ -26,7 +26,8 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 	"svelteFluentUI.autocomplete.closePopupAriaLabel": "Optionen schließen",
 	"svelteFluentUI.autocomplete.removeAriaLabel": "{item} entfernen",
 	"svelteFluentUI.autocomplete.removeTooltip": "{item} entfernen",
-	"svelteFluentUI.autocomplete.maxSelectionReached": "{max, plural, one {Maximal # Auswahl erreicht} other {Maximal # Auswahlen erreicht}}",
+	"svelteFluentUI.autocomplete.maxSelectionReached":
+		"{max, plural, one {Maximal # Auswahl erreicht} other {Maximal # Auswahlen erreicht}}",
 
 	// BadgeGroup
 	"svelteFluentUI.badgeGroup.showMore": "+{count} weitere",
@@ -37,7 +38,8 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 	"svelteFluentUI.calendar.previousPeriodTooltip": "{title}",
 	"svelteFluentUI.calendar.nextPeriodAriaLabel": "{title}",
 	"svelteFluentUI.calendar.nextPeriodTooltip": "{title}",
-	"svelteFluentUI.calendar.maxSelectedDayCountExceeded": "{max, plural, one {Sie können höchstens # Tag auswählen.} other {Sie können höchstens # Tage auswählen.}} Entfernen Sie einen Tag, um einen neuen auszuwählen.",
+	"svelteFluentUI.calendar.maxSelectedDayCountExceeded":
+		"{max, plural, one {Sie können höchstens # Tag auswählen.} other {Sie können höchstens # Tage auswählen.}} Entfernen Sie einen Tag, um einen neuen auszuwählen.",
 
 	// Chip
 	"svelteFluentUI.chip.removeAriaLabel": "{item} entfernen",
@@ -118,11 +120,13 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 	"svelteFluentUI.inputFile.fileTooSmall": "Dateigröße unter {min}",
 	"svelteFluentUI.inputFile.fileTypeNotAccepted": "Dateityp nicht erlaubt. Erlaubt: {accept}",
 	"svelteFluentUI.inputFile.tooManyFiles": "Höchstens {max} Dateien erlaubt",
-	"svelteFluentUI.inputFile.tooFewFiles": "{min, plural, one {Mindestens # Datei erforderlich} other {Mindestens # Dateien erforderlich}}",
+	"svelteFluentUI.inputFile.tooFewFiles":
+		"{min, plural, one {Mindestens # Datei erforderlich} other {Mindestens # Dateien erforderlich}}",
 	"svelteFluentUI.inputFile.duplicate": "Doppelte Datei",
 	"svelteFluentUI.inputFile.fileCount": "{count, plural, one {# Datei} other {# Dateien}}",
 	"svelteFluentUI.inputFile.totalProgress": "{completed} von {total} fertig · {uploadedSize} / {totalSize}",
-	"svelteFluentUI.inputFile.totalProgressWithFailed": "{completed} von {total} fertig · {failed} fehlgeschlagen · {uploadedSize} / {totalSize}",
+	"svelteFluentUI.inputFile.totalProgressWithFailed":
+		"{completed} von {total} fertig · {failed} fehlgeschlagen · {uploadedSize} / {totalSize}",
 	"svelteFluentUI.inputFile.empty": "Keine Dateien ausgewählt",
 	"svelteFluentUI.inputFile.uploadedAnnouncement": "{name} hochgeladen",
 	"svelteFluentUI.inputFile.failedAnnouncement": "{name} konnte nicht hochgeladen werden: {error}",
@@ -153,7 +157,8 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 	"svelteFluentUI.quickGrid.pageInfo": "Seite {page} von {pageCount}",
 	"svelteFluentUI.quickGrid.itemCount": "{count, plural, one {# Eintrag} other {# Einträge}}",
 	"svelteFluentUI.quickGrid.perPage": "pro Seite",
-	"svelteFluentUI.quickGrid.sortedBy": "Sortiert nach {column}, {direction, select, ascending {aufsteigend} other {absteigend}}",
+	"svelteFluentUI.quickGrid.sortedBy":
+		"Sortiert nach {column}, {direction, select, ascending {aufsteigend} other {absteigend}}",
 	"svelteFluentUI.quickGrid.sortCleared": "Sortierung von {column} entfernt",
 	"svelteFluentUI.quickGrid.expandAriaLabel": "Aufklappen",
 	"svelteFluentUI.quickGrid.expandTooltip": "Aufklappen",
@@ -201,8 +206,10 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 	"svelteFluentUI.siteSettings.direction": "Richtung",
 	"svelteFluentUI.siteSettings.leftToRight": "Links nach rechts",
 	"svelteFluentUI.siteSettings.rightToLeft": "Rechts nach links",
-	"svelteFluentUI.siteSettings.persistenceNote": "Diese Werte (außer der Richtung) werden im LocalStorage gespeichert und bei Ihrem nächsten Besuch wiederhergestellt.",
-	"svelteFluentUI.siteSettings.resetNote": "Mit der Schaltfläche „Einstellungen zurücksetzen“ unten kehren Sie zum System-Design und zur Standardfarbe zurück.",
+	"svelteFluentUI.siteSettings.persistenceNote":
+		"Diese Werte (außer der Richtung) werden im LocalStorage gespeichert und bei Ihrem nächsten Besuch wiederhergestellt.",
+	"svelteFluentUI.siteSettings.resetNote":
+		"Mit der Schaltfläche „Einstellungen zurücksetzen“ unten kehren Sie zum System-Design und zur Standardfarbe zurück.",
 	"svelteFluentUI.siteSettings.reset": "Einstellungen zurücksetzen",
 	"svelteFluentUI.siteSettings.ok": "OK",
 

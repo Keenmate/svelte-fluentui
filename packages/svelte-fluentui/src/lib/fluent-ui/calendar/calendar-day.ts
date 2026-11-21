@@ -10,9 +10,9 @@ export class CalendarDay {
 
 	constructor(calendar: IFluentCalendar, day: Date) {
 		this.calendar = calendar
-		this.date     = new Date(day)
+		this.date = new Date(day)
 
-		this.isInDisabledList      = calendar.disabledDateFunc ? calendar.disabledDateFunc(day) : false
+		this.isInDisabledList = calendar.disabledDateFunc ? calendar.disabledDateFunc(day) : false
 		this.isOutsideCurrentMonth = !calendar.calendarExtended.isInCurrentMonth(day)
 	}
 
@@ -34,9 +34,11 @@ export class CalendarDay {
 	}
 
 	public get isMultiDaySelected(): boolean {
-		return this.calendar.selectMode !== "single" &&
-			this.calendar.selectedDates.some(d => this.isSameDate(d, this.date)) &&
+		return (
+			this.calendar.selectMode !== "single" &&
+			this.calendar.selectedDates.some((d) => this.isSameDate(d, this.date)) &&
 			!this.isDisabled
+		)
 	}
 
 	public get title(): string {
@@ -61,8 +63,10 @@ export class CalendarDay {
 	}
 
 	private isSameDate(date1: Date, date2: Date): boolean {
-		return date1.getFullYear() === date2.getFullYear()
-			&& date1.getMonth() === date2.getMonth()
-			&& date1.getDate() === date2.getDate()
+		return (
+			date1.getFullYear() === date2.getFullYear() &&
+			date1.getMonth() === date2.getMonth() &&
+			date1.getDate() === date2.getDate()
+		)
 	}
 }

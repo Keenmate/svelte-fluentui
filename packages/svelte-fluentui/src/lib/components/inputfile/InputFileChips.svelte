@@ -43,19 +43,9 @@
 	</span>
 {/each}
 {#if hiddenCount > 0}
-	<button
-		type="button"
-		class="chip chip-more"
-		onclick={() => onShowAll(true)}
-	>
+	<button type="button" class="chip chip-more" onclick={() => onShowAll(true)}>
 		+{hiddenCount}
 	</button>
 {:else if canCollapse}
-	<button
-		type="button"
-		class="chip chip-more"
-		onclick={() => onShowAll(false)}
-	>
-		−
-	</button>
+	<button type="button" class="chip chip-more" onclick={() => onShowAll(false)}> − </button>
 {/if}

@@ -6,7 +6,11 @@ import type {QuickGridColumn, QuickGridSortMode} from "../QuickGrid.types.js"
 
 /** Header cell style: `autoWidth` (shrink-to-content trick), `width`, `minWidth` / `maxWidth`
  *  (else the grid's `columnMinWidth`), optional text-align. "" when there is nothing to set. */
-export function getColumnHeaderStyle<T>(column: QuickGridColumn<T>, columnMinWidth: string | undefined, includeAlign: boolean): string {
+export function getColumnHeaderStyle<T>(
+	column: QuickGridColumn<T>,
+	columnMinWidth: string | undefined,
+	includeAlign: boolean
+): string {
 	const parts: string[] = []
 	if (column.autoWidth) {
 		// `width: 1%` + `white-space: nowrap` is the canonical HTML-table trick for sizing a

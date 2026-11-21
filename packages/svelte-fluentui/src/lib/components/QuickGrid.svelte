@@ -53,16 +53,39 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	import type {SearchBehavior} from "../helpers/text.js"
 	import {defaultCulture} from "../helpers/locale.js"
 	import {
-		createRowComparator, createRowFilter, nextSort, sortRows, treeOrder, filterTreeRows,
-		visibleTreeRows, getPageCount, clampPage, pageSlice, SearchTextCache, type TreeAccess
+		createRowComparator,
+		createRowFilter,
+		nextSort,
+		sortRows,
+		treeOrder,
+		filterTreeRows,
+		visibleTreeRows,
+		getPageCount,
+		clampPage,
+		pageSlice,
+		SearchTextCache,
+		type TreeAccess
 	} from "./quickgrid/pipeline.js"
 	import {
-		buildTreeInfo, getTreeRowInfo, detectTreeSeparator, compareSegments, nearestExpandedAncestor,
-		defaultExpandedPaths, isInSubtree, type TreeRowInfo, type TreeFields
+		buildTreeInfo,
+		getTreeRowInfo,
+		detectTreeSeparator,
+		compareSegments,
+		nearestExpandedAncestor,
+		defaultExpandedPaths,
+		isInSubtree,
+		type TreeRowInfo,
+		type TreeFields
 	} from "./quickgrid/tree.js"
 	import {getColumnStyles, isColumnSortable} from "./quickgrid/columns.js"
 	import {findNextEditableCell as findNextEditableCellIn} from "./quickgrid/navigation.js"
-	import {CellOverrides, cellKeyOf, normalizeValidationResult, isCheckboxChecked, toggledCheckboxValue} from "./quickgrid/editing.svelte.js"
+	import {
+		CellOverrides,
+		cellKeyOf,
+		normalizeValidationResult,
+		isCheckboxChecked,
+		toggledCheckboxValue
+	} from "./quickgrid/editing.svelte.js"
 	import {OptionsLoader} from "./quickgrid/options.svelte.js"
 
 	// Public model types live in QuickGrid.types.ts (exported from the package root).
@@ -104,7 +127,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		totalItems?: number
 		/** Before the pager (or, in server mode, a sort / filter change) changes the page: `false` stays,
 		 *  a number goes to that page instead. May be async (the pager is disabled meanwhile). */
-		beforePageChangeCallback?: (ctx: BeforePageChangeContext) => BeforePageChangeResult | Promise<BeforePageChangeResult>
+		beforePageChangeCallback?: (
+			ctx: BeforePageChangeContext
+		) => BeforePageChangeResult | Promise<BeforePageChangeResult>
 		/** Fires when the grid changed `currentPage` (pager, sort / filter reset, clamping). */
 		onCurrentPageChange?: (ctx: {currentPage: number}) => void
 		/** Fires when the page-size selector changed `pageSize`. */
@@ -158,9 +183,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		/** Toolbar entries: built-in names (`"add"`, `"delete"`, …), action items, `{divider: true}`. */
 		rowToolbar?: RowToolbarConfig<T>[]
 		/** Toolbar vertical alignment: `center` on the row, or `top` (first toolbar row aligned with the grid row). Default: `center`. */
-		toolbarAlign?: 'center' | 'top'
+		toolbarAlign?: "center" | "top"
 		/** How the toolbar appears: `hover`, `click` on the row, or a `button` in the first column. Default: `hover`. */
-		toolbarTrigger?: 'hover' | 'click' | 'button'
+		toolbarTrigger?: "hover" | "click" | "button"
 		// Context menu
 		/** Right-click menu entries: built-in names (`"expand-all"`, …), menu items, `{divider: true}`. */
 		contextMenu?: ContextMenuConfig<T>[]
@@ -259,8 +284,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		// Row toolbar
 		showRowToolbar = false,
 		rowToolbar = undefined,
-		toolbarAlign = 'center',
-		toolbarTrigger = 'hover',
+		toolbarAlign = "center",
+		toolbarTrigger = "hover",
 		// Context menu
 		contextMenu = undefined,
 		onContextMenuOpen = undefined,
@@ -294,7 +319,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	const t = useTranslations("quickGrid", () => labelsProp)
 
-	const resolvedToolbarConfig = $derived(rowToolbar ?? (['add', 'delete', 'duplicate'] as RowToolbarConfig<T>[]))
+	const resolvedToolbarConfig = $derived(rowToolbar ?? (["add", "delete", "duplicate"] as RowToolbarConfig<T>[]))
 	const actionHost = {}
 
 	// Inline width / align styles per column, once per `columns` change (not per cell)
@@ -315,10 +340,10 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		initialSearchQuery?: string
 	}
 	let editingCell = $state.raw<EditSession | null>(null)
-	let activeEditor = $state.raw<{commit: () => Promise<void>} | null>(null)  // the open edit's GridCellEditor
-	let editSeq = 0                                    // last token handed out by startEdit
-	const cancelledEdits = new Set<number>()           // tokens whose late commits are dropped
-	let validatingToken = $state<number | null>(null)  // the open edit is waiting for its validation
+	let activeEditor = $state.raw<{commit: () => Promise<void>} | null>(null) // the open edit's GridCellEditor
+	let editSeq = 0 // last token handed out by startEdit
+	const cancelledEdits = new Set<number>() // tokens whose late commits are dropped
+	let validatingToken = $state<number | null>(null) // the open edit is waiting for its validation
 
 	function isCurrentEdit(token: number | undefined): boolean {
 		return token !== undefined && editingCell?.token === token
@@ -375,7 +400,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		if (idMember !== undefined) return idMember
 		if (treePathMember !== undefined) return undefined
 		const first = items[0]
-		return first !== null && typeof first === "object" && "id" in first ? "id" as keyof T : undefined
+		return first !== null && typeof first === "object" && "id" in first ? ("id" as keyof T) : undefined
 	})
 
 	// Stable key for a row: idMember (or `id`) → treePathMember → row object identity.
@@ -422,20 +447,20 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		// eslint-disable-next-line no-console
 		console.warn(
 			"[QuickGrid] No `idMember` was provided and the rows have no `id` field while `editable` is enabled. Row state " +
-			"(drafts, invalid cells, in-progress edits) is keyed by row object identity, so it " +
-			"is dropped for rows you replace with new objects (e.g. `items = items.map(...)`). " +
-			"Pass `idMember` (any field that uniquely identifies a row) to keep it. " +
-			"In tree mode, `treePathMember` is also accepted as the identity."
+				"(drafts, invalid cells, in-progress edits) is keyed by row object identity, so it " +
+				"is dropped for rows you replace with new objects (e.g. `items = items.map(...)`). " +
+				"Pass `idMember` (any field that uniquely identifies a row) to keep it. " +
+				"In tree mode, `treePathMember` is also accepted as the identity."
 		)
 		idWarningEmitted = true
 	})
 
 	// Navigation mode state (for "navigate" editTrigger)
-	let focusedCell = $state<{ rowKey: string; colIndex: number } | null>(null)
-	let isNavigateMode = $derived(editTrigger === "navigate" || columns.some(c => c.editTrigger === "navigate"))
+	let focusedCell = $state<{rowKey: string; colIndex: number} | null>(null)
+	let isNavigateMode = $derived(editTrigger === "navigate" || columns.some((c) => c.editTrigger === "navigate"))
 	let tableElement: HTMLTableElement | undefined = $state()
 	let isCommittingFromKeyboard = $state(false)
-	let skipNextDropdownAutoEdit = $state(false)  // Prevents dropdown from reopening after selection
+	let skipNextDropdownAutoEdit = $state(false) // Prevents dropdown from reopening after selection
 
 	// Row toolbar state. The toolbar's row is tracked by key (rows replaced immutably keep
 	// working); the toolbar stays anchored to the view position it opened at, and the
@@ -447,9 +472,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	let rowActionHideTimeout: ReturnType<typeof setTimeout> | null = null
 	let containerRef: HTMLDivElement | undefined = $state()
 	let popupElement: HTMLDivElement | undefined = $state()
-	let toolbarSession = $state(0)  // bumped per open: the toolbar forgets that its row moved
+	let toolbarSession = $state(0) // bumped per open: the toolbar forgets that its row moved
 	// Pointer type of the last press on a row: hover mode opens on mouse / pen hover, on a tap for touch
-	let lastRowPointerType = ''
+	let lastRowPointerType = ""
 
 	// Context menu state
 	let contextMenuVisible = $state(false)
@@ -473,9 +498,16 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		return detectTreeSeparator(items.map((item) => String(item[treePathMember as keyof T] ?? "")))
 	})
 
-	let treeFields = $derived<TreeFields<T> | null>(treePathMember === undefined ? null : {
-		pathMember: treePathMember, levelMember: treeLevelMember, parentMember: treeParentMember, separator: resolvedTreeSeparator
-	})
+	let treeFields = $derived<TreeFields<T> | null>(
+		treePathMember === undefined
+			? null
+			: {
+					pathMember: treePathMember,
+					levelMember: treeLevelMember,
+					parentMember: treeParentMember,
+					separator: resolvedTreeSeparator
+				}
+	)
 
 	// Path, segments, level and parent of every row, computed once per `items` change.
 	let treeInfo = $derived(treeFields ? buildTreeInfo(items, treeFields) : new Map<T, TreeRowInfo>())
@@ -551,7 +583,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			const current = expandedPaths
 			if (!expansionSeeded) {
 				expansionSeeded = true
-				if (current !== undefined) return  // the consumer's initial set wins
+				if (current !== undefined) return // the consumer's initial set wins
 			}
 			if (fresh.length === 0 && current !== undefined) return
 			const levelOf = (path: string) => {
@@ -564,7 +596,10 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		})
 	})
 
-	const treeAccess: TreeAccess<T> = {getPath: (row) => getTreeInfo(row).path, getParent: (row) => getTreeInfo(row).parent}
+	const treeAccess: TreeAccess<T> = {
+		getPath: (row) => getTreeInfo(row).path,
+		getParent: (row) => getTreeInfo(row).parent
+	}
 
 	// ============ Display chain: filter → sort → tree visibility → page (quickgrid/pipeline.ts) ============
 
@@ -596,14 +631,19 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	let rowFilter = $derived(
 		filterable && filterMode === "client" && !isServerPaging
 			? createRowFilter({
-				filters, columns, searchBehavior, textCache: searchTextCache,
-				getText: (row, column) => formatCellValue(row[column.field as keyof T], row, column)
-			})
+					filters,
+					columns,
+					searchBehavior,
+					textCache: searchTextCache,
+					getText: (row, column) => formatCellValue(row[column.field as keyof T], row, column)
+				})
 			: null
 	)
 	let isFiltering = $derived(rowFilter !== null)
 
-	let rowComparator = $derived(sortMode !== "none" && !isServerPaging ? createRowComparator(sort, columns, collator) : null)
+	let rowComparator = $derived(
+		sortMode !== "none" && !isServerPaging ? createRowComparator(sort, columns, collator) : null
+	)
 
 	// Filtered and sorted. Tree: matches + their ancestors, depth-first, siblings sorted within
 	// their parent (by path when unsorted); `treeDataSorted` keeps the caller's order.
@@ -618,20 +658,28 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	// Tree: descendants of collapsed rows hidden — except while filtering, when every match
 	// shows with its ancestors (chevrons then show expanded and are disabled).
-	let visibleItems = $derived(isTreeMode && !isFiltering ? visibleTreeRows(orderedItems, treeAccess, isPathExpanded) : orderedItems)
+	let visibleItems = $derived(
+		isTreeMode && !isFiltering ? visibleTreeRows(orderedItems, treeAccess, isPathExpanded) : orderedItems
+	)
 
 	// While filtering: the rows that have a matching child.
-	let filteredParentPaths = $derived(isTreeMode && isFiltering ? new Set(visibleItems.map((it) => getTreeInfo(it).parent).filter(Boolean)) : NO_PATHS)
+	let filteredParentPaths = $derived(
+		isTreeMode && isFiltering ? new Set(visibleItems.map((it) => getTreeInfo(it).parent).filter(Boolean)) : NO_PATHS
+	)
 
 	// What the pager counts: the visible rows, or the server's `totalItems`.
 	let pagedTotal = $derived(isServerPaging ? (totalItems ?? items.length) : visibleItems.length)
 	// Server mode without `totalItems`: a full page means there may be another one.
-	let totalPages = $derived(isServerPaging && totalItems === undefined
-		? Math.max(1, currentPage) + (items.length >= pageSize ? 1 : 0)
-		: getPageCount(pagedTotal, pageSize))
+	let totalPages = $derived(
+		isServerPaging && totalItems === undefined
+			? Math.max(1, currentPage) + (items.length >= pageSize ? 1 : 0)
+			: getPageCount(pagedTotal, pageSize)
+	)
 	let effectivePage = $derived(clampPage(currentPage, totalPages))
 
-	let displayItems = $derived(!pageable || isServerPaging ? visibleItems : pageSlice(visibleItems, effectivePage, pageSize))
+	let displayItems = $derived(
+		!pageable || isServerPaging ? visibleItems : pageSlice(visibleItems, effectivePage, pageSize)
+	)
 
 	// The page count shrank (rows deleted / filtered / collapsed, smaller `totalItems`): bring
 	// `currentPage` back into range — server mode then asks for that page.
@@ -719,9 +767,15 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	})
 	let pinnedBefore = $derived(pinnedViewIndexes.filter((i) => i < renderRange.start))
 	let pinnedAfter = $derived(pinnedViewIndexes.filter((i) => i >= renderRange.end))
-	let renderedRows = $derived(isVirtual
-		? [...pinnedBefore.map((i) => displayRows[i]), ...displayRows.slice(renderRange.start, renderRange.end), ...pinnedAfter.map((i) => displayRows[i])]
-		: displayRows)
+	let renderedRows = $derived(
+		isVirtual
+			? [
+					...pinnedBefore.map((i) => displayRows[i]),
+					...displayRows.slice(renderRange.start, renderRange.end),
+					...pinnedAfter.map((i) => displayRows[i])
+				]
+			: displayRows
+	)
 	let spacerBefore = $derived(isVirtual ? (renderRange.start - pinnedBefore.length) * rowPitch : 0)
 	let spacerAfter = $derived(isVirtual ? (displayRows.length - renderRange.end - pinnedAfter.length) * rowPitch : 0)
 
@@ -742,13 +796,16 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			const before = pinnedBefore.indexOf(viewIndex)
 			const after = pinnedAfter.indexOf(viewIndex)
 			if (before >= 0) position = before
-			else if (viewIndex >= renderRange.start && viewIndex < renderRange.end) position = pinnedBefore.length + viewIndex - renderRange.start
+			else if (viewIndex >= renderRange.start && viewIndex < renderRange.end)
+				position = pinnedBefore.length + viewIndex - renderRange.start
 			else if (after >= 0) position = pinnedBefore.length + renderRange.end - renderRange.start + after
 			else return null
 		}
 		return tableElement?.querySelectorAll<HTMLElement>(":scope > tbody > tr[data-row-key]")[position] ?? null
 	}
-	let bodyColumnCount = $derived(columns.length + (showRowToolbar && toolbarTrigger === 'button' ? 1 : 0) + (fillerColumn ? 1 : 0))
+	let bodyColumnCount = $derived(
+		columns.length + (showRowToolbar && toolbarTrigger === "button" ? 1 : 0) + (fillerColumn ? 1 : 0)
+	)
 
 	// Scroll position and viewport height of the scrolling container.
 	$effect(() => {
@@ -801,7 +858,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		else if (rowTop + rowPitch > el.scrollTop + el.clientHeight) next = rowTop + rowPitch - el.clientHeight
 		if (next === el.scrollTop) return
 		el.scrollTop = next
-		virtualScrollTop = el.scrollTop  // render the row now, not on the scroll event
+		virtualScrollTop = el.scrollTop // render the row now, not on the scroll event
 	}
 
 	function isRowRendered(rowKey: string): boolean {
@@ -811,8 +868,13 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	function requestData(trigger: DataRequestTrigger) {
 		onDataRequest?.({
-			sort: [...sort], page: currentPage, pageSize, trigger, mode: "replace",
-			skip: (currentPage - 1) * pageSize, filters: {...filters}
+			sort: [...sort],
+			page: currentPage,
+			pageSize,
+			trigger,
+			mode: "replace",
+			skip: (currentPage - 1) * pageSize,
+			filters: {...filters}
 		})
 	}
 
@@ -826,7 +888,11 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// A user action that changes the page runs `apply(page)` once `beforePageChangeCallback`
 	// allows it (`false` → nothing happens, a number → that page). Resolves to whether it applied.
 	let pageChangePending = $state(false)
-	async function guardPageChange(trigger: PageChangeTrigger, toPage: number, apply: (page: number) => void): Promise<boolean> {
+	async function guardPageChange(
+		trigger: PageChangeTrigger,
+		toPage: number,
+		apply: (page: number) => void
+	): Promise<boolean> {
 		if (pageChangePending) return false
 		if (!beforePageChangeCallback) {
 			apply(toPage)
@@ -834,7 +900,12 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		}
 		let result: BeforePageChangeResult
 		try {
-			const returned = beforePageChangeCallback({trigger, fromPage: effectivePage, toPage, invalidCells: [...invalidCells]})
+			const returned = beforePageChangeCallback({
+				trigger,
+				fromPage: effectivePage,
+				toPage,
+				invalidCells: [...invalidCells]
+			})
 			if (returned instanceof Promise) {
 				pageChangePending = true
 				result = await returned
@@ -890,10 +961,13 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// aria-rowcount / aria-rowindex when only part of the rows is in the DOM (paged / server / virtualised)
 	let headerRowCount = $derived(filterable ? 2 : 1)
 	let ariaRowCount = $derived(
-		isVirtual ? headerRowCount + displayItems.length
-			: !pageable && !isServerPaging ? undefined
-			: isServerPaging && totalItems === undefined ? -1
-			: headerRowCount + pagedTotal
+		isVirtual
+			? headerRowCount + displayItems.length
+			: !pageable && !isServerPaging
+				? undefined
+				: isServerPaging && totalItems === undefined
+					? -1
+					: headerRowCount + pagedTotal
 	)
 	let rowIndexBase = $derived(headerRowCount + (pageable || isServerPaging ? (effectivePage - 1) * pageSize : 0))
 
@@ -921,7 +995,11 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			if (pageable) setPage(page, null)
 			requestData("sort")
 			const entry = next.find((s) => s.column === field)
-			announce(entry ? t("sortedBy", {column: column.title, direction: entry.direction === "asc" ? "ascending" : "descending"}) : t("sortCleared", {column: column.title}))
+			announce(
+				entry
+					? t("sortedBy", {column: column.title, direction: entry.direction === "asc" ? "ascending" : "descending"})
+					: t("sortCleared", {column: column.title})
+			)
 		}
 		if (isServerPaging && pageable) void guardPageChange("sort", 1, apply)
 		else apply(1)
@@ -962,9 +1040,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			return column.renderCellCallback({row: rowKey !== undefined ? getDraftRow(item, rowKey) : item, column})
 		}
 		// Use draft value if available
-		const value = rowKey !== undefined
-			? getCellRawValue(item, rowKey, String(column.field))
-			: item[column.field as keyof T]
+		const value =
+			rowKey !== undefined ? getCellRawValue(item, rowKey, String(column.field)) : item[column.field as keyof T]
 		return formatCellValue(value, item, column)
 	}
 
@@ -1092,16 +1169,16 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// Helper functions for managing invalid cells. Keyed by stable row id so markers survive
 	// pagination / filter / tree expand-collapse re-orderings.
 	function addInvalidCell(rowKey: string, field: string, error: string) {
-		const existingIndex = invalidCells.findIndex(c => c.rowKey === rowKey && c.field === field)
+		const existingIndex = invalidCells.findIndex((c) => c.rowKey === rowKey && c.field === field)
 		if (existingIndex >= 0) {
-			invalidCells[existingIndex] = { rowKey, field, error }
+			invalidCells[existingIndex] = {rowKey, field, error}
 		} else {
-			invalidCells = [...invalidCells, { rowKey, field, error }]
+			invalidCells = [...invalidCells, {rowKey, field, error}]
 		}
 	}
 
 	function removeInvalidCell(rowKey: string, field: string) {
-		invalidCells = invalidCells.filter(c => !(c.rowKey === rowKey && c.field === field))
+		invalidCells = invalidCells.filter((c) => !(c.rowKey === rowKey && c.field === field))
 	}
 
 	// Error per invalid cell (rowKey + field), built once per `invalidCells` change; the first entry wins.
@@ -1215,10 +1292,17 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 		// For immediate-commit editors in navigate mode, refocus the cell so arrow key navigation continues
 		if (ownsUi && isNavigateMode && colIndex !== undefined) {
-			const isImmediateCommitEditor = column.editor === "checkbox" || column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete" || column.editor === "date" || column.editor === "custom"
+			const isImmediateCommitEditor =
+				column.editor === "checkbox" ||
+				column.editor === "select" ||
+				column.editor === "combobox" ||
+				column.editor === "autocomplete" ||
+				column.editor === "date" ||
+				column.editor === "custom"
 			if (isImmediateCommitEditor) {
 				// For dropdown editors, prevent auto-reopening when we refocus
-				const isDropdownEditor = column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
+				const isDropdownEditor =
+					column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
 				if (isDropdownEditor) {
 					skipNextDropdownAutoEdit = true
 				}
@@ -1239,12 +1323,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		// Tree-toggle on dblclick wins on the tree column when enabled and the row has
 		// children. Chevron's own ondblclick stops propagation, so this only fires for
 		// dblclicks elsewhere in the cell. Leaves fall through to the edit logic below.
-		if (
-			isTreeMode &&
-			column.tree &&
-			treeDoubleClickBehavior === "toggle" &&
-			rowHasChildren(item)
-		) {
+		if (isTreeMode && column.tree && treeDoubleClickBehavior === "toggle" && rowHasChildren(item)) {
 			toggleExpand(getRowPath(item))
 			return
 		}
@@ -1270,10 +1349,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	}
 
 	// Navigation mode functions
-	function getEditableColumns(row: T): { index: number; column: Column<T> }[] {
-		return columns
-			.map((col, index) => ({ index, column: col }))
-			.filter(({ column }) => isCellEditable(column, row))
+	function getEditableColumns(row: T): {index: number; column: Column<T>}[] {
+		return columns.map((col, index) => ({index, column: col})).filter(({column}) => isCellEditable(column, row))
 	}
 
 	// Tab / Shift+Tab target (quickgrid/navigation.ts), null = leave the grid.
@@ -1290,14 +1367,16 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// Navigate mode: one tab stop (roving tabindex) — the last focused cell while its row is
 	// displayed, else the first cell. Tab from outside lands there; Tab past the last editable
 	// cell leaves the grid.
-	let tabStop = $state<{ rowKey: string; colIndex: number } | null>(null)
+	let tabStop = $state<{rowKey: string; colIndex: number} | null>(null)
 	let resolvedTabStop = $derived.by(() => {
 		if (!isNavigateMode || displayItems.length === 0) return null
 		const stop = tabStop
-		if (stop && stop.colIndex < columns.length && viewIndexByKey.has(stop.rowKey) && isRowRendered(stop.rowKey)) return stop
+		if (stop && stop.colIndex < columns.length && viewIndexByKey.has(stop.rowKey) && isRowRendered(stop.rowKey))
+			return stop
 		// Virtualised and scrolled away from the stop: the first rendered row keeps a tab stop
-		if (stop && isVirtual && stop.colIndex < columns.length && renderedRows.length > 0) return { rowKey: renderedRows[0].rowKey, colIndex: stop.colIndex }
-		return { rowKey: getRowKey(displayItems[0]), colIndex: 0 }
+		if (stop && isVirtual && stop.colIndex < columns.length && renderedRows.length > 0)
+			return {rowKey: renderedRows[0].rowKey, colIndex: stop.colIndex}
+		return {rowKey: getRowKey(displayItems[0]), colIndex: 0}
 	})
 
 	function getCellTabIndex(rowKey: string, colIndex: number): number | undefined {
@@ -1308,16 +1387,16 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// A keyboard move updates `focusedCell` at once but focuses the <td> on the next frame (once
 	// the DOM caught up — a virtualised row renders first). Keys pressed before that frame move on
 	// from this pending cell, not from the cell the keydown fired on, so every fast press advances.
-	let pendingFocus: { rowKey: string; colIndex: number } | null = null
+	let pendingFocus: {rowKey: string; colIndex: number} | null = null
 	let pendingFocusFrame = 0
 
 	// Focus a cell of a row (by key — wherever the row is displayed after the DOM updates).
 	function focusCell(rowKey: string, colIndex: number) {
-		focusedCell = { rowKey, colIndex }
-		tabStop = { rowKey, colIndex }
-		pendingFocus = { rowKey, colIndex }
-		scrollRowIntoView(getViewIndex(rowKey))  // virtualised: renders the row if it was scrolled away
-		if (pendingFocusFrame) return  // one frame focuses the latest target
+		focusedCell = {rowKey, colIndex}
+		tabStop = {rowKey, colIndex}
+		pendingFocus = {rowKey, colIndex}
+		scrollRowIntoView(getViewIndex(rowKey)) // virtualised: renders the row if it was scrolled away
+		if (pendingFocusFrame) return // one frame focuses the latest target
 		// Focus the td element for keyboard events
 		pendingFocusFrame = requestAnimationFrame(() => {
 			pendingFocusFrame = 0
@@ -1328,9 +1407,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			const row = tableElement?.querySelector(`:scope > tbody > tr[data-row-key="${CSS.escape(target.rowKey)}"]`)
 			const cell = row?.querySelector(`:scope > td[data-col="${target.colIndex}"]`) as HTMLElement | null
 			if (!cell) return
-			cell.focus({ preventScroll: true })
+			cell.focus({preventScroll: true})
 			// Not virtualised: the page / container scrolls the cell into view (virtualised already did)
-			if (!isVirtual) cell.scrollIntoView({ block: "nearest", inline: "nearest" })
+			if (!isVirtual) cell.scrollIntoView({block: "nearest", inline: "nearest"})
 		})
 	}
 
@@ -1341,13 +1420,14 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	}
 
 	function handleCellFocus(colIndex: number, column: Column<T>, item: T) {
-		if (isNavigateMode) tabStop = { rowKey: getRowKey(item), colIndex }
+		if (isNavigateMode) tabStop = {rowKey: getRowKey(item), colIndex}
 		if (isNavigateMode && !editingCell) {
-			focusedCell = { rowKey: getRowKey(item), colIndex }
+			focusedCell = {rowKey: getRowKey(item), colIndex}
 
 			// Auto-start edit for dropdown editors (select/combobox/autocomplete) when dropdownShowOnFocus is enabled
 			if (dropdownShowOnFocus) {
-				const isDropdownEditor = column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
+				const isDropdownEditor =
+					column.editor === "select" || column.editor === "combobox" || column.editor === "autocomplete"
 				if (isDropdownEditor && isCellEditable(column, item)) {
 					// Skip auto-edit if we just committed from this dropdown (prevents reopen after selection)
 					if (skipNextDropdownAutoEdit) {
@@ -1369,9 +1449,10 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		}
 		// Unpin the focused row once focus really left the table — checked after the event, as a
 		// window blur (switching apps) also fires this but leaves the cell the active element.
-		if (isVirtual) setTimeout(() => {
-			if (!tableElement?.contains(document.activeElement)) focusWithinRowKey = null
-		})
+		if (isVirtual)
+			setTimeout(() => {
+				if (!tableElement?.contains(document.activeElement)) focusWithinRowKey = null
+			})
 	}
 
 	// Virtualised: the row holding focus stays rendered while scrolled away (see `pinnedViewIndexes`).
@@ -1380,7 +1461,8 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		if (!isVirtual || !el) return
 		const onFocusIn = (e: FocusEvent) => {
 			const tr = (e.target as Element).closest?.("tr[data-row-key]")
-			focusWithinRowKey = tr && tr.parentElement?.parentElement === tableElement ? tr.getAttribute("data-row-key") : null
+			focusWithinRowKey =
+				tr && tr.parentElement?.parentElement === tableElement ? tr.getAttribute("data-row-key") : null
 		}
 		el.addEventListener("focusin", onFocusIn)
 		return () => {
@@ -1392,7 +1474,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// Keys that work on any cell (focus on the cell or a control in it, not in an editor's input):
 	// Shift+F10 / ContextMenu opens the context menu, Alt+F10 the row toolbar.
 	function handleCellKeyDown(e: KeyboardEvent, viewIndex: number, colIndex: number, column: Column<T>, item: T) {
-		const inInput = !!(e.target as Element).closest('input, textarea, select, [contenteditable]')
+		const inInput = !!(e.target as Element).closest("input, textarea, select, [contenteditable]")
 		const cell = e.currentTarget as HTMLElement
 		if (!inInput && (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey && !e.altKey))) {
 			if (openContextMenu(cell, colIndex, column, item, null)) e.preventDefault()
@@ -1400,7 +1482,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		}
 		if (!inInput && e.key === "F10" && e.altKey && showRowToolbar) {
 			e.preventDefault()
-			const row = cell.closest('tr') as HTMLElement | null
+			const row = cell.closest("tr") as HTMLElement | null
 			if (row) openToolbarFromKeyboard(getRowKey(item), viewIndex, row)
 			return
 		}
@@ -1423,7 +1505,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	function visibleRowCount(): number {
 		const el = containerRef
 		const header = tableElement?.tHead?.offsetHeight ?? 0
-		const rowHeight = isVirtual ? rowPitch : (tableElement?.querySelector<HTMLElement>(":scope > tbody > tr[data-row-key]")?.offsetHeight || itemSize)
+		const rowHeight = isVirtual
+			? rowPitch
+			: tableElement?.querySelector<HTMLElement>(":scope > tbody > tr[data-row-key]")?.offsetHeight || itemSize
 		const scrolls = !!el && el.scrollHeight > el.clientHeight + 1
 		const view = (scrolls ? el.clientHeight : window.innerHeight) - header
 		return Math.max(1, Math.floor(view / Math.max(1, rowHeight)))
@@ -1434,7 +1518,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		const rowKey = getRowKey(item)
 
 		const editableCols = getEditableColumns(item)
-		const currentEditableIndex = editableCols.findIndex(ec => ec.index === colIndex)
+		const currentEditableIndex = editableCols.findIndex((ec) => ec.index === colIndex)
 
 		switch (e.key) {
 			case "ArrowUp":
@@ -1480,7 +1564,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 						const ancestor = nearestExpandedAncestor(path, resolvedTreeSeparator, resolvedExpandedPaths)
 						if (ancestor) {
 							toggleExpand(ancestor)
-							const ancestorRowIndex = displayItems.findIndex(it => getRowPath(it) === ancestor)
+							const ancestorRowIndex = displayItems.findIndex((it) => getRowPath(it) === ancestor)
 							if (ancestorRowIndex >= 0) focusCellAt(ancestorRowIndex, colIndex)
 						}
 					}
@@ -1556,13 +1640,19 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		else await activeEditor.commit()
 	}
 
-	async function handleEditorKeyDown(e: KeyboardEvent, viewIndex: number, colIndex: number, column: Column<T>, item: T) {
+	async function handleEditorKeyDown(
+		e: KeyboardEvent,
+		viewIndex: number,
+		colIndex: number,
+		column: Column<T>,
+		item: T
+	) {
 		const rowKey = getRowKey(item)
 		const token = editingCell?.token
 		// After an awaited commit: false when another edit opened meanwhile (don't move focus).
 		const stillOurs = () => editingCell === null || editingCell.token === token
 		const editableCols = getEditableColumns(item)
-		const currentEditableIndex = editableCols.findIndex(ec => ec.index === colIndex)
+		const currentEditableIndex = editableCols.findIndex((ec) => ec.index === colIndex)
 
 		// Tab works in BOTH navigate mode and dblclick / click / button modes. Without this
 		// override, dblclick mode would fall through to the browser's default Tab — which
@@ -1571,14 +1661,14 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		// advance behavior differs by mode (see comment below).
 		if (e.key === "Tab") {
 			e.preventDefault()
-			e.stopPropagation()  // Prevent bubbling to handleNavigationKeyDown
+			e.stopPropagation() // Prevent bubbling to handleNavigationKeyDown
 			isCommittingFromKeyboard = true
 
 			await commitFromKeyboard(column, token)
 
 			isCommittingFromKeyboard = false
 			if (!stillOurs()) return
-			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
+			viewIndex = getViewIndex(rowKey) // the commit may have moved the row
 
 			// Walk to the next / previous editable cell, skipping rows that have no editable
 			// columns (heterogeneous trees: team rows have zero, employee rows have N).
@@ -1613,7 +1703,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 		if (e.key === "Escape") {
 			e.preventDefault()
-			e.stopPropagation()  // Prevent bubbling to handleNavigationKeyDown
+			e.stopPropagation() // Prevent bubbling to handleNavigationKeyDown
 			// Set the same flag we use for keyboard-driven commits so the editor's blur,
 			// which fires during the unmount triggered by editingCell = null, skips its
 			// commit-on-blur path. Without this, clearing a number cell then pressing Esc
@@ -1624,18 +1714,18 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			cancelEdit(token)
 			await tick()
 			isCommittingFromKeyboard = false
-			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
+			viewIndex = getViewIndex(rowKey) // the commit may have moved the row
 			focusCell(rowKey, colIndex)
 		} else if (e.key === "Enter") {
 			e.preventDefault()
-			e.stopPropagation()  // Prevent bubbling to handleNavigationKeyDown
+			e.stopPropagation() // Prevent bubbling to handleNavigationKeyDown
 			isCommittingFromKeyboard = true
 
 			await commitFromKeyboard(column, token)
 
 			isCommittingFromKeyboard = false
 			if (!stillOurs()) return
-			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
+			viewIndex = getViewIndex(rowKey) // the commit may have moved the row
 
 			// Move to cell below after Enter (any cell — all are focusable in navigate mode).
 			if (viewIndex < displayItems.length - 1) focusCellAt(viewIndex + 1, colIndex)
@@ -1668,7 +1758,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 			isCommittingFromKeyboard = false
 			if (!stillOurs()) return
-			viewIndex = getViewIndex(rowKey)  // the commit may have moved the row
+			viewIndex = getViewIndex(rowKey) // the commit may have moved the row
 
 			// Move to target cell (allow navigation even with invalid values).
 			// ArrowUp/Down: any cell (all are focusable in navigate mode).
@@ -1713,7 +1803,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		toolbarFocused = false
 		toolbarReturnFocus = null
 		if (refocus) {
-			const target = returnTo?.isConnected ? returnTo : row?.querySelector('.toolbar-trigger-btn, td[tabindex="0"]') as HTMLElement | null
+			const target = returnTo?.isConnected
+				? returnTo
+				: (row?.querySelector('.toolbar-trigger-btn, td[tabindex="0"]') as HTMLElement | null)
 			target?.focus()
 		}
 	}
@@ -1724,9 +1816,11 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	let toolbarReturnFocus: HTMLElement | null = null
 
 	function focusToolbar() {
-		void tick().then(() => requestAnimationFrame(() => {
-			popupElement?.querySelector<HTMLElement>('.row-toolbar-btn:not(:disabled)')?.focus()
-		}))
+		void tick().then(() =>
+			requestAnimationFrame(() => {
+				popupElement?.querySelector<HTMLElement>(".row-toolbar-btn:not(:disabled)")?.focus()
+			})
+		)
 	}
 
 	function openToolbarFromKeyboard(rowKey: string, viewIndex: number, row: HTMLElement) {
@@ -1737,7 +1831,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	// Without navigate mode, rows with a hover / click toolbar are focusable (one tab stop):
 	// ↑ / ↓ / Home / End move between them, Enter or Alt+F10 opens the toolbar.
-	let rowsFocusable = $derived(showRowToolbar && toolbarTrigger !== 'button' && !isNavigateMode)
+	let rowsFocusable = $derived(showRowToolbar && toolbarTrigger !== "button" && !isNavigateMode)
 	let rowTabStop = $state<string | null>(null)
 	let resolvedRowTabStop = $derived.by(() => {
 		if (!rowsFocusable || displayItems.length === 0) return null
@@ -1753,22 +1847,35 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		const count = displayRows.length
 		let next = -1
 		switch (event.key) {
-			case 'ArrowDown': next = Math.min(viewIndex + 1, count - 1); break
-			case 'ArrowUp': next = Math.max(viewIndex - 1, 0); break
-			case 'PageDown': next = Math.min(viewIndex + visibleRowCount(), count - 1); break
-			case 'PageUp': next = Math.max(viewIndex - visibleRowCount(), 0); break
-			case 'Home': next = 0; break
-			case 'End': next = count - 1; break
-			case 'Enter':
+			case "ArrowDown":
+				next = Math.min(viewIndex + 1, count - 1)
+				break
+			case "ArrowUp":
+				next = Math.max(viewIndex - 1, 0)
+				break
+			case "PageDown":
+				next = Math.min(viewIndex + visibleRowCount(), count - 1)
+				break
+			case "PageUp":
+				next = Math.max(viewIndex - visibleRowCount(), 0)
+				break
+			case "Home":
+				next = 0
+				break
+			case "End":
+				next = count - 1
+				break
+			case "Enter":
 				event.preventDefault()
 				openToolbarFromKeyboard(rowKey, viewIndex, row)
 				return
-			case 'F10':
+			case "F10":
 				if (!event.altKey) return
 				event.preventDefault()
 				openToolbarFromKeyboard(rowKey, viewIndex, row)
 				return
-			default: return
+			default:
+				return
 		}
 		event.preventDefault()
 		focusRowAt(next)
@@ -1782,7 +1889,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			return
 		}
 		scrollRowIntoView(viewIndex)
-		void tick().then(() => find()?.focus({ preventScroll: true }))
+		void tick().then(() => find()?.focus({preventScroll: true}))
 	}
 
 	// The toolbar's row, resolved by key against the current view (null once it's gone).
@@ -1804,7 +1911,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// Row click handler - toggles popup (click / button modes; a tap in hover mode)
 	function handleRowClickForActions(rowKey: string, viewIndex: number, event: MouseEvent) {
 		// Hover mode: only a touch tap toggles (mouse / pen open it by hovering)
-		if (toolbarTrigger === 'hover' && lastRowPointerType !== 'touch') return
+		if (toolbarTrigger === "hover" && lastRowPointerType !== "touch") return
 
 		// Prevent default to avoid triggering other click handlers
 		event.stopPropagation()
@@ -1816,7 +1923,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		} else {
 			// Show popup for this row. For button trigger, find the parent row element.
 			const target = event.currentTarget as HTMLElement
-			openRowToolbar(rowKey, viewIndex, target.closest('tr') || target)
+			openRowToolbar(rowKey, viewIndex, target.closest("tr") || target)
 		}
 	}
 
@@ -1833,7 +1940,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	// Hover mode, decided per event: touch-screen laptops still get hover for the mouse
 	function handleRowPointerEnter(rowKey: string, viewIndex: number, event: PointerEvent) {
-		if (event.pointerType === 'touch') return
+		if (event.pointerType === "touch") return
 
 		if (rowActionHideTimeout) {
 			clearTimeout(rowActionHideTimeout)
@@ -1843,7 +1950,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	}
 
 	function handleRowPointerLeave(event: PointerEvent) {
-		if (event.pointerType === 'touch') return
+		if (event.pointerType === "touch") return
 
 		// Delay hiding to allow mouse to reach the popup (a keyboard user inside it keeps it)
 		rowActionHideTimeout = setTimeout(() => {
@@ -1852,7 +1959,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	}
 
 	function handleRowActionPopupPointerEnter(event: PointerEvent) {
-		if (event.pointerType === 'touch') return
+		if (event.pointerType === "touch") return
 		if (rowActionHideTimeout) {
 			clearTimeout(rowActionHideTimeout)
 			rowActionHideTimeout = null
@@ -1861,12 +1968,13 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	}
 
 	function handleRowActionPopupPointerLeave(event: PointerEvent) {
-		if (event.pointerType === 'touch') return
+		if (event.pointerType === "touch") return
 		rowActionButtonHovered = false
 		// Start hide timeout when leaving the popup (hover mode only)
-		if (toolbarTrigger === 'hover') rowActionHideTimeout = setTimeout(() => {
-			if (!toolbarFocused) closeRowToolbar()
-		}, 150)
+		if (toolbarTrigger === "hover")
+			rowActionHideTimeout = setTimeout(() => {
+				if (!toolbarFocused) closeRowToolbar()
+			}, 150)
 	}
 
 	async function handleToolbarItemClick(item: RowToolbarItem<T>, action: string, event: MouseEvent) {
@@ -1895,34 +2003,37 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		})
 
 		// For delete action, hide popup (row is gone)
-		if (ran && action === 'delete') closeRowToolbar()
+		if (ran && action === "delete") closeRowToolbar()
 		// For other actions (add, duplicate, move), keep popup visible
 	}
 
 	// Built-in toolbar presets: icon, text (tooltip), danger styling. Your item fields win.
 	const toolbarPresets: Record<RowToolbarAction, Partial<ResolvedActionItem<RowToolbarAction>>> = $derived({
-		add: { icon: 'add', text: t("addRow") },
-		delete: { icon: 'delete', text: t("deleteRow"), isDanger: true },
-		duplicate: { icon: 'copy', text: t("duplicateRow") },
-		'move-up': { icon: 'arrow_up', text: t("moveRowUp") },
-		'move-down': { icon: 'arrow_down', text: t("moveRowDown") }
+		add: {icon: "add", text: t("addRow")},
+		delete: {icon: "delete", text: t("deleteRow"), isDanger: true},
+		duplicate: {icon: "copy", text: t("duplicateRow")},
+		"move-up": {icon: "arrow_up", text: t("moveRowUp")},
+		"move-down": {icon: "arrow_down", text: t("moveRowDown")}
 	})
 
 	// While the toolbar is open: an outside press / focus closes it.
 	// Listeners exist only while it's open; the toolbar follows its row (PositioningRegion).
 	$effect(() => {
 		if (hoveredRowKey === null) return
-		return dismissOnOutside(() => [containerRef, popupElement], () => closeRowToolbar())
+		return dismissOnOutside(
+			() => [containerRef, popupElement],
+			() => closeRowToolbar()
+		)
 	})
 
 	// Escape closes it (closeRowToolbar returns focus). A hover-opened toolbar is no layer unless
 	// it holds focus — the pointer passing over a row (e.g. in a dialog) must not take Escape.
 	$effect(() => {
-		if (hoveredRowKey === null || (toolbarTrigger === 'hover' && !toolbarFocused)) return
+		if (hoveredRowKey === null || (toolbarTrigger === "hover" && !toolbarFocused)) return
 		return pushLayer({
 			onEscape: (event) => {
 				// Escape in a cell editor cancels the edit, not the toolbar
-				if ((event.target as Element | null)?.closest?.('td.editing')) return false
+				if ((event.target as Element | null)?.closest?.("td.editing")) return false
 				closeRowToolbar()
 			}
 		})
@@ -1930,7 +2041,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	// Close a popup once its anchor scrolls out of view (any scroll container or the page)
 	function closeWhenHidden(el: Element | null | undefined, close: () => void) {
-		if (!el || typeof IntersectionObserver === 'undefined') return
+		if (!el || typeof IntersectionObserver === "undefined") return
 		const observer = new IntersectionObserver((entries) => {
 			if (!entries[entries.length - 1].isIntersecting) close()
 		})
@@ -1943,10 +2054,11 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// Context menu handlers
 	function handleCellContextMenu(e: MouseEvent, colIndex: number, column: Column<T>, item: T) {
 		// Right-click in an editor's input keeps the native menu (copy / paste / spelling)
-		if ((e.target as Element).closest('input, textarea, select, [contenteditable]')) return
+		if ((e.target as Element).closest("input, textarea, select, [contenteditable]")) return
 		const cell = e.currentTarget as HTMLElement
 		const rect = cell.getBoundingClientRect()
-		if (openContextMenu(cell, colIndex, column, item, {dx: e.clientX - rect.left, dy: e.clientY - rect.top})) e.preventDefault()
+		if (openContextMenu(cell, colIndex, column, item, {dx: e.clientX - rect.left, dy: e.clientY - rect.top}))
+			e.preventDefault()
 	}
 
 	// Focus to restore when the menu closes with focus inside it
@@ -1954,7 +2066,13 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	// Opens the menu on a cell: at the pointer's offset in it, or (keyboard, `offset` null) below
 	// the cell with focus on the first item. False when it has nothing to show (native menu then).
-	function openContextMenu(cell: HTMLElement, colIndex: number, column: Column<T>, item: T, offset: {dx: number; dy: number} | null): boolean {
+	function openContextMenu(
+		cell: HTMLElement,
+		colIndex: number,
+		column: Column<T>,
+		item: T,
+		offset: {dx: number; dy: number} | null
+	): boolean {
 		if (!contextMenu || contextMenu.length === 0) return false
 		const context: ContextMenuContext<T> = {
 			row: item,
@@ -1964,10 +2082,11 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			cellValue: getCellRawValue(item, getRowKey(item), String(column.field))
 		}
 		// Nothing visible for this cell (e.g. tree-only built-ins on a flat grid) → native menu.
-		if (resolveMenuEntries(contextMenu, context, (item) => contextMenuDefaults(item, context)).length === 0) return false
+		if (resolveMenuEntries(contextMenu, context, (item) => contextMenuDefaults(item, context)).length === 0)
+			return false
 
 		const rect = cell.getBoundingClientRect()
-		const rtl = getComputedStyle(cell).direction === 'rtl'
+		const rtl = getComputedStyle(cell).direction === "rtl"
 		contextMenuContext = context
 		contextMenuAnchor = {cell, ...(offset ?? {dx: rtl ? rect.width : 0, dy: rect.height})}
 		contextMenuVisible = true
@@ -1975,16 +2094,22 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 		onContextMenuOpen?.(context)
 		if (!offset) {
-			void tick().then(() => requestAnimationFrame(() => {
-				contextMenuElement?.querySelector<HTMLElement>('fluent-menu-item:not([disabled])')?.focus()
-			}))
+			void tick().then(() =>
+				requestAnimationFrame(() => {
+					contextMenuElement?.querySelector<HTMLElement>("fluent-menu-item:not([disabled])")?.focus()
+				})
+			)
 		}
 		return true
 	}
 
-	async function handleContextMenuItemClick(item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>, action: string, event: MouseEvent | KeyboardEvent) {
+	async function handleContextMenuItemClick(
+		item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>,
+		action: string,
+		event: MouseEvent | KeyboardEvent
+	) {
 		const ctx = contextMenuContext
-		if (!ctx || 'divider' in item) return
+		if (!ctx || "divider" in item) return
 		if (item.shouldCloseOnClick !== false) closeContextMenu()
 		await runAction({
 			host: actionHost,
@@ -2007,17 +2132,32 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 	// Built-in context-menu items: default text / icon, and a tree-mode visibility gate
 	// so they only show when relevant. Your item fields (text, icon, isVisible, …) win.
-	function contextMenuDefaults(item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>, ctx: ContextMenuContext<T> | null): Partial<ResolvedActionItem<ContextMenuAction>> | undefined {
-		if ('divider' in item) return undefined
+	function contextMenuDefaults(
+		item: MenuEntry<ContextMenuContext<T>, ContextMenuAction>,
+		ctx: ContextMenuContext<T> | null
+	): Partial<ResolvedActionItem<ContextMenuAction>> | undefined {
+		if ("divider" in item) return undefined
 		switch (item.action) {
-			case 'expand-all':
-				return { text: t("expandAll"), icon: 'arrow_expand_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
-			case 'collapse-all':
-				return { text: t("collapseAll"), icon: 'arrow_collapse_all', isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row) }
-			case 'expand-tree':
-				return { text: t("expandTree"), icon: 'arrow_expand_all', isVisible: isTreeMode && treeParentPathSet.size > 0 }
-			case 'collapse-tree':
-				return { text: t("collapseTree"), icon: 'arrow_collapse_all', isVisible: isTreeMode && resolvedExpandedPaths.size > 0 }
+			case "expand-all":
+				return {
+					text: t("expandAll"),
+					icon: "arrow_expand_all",
+					isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row)
+				}
+			case "collapse-all":
+				return {
+					text: t("collapseAll"),
+					icon: "arrow_collapse_all",
+					isVisible: isTreeMode && !!ctx && rowHasChildren(ctx.row)
+				}
+			case "expand-tree":
+				return {text: t("expandTree"), icon: "arrow_expand_all", isVisible: isTreeMode && treeParentPathSet.size > 0}
+			case "collapse-tree":
+				return {
+					text: t("collapseTree"),
+					icon: "arrow_collapse_all",
+					isVisible: isTreeMode && resolvedExpandedPaths.size > 0
+				}
 		}
 		return undefined
 	}
@@ -2026,7 +2166,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// `treeParentPathSet`, `items`) on each run.
 	function runContextMenuBuiltIn(action: string, ctx: ContextMenuContext<T>) {
 		switch (action) {
-			case 'expand-all': {
+			case "expand-all": {
 				// Expand the right-clicked row and every descendant that has children.
 				const root = getRowPath(ctx.row)
 				const next = new Set(resolvedExpandedPaths)
@@ -2037,15 +2177,17 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 				setExpandedPaths(next)
 				break
 			}
-			case 'collapse-all': {
+			case "collapse-all": {
 				const root = getRowPath(ctx.row)
-				setExpandedPaths(new Set([...resolvedExpandedPaths].filter(p => !isInSubtree(p, root, resolvedTreeSeparator))))
+				setExpandedPaths(
+					new Set([...resolvedExpandedPaths].filter((p) => !isInSubtree(p, root, resolvedTreeSeparator)))
+				)
 				break
 			}
-			case 'expand-tree':
+			case "expand-tree":
 				setExpandedPaths(new Set(treeParentPathSet))
 				break
-			case 'collapse-tree':
+			case "collapse-tree":
 				setExpandedPaths(new Set())
 				break
 		}
@@ -2065,7 +2207,10 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	// the header closes it) or focus leaving closes it; Escape goes to the topmost layer.
 	$effect(() => {
 		if (!contextMenuVisible) return
-		const undismiss = dismissOnOutside(() => [containerRef, contextMenuElement], () => closeContextMenu())
+		const undismiss = dismissOnOutside(
+			() => [containerRef, contextMenuElement],
+			() => closeContextMenu()
+		)
 		const popLayer = pushLayer({onEscape: () => closeContextMenu()})
 		return () => {
 			undismiss()
@@ -2091,10 +2236,19 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		if (rowActionHideTimeout) clearTimeout(rowActionHideTimeout)
 	})
 
-	let computedClass = $derived(`quickgrid ${striped ? "striped" : ""} ${hoverable ? "hoverable" : ""} ${editable ? "editable" : ""} ${isNavigateMode ? "navigate-mode" : ""} ${className}`.trim())
+	let computedClass = $derived(
+		`quickgrid ${striped ? "striped" : ""} ${hoverable ? "hoverable" : ""} ${editable ? "editable" : ""} ${isNavigateMode ? "navigate-mode" : ""} ${className}`.trim()
+	)
 </script>
 
-<div {...rest} bind:this={containerRef} class="quickgrid-container" class:virtualized={isVirtual} {style} onfocusout={handleGridFocusOut}>
+<div
+	{...rest}
+	bind:this={containerRef}
+	class="quickgrid-container"
+	class:virtualized={isVirtual}
+	{style}
+	onfocusout={handleGridFocusOut}
+>
 	<!-- Row toolbar (uses fixed positioning to float outside container) -->
 	{#if showRowToolbar && hoveredRow && hoveredRowElement && tableElement}
 		<QuickGridRowToolbar
@@ -2121,7 +2275,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		<QuickGridContextMenu
 			bind:element={contextMenuElement}
 			anchor={contextMenuAnchor}
-			entries={resolveMenuEntries(contextMenu, contextMenuContext, (item) => contextMenuDefaults(item, contextMenuContext))}
+			entries={resolveMenuEntries(contextMenu, contextMenuContext, (item) =>
+				contextMenuDefaults(item, contextMenuContext)
+			)}
 			onItemSelect={({item, action, event}) => handleContextMenuItemClick(item, action, event)}
 		/>
 	{/if}
@@ -2146,14 +2302,16 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			{filterable}
 			{filters}
 			{filterValidity}
-			actionsColumn={showRowToolbar && toolbarTrigger === 'button'}
+			actionsColumn={showRowToolbar && toolbarTrigger === "button"}
 			{fillerColumn}
 			headerRowIndex={ariaRowCount !== undefined ? headerRowCount : undefined}
 			onSortRequest={({column, additive}) => handleSort(column, additive)}
 			filterChangeCallback={({field, value}) => handleFilter(field, value)}
 		/>
 		{#if spacerBefore > 0}
-			<tbody class="virtual-spacer" aria-hidden="true"><tr><td colspan={bodyColumnCount} style="height: {spacerBefore}px"></td></tr></tbody>
+			<tbody class="virtual-spacer" aria-hidden="true">
+				<tr><td colspan={bodyColumnCount} style="height: {spacerBefore}px"></td></tr>
+			</tbody>
 		{/if}
 		<tbody>
 			{#if displayItems.length === 0}
@@ -2163,7 +2321,7 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 					</td>
 				</tr>
 			{:else}
-				{#each renderedRows as {item, rowKey, eachKey}, renderIndex (eachKey)}
+				{#each renderedRows as { item, rowKey, eachKey }, renderIndex (eachKey)}
 					{@const viewIndex = viewIndexAtRender(renderIndex)}
 					{@const rowPath = isTreeMode ? getRowPath(item) : ""}
 					{@const rowIsParent = isTreeMode && (isFiltering ? filteredParentPaths.has(rowPath) : rowHasChildren(item))}
@@ -2173,15 +2331,25 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 						aria-rowindex={ariaRowCount !== undefined ? rowIndexBase + viewIndex + 1 : undefined}
 						aria-level={isTreeMode ? getRowLevel(item) - treeMinLevel + 1 : undefined}
 						aria-expanded={rowIsParent ? isFiltering || isPathExpanded(rowPath) : undefined}
-						onclick={showRowToolbar && toolbarTrigger !== 'button' ? (e) => handleRowClickForActions(rowKey, viewIndex, e) : undefined}
-						onpointerdown={showRowToolbar && toolbarTrigger === 'hover' ? (e) => lastRowPointerType = e.pointerType : undefined}
-						onpointerenter={showRowToolbar && toolbarTrigger === 'hover' ? (e) => handleRowPointerEnter(rowKey, viewIndex, e) : undefined}
-						onpointerleave={showRowToolbar && toolbarTrigger === 'hover' ? handleRowPointerLeave : undefined}
+						onclick={showRowToolbar && toolbarTrigger !== "button"
+							? (e) => handleRowClickForActions(rowKey, viewIndex, e)
+							: undefined}
+						onpointerdown={showRowToolbar && toolbarTrigger === "hover"
+							? (e) => (lastRowPointerType = e.pointerType)
+							: undefined}
+						onpointerenter={showRowToolbar && toolbarTrigger === "hover"
+							? (e) => handleRowPointerEnter(rowKey, viewIndex, e)
+							: undefined}
+						onpointerleave={showRowToolbar && toolbarTrigger === "hover" ? handleRowPointerLeave : undefined}
 						tabindex={rowsFocusable ? (resolvedRowTabStop === rowKey ? 0 : -1) : undefined}
-						onfocus={rowsFocusable ? (e) => { if (e.target === e.currentTarget) rowTabStop = rowKey } : undefined}
+						onfocus={rowsFocusable
+							? (e) => {
+									if (e.target === e.currentTarget) rowTabStop = rowKey
+								}
+							: undefined}
 						onkeydown={rowsFocusable ? (e) => handleRowKeyDown(rowKey, viewIndex, e) : undefined}
 					>
-						{#if showRowToolbar && toolbarTrigger === 'button'}
+						{#if showRowToolbar && toolbarTrigger === "button"}
 							<td class="actions-column">
 								<button
 									type="button"
@@ -2219,105 +2387,120 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 								title={cellError || undefined}
 							>
 								{#snippet cellContent()}
-								{#if cellEditing}
-									{#if column.editor === "custom"}
-										<!-- Custom editor - handled via callback, show indicator -->
-										<span class="custom-editing-indicator">{t("editing")}</span>
-									{:else if editingCell}
-										{@const editToken = editingCell.token}
-										{@const isValidating = validatingToken === editToken}
-										<!-- svelte-ignore a11y_no_static_element_interactions -->
-										<div
-											class="editor-wrapper"
-											class:validating={isValidating}
-											onkeydown={(e) => handleEditorKeyDown(e, viewIndex, colIndex, column, item)}
-										>
-											{#key editToken}
-												<GridCellEditor
-													bind:this={activeEditor}
-													{t}
-													autofocus
-													type={getEditorType(column)}
-													value={getCellRawValue(item, rowKey, cellField)}
-													displayText={getEditorDisplayText(item, column, rowKey)}
-													options={optionsLoader.editorOptionsFor(column, item, rowKey)}
-													{editToken}
-													initialSearchQuery={editingCell?.initialSearchQuery}
-													onCommit={({value: newValue, editToken: token}) => commitEdit(item, column, newValue, colIndex, token)}
-													onCancel={({editToken: token}) => cancelEdit(token)}
-													skipBlurCommit={isCommittingFromKeyboard}
-													skipKeyboardCommit={isNavigateMode}
-												/>
-											{/key}
-											{#if isValidating}
-												<span class="validating-indicator" role="img" aria-label={t("validatingAriaLabel")} title={t("validatingTooltip")}>...</span>
+									{#if cellEditing}
+										{#if column.editor === "custom"}
+											<!-- Custom editor - handled via callback, show indicator -->
+											<span class="custom-editing-indicator">{t("editing")}</span>
+										{:else if editingCell}
+											{@const editToken = editingCell.token}
+											{@const isValidating = validatingToken === editToken}
+											<!-- svelte-ignore a11y_no_static_element_interactions -->
+											<div
+												class="editor-wrapper"
+												class:validating={isValidating}
+												onkeydown={(e) => handleEditorKeyDown(e, viewIndex, colIndex, column, item)}
+											>
+												{#key editToken}
+													<GridCellEditor
+														bind:this={activeEditor}
+														{t}
+														autofocus
+														type={getEditorType(column)}
+														value={getCellRawValue(item, rowKey, cellField)}
+														displayText={getEditorDisplayText(item, column, rowKey)}
+														options={optionsLoader.editorOptionsFor(column, item, rowKey)}
+														{editToken}
+														initialSearchQuery={editingCell?.initialSearchQuery}
+														onCommit={({value: newValue, editToken: token}) =>
+															commitEdit(item, column, newValue, colIndex, token)}
+														onCancel={({editToken: token}) => cancelEdit(token)}
+														skipBlurCommit={isCommittingFromKeyboard}
+														skipKeyboardCommit={isNavigateMode}
+													/>
+												{/key}
+												{#if isValidating}
+													<span
+														class="validating-indicator"
+														role="img"
+														aria-label={t("validatingAriaLabel")}
+														title={t("validatingTooltip")}
+													>
+														...
+													</span>
+												{/if}
+											</div>
+											<!-- The cell's current validation error (set by an earlier invalid commit). -->
+											{#if cellError}
+												<div class="validation-error-message">{cellError}</div>
+											{/if}
+										{/if}
+									{:else if cellEditable && getColumnEditTrigger(column) === "always"}
+										<GridCellEditor
+											{t}
+											type={getEditorType(column)}
+											value={getCellRawValue(item, rowKey, cellField)}
+											displayText={getEditorDisplayText(item, column, rowKey)}
+											options={optionsLoader.editorOptionsFor(column, item, rowKey)}
+											onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
+											onCancel={() => {}}
+										/>
+									{:else}
+										<div class="cell-content">
+											{#if column.snippet}
+												{@render column.snippet(item)}
+											{:else if column.renderCellCallback}
+												<!-- Unsanitised HTML: renderCellCallback must escape any user data (see its JSDoc) -->
+												{@html getCellValue(item, column, rowKey)}
+											{:else if isNavigateMode && column.editor === "checkbox"}
+												<!-- Checkbox in navigate mode: either always editable or disabled display -->
+												{#if checkboxAlwaysEditable}
+													<GridCellEditor
+														{t}
+														type="checkbox"
+														value={getCellRawValue(item, rowKey, cellField)}
+														options={optionsLoader.editorOptionsFor(column, item, rowKey)}
+														onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
+														onCancel={() => {}}
+													/>
+												{:else}
+													<input
+														type="checkbox"
+														class="cell-checkbox-display"
+														checked={isCheckboxChecked(column, getCellRawValue(item, rowKey, cellField))}
+														disabled
+														tabindex={-1}
+													/>
+												{/if}
+											{:else}
+												<span class="cell-text">{getCellValue(item, column, rowKey)}</span>
+											{/if}
+											{#if optionsLoadingEdit?.rowKey === rowKey && optionsLoadingEdit.field === cellField}
+												<span
+													class="options-loading-indicator"
+													role="img"
+													aria-label={t("loadingOptionsAriaLabel")}
+													title={t("loadingOptionsTooltip")}
+												>
+													...
+												</span>
+											{/if}
+											{#if cellInvalid}
+												<span class="cell-error-indicator" title={cellError || t("invalidValueTooltip")}>⚠</span>
+											{/if}
+											{#if cellEditable && shouldShowEditButton(column)}
+												<button
+													type="button"
+													class="cell-edit-btn"
+													onclick={(e) => handleEditButtonClick(e, colIndex, column, item)}
+													title={t("editTooltip")}
+													aria-label={t("editAriaLabel")}
+													tabindex={isNavigateMode ? -1 : undefined}
+												>
+													<span aria-hidden="true">✎</span>
+												</button>
 											{/if}
 										</div>
-										<!-- The cell's current validation error (set by an earlier invalid commit). -->
-										{#if cellError}
-											<div class="validation-error-message">{cellError}</div>
-										{/if}
 									{/if}
-								{:else if cellEditable && getColumnEditTrigger(column) === "always"}
-									<GridCellEditor
-										{t}
-										type={getEditorType(column)}
-										value={getCellRawValue(item, rowKey, cellField)}
-										displayText={getEditorDisplayText(item, column, rowKey)}
-										options={optionsLoader.editorOptionsFor(column, item, rowKey)}
-										onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
-										onCancel={() => {}}
-									/>
-								{:else}
-									<div class="cell-content">
-										{#if column.snippet}
-											{@render column.snippet(item)}
-										{:else if column.renderCellCallback}
-											<!-- Unsanitised HTML: renderCellCallback must escape any user data (see its JSDoc) -->
-											{@html getCellValue(item, column, rowKey)}
-										{:else if isNavigateMode && column.editor === "checkbox"}
-											<!-- Checkbox in navigate mode: either always editable or disabled display -->
-											{#if checkboxAlwaysEditable}
-												<GridCellEditor
-													{t}
-													type="checkbox"
-													value={getCellRawValue(item, rowKey, cellField)}
-													options={optionsLoader.editorOptionsFor(column, item, rowKey)}
-													onCommit={({value: newValue}) => commitEdit(item, column, newValue)}
-													onCancel={() => {}}
-												/>
-											{:else}
-												<input
-													type="checkbox"
-													class="cell-checkbox-display"
-													checked={isCheckboxChecked(column, getCellRawValue(item, rowKey, cellField))}
-													disabled
-													tabindex={-1}
-												/>
-											{/if}
-										{:else}
-											<span class="cell-text">{getCellValue(item, column, rowKey)}</span>
-										{/if}
-										{#if optionsLoadingEdit?.rowKey === rowKey && optionsLoadingEdit.field === cellField}
-											<span class="options-loading-indicator" role="img" aria-label={t("loadingOptionsAriaLabel")} title={t("loadingOptionsTooltip")}>...</span>
-										{/if}
-										{#if cellInvalid}
-											<span class="cell-error-indicator" title={cellError || t("invalidValueTooltip")}>⚠</span>
-										{/if}
-										{#if cellEditable && shouldShowEditButton(column)}
-											<button
-												type="button"
-												class="cell-edit-btn"
-												onclick={(e) => handleEditButtonClick(e, colIndex, column, item)}
-												title={t("editTooltip")}
-												aria-label={t("editAriaLabel")}
-												tabindex={isNavigateMode ? -1 : undefined}
-											>
-												<span aria-hidden="true">✎</span>
-											</button>
-										{/if}
-									</div>
-								{/if}
 								{/snippet}
 								{#if isTreeMode && column.tree}
 									{@const _level = getRowLevel(item)}
@@ -2342,10 +2525,17 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 												class="tree-chevron"
 												class:expanded={_expanded}
 												disabled={isFiltering}
-												onclick={(e) => { e.stopPropagation(); toggleExpand(rowPath) }}
+												onclick={(e) => {
+													e.stopPropagation()
+													toggleExpand(rowPath)
+												}}
 												ondblclick={(e) => e.stopPropagation()}
 												aria-label={_expanded ? t("collapseAriaLabel") : t("expandAriaLabel")}
-												title={isFiltering ? t("clearFilterToCollapseTooltip") : _expanded ? t("collapseTooltip") : t("expandTooltip")}
+												title={isFiltering
+													? t("clearFilterToCollapseTooltip")
+													: _expanded
+														? t("collapseTooltip")
+														: t("expandTooltip")}
 												tabindex={isNavigateMode ? -1 : undefined}
 											>
 												<span aria-hidden="true">▶</span>
@@ -2368,7 +2558,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			{/if}
 		</tbody>
 		{#if spacerAfter > 0}
-			<tbody class="virtual-spacer" aria-hidden="true"><tr><td colspan={bodyColumnCount} style="height: {spacerAfter}px"></td></tr></tbody>
+			<tbody class="virtual-spacer" aria-hidden="true">
+				<tr><td colspan={bodyColumnCount} style="height: {spacerAfter}px"></td></tr>
+			</tbody>
 		{/if}
 	</table>
 
@@ -2520,7 +2712,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		color: var(--neutral-foreground-hint, #707070);
 		cursor: pointer;
 		flex-shrink: 0;
-		transition: transform 0.12s ease, background 0.1s ease;
+		transition:
+			transform 0.12s ease,
+			background 0.1s ease;
 	}
 
 	.tree-chevron:hover {
@@ -2533,14 +2727,16 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 	}
 
 	tbody tr:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
+		outline: calc(var(--focus-stroke-width, 2) * 1px) solid
+			var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
 		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
 	}
 
 	.tree-chevron:focus-visible,
 	.toolbar-trigger-btn:focus-visible,
 	.cell-edit-btn:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
+		outline: calc(var(--focus-stroke-width, 2) * 1px) solid
+			var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
 		outline-offset: 1px;
 	}
 
@@ -2624,7 +2820,9 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		font-size: 16px;
 		line-height: 1;
 		color: var(--neutral-foreground-hint, #707070);
-		transition: background 0.1s ease, color 0.1s ease;
+		transition:
+			background 0.1s ease,
+			color 0.1s ease;
 	}
 
 	.toolbar-trigger-btn:hover,

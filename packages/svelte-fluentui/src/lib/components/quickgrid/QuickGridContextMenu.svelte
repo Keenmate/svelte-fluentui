@@ -10,7 +10,10 @@
 	import {portal, portalHost} from "../../actions/portal.js"
 	import {computePosition, flip, shift, autoUpdate} from "@floating-ui/dom"
 	import type {MenuItem, ResolvedMenuEntry} from "../../action-items/index.js"
-	import type {QuickGridContextMenuAction as ContextMenuAction, QuickGridContextMenuContext as ContextMenuContext} from "../QuickGrid.types.js"
+	import type {
+		QuickGridContextMenuAction as ContextMenuAction,
+		QuickGridContextMenuContext as ContextMenuContext
+	} from "../QuickGrid.types.js"
 
 	// QuickGrid's cell context menu (internal): portalled, placed at a spot in its cell. The grid owns
 	// opening, closing, outside / Escape dismissal and running the items.
@@ -21,14 +24,23 @@
 		entries: ResolvedMenuEntry<ContextMenuContext<T>, ContextMenuAction>[]
 		/** Bindable: the menu's wrapper element. */
 		element?: HTMLDivElement
-		onItemSelect: (ctx: {item: MenuItem<ContextMenuContext<T>, ContextMenuAction>; action: string; event: MouseEvent | KeyboardEvent}) => void
+		onItemSelect: (ctx: {
+			item: MenuItem<ContextMenuContext<T>, ContextMenuAction>
+			action: string
+			event: MouseEvent | KeyboardEvent
+		}) => void
 	}
 
 	let {anchor, entries, element = $bindable(), onItemSelect}: Props = $props()
 
 	// Enter / Space on a focused item (the menu item itself only emits `change` for them)
-	function handleItemKeyDown(item: MenuItem<ContextMenuContext<T>, ContextMenuAction>, action: string, disabled: boolean, event: KeyboardEvent) {
-		if (event.key !== 'Enter' && event.key !== ' ') return
+	function handleItemKeyDown(
+		item: MenuItem<ContextMenuContext<T>, ContextMenuAction>,
+		action: string,
+		disabled: boolean,
+		event: KeyboardEvent
+	) {
+		if (event.key !== "Enter" && event.key !== " ") return
 		event.preventDefault()
 		if (!disabled) onItemSelect({item, action, event})
 	}
@@ -50,8 +62,8 @@
 			}
 			stop = autoUpdate(reference, node, async () => {
 				const {x, y} = await computePosition(reference, node, {
-					placement: 'bottom-start',
-					strategy: 'fixed',
+					placement: "bottom-start",
+					strategy: "fixed",
 					middleware: [flip(), shift({padding: 8})]
 				})
 				node.style.left = `${x}px`
@@ -72,20 +84,20 @@
 >
 	<fluent-menu>
 		{#each entries as entry}
-			{#if entry.kind === 'divider'}
+			{#if entry.kind === "divider"}
 				<fluent-divider></fluent-divider>
 			{:else}
 				{@const r = entry.resolved}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<fluent-menu-item
-					{...(r.isDisabled ? { disabled: true } : {})}
+					{...r.isDisabled ? {disabled: true} : {}}
 					class={[r.isDanger && "danger", r.cssClass].filter(Boolean).join(" ") || null}
 					title={r.tooltip ?? null}
 					onclick={(event: MouseEvent) => onItemSelect({item: entry.item, action: r.action, event})}
 					onkeydown={(event: KeyboardEvent) => handleItemKeyDown(entry.item, r.action, !!r.isDisabled, event)}
 				>
-					{#if typeof r.icon === 'string'}
+					{#if typeof r.icon === "string"}
 						<span slot="start"><Icon name={r.icon} size={16} /></span>
 					{:else if r.icon}
 						<span slot="start">{@render r.icon()}</span>

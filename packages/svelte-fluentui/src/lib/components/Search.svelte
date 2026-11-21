@@ -18,82 +18,82 @@ Wrapper for `<fluent-search>`: a search input with a clear button, `onSearch` wh
 	import {debounce} from "../helpers/debounce.js"
 	import type {Snippet} from "svelte"
 	import type {NativeEventHandler, RestProps} from "../types/index.js"
-	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
+	import {setAutocompleteOnShadowInput} from "../utils/shadow-dom.js"
 
 	type OwnProps = {
 		/** Extra CSS class on `<fluent-search>`. */
-		class?: string;
+		class?: string
 		/** Inline style on `<fluent-search>`; `width` / `height` are appended. */
-		style?: string;
+		style?: string
 		/** Id of the field (also the label's `for`). */
-		id?: string;
+		id?: string
 		/** Form field name (`name` attribute). */
-		name?: string;
+		name?: string
 		/** Current text. Bindable. */
-		value?: string;
+		value?: string
 		/** Read-only field (`readonly` attribute). */
-		readonly?: boolean;
+		readonly?: boolean
 		/** Focus the field on mount (`autofocus` attribute). */
-		autofocus?: boolean;
+		autofocus?: boolean
 		/** Browser autofill hint, applied to the inner shadow `<input>`. Default: `off`. */
-		autocomplete?: string;
+		autocomplete?: string
 		/** Placeholder text (`placeholder` attribute). */
-		placeholder?: string;
+		placeholder?: string
 		/** Id of a `<datalist>` with suggestions (`list` attribute). `dataList` wins when both are set. */
-		list?: string;
+		list?: string
 		/** Maximum text length (`maxlength` attribute). */
-		maxlength?: number;
+		maxlength?: number
 		/** Minimum text length (`minlength` attribute). */
-		minlength?: number;
+		minlength?: number
 		/** Validation regex (`pattern` attribute). */
-		pattern?: string;
+		pattern?: string
 		/** Visible width in characters (`size` attribute). */
-		size?: number;
+		size?: number
 		/** Browser spell checking (`spellcheck` attribute). */
-		spellcheck?: boolean;
+		spellcheck?: boolean
 		/** Disables the field (`disabled` attribute). */
-		disabled?: boolean;
+		disabled?: boolean
 		/** Marks the field as required (`required` attribute); adds `*` to the label. */
-		required?: boolean;
+		required?: boolean
 		/** Visual style (`appearance` attribute). Default: `outline`. */
-		appearance?: "outline" | "filled";
+		appearance?: "outline" | "filled"
 		/** Accessible name (`aria-label`); falls back to `label`. */
-		ariaLabel?: string;
+		ariaLabel?: string
 		/** Text rendered in a `<label>` above the field. */
-		label?: string;
+		label?: string
 		/** Custom label content, rendered above the field. */
-		labelTemplate?: Snippet;
+		labelTemplate?: Snippet
 		/** Default-slot content of `<fluent-search>`. */
-		children?: Snippet;
+		children?: Snippet
 		/** Content in the element's `start` slot (before the input). */
-		start?: Snippet;
+		start?: Snippet
 		/** Content in the element's `end` slot (after the input). */
-		end?: Snippet;
+		end?: Snippet
 		// New props from Blazor API
 		/** Debounce `onSearch` by `searchDelay` (without it, `onSearch` fires on every keystroke). Default: `false`. */
-		immediate?: boolean;
+		immediate?: boolean
 		/** Debounce delay in ms before `onSearch` fires while typing (requires `immediate`; 0 = no debounce). */
-		searchDelay?: number;
+		searchDelay?: number
 		/** Alias of `list` (Blazor naming); wins over `list`. */
-		dataList?: string;
+		dataList?: string
 		/** CSS width, appended to `style`. */
-		width?: string;
+		width?: string
 		/** CSS height, appended to `style`. */
-		height?: string;
+		height?: string
 		/** Tooltip text (`title` attribute). */
-		title?: string;
+		title?: string
 		/** Fires as the user types (debounced by `searchDelay` when `immediate`). */
-		onSearch?: (ctx: {term: string}) => void;
+		onSearch?: (ctx: {term: string}) => void
 		/** Fires when the user commits the value (Enter / blur / clear). */
-		onChange?: (ctx: {value: string}) => void;
+		onChange?: (ctx: {value: string}) => void
 		/** Native `input` event, forwarded untouched. */
-		oninput?: NativeEventHandler;
+		oninput?: NativeEventHandler
 		/** Native `change` event, forwarded untouched. */
-		onchange?: NativeEventHandler;
-	};
+		onchange?: NativeEventHandler
+	}
 
 	/** Other native attributes and events go to `<fluent-search>`. */
-	type Props = OwnProps & RestProps<OwnProps>;
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		class: className = "",
@@ -132,64 +132,67 @@ Wrapper for `<fluent-search>`: a search input with a clear button, `onSearch` wh
 		oninput,
 		onchange,
 		...rest
-	}: Props = $props();
+	}: Props = $props()
 
-	let element: HTMLElement | undefined;
+	let element: HTMLElement | undefined
 	// `immediate` + `searchDelay`: onSearch fires once typing pauses for the delay.
-	const debouncedSearch = debounce((term: string) => onSearch?.({term}), () => searchDelay);
+	const debouncedSearch = debounce(
+		(term: string) => onSearch?.({term}),
+		() => searchDelay
+	)
 
 	// Expose focus method for parent components
 	export function focus(preventScroll: boolean = false) {
 		if (element) {
-			const shadowInput = element.shadowRoot?.querySelector("input");
+			const shadowInput = element.shadowRoot?.querySelector("input")
 			if (shadowInput) {
-				shadowInput.focus({ preventScroll });
+				shadowInput.focus({preventScroll})
 			} else {
-				element.focus({ preventScroll });
+				element.focus({preventScroll})
 			}
 		}
 	}
 
 	function handleInput(e: Event) {
-		const val = (e.target as HTMLInputElement).value;
-		value = val;
-		oninput?.(e);
+		const val = (e.target as HTMLInputElement).value
+		value = val
+		oninput?.(e)
 
 		if (immediate && searchDelay > 0) {
 			// Immediate mode with a delay: debounce onSearch
-			debouncedSearch(val);
+			debouncedSearch(val)
 		} else {
-			onSearch?.({term: val});
+			onSearch?.({term: val})
 		}
 	}
 
 	function handleChange(e: Event) {
-		const val = (e.target as HTMLInputElement).value;
-		value = val;
-		onchange?.(e);
-		onChange?.({value: val});
+		const val = (e.target as HTMLInputElement).value
+		value = val
+		onchange?.(e)
+		onChange?.({value: val})
 	}
 
 	// Apply autocomplete attribute via shadow DOM
 	$effect(() => {
 		if (autocomplete !== undefined) {
-			setAutocompleteOnShadowInput(element, autocomplete);
+			setAutocompleteOnShadowInput(element, autocomplete)
 		}
-	});
+	})
 
 	// Drop a pending onSearch on unmount
-	$effect(() => () => debouncedSearch.cancel());
+	$effect(() => () => debouncedSearch.cancel())
 
 	// Compute combined style
 	let computedStyle = $derived.by(() => {
-		let s = style || "";
-		if (width) s += (s ? "; " : "") + `width: ${width}`;
-		if (height) s += (s ? "; " : "") + `height: ${height}`;
-		return s || undefined;
-	});
+		let s = style || ""
+		if (width) s += (s ? "; " : "") + `width: ${width}`
+		if (height) s += (s ? "; " : "") + `height: ${height}`
+		return s || undefined
+	})
 
 	// Title prop handling (spread to avoid "null" text)
-	let titleProps = $derived(title ? { title } : {});
+	let titleProps = $derived(title ? {title} : {})
 </script>
 
 {#if label}
@@ -207,14 +210,26 @@ Wrapper for `<fluent-search>`: a search input with a clear button, `onSearch` wh
 	bind:this={element}
 	{...rest}
 	{...attrs({
-		class: className, style: computedStyle, id, name, readonly, autofocus, autocomplete,
-		placeholder, maxlength, minlength, pattern, size, disabled, required
+		class: className,
+		style: computedStyle,
+		id,
+		name,
+		readonly,
+		autofocus,
+		autocomplete,
+		placeholder,
+		maxlength,
+		minlength,
+		pattern,
+		size,
+		disabled,
+		required
 	})}
-	{...(dataList || list ? { list: dataList || list } : {})}
+	{...dataList || list ? {list: dataList || list} : {}}
 	value={value ?? ""}
-	{...(spellcheck !== undefined ? { spellcheck } : {})}
+	{...spellcheck !== undefined ? {spellcheck} : {}}
 	appearance={appearance ?? "outline"}
-	{...(ariaLabel || label ? { "aria-label": ariaLabel || label } : {})}
+	{...ariaLabel || label ? {"aria-label": ariaLabel || label} : {}}
 	{...titleProps}
 	oninput={handleInput}
 	onchange={handleChange}

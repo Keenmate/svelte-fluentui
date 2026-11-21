@@ -5,7 +5,7 @@
  * icon's raw SVG markup (`inline` mode) or its emitted asset URL (`asset` mode).
  * The `Icon` component distinguishes the two by whether the value starts with `<`.
  */
-declare module 'virtual:fluentui-icons' {
-	const icons: Record<string, string>;
-	export default icons;
+declare module "virtual:fluentui-icons" {
+	const icons: Record<string, string>
+	export default icons
 }

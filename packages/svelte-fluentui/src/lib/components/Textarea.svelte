@@ -15,16 +15,14 @@ Multi-line text input wrapping `<fluent-text-area>`; `bind:value` is a string. C
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import { setAutocompleteOnShadowInput, whenShadowRoot } from "../utils/shadow-dom.js"
+	import {setAutocompleteOnShadowInput, whenShadowRoot} from "../utils/shadow-dom.js"
 	import type {NativeEventHandler, RestProps} from "../types/index.js"
 
 	const activeIndicatorOverride =
 		typeof CSSStyleSheet !== "undefined"
 			? (() => {
 					const sheet = new CSSStyleSheet()
-					sheet.replaceSync(
-						":host(:not([disabled]):active)::after { left: 0; width: 100%; transform: none; }"
-					)
+					sheet.replaceSync(":host(:not([disabled]):active)::after { left: 0; width: 100%; transform: none; }")
 					return sheet
 				})()
 			: (undefined as unknown as CSSStyleSheet)
@@ -209,11 +207,27 @@ Multi-line text input wrapping `<fluent-text-area>`; `bind:value` is a string. C
 	{...rest}
 	class={className}
 	{...attrs({
-		style, readonly, resize, autofocus, autocomplete, form, list, maxlength, minlength,
-		placeholder, cols, rows, id, name, disabled, required, appearance, "aria-label": ariaLabel
+		style,
+		readonly,
+		resize,
+		autofocus,
+		autocomplete,
+		form,
+		list,
+		maxlength,
+		minlength,
+		placeholder,
+		cols,
+		rows,
+		id,
+		name,
+		disabled,
+		required,
+		appearance,
+		"aria-label": ariaLabel
 	})}
-	{...(spellcheck != null ? { spellcheck } : {})}
-	{...(value != null ? { value } : {})}
+	{...spellcheck != null ? {spellcheck} : {}}
+	{...value != null ? {value} : {}}
 	oninput={handleInput}
 	onchange={handleChange}
 >

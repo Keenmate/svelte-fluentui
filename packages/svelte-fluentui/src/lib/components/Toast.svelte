@@ -35,7 +35,7 @@ For queued, auto-dismissing toasts use `ToastContainer` with the toast service.
 		/** Time shown in the header (as `HH:mm`, local) with `topCTAType="timestamp"`. */
 		timestamp?: Date
 		/** What the header's end shows: a dismiss (×) button, the `timestamp`, or the `topAction` link. Default: nothing. */
-		topCTAType?: 'dismiss' | 'timestamp' | 'action'
+		topCTAType?: "dismiss" | "timestamp" | "action"
 		/** Link in the header (with `topCTAType="action"`). */
 		topAction?: ToastAction
 		/** First link in the footer. */
@@ -108,6 +108,65 @@ For queued, auto-dismissing toasts use `ToastContainer` with the toast service.
 	}
 </script>
 
+{#snippet actionLink(item: ActionItem<object>, cls: string)}
+	{@const r = resolveActionItem(item, {})}
+	{#if r.isVisible}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<fluent-anchor
+			href="#"
+			title={r.tooltip ?? r.text}
+			class={[cls, r.cssClass].filter(Boolean).join(" ")}
+			appearance="hypertext"
+			aria-disabled={r.isDisabled ? "true" : null}
+			onclick={(event: MouseEvent) => runToastAction(item, event)}
+		>
+			{r.text}
+		</fluent-anchor>
+	{/if}
+{/snippet}
+
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<div tabindex="0" {...rest} class={["fluent-toast fluent-toast--show", className]} {id}>
+	<div class="toast-header">
+		<div class="fluent-toast-title">{title}</div>
+
+		<div class="fluent-toast-action">
+			{#if topCTAType === "dismiss"}
+				<button
+					title={t("dismissTooltip")}
+					onclick={handleDismiss}
+					aria-label={t("dismissAriaLabel")}
+					class="dismiss-button"
+				>
+					<DismissIcon size={14} />
+				</button>
+			{:else if topCTAType === "timestamp" && timestamp}
+				<span class="fluent-toast-small timestamp">
+					{timestamp.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}
+				</span>
+			{:else if topCTAType === "action" && top}
+				{@render actionLink(top, "toast-action-link")}
+			{/if}
+		</div>
+	</div>
+
+	{#if children}
+		{@render children?.()}
+	{/if}
+
+	{#if primary || secondary}
+		<div class="fluent-toast-actions">
+			{#if primary}
+				{@render actionLink(primary, "toast-action-link primary-action")}
+			{/if}
+			{#if secondary}
+				{@render actionLink(secondary, "toast-action-link")}
+			{/if}
+		</div>
+	{/if}
+</div>
+
 <style>
 	.fluent-toast-title {
 		flex-grow: 1;
@@ -175,55 +234,3 @@ For queued, auto-dismissing toasts use `ToastContainer` with the toast service.
 		margin-inline-end: 1rem;
 	}
 </style>
-
-{#snippet actionLink(item: ActionItem<object>, cls: string)}
-	{@const r = resolveActionItem(item, {})}
-	{#if r.isVisible}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<fluent-anchor
-			href="#"
-			title={r.tooltip ?? r.text}
-			class={[cls, r.cssClass].filter(Boolean).join(" ")}
-			appearance="hypertext"
-			aria-disabled={r.isDisabled ? "true" : null}
-			onclick={(event: MouseEvent) => runToastAction(item, event)}
-		>
-			{r.text}
-		</fluent-anchor>
-	{/if}
-{/snippet}
-
-<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div tabindex="0" {...rest} class={["fluent-toast fluent-toast--show", className]} id={id}>
-	<div class="toast-header">
-		<div class="fluent-toast-title">{title}</div>
-
-		<div class="fluent-toast-action">
-			{#if topCTAType === 'dismiss'}
-				<button title={t("dismissTooltip")} onclick={handleDismiss} aria-label={t("dismissAriaLabel")} class="dismiss-button">
-					<DismissIcon size={14} />
-				</button>
-			{:else if topCTAType === 'timestamp' && timestamp}
-				<span class="fluent-toast-small timestamp">{timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-			{:else if topCTAType === 'action' && top}
-				{@render actionLink(top, "toast-action-link")}
-			{/if}
-		</div>
-	</div>
-
-	{#if children}
-		{@render children?.()}
-	{/if}
-
-	{#if primary || secondary}
-		<div class="fluent-toast-actions">
-			{#if primary}
-				{@render actionLink(primary, "toast-action-link primary-action")}
-			{/if}
-			{#if secondary}
-				{@render actionLink(secondary, "toast-action-link")}
-			{/if}
-		</div>
-	{/if}
-</div>

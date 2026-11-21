@@ -57,12 +57,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		markHighlighted,
 		listPageSize
 	} from "../helpers/option-dom.js"
-	import type {
-		SelectedOptionSvelteContext,
-		ValueType,
-		ComboboxFilter,
-		ComboboxFilterOption
-	} from "../types/combobox.js"
+	import type {SelectedOptionSvelteContext, ValueType, ComboboxFilter, ComboboxFilterOption} from "../types/combobox.js"
 
 	type OwnProps = {
 		/** Id of the input (also the label's `for`). Generated when omitted. */
@@ -260,15 +255,13 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 			selectionState.value = v ?? []
 		},
 		set(v: ValueType) {
-			selectionState.value = Array.isArray(v) ? [...v] : (v ? [v] : [])
+			selectionState.value = Array.isArray(v) ? [...v] : v ? [v] : []
 		},
 		toggle(val: string) {
 			if (val == null) return
 			if (multiple) {
 				const cur = selectionState.value
-				selectionState.value = cur.includes(val)
-					? cur.filter(x => x !== val)
-					: [...cur, val]
+				selectionState.value = cur.includes(val) ? cur.filter((x) => x !== val) : [...cur, val]
 			} else {
 				selectionState.value = [val]
 			}
@@ -290,7 +283,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	$effect(() => {
 		const sel = selectionState.value
 		untrack(() => {
-			const cur = Array.isArray(value) ? value : (value != null ? [value] : [])
+			const cur = Array.isArray(value) ? value : value != null ? [value] : []
 			if (sel.length !== cur.length || sel.some((v, i) => v !== cur[i])) {
 				value = [...sel]
 			}
@@ -303,9 +296,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	// list / both / default(undefined): typing filters the dropdown.
 	// inline / both: typing auto-completes the input text to the first match.
 	// none: typing neither filters nor completes (plain dropdown you can focus-type into).
-	const doListFilter = $derived(
-		autocomplete === undefined || autocomplete === "list" || autocomplete === "both"
-	)
+	const doListFilter = $derived(autocomplete === undefined || autocomplete === "list" || autocomplete === "both")
 	const doInline = $derived(autocomplete === "inline" || autocomplete === "both")
 
 	// ---------- Open / filter state ----------
@@ -396,7 +387,9 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	$effect(() => {
 		const sel = selectedSingle // dep
 		valueText // dep
-		untrack(() => { displayText = getOptionText(sel) })
+		untrack(() => {
+			displayText = getOptionText(sel)
+		})
 		// Re-resolve when options render asynchronously (the option text
 		// may not exist yet at the moment `value` was first applied).
 		if (!sourceEl) return
@@ -410,7 +403,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	// Single-select: the input shows the selected label when idle. Multi-select:
 	// the input is purely a filter — selected values live in chips — so it only
 	// ever shows what's being typed (blank when idle).
-	const inputDisplay = $derived(multiple ? typed : (isFiltering ? typed : displayText))
+	const inputDisplay = $derived(multiple ? typed : isFiltering ? typed : displayText)
 
 	// Mirror the input text out through `bind:currentValue`.
 	$effect(() => {
@@ -427,27 +420,28 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 
 	// Hide the placeholder once inline chips occupy the control (multi-select). With
 	// external tags the control stays empty, so keep the placeholder visible.
-	const effectivePlaceholder = $derived(
-		inlineTags && selectionState.value.length > 0 ? "" : placeholder
-	)
+	const effectivePlaceholder = $derived(inlineTags && selectionState.value.length > 0 ? "" : placeholder)
 
 	// ---------- Filtering ----------
 	function visibleOptionEls(): HTMLElement[] {
-		return getOptionEls(listEl).filter(
-			el => !el.hasAttribute("disabled") && !el.hasAttribute("data-filtered-out")
-		)
+		return getOptionEls(listEl).filter((el) => !el.hasAttribute("disabled") && !el.hasAttribute("data-filtered-out"))
 	}
 
 	// Keyboard cursor over the displayed, enabled options.
 	const nav = new ListNav({
 		count: () => visibleOptionEls().length,
-		itemAt: i => visibleOptionEls()[i],
+		itemAt: (i) => visibleOptionEls()[i],
 		pageSize: () => listPageSize(popupEl, visibleOptionEls())
 	})
 
 	// Highlights the option with `val`, else the first one.
 	function highlightValue(val: string) {
-		nav.set(Math.max(visibleOptionEls().findIndex(el => optionValue(el) === val), 0))
+		nav.set(
+			Math.max(
+				visibleOptionEls().findIndex((el) => optionValue(el) === val),
+				0
+			)
+		)
 	}
 
 	function applyFilter() {
@@ -491,7 +485,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	function applyInlineCompletion() {
 		if (!inputEl || !typed) return
 		const visible = visibleOptionEls()
-		const idx = visible.findIndex(el => startsWithText(optionLabel(el), typed, searchBehavior))
+		const idx = visible.findIndex((el) => startsWithText(optionLabel(el), typed, searchBehavior))
 		if (idx < 0) return
 		const full = optionLabel(visible[idx])
 		// Set canonical text (restores diacritics) and select the remainder.
@@ -514,7 +508,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		if (disabled || readonly) return
 		if (!meetsSearchThreshold()) return
 		isOpen = true
-		tick().then(() => { applyFilter(); highlightValue(selectedSingle) })
+		tick().then(() => {
+			applyFilter()
+			highlightValue(selectedSingle)
+		})
 	}
 
 	// Escape goes to the topmost open layer (helpers/layer-stack.ts), so inside a
@@ -540,7 +537,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 
 	function toggleDropdown() {
 		if (isOpen) closeDropdown()
-		else { inputEl?.focus(); openDropdown() }
+		else {
+			inputEl?.focus()
+			openDropdown()
+		}
 	}
 
 	// ---------- Selection ----------
@@ -567,7 +567,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		if (multiple && !closeOnSelect) {
 			// Re-show the full list (filter cleared) and re-anchor the highlight on
 			// the just-toggled row; keep focus in the input for continued typing.
-			tick().then(() => { applyFilter(); highlightValue(val) })
+			tick().then(() => {
+				applyFilter()
+				highlightValue(val)
+			})
 			inputEl?.focus()
 		} else {
 			closeDropdown()
@@ -586,7 +589,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	function handleListClick(ev: MouseEvent) {
 		const optEl = (ev.target as HTMLElement | null)?.closest(OPTION_SELECTOR) as HTMLElement | null
 		if (!optEl) return
-		if (optEl.hasAttribute("disabled")) { ev.preventDefault(); return }
+		if (optEl.hasAttribute("disabled")) {
+			ev.preventDefault()
+			return
+		}
 		const val = optionValue(optEl)
 		cacheLabel(val, optEl)
 		afterSelect(val)
@@ -597,14 +603,16 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	function removeValue(val: string, ev?: MouseEvent, refocus = true) {
 		ev?.stopPropagation()
 		if (disabled || readonly) return
-		selectionState.value = selectionState.value.filter(v => v !== val)
+		selectionState.value = selectionState.value.filter((v) => v !== val)
 		emitChange()
 		if (refocus) inputEl?.focus()
 	}
 
 	// `showClear`: empty the whole value and the filter. The × is out of the Tab
 	// order and doesn't take focus (pointerdown is prevented), so the input keeps it.
-	const canClear = $derived(showClear && !disabled && !readonly && (selectionState.value.length > 0 || (isFiltering && typed !== "")))
+	const canClear = $derived(
+		showClear && !disabled && !readonly && (selectionState.value.length > 0 || (isFiltering && typed !== ""))
+	)
 	function clearValue(ev: MouseEvent) {
 		ev.stopPropagation()
 		if (!canClear) return
@@ -619,7 +627,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 
 	// Keyboard access to the inline chips (see helpers/chip-nav.ts).
 	const chipNav: ChipNavOptions = {
-		chips: () => inlineTags ? Array.from(mainEl?.querySelectorAll<HTMLElement>(".fluent-chip-remove") ?? []) : [],
+		chips: () => (inlineTags ? Array.from(mainEl?.querySelectorAll<HTMLElement>(".fluent-chip-remove") ?? []) : []),
 		input: () => inputEl,
 		remove: (index) => {
 			const val = selectionState.value[index]
@@ -629,7 +637,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 
 	// Debounced server-side search notification. The parent updates `options`
 	// with the results; the options-change effect below re-syncs the list.
-	const debouncedSearch = debounce((term: string) => onSearch?.({term}), () => searchDelay)
+	const debouncedSearch = debounce(
+		(term: string) => onSearch?.({term}),
+		() => searchDelay
+	)
 	function fireSearch(query: string) {
 		if (!onSearch) return
 		searchPending = true
@@ -642,7 +653,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		options // dependency
 		searchPending = false // results landed
 		if (!untrack(() => isOpen)) return
-		tick().then(() => { applyFilter(); nav.first() })
+		tick().then(() => {
+			applyFilter()
+			nav.first()
+		})
 	})
 
 	// Cancel a pending debounce on unmount.
@@ -688,9 +702,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		if (!isOpen) {
 			// Arrow / Page keys on a closed combobox open it (Home/End stay with the caret).
 			// Embedded: closed-list arrows belong to the host (a grid cell moves), Enter opens.
-			const opens = embedded
-				? ["Enter", "PageDown", "PageUp"]
-				: ["ArrowDown", "ArrowUp", "PageDown", "PageUp"]
+			const opens = embedded ? ["Enter", "PageDown", "PageUp"] : ["ArrowDown", "ArrowUp", "PageDown", "PageUp"]
 			if (opens.includes(ev.key)) {
 				ev.preventDefault()
 				openDropdown()
@@ -755,19 +767,20 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	// focus back out of whatever just opened.
 	$effect(() => {
 		if (!isOpen) return
-		return dismissOnOutside(() => [controlEl, popupEl], () => closeDropdown(false))
+		return dismissOnOutside(
+			() => [controlEl, popupEl],
+			() => closeDropdown(false)
+		)
 	})
 
 	// ---------- Computed ----------
-	const forcedPlacement = $derived<"top" | "bottom" | undefined>(
-		position
-	)
+	const forcedPlacement = $derived<"top" | "bottom" | undefined>(position)
 
 	const controlStyle = $derived(() => {
 		const parts: string[] = []
 		if (width) parts.push(`width: ${width}`)
 		if (height) parts.push(`height: ${height}`)
-		return (parts.join("; ") + (parts.length && style ? "; " : "") + style)
+		return parts.join("; ") + (parts.length && style ? "; " : "") + style
 	})
 
 	// Stable fallback so the label/aria-controls wiring works without an explicit id.
@@ -793,7 +806,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				variant="external"
 				removeFocusable
 				showRemove={!disabled && !readonly}
-				labels={{removeAriaLabel: t("removeAriaLabel", {item: chipLabel(val)}), removeTooltip: t("removeTooltip", {item: chipLabel(val)})}}
+				labels={{
+					removeAriaLabel: t("removeAriaLabel", {item: chipLabel(val)}),
+					removeTooltip: t("removeTooltip", {item: chipLabel(val)})
+				}}
 				onRemove={({sourceEvent: e}) => removeValue(val, e)}
 			/>
 		{/each}
@@ -826,7 +842,6 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 
 <!-- display:contents root so consumers see one element, transparent to layout. -->
 <div {...rest} class="combobox-root">
-
 	<FieldLabel for={inputId} {label} {labelTemplate} {required} />
 
 	<!-- Hidden mirror of options so the selected value's display text resolves
@@ -863,7 +878,13 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		<!-- Keydown here only handles the inline chips' × buttons (arrow keys,
 		     Backspace / Delete); the input's own keys go to handleKeydown. -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="combobox-main" bind:this={mainEl} onkeydown={(ev) => { if (ev.target !== inputEl && !disabled && !readonly) chipNavFromChip(ev, chipNav) }}>
+		<div
+			class="combobox-main"
+			bind:this={mainEl}
+			onkeydown={(ev) => {
+				if (ev.target !== inputEl && !disabled && !readonly) chipNavFromChip(ev, chipNav)
+			}}
+		>
 			<!-- Inline tags: selected values render as removable chips before the input. -->
 			{#if inlineTags}
 				{#each selectionState.value as val (val)}
@@ -872,7 +893,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 						variant="inline"
 						contrast={readonly || appearance === "filled"}
 						showRemove={!disabled && !readonly}
-						labels={{removeAriaLabel: t("removeAriaLabel", {item: chipLabel(val)}), removeTooltip: t("removeTooltip", {item: chipLabel(val)})}}
+						labels={{
+							removeAriaLabel: t("removeAriaLabel", {item: chipLabel(val)}),
+							removeTooltip: t("removeTooltip", {item: chipLabel(val)})
+						}}
 						onRemove={({sourceEvent: e}) => removeValue(val, e)}
 					/>
 				{/each}
@@ -887,7 +911,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				aria-expanded={isOpen ? "true" : "false"}
 				aria-controls={listboxId}
 				aria-activedescendant={activeOptionId}
-				aria-autocomplete={doInline ? (doListFilter ? "both" : "inline") : (doListFilter ? "list" : "none")}
+				aria-autocomplete={doInline ? (doListFilter ? "both" : "inline") : doListFilter ? "list" : "none"}
 				aria-label={ariaLabel ?? label}
 				aria-required={required ? "true" : null}
 				value={inputDisplay}
@@ -914,7 +938,9 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				onclick={clearValue}
 			>
 				<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-					<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
+					<path
+						d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"
+					/>
 				</svg>
 			</button>
 		{/if}
@@ -927,7 +953,9 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 			onclick={toggleDropdown}
 		>
 			<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-				<path d="M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 1 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06Z"/>
+				<path
+					d="M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 1 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06Z"
+				/>
 			</svg>
 		</button>
 	</div>
@@ -953,7 +981,9 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				style={[
 					dropdownWidth ? `width: ${dropdownWidth}` : "",
 					maxDropdownHeight ? `--_combobox-listbox-max-height: ${maxDropdownHeight}` : ""
-				].filter(Boolean).join("; ") || undefined}
+				]
+					.filter(Boolean)
+					.join("; ") || undefined}
 			>
 				<!-- The keyboard stays on the input (aria-activedescendant); the list takes clicks only. -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->

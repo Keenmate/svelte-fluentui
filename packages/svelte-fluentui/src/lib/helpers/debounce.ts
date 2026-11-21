@@ -12,19 +12,19 @@ export type Debounced<A extends unknown[]> = {
  * a prop change applies to the next call. Always async (a 0 delay still waits
  * for a macrotask). Call `cancel()` on unmount.
  */
-export function debounce<A extends unknown[]>(
-	fn: (...args: A) => void,
-	delay: number | (() => number)
-): Debounced<A> {
+export function debounce<A extends unknown[]>(fn: (...args: A) => void, delay: number | (() => number)): Debounced<A> {
 	let timer: ReturnType<typeof setTimeout> | undefined
 
 	const debounced = ((...args: A) => {
 		if (timer !== undefined) clearTimeout(timer)
 		const ms = typeof delay === "function" ? delay() : delay
-		timer = setTimeout(() => {
-			timer = undefined
-			fn(...args)
-		}, Math.max(0, ms))
+		timer = setTimeout(
+			() => {
+				timer = undefined
+				fn(...args)
+			},
+			Math.max(0, ms)
+		)
 	}) as Debounced<A>
 
 	debounced.cancel = () => {

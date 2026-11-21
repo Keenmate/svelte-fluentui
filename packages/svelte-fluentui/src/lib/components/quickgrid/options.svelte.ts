@@ -64,7 +64,8 @@ export class OptionsLoader<T> {
 	editorOptionsFor(column: QuickGridColumn<T>, row: T, rowKey: string): GridCellEditorOptions {
 		const {loadOptionsCallback: _load, searchCallback, ...shared} = column.editorOptions ?? {}
 		const options: GridCellEditorOptions = {...shared, options: this.optionsFor(rowKey, column)}
-		if (searchCallback) options.onSearch = (term: string, signal?: AbortSignal) => searchCallback({term, row, column, signal})
+		if (searchCallback)
+			options.onSearch = (term: string, signal?: AbortSignal) => searchCallback({term, row, column, signal})
 		if (column.editorOptions?.loadOptionsCallback) options.loadOptions = () => this.load(column, row, rowKey)
 		return options
 	}

@@ -104,7 +104,11 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 
 	// Parse "mod+k" once into the modifier/key contract the keydown handler checks.
 	const parsedShortcut = $derived.by(() => {
-		const parts = shortcut.toLowerCase().split("+").map((p) => p.trim()).filter(Boolean)
+		const parts = shortcut
+			.toLowerCase()
+			.split("+")
+			.map((p) => p.trim())
+			.filter(Boolean)
 		return {
 			key: parts[parts.length - 1] ?? "",
 			mod: parts.includes("mod"),
@@ -184,9 +188,7 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 
 	// Flattened render list — section headers interleaved with rows — so a single
 	// running index drives both keyboard nav and the highlight. Headers carry no index.
-	type Row =
-		| {kind: "header"; label: string}
-		| {kind: "item"; item: CommandPaletteItem; index: number}
+	type Row = {kind: "header"; label: string} | {kind: "item"; item: CommandPaletteItem; index: number}
 
 	const rows = $derived.by(() => {
 		const out: Row[] = []
@@ -304,23 +306,22 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 			event.preventDefault()
 			return
 		}
-		const run = () => runAction({
-			host: actionHost,
-			detail: {
-				term: query.trim(),
-				action: it.action ?? "custom",
-				id: it.id,
-				item: it,
-				source: "palette",
-				sourceEvent: event,
-				triggerElement: event.currentTarget as HTMLElement
-			} satisfies CommandPaletteActionDetail,
-			beforeActionCallback,
-			emitAction: (d) => onAction?.(d)
-		})
-		const ran = it.href && !it.onClick
-			? await activateLink(event, run, !!beforeActionCallback)
-			: await run()
+		const run = () =>
+			runAction({
+				host: actionHost,
+				detail: {
+					term: query.trim(),
+					action: it.action ?? "custom",
+					id: it.id,
+					item: it,
+					source: "palette",
+					sourceEvent: event,
+					triggerElement: event.currentTarget as HTMLElement
+				} satisfies CommandPaletteActionDetail,
+				beforeActionCallback,
+				emitAction: (d) => onAction?.(d)
+			})
+		const ran = it.href && !it.onClick ? await activateLink(event, run, !!beforeActionCallback) : await run()
 		if (ran && closeOnSelect) closePalette()
 	}
 
@@ -364,9 +365,11 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 	function trapTab(e: KeyboardEvent) {
 		if (e.key !== "Tab") return
 		const panel = e.currentTarget as HTMLElement
-		const focusables = Array.from(panel.querySelectorAll<HTMLElement>(
-			"input, button:not([disabled]), a[href], select, textarea, [tabindex]:not([tabindex='-1'])"
-		)).filter((el) => el.tabIndex >= 0 && el.getClientRects().length > 0)
+		const focusables = Array.from(
+			panel.querySelectorAll<HTMLElement>(
+				"input, button:not([disabled]), a[href], select, textarea, [tabindex]:not([tabindex='-1'])"
+			)
+		).filter((el) => el.tabIndex >= 0 && el.getClientRects().length > 0)
 		if (focusables.length === 0) return
 		const first = focusables[0]
 		const last = focusables[focusables.length - 1]
@@ -428,7 +431,9 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 
 {#snippet rowBody(it: CommandPaletteItem)}
 	{#if it.icon}
-		<span class="cp-item-icon">{#if typeof it.icon === "string"}<Icon name={it.icon} size={20} />{:else}{@render it.icon()}{/if}</span>
+		<span class="cp-item-icon">
+			{#if typeof it.icon === "string"}<Icon name={it.icon} size={20} />{:else}{@render it.icon()}{/if}
+		</span>
 	{/if}
 	<span class="cp-item-content">
 		<span class="cp-item-title">
@@ -465,7 +470,10 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 		>
 			<div class="cp-search-row">
 				<svg class="cp-search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-					<path d="M7 1.75a5.25 5.25 0 1 0 3.215 9.4l3.067 3.068a.75.75 0 1 0 1.061-1.061l-3.066-3.066A5.25 5.25 0 0 0 7 1.75zM3.25 7a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0z" fill="currentColor"/>
+					<path
+						d="M7 1.75a5.25 5.25 0 1 0 3.215 9.4l3.067 3.068a.75.75 0 1 0 1.061-1.061l-3.066-3.066A5.25 5.25 0 0 0 7 1.75zM3.25 7a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0z"
+						fill="currentColor"
+					/>
 				</svg>
 				<input
 					bind:this={inputEl}
@@ -504,7 +512,9 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 						onclickcapture={(event) => selectItem(row.item, event)}
 						onmousemove={() => (nav.index = row.index)}
 					>
-						{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}
+						{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(
+								row.item
+							)}{/if}
 					</a>
 				{:else}
 					<!-- Action row. -->
@@ -522,7 +532,9 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 						onclick={(event) => selectItem(row.item, event)}
 						onmousemove={() => (nav.index = row.index)}
 					>
-						{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(row.item)}{/if}
+						{#if itemSnippet}{@render itemSnippet(row.item, row.index === selectedIndex)}{:else}{@render rowBody(
+								row.item
+							)}{/if}
 					</button>
 				{/if}
 			{/snippet}
@@ -550,7 +562,9 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 						{@render emptySnippet(trimmedQuery)}
 					{:else}
 						<div class="cp-empty">
-							{#if emptyText}{emptyText}{:else if trimmedQuery}{t("noMatches", {query: trimmedQuery})}{:else}{t("empty")}{/if}
+							{#if emptyText}{emptyText}{:else if trimmedQuery}{t("noMatches", {query: trimmedQuery})}{:else}{t(
+									"empty"
+								)}{/if}
 						</div>
 					{/if}
 				{/if}
@@ -595,7 +609,9 @@ Spotlight-style search palette (modal) over navigation and action items, toggled
 		background: var(--neutral-layer-1, #ffffff);
 		border: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
 		border-radius: 8px;
-		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22), 0 0 2px rgba(0, 0, 0, 0.12);
+		box-shadow:
+			0 16px 40px rgba(0, 0, 0, 0.22),
+			0 0 2px rgba(0, 0, 0, 0.12);
 		overflow: hidden;
 		font-family: var(--body-font);
 	}

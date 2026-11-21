@@ -9,7 +9,7 @@ export type OptionSegment<T> = {group: string | undefined; items: T[]}
  * can keep a flat render path.
  */
 export function groupSegments<T extends {group?: string}>(options: readonly T[]): OptionSegment<T>[] | null {
-	if (!options.some(o => o.group)) return null
+	if (!options.some((o) => o.group)) return null
 	const segments: OptionSegment<T>[] = []
 	let current: OptionSegment<T> | null = null
 	for (const option of options) {

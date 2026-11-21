@@ -103,8 +103,18 @@ Wrapper for `<fluent-anchor>` — a link styled like a FluentUI button or hyperl
 	bind:this={element}
 	{...rest}
 	{...attrs({
-		id, class: className, style, download, href, hreflang, ping, referrerpolicy, rel, target,
-		type, appearance
+		id,
+		class: className,
+		style,
+		download,
+		href,
+		hreflang,
+		ping,
+		referrerpolicy,
+		rel,
+		target,
+		type,
+		appearance
 	})}
 	onclick={handleClick}
 >

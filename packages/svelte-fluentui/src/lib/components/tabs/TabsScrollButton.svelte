@@ -27,20 +27,20 @@
 	{#if side === "start"}
 		{#if horizontal}
 			<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
-				<path d="M10.3 3.3a1 1 0 0 1 0 1.4L7 8l3.3 3.3a1 1 0 1 1-1.4 1.4l-4-4a1 1 0 0 1 0-1.4l4-4a1 1 0 0 1 1.4 0z"/>
+				<path d="M10.3 3.3a1 1 0 0 1 0 1.4L7 8l3.3 3.3a1 1 0 1 1-1.4 1.4l-4-4a1 1 0 0 1 0-1.4l4-4a1 1 0 0 1 1.4 0z" />
 			</svg>
 		{:else}
 			<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
-				<path d="M3.3 10.3a1 1 0 0 0 1.4 0L8 7l3.3 3.3a1 1 0 1 0 1.4-1.4l-4-4a1 1 0 0 0-1.4 0l-4 4a1 1 0 0 0 0 1.4z"/>
+				<path d="M3.3 10.3a1 1 0 0 0 1.4 0L8 7l3.3 3.3a1 1 0 1 0 1.4-1.4l-4-4a1 1 0 0 0-1.4 0l-4 4a1 1 0 0 0 0 1.4z" />
 			</svg>
 		{/if}
 	{:else if horizontal}
 		<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
-			<path d="M5.7 3.3a1 1 0 0 0 0 1.4L9 8l-3.3 3.3a1 1 0 1 0 1.4 1.4l4-4a1 1 0 0 0 0-1.4l-4-4a1 1 0 0 0-1.4 0z"/>
+			<path d="M5.7 3.3a1 1 0 0 0 0 1.4L9 8l-3.3 3.3a1 1 0 1 0 1.4 1.4l4-4a1 1 0 0 0 0-1.4l-4-4a1 1 0 0 0-1.4 0z" />
 		</svg>
 	{:else}
 		<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
-			<path d="M3.3 5.7a1 1 0 0 1 1.4 0L8 9l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/>
+			<path d="M3.3 5.7a1 1 0 0 1 1.4 0L8 9l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z" />
 		</svg>
 	{/if}
 </button>

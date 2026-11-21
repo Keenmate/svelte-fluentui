@@ -74,7 +74,10 @@ export class CellOverrides {
 }
 
 /** `beforeCommitCallback`'s result as {valid, message, finalValue}. */
-export function normalizeValidationResult(result: QuickGridBeforeCommitResult, value: unknown): {valid: boolean; message?: string; finalValue: unknown} {
+export function normalizeValidationResult(
+	result: QuickGridBeforeCommitResult,
+	value: unknown
+): {valid: boolean; message?: string; finalValue: unknown} {
 	if (result === null || result === undefined || result === true) return {valid: true, finalValue: value}
 	if (result === false) return {valid: false, message: "Validation failed", finalValue: value}
 	if (typeof result === "string") return {valid: false, message: result, finalValue: value}
@@ -93,5 +96,7 @@ export function isCheckboxChecked<T>(column: QuickGridColumn<T>, value: unknown)
 
 /** Space toggle: the other of `trueValue` / `falseValue`. */
 export function toggledCheckboxValue<T>(column: QuickGridColumn<T>, value: unknown): unknown {
-	return isCheckboxChecked(column, value) ? (column.editorOptions?.falseValue ?? false) : (column.editorOptions?.trueValue ?? true)
+	return isCheckboxChecked(column, value)
+		? (column.editorOptions?.falseValue ?? false)
+		: (column.editorOptions?.trueValue ?? true)
 }

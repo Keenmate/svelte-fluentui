@@ -18,7 +18,8 @@
 		pageSizeChangeCallback: (ctx: {pageSize: number}) => Promise<boolean>
 	}
 
-	let {t, page, pageCount, itemCount, pageSize, pageSizes, busy, onPageRequest, pageSizeChangeCallback}: Props = $props()
+	let {t, page, pageCount, itemCount, pageSize, pageSizes, busy, onPageRequest, pageSizeChangeCallback}: Props =
+		$props()
 
 	function changePageSize(select: HTMLSelectElement) {
 		const size = Number(select.value)
@@ -46,11 +47,7 @@
 		</label>
 	{/if}
 
-	<button
-		class="pagination-btn"
-		disabled={page <= 1 || busy}
-		onclick={() => onPageRequest({page: page - 1})}
-	>
+	<button class="pagination-btn" disabled={page <= 1 || busy} onclick={() => onPageRequest({page: page - 1})}>
 		{t("previousPage")}
 	</button>
 
@@ -61,11 +58,7 @@
 		</span>
 	</div>
 
-	<button
-		class="pagination-btn"
-		disabled={page >= pageCount || busy}
-		onclick={() => onPageRequest({page: page + 1})}
-	>
+	<button class="pagination-btn" disabled={page >= pageCount || busy} onclick={() => onPageRequest({page: page + 1})}>
 		{t("nextPage")}
 	</button>
 </nav>

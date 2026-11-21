@@ -22,19 +22,19 @@ Groups controls in a single tab stop with arrow-key navigation, wrapping `<fluen
 
 	type OwnProps = {
 		/** Id of `<fluent-toolbar>`. */
-		id?: string;
+		id?: string
 		/** Extra CSS class on `<fluent-toolbar>`. */
-		class?: string;
+		class?: string
 		/** Inline style on `<fluent-toolbar>`. */
-		style?: string;
+		style?: string
 		/** Layout and arrow-key direction (`orientation` attribute). Default: `"horizontal"`. */
-		orientation?: Orientation;
+		orientation?: Orientation
 		/** Toolbar items (buttons, fields, …); arrow keys move focus between them. */
-		children?: Snippet;
-	};
+		children?: Snippet
+	}
 
 	/** Other native attributes and events (`onkeydown`, `aria-label`, …) go to `<fluent-toolbar>`. */
-	type Props = OwnProps & RestProps<OwnProps>;
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		id = undefined,
@@ -43,14 +43,10 @@ Groups controls in a single tab stop with arrow-key navigation, wrapping `<fluen
 		orientation = "horizontal",
 		children = undefined,
 		...rest
-	}: Props = $props();
+	}: Props = $props()
 </script>
 
-<fluent-toolbar
-	{...rest}
-	{...attrs({id, style, orientation})}
-	class={className}
->
+<fluent-toolbar {...rest} {...attrs({id, style, orientation})} class={className}>
 	{#if children}
 		{@render children?.()}
 	{/if}

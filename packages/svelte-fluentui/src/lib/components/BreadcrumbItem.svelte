@@ -26,18 +26,10 @@ Wrapper for `<fluent-breadcrumb-item>` — one link in a `<Breadcrumb>`; omit `h
 	/** Other native attributes and events (`onclick`, `class`, `aria-current`, and anchor attributes such as `target`, `rel`, `download`, …) go to `<fluent-breadcrumb-item>`, which applies the anchor ones to its inner `<a>`. */
 	type Props = OwnProps & AnchorRestProps<OwnProps>
 
-	let {
-		href = undefined,
-		separator = undefined,
-		children = undefined,
-		...rest
-	}: Props = $props()
+	let {href = undefined, separator = undefined, children = undefined, ...rest}: Props = $props()
 </script>
 
-<fluent-breadcrumb-item
-	{...rest}
-	{...attrs({href})}
->
+<fluent-breadcrumb-item {...rest} {...attrs({href})}>
 	{#if separator}
 		<span slot="separator">
 			{@render separator?.()}

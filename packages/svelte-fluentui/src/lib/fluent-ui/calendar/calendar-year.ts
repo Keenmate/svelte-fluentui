@@ -8,13 +8,14 @@ export class CalendarYear {
 	constructor(calendar: IFluentCalendar, year: Date) {
 		this.calendar = calendar
 
-		const isFirstDay = calendar.calendarExtended.getCalendarDayOfMonth(year) === 1 && calendar.calendarExtended.getCalendarDayOfMonth(
-			year) === 1
-		this.year        = isFirstDay ? year : calendar.calendarExtended.startOfYear(year)
+		const isFirstDay =
+			calendar.calendarExtended.getCalendarDayOfMonth(year) === 1 &&
+			calendar.calendarExtended.getCalendarDayOfMonth(year) === 1
+		this.year = isFirstDay ? year : calendar.calendarExtended.startOfYear(year)
 
 		if (calendar.disabledCheckAllDaysOfMonthYear) {
-			const start           = calendar.calendarExtended.startOfYear(year)
-			const end             = calendar.calendarExtended.endOfYear(year)
+			const start = calendar.calendarExtended.startOfYear(year)
+			const end = calendar.calendarExtended.endOfYear(year)
 			this.isInDisabledList = calendar.allDaysAreDisabled(start, end)
 		} else {
 			this.isInDisabledList = calendar.disabledDateFunc?.(this.year) ?? false

@@ -1,11 +1,4 @@
-import type {
-	ActionInvocation,
-	ActionItem,
-	MenuDivider,
-	MenuEntry,
-	MenuItem,
-	ResolvedActionItem
-} from "./types.js"
+import type {ActionInvocation, ActionItem, MenuDivider, MenuEntry, MenuItem, ResolvedActionItem} from "./types.js"
 
 function report(field: string, error: unknown): void {
 	console.error(`[svelte-fluentui] action item ${field} threw — using the static value`, error)
@@ -48,10 +41,13 @@ export function resolveActionItem<Ctx, A extends string>(
 		tooltip: call(item.getTooltipCallback, ctx, "getTooltipCallback") ?? item.tooltip ?? defaults.tooltip,
 		shortcut: item.shortcut ?? defaults.shortcut,
 		cssClass: cbClass !== undefined ? classList(cbClass) : classList(item.cssClass ?? defaults.cssClass),
-		isVisible: call(item.getIsVisibleCallback, ctx, "getIsVisibleCallback") ?? item.isVisible ?? defaults.isVisible ?? true,
-		isDisabled: call(item.getIsDisabledCallback, ctx, "getIsDisabledCallback") ?? item.isDisabled ?? defaults.isDisabled ?? false,
+		isVisible:
+			call(item.getIsVisibleCallback, ctx, "getIsVisibleCallback") ?? item.isVisible ?? defaults.isVisible ?? true,
+		isDisabled:
+			call(item.getIsDisabledCallback, ctx, "getIsDisabledCallback") ?? item.isDisabled ?? defaults.isDisabled ?? false,
 		isDanger: item.isDanger ?? defaults.isDanger ?? false,
-		isToggled: call(item.getIsToggledCallback, ctx, "getIsToggledCallback") ?? item.isToggled ?? defaults.isToggled ?? false,
+		isToggled:
+			call(item.getIsToggledCallback, ctx, "getIsToggledCallback") ?? item.isToggled ?? defaults.isToggled ?? false,
 		isToggle:
 			item.isToggled !== undefined ||
 			typeof item.getIsToggledCallback === "function" ||
@@ -70,7 +66,9 @@ export function isMenuDivider(entry: unknown): entry is MenuDivider {
 }
 
 /** Expand the string shorthand for built-ins: `["add", {id: "x", text: "X"}]` → `[{action: "add"}, {id: "x", text: "X"}]`. */
-export function normalizeActionItems<T extends ActionItem<any, any>>(items: readonly (string | T | null | undefined | false)[] | null | undefined): T[] {
+export function normalizeActionItems<T extends ActionItem<any, any>>(
+	items: readonly (string | T | null | undefined | false)[] | null | undefined
+): T[] {
 	const out: T[] = []
 	for (const entry of items ?? []) {
 		if (!entry) continue // a conditional item (`cond && item`) that resolved to nothing
@@ -120,7 +118,10 @@ export function resolveMenuEntries<Ctx, A extends string>(
 }
 
 /** A menu item's children: `getChildrenCallback` (may be async) wins over `children`. */
-export async function getMenuChildren<Ctx, A extends string>(item: MenuItem<Ctx, A>, ctx: Ctx): Promise<MenuEntry<Ctx, A>[]> {
+export async function getMenuChildren<Ctx, A extends string>(
+	item: MenuItem<Ctx, A>,
+	ctx: Ctx
+): Promise<MenuEntry<Ctx, A>[]> {
 	if (typeof item.getChildrenCallback === "function") {
 		try {
 			return (await item.getChildrenCallback(ctx)) ?? []

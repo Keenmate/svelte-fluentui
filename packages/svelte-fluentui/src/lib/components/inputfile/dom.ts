@@ -47,9 +47,7 @@ export function positionPopover(node: HTMLElement, anchor: HTMLElement) {
 						floating.style.maxHeight = ""
 						const cssMax = parseFloat(getComputedStyle(floating).maxHeight)
 						const viewportCap = availableHeight - 16
-						const effective = Number.isFinite(cssMax)
-							? Math.min(cssMax, viewportCap)
-							: viewportCap
+						const effective = Number.isFinite(cssMax) ? Math.min(cssMax, viewportCap) : viewportCap
 						floating.style.maxHeight = `${Math.max(effective, 160)}px`
 					},
 					padding: 8
@@ -68,7 +66,10 @@ export function positionPopover(node: HTMLElement, anchor: HTMLElement) {
 }
 
 /** Files from a drop (null when there's no file list); with `allowFolderDrop`, dropped directories are walked recursively. */
-export async function droppedFiles(dataTransfer: DataTransfer | null | undefined, allowFolderDrop: boolean): Promise<File[] | null> {
+export async function droppedFiles(
+	dataTransfer: DataTransfer | null | undefined,
+	allowFolderDrop: boolean
+): Promise<File[] | null> {
 	if (allowFolderDrop && dataTransfer?.items) {
 		const dataItems = Array.from(dataTransfer.items)
 		const files: File[] = []
@@ -97,9 +98,7 @@ async function traverseEntry(entry: any, out: File[]) {
 	} else if (entry.isDirectory) {
 		const reader = entry.createReader()
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const entries = await new Promise<any[]>((res, rej) =>
-			reader.readEntries(res, rej)
-		)
+		const entries = await new Promise<any[]>((res, rej) => reader.readEntries(res, rej))
 		for (const e of entries) await traverseEntry(e, out)
 	}
 }

@@ -72,9 +72,7 @@
 	{:else}
 		<div class="file-icon" data-category={iconCategory(item)} aria-hidden="true">
 			<svg width="28" height="28" viewBox="0 0 32 32" fill="currentColor">
-				<path
-					d="M19 2H8a2 2 0 00-2 2v24a2 2 0 002 2h16a2 2 0 002-2V9l-7-7zm0 7V3.5L24.5 9H19z"
-				/>
+				<path d="M19 2H8a2 2 0 00-2 2v24a2 2 0 002 2h16a2 2 0 002-2V9l-7-7zm0 7V3.5L24.5 9H19z" />
 			</svg>
 		</div>
 	{/if}
@@ -86,19 +84,11 @@
 		</div>
 
 		{#if item.status === "uploading" || item.status === "paused"}
-			<div
-				class="progress-bar"
-				role="progressbar"
-				aria-valuenow={item.progress}
-				aria-valuemin="0"
-				aria-valuemax="100"
-			>
+			<div class="progress-bar" role="progressbar" aria-valuenow={item.progress} aria-valuemin="0" aria-valuemax="100">
 				<div class="progress-fill" style="width: {item.progress}%"></div>
 			</div>
 			<span class="status-text">
-				{item.progress}% — {item.status === "paused"
-					? t("paused")
-					: t("uploading")}
+				{item.progress}% — {item.status === "paused" ? t("paused") : t("uploading")}
 			</span>
 		{:else if item.status === "completed"}
 			<span class="status-text success">✓ {t("completed")}</span>
@@ -113,22 +103,10 @@
 
 	<div class="file-actions">
 		{#if item.downloadUrl && item.status === "completed"}
-			<a
-				class="action-button"
-				href={item.downloadUrl}
-				download={item.name}
-				aria-label={t("downloadAriaLabel")}
-			>
-				↓
-			</a>
+			<a class="action-button" href={item.downloadUrl} download={item.name} aria-label={t("downloadAriaLabel")}> ↓ </a>
 		{/if}
 		{#if item.status === "uploading"}
-			<button
-				type="button"
-				class="action-button"
-				onclick={() => queue.pause(item.id)}
-				aria-label={t("pauseAriaLabel")}
-			>
+			<button type="button" class="action-button" onclick={() => queue.pause(item.id)} aria-label={t("pauseAriaLabel")}>
 				‖
 			</button>
 			<button
@@ -149,12 +127,7 @@
 				▶
 			</button>
 		{:else if (item.status === "error" || item.status === "cancelled") && item.file && canUpload}
-			<button
-				type="button"
-				class="action-button"
-				onclick={() => queue.retry(item.id)}
-				aria-label={t("retryAriaLabel")}
-			>
+			<button type="button" class="action-button" onclick={() => queue.retry(item.id)} aria-label={t("retryAriaLabel")}>
 				↻
 			</button>
 		{/if}

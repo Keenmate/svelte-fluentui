@@ -28,11 +28,7 @@ export function parseSize(raw: string | undefined, totalPx: number): number | nu
  * Resolve each pane's raw min/max against the root size, capping max at the
  * space actually available and never letting min exceed max.
  */
-export function resolveMinMax(
-	pane: SizedPane & {rawMin?: string; rawMax?: string},
-	rootSize: number,
-	total: number
-) {
+export function resolveMinMax(pane: SizedPane & {rawMin?: string; rawMax?: string}, rootSize: number, total: number) {
 	let mn = parseSize(pane.rawMin, rootSize)
 	let mx = parseSize(pane.rawMax, rootSize)
 	if (mn == null) mn = 0
@@ -58,7 +54,7 @@ export function clampToConstraints(arr: SizedPane[], total: number, pinned: bool
 		for (let j = 0; j < N; j++) {
 			if (pinned[j]) continue
 			const p = arr[j]
-			const headroom = diff > 0 ? (p.max - p.size) : (p.size - p.min)
+			const headroom = diff > 0 ? p.max - p.size : p.size - p.min
 			if (headroom > 0.5) {
 				flexable.push(j)
 				flexableWeight += p.size > 0 ? p.size : 1
@@ -126,7 +122,7 @@ export function primaryNeighbour(g: number, count: number, rtl: () => boolean): 
 	const rightDist = count - 2 - g
 	if (leftDist < rightDist) return g
 	if (rightDist < leftDist) return g + 1
-	return rtl() ? (g + 1) : g
+	return rtl() ? g + 1 : g
 }
 
 /** Size below which a drag snaps the primary pane into its rail. */
@@ -142,7 +138,7 @@ export function settlePrimary(arr: SizedPane[], primary: SizedPane, total: numbe
 	let sum = 0
 	for (const p of arr) sum += p.size
 	if (Math.abs(sum - total) > 0.5) {
-		primary.size -= (sum - total)
+		primary.size -= sum - total
 		if (primary.size < floor) primary.size = floor
 		if (primary.size > primary.max) primary.size = primary.max
 	}

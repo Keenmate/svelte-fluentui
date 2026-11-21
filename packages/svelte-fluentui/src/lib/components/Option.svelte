@@ -60,18 +60,18 @@ A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div 
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-			value,
-			label    = undefined,
-			class: className = undefined,
-			style    = undefined,
-			disabled = false,
-			selected = undefined,
-			onclick  = undefined,
-			data     = undefined,
-			icon     = undefined,
-			children,
-			...rest
-		}: Props = $props()
+		value,
+		label = undefined,
+		class: className = undefined,
+		style = undefined,
+		disabled = false,
+		selected = undefined,
+		onclick = undefined,
+		data = undefined,
+		icon = undefined,
+		children,
+		...rest
+	}: Props = $props()
 
 	const selectedValue = selectedOptionsContext.get()
 
@@ -82,9 +82,7 @@ A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div 
 
 	// Selection is either forced via the `selected` prop or derived from the
 	// shared context. Reading ctx.value here tracks the parent's selection state.
-	const isSelected = $derived(
-		selected !== undefined ? selected : !!selectedValue?.value?.includes(value)
-	)
+	const isSelected = $derived(selected !== undefined ? selected : !!selectedValue?.value?.includes(value))
 
 	function handleOnClick(ev: MouseEvent) {
 		if (disabled) {
@@ -111,7 +109,7 @@ A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div 
 	data-value={value}
 	data-option-label={label ?? null}
 	data-option-context={data ? JSON.stringify(data) : null}
-	{...(disabled ? {disabled: "", "aria-disabled": "true"} : {})}
+	{...disabled ? {disabled: "", "aria-disabled": "true"} : {}}
 	{...attrs({style})}
 	onclick={handleOnClick}
 >

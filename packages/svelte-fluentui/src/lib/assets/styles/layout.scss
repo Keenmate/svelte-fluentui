@@ -32,7 +32,9 @@ header.header {
 	background-color: var(--neutral-layer-2);
 	color: var(--neutral-foreground-rest);
 	border-bottom: 1px solid var(--neutral-stroke-layer-rest);
-	transition: background-color 0.3s ease, color 0.3s ease;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
 
 	.header-gutters {
 		width: 100%;
@@ -52,7 +54,9 @@ header.header {
 	padding: 0.75rem 1rem;
 	min-height: 48px;
 	z-index: 10;
-	transition: background-color 0.3s ease, color 0.3s ease;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
 }
 
 // Three-part mode: switch to CSS Grid so the center column is truly centered
@@ -65,9 +69,18 @@ header.header {
 	gap: 1rem;
 }
 
-.fluent-footer__start  { grid-column: 1; justify-self: start; }
-.fluent-footer__center { grid-column: 2; justify-self: center; }
-.fluent-footer__end    { grid-column: 3; justify-self: end; }
+.fluent-footer__start {
+	grid-column: 1;
+	justify-self: start;
+}
+.fluent-footer__center {
+	grid-column: 2;
+	justify-self: center;
+}
+.fluent-footer__end {
+	grid-column: 3;
+	justify-self: end;
+}
 
 // Stacking on narrow widths — opt-in via the `stack` prop (default true).
 // Container query keyed on the footer itself so behavior is intrinsic to

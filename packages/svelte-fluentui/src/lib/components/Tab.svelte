@@ -12,7 +12,7 @@ One tab of a `<Tabs>` strip. Renders no DOM itself — it registers its label an
 	import type {TabInfo} from "./tabs/tabs.types.js"
 	import {tabsContext} from "../contexts.js"
 	import type {Snippet} from "svelte"
-	import { onDestroy, untrack } from "svelte"
+	import {onDestroy, untrack} from "svelte"
 
 	type Props = {
 		/** Extra CSS class on the tab button. */

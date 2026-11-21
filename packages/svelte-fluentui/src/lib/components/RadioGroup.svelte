@@ -75,7 +75,9 @@ Wrapper for `<fluent-radio-group>`: holds the selected value of its `<Radio>` ch
 	}: Props = $props()
 
 	const ctx = $state({
-		get value() { return value },
+		get value() {
+			return value
+		},
 		setValue
 	})
 
@@ -114,8 +116,15 @@ Wrapper for `<fluent-radio-group>`: holds the selected value of its `<Radio>` ch
 <fluent-radio-group
 	{...rest}
 	{...attrs({
-		value, name, orientation, readonly, disabled, autofocus,
-		"aria-label": ariaLabel, class: className, style
+		value,
+		name,
+		orientation,
+		readonly,
+		disabled,
+		autofocus,
+		"aria-label": ariaLabel,
+		class: className,
+		style
 	})}
 	onchange={handleGroupChange}
 >

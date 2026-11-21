@@ -198,7 +198,9 @@ Slide-in side panel (drawer) portalled to `<body>`, with optional backdrop; or, 
 		flex-direction: column;
 		overflow: hidden;
 		pointer-events: none;
-		transition: transform 0.25s ease, visibility 0.25s ease;
+		transition:
+			transform 0.25s ease,
+			visibility 0.25s ease;
 		visibility: hidden;
 		z-index: calc(var(--fluent-z-modal) + 1);
 	}

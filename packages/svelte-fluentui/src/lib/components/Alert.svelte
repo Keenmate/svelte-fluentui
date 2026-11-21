@@ -13,7 +13,7 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 	import {useTranslations} from "../i18n/translate.svelte.js"
 	import type {AlertLabels} from "../i18n/labels.js"
 
-	type Intent = 'info' | 'success' | 'warning' | 'error'
+	type Intent = "info" | "success" | "warning" | "error"
 
 	type OwnProps = {
 		/** Colour and default icon: `info`, `success`, `warning` or `error`. Default: `"info"`. */
@@ -40,7 +40,7 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		intent = 'info',
+		intent = "info",
 		title = undefined,
 		dismissible = false,
 		class: classParam = undefined,
@@ -69,10 +69,10 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 
 	// Default icons for each intent
 	const defaultIcons: Record<Intent, string> = {
-		info: 'ℹ',
-		success: '✓',
-		warning: '⚠',
-		error: '✕'
+		info: "ℹ",
+		success: "✓",
+		warning: "⚠",
+		error: "✕"
 	}
 </script>
 
@@ -98,11 +98,7 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 		</div>
 
 		{#if dismissible}
-			<button
-				class="fluent-alert__dismiss"
-				aria-label={t("dismissAriaLabel")}
-				onclick={handleDismiss}
-			>
+			<button class="fluent-alert__dismiss" aria-label={t("dismissAriaLabel")} onclick={handleDismiss}>
 				<DismissIcon size={14} />
 			</button>
 		{/if}
@@ -212,7 +208,9 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 		align-items: center;
 		justify-content: center;
 		border-radius: var(--fluent-border-radius-md);
-		transition: background-color 0.1s ease, color 0.1s ease;
+		transition:
+			background-color 0.1s ease,
+			color 0.1s ease;
 	}
 
 	.fluent-alert__dismiss:hover {

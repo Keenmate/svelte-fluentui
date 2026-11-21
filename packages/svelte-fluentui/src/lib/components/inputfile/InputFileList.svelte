@@ -25,13 +25,17 @@
 		dropZoneHints: string[]
 		listMaxHeightCss: string | null
 		fileItem?: Snippet<[InputFileRowApi]>
-		actions?: Snippet<[{
-			clearAll: () => void
-			uploadAll: () => Promise<void>
-			pauseAll: () => void
-			resumeAll: () => Promise<void>
-			retryAll: () => Promise<void>
-		}]>
+		actions?: Snippet<
+			[
+				{
+					clearAll: () => void
+					uploadAll: () => Promise<void>
+					pauseAll: () => void
+					resumeAll: () => Promise<void>
+					retryAll: () => Promise<void>
+				}
+			]
+		>
 		footer: Snippet
 		onAddMore: () => void
 		onClear: () => void
@@ -94,47 +98,43 @@
 
 <div class="file-list">
 	<div class="file-list-sticky">
-	<div class="file-list-header">
-		<span class="file-count">{t("fileCount", {count: items.length})}</span>
-		{#if actions}
-			{@render actions({clearAll: onClear, uploadAll, pauseAll, resumeAll, retryAll})}
-		{:else}
-			<div class="file-list-actions">
-				{#if inPopover}
-					<button
-						type="button"
-						class="text-button"
-						onclick={(e) => {
-							e.stopPropagation()
-							onAddMore()
-						}}
-						{disabled}
-					>
-						{t("addMore")}
+		<div class="file-list-header">
+			<span class="file-count">{t("fileCount", {count: items.length})}</span>
+			{#if actions}
+				{@render actions({clearAll: onClear, uploadAll, pauseAll, resumeAll, retryAll})}
+			{:else}
+				<div class="file-list-actions">
+					{#if inPopover}
+						<button
+							type="button"
+							class="text-button"
+							onclick={(e) => {
+								e.stopPropagation()
+								onAddMore()
+							}}
+							{disabled}
+						>
+							{t("addMore")}
+						</button>
+					{/if}
+					{#if canUpload && !autoUpload && items.some((i) => i.status === "pending")}
+						<button type="button" class="text-button" onclick={uploadAll} {disabled}>
+							{t("uploadAll")}
+						</button>
+					{/if}
+					<button type="button" class="text-button" onclick={onClear} {disabled}>
+						{t("clearAll")}
 					</button>
-				{/if}
-				{#if canUpload && !autoUpload && items.some((i) => i.status === "pending")}
-					<button type="button" class="text-button" onclick={uploadAll} {disabled}>
-						{t("uploadAll")}
-					</button>
-				{/if}
-				<button type="button" class="text-button" onclick={onClear} {disabled}>
-					{t("clearAll")}
-				</button>
-			</div>
+				</div>
+			{/if}
+		</div>
+
+		{#if inPopover && dropZoneHints.length > 0}
+			<div class="file-list-limits">{dropZoneHints.join(" · ")}</div>
 		{/if}
 	</div>
 
-	{#if inPopover && dropZoneHints.length > 0}
-		<div class="file-list-limits">{dropZoneHints.join(" · ")}</div>
-	{/if}
-	</div>
-
-	<div
-		class="file-list-rows"
-		class:scrollable={listMaxHeightCss != null}
-		style:max-height={listMaxHeightCss}
-	>
+	<div class="file-list-rows" class:scrollable={listMaxHeightCss != null} style:max-height={listMaxHeightCss}>
 		{#each visibleItems as item, index (item.id)}
 			{#if fileItem}
 				{@render fileItem(queue.rowApi(item))}
@@ -158,19 +158,11 @@
 		{/each}
 
 		{#if hiddenCount > 0}
-			<button
-				type="button"
-				class="show-more-toggle"
-				onclick={() => onShowAll(true)}
-			>
+			<button type="button" class="show-more-toggle" onclick={() => onShowAll(true)}>
 				{t("showMore", {count: hiddenCount})}
 			</button>
 		{:else if canCollapse}
-			<button
-				type="button"
-				class="show-more-toggle"
-				onclick={() => onShowAll(false)}
-			>
+			<button type="button" class="show-more-toggle" onclick={() => onShowAll(false)}>
 				{t("showLess")}
 			</button>
 		{/if}

@@ -50,7 +50,7 @@ export function dismissOnOutside(
 ): () => void {
 	function isInside(event: Event): boolean {
 		const path = event.composedPath()
-		return inside().some(el => !!el && path.includes(el))
+		return inside().some((el) => !!el && path.includes(el))
 	}
 
 	function onPointerDown(event: PointerEvent) {

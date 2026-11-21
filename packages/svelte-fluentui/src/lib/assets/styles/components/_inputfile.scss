@@ -393,7 +393,9 @@
 		color: var(--accent-fill-rest);
 		border-radius: var(--fluent-border-radius-sm);
 		line-height: 1.2;
-		transition: background 0.1s ease, color 0.1s ease;
+		transition:
+			background 0.1s ease,
+			color 0.1s ease;
 
 		&:hover {
 			background: var(--neutral-fill-secondary-hover, var(--neutral-layer-3));
@@ -506,7 +508,9 @@
 		padding: 0 0.6rem;
 		min-width: 1.75rem;
 		color: var(--neutral-foreground-hint);
-		transition: background 0.1s ease, color 0.1s ease;
+		transition:
+			background 0.1s ease,
+			color 0.1s ease;
 
 		&:hover {
 			background: var(--neutral-fill-secondary-hover, var(--neutral-layer-3));

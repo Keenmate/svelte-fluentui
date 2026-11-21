@@ -49,20 +49,20 @@ A navigation link row (`NavItem` + `NavLink`) for `NavMenu` / `NavGroup`.
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		    href      = undefined,
-		    rel       = undefined,
-		    target    = undefined,
-		    title     = undefined,
-		    disabled  = undefined,
-		    group     = undefined,
-		    icon      = undefined,
-		    onclick   = undefined,
-		    afterText = undefined,
-		    children  = undefined,
-		    linkAction = undefined,
-		    linkProps  = undefined,
-		    ...rest
-	    }: Props = $props()
+		href = undefined,
+		rel = undefined,
+		target = undefined,
+		title = undefined,
+		disabled = undefined,
+		group = undefined,
+		icon = undefined,
+		onclick = undefined,
+		afterText = undefined,
+		children = undefined,
+		linkAction = undefined,
+		linkProps = undefined,
+		...rest
+	}: Props = $props()
 
 	// Forwarded to a child component whose own prop types are narrower than
 	// HTMLAttributes (no `null`), so hand the spread over untyped.
@@ -76,18 +76,6 @@ A navigation link row (`NavItem` + `NavLink`) for `NavMenu` / `NavGroup`.
 	} as Record<string, unknown>)
 </script>
 
-<NavItem
-	{...forwarded}
-	{group}
-	{disabled}
-	{onclick}
->
-	<NavLink
-		{...linkAttrs}
-		{disabled}
-		{icon}
-		{children}
-		{afterText}
-		{linkAction}
-	/>
+<NavItem {...forwarded} {group} {disabled} {onclick}>
+	<NavLink {...linkAttrs} {disabled} {icon} {children} {afterText} {linkAction} />
 </NavItem>

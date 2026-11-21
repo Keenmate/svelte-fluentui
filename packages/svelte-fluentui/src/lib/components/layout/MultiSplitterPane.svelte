@@ -110,7 +110,7 @@ One pane of a `MultiSplitter`; renders its trailing gutter (except the last pane
 	class="fluent-multi-splitter-pane fluent-multi-splitter-pane--{ctx.orientation} {className}"
 	class:fluent-multi-splitter-pane--minimized={isMinimized}
 	data-index={index}
-	style={style}
+	{style}
 	onclick={handlePaneClick}
 >
 	{@render children?.()}

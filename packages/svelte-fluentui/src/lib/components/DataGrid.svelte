@@ -22,25 +22,25 @@ Wrapper for `<fluent-data-grid>`: a keyboard-navigable grid of `DataGridRow` / `
 
 	type OwnProps = {
 		/** Extra class on `<fluent-data-grid>`. */
-		class?: string;
+		class?: string
 		/** Inline style on `<fluent-data-grid>`. */
-		style?: string;
+		style?: string
 		/** Element id. */
-		id?: string;
+		id?: string
 		/** Total row count for assistive tech (`aria-rowcount`), e.g. when only a page is rendered. */
-		ariaRowCount?: number;
+		ariaRowCount?: number
 		/** Auto-generated header row: `none`, `default` or `sticky` (`generate-header` attribute). */
-		generateHeader?: "none" | "default" | "sticky";
+		generateHeader?: "none" | "default" | "sticky"
 		/** CSS `grid-template-columns` applied to every row, e.g. "1fr 2fr 120px" (`grid-template-columns` attribute). */
-		gridTemplateColumns?: string;
+		gridTemplateColumns?: string
 		/** ARIA role. Default: `grid`. */
-		role?: string;
+		role?: string
 		/** `<DataGridRow>` children. */
-		children?: Snippet;
-	};
+		children?: Snippet
+	}
 
 	/** Native attributes and events (`onkeydown`, `onclick`, …) go to `<fluent-data-grid>`. */
-	type Props = OwnProps & RestProps<OwnProps>;
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		class: className = "",
@@ -52,7 +52,7 @@ Wrapper for `<fluent-data-grid>`: a keyboard-navigable grid of `DataGridRow` / `
 		role = "grid",
 		children = undefined,
 		...rest
-	}: Props = $props();
+	}: Props = $props()
 
 	// Also expose the template as an inheriting custom property. FluentUI applies
 	// it to each row imperatively (via inline style), which is enough on its own,
@@ -63,17 +63,20 @@ Wrapper for `<fluent-data-grid>`: a keyboard-navigable grid of `DataGridRow` / `
 		gridTemplateColumns
 			? `${style ? `${style}; ` : ""}--fluent-data-grid-template-columns: ${gridTemplateColumns}`
 			: style
-	);
+	)
 </script>
 
 <fluent-data-grid
 	{...rest}
 	class={className}
 	{...attrs({
-		style: mergedStyle, id, "aria-rowcount": ariaRowCount, "generate-header": generateHeader,
+		style: mergedStyle,
+		id,
+		"aria-rowcount": ariaRowCount,
+		"generate-header": generateHeader,
 		"grid-template-columns": gridTemplateColumns
 	})}
-	role={role}
+	{role}
 >
 	{#if children}
 		{@render children?.()}

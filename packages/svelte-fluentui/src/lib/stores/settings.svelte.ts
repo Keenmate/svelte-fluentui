@@ -6,7 +6,13 @@
  * except `direction`, persisted to localStorage. `themeMode: "system"` follows the OS setting live.
  */
 import {BROWSER} from "esm-env"
-import {accentBaseColor, baseLayerLuminance, neutralBaseColor, StandardLuminance, SwatchRGB} from "@fluentui/web-components"
+import {
+	accentBaseColor,
+	baseLayerLuminance,
+	neutralBaseColor,
+	StandardLuminance,
+	SwatchRGB
+} from "@fluentui/web-components"
 
 export type ThemeMode = "system" | "light" | "dark"
 export type EffectiveTheme = "light" | "dark"
@@ -96,7 +102,13 @@ function toSwatch(hex: string): SwatchRGB | undefined {
 function contrastForeground(hex: unknown): string {
 	if (typeof hex !== "string") return "#ffffff"
 	const h = hex.trim().replace(/^#/, "")
-	const full = h.length === 3 ? h.split("").map(c => c + c).join("") : h
+	const full =
+		h.length === 3
+			? h
+					.split("")
+					.map((c) => c + c)
+					.join("")
+			: h
 	if (full.length !== 6) return "#ffffff"
 	const r = parseInt(full.slice(0, 2), 16) / 255
 	const g = parseInt(full.slice(2, 4), 16) / 255
@@ -125,7 +137,10 @@ function applySettings(s: SiteSettingsState, effective: EffectiveTheme, animate:
 
 	// FluentUI design tokens: luminance, then the accent and neutral palettes derived from the base colours.
 	try {
-		baseLayerLuminance.setValueFor(root, effective === "dark" ? StandardLuminance.DarkMode : StandardLuminance.LightMode)
+		baseLayerLuminance.setValueFor(
+			root,
+			effective === "dark" ? StandardLuminance.DarkMode : StandardLuminance.LightMode
+		)
 		const accentSwatch = toSwatch(resolveAccent(s.accentColor))
 		if (accentSwatch) accentBaseColor.setValueFor(root, accentSwatch)
 		const neutralSwatch = toSwatch(s.neutralColor)
@@ -140,7 +155,8 @@ function applySettings(s: SiteSettingsState, effective: EffectiveTheme, animate:
 	const accentHex = resolveAccent(s.accentColor)
 	const accentForeground = contrastForeground(accentHex)
 	for (const state of ["rest", "hover", "active"]) root.style.setProperty(`--accent-fill-${state}`, accentHex)
-	for (const state of ["rest", "hover", "active", "focus"]) root.style.setProperty(`--foreground-on-accent-${state}`, accentForeground)
+	for (const state of ["rest", "hover", "active", "focus"])
+		root.style.setProperty(`--foreground-on-accent-${state}`, accentForeground)
 	root.style.setProperty("--fluent-accent-primary", accentHex)
 	root.style.setProperty("--fluent-accent-hover", accentHex)
 	root.style.setProperty("--fluent-accent-active", accentHex)

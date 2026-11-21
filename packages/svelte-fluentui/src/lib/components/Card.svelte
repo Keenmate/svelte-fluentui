@@ -56,7 +56,7 @@ Content container with FluentUI layer background, border and shadow.
 	})
 </script>
 
-<div {...rest} class={computedClass} style={computedStyle} >
+<div {...rest} class={computedClass} style={computedStyle}>
 	{@render children?.()}
 </div>
 

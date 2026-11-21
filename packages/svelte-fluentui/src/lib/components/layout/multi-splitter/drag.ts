@@ -37,7 +37,7 @@ export class GutterDrag {
 		const primary = s.internal(primaryIdx)
 		const primaryHandle = s.panes[primaryIdx]
 		const delta = coord - this.dragStartCoord
-		let newPrimary = this.dragStartPrimary + (this.primarySign * delta)
+		let newPrimary = this.dragStartPrimary + this.primarySign * delta
 
 		// SNAP-INTO-RAIL: only after primary committed to expanded (snap gate).
 		// Skipped once railed — further frames under the threshold must not
@@ -58,7 +58,11 @@ export class GutterDrag {
 		// DRAG-OUT-OF-RAIL: snapped mid-drag, user dragged back past threshold.
 		// Gated by !primaryStartedMin: if primary was railed BEFORE the drag began,
 		// the user must dblclick (or click the rail body) to expand it — drag won't.
-		if (!this.primaryStartedMin && primaryHandle.state.isMin && newPrimary >= this.snapThreshold(this.primaryMaxReached)) {
+		if (
+			!this.primaryStartedMin &&
+			primaryHandle.state.isMin &&
+			newPrimary >= this.snapThreshold(this.primaryMaxReached)
+		) {
 			s.log("DRAG-OUT-OF-RAIL primary=" + primaryIdx)
 			primaryHandle.state.isMin = false
 			this.primaryInEscape = true
@@ -69,7 +73,8 @@ export class GutterDrag {
 		// so the cursor in the snap zone doesn't re-clamp primary up to min.
 		if (primaryHandle.state.isMin) return
 
-		const floor = ((this.primaryStartedMin && !this.primaryCanSnap) || this.primaryInEscape) ? s.opts.railSize : primary.min
+		const floor =
+			(this.primaryStartedMin && !this.primaryCanSnap) || this.primaryInEscape ? s.opts.railSize : primary.min
 		if (newPrimary < floor) newPrimary = floor
 		if (newPrimary > primary.max) newPrimary = primary.max
 
@@ -126,7 +131,11 @@ export class GutterDrag {
 		const primary = s.internals.get(s.panes[this.primaryIdx])
 		const primaryHandle = s.panes[this.primaryIdx]
 		const gut = s.internals.get(s.panes[this.dragGutterIdx])?.getGutterEl()
-		try { gut?.releasePointerCapture(e.pointerId) } catch { /* */ }
+		try {
+			gut?.releasePointerCapture(e.pointerId)
+		} catch {
+			/* */
+		}
 		this.activePointerId = null
 		s.rootEl?.classList.remove("fluent-multi-splitter--dragging")
 		gut?.classList.remove("fluent-multi-splitter-gutter--active")
@@ -141,7 +150,13 @@ export class GutterDrag {
 
 		// RAIL-STAYED: started rail, never grew above rail → restore isMin.
 		let anyChange = false
-		if (primary && primaryHandle && this.primaryStartedMin && Math.abs(primary.size - s.opts.railSize) < 1 && !primaryHandle.state.isMin) {
+		if (
+			primary &&
+			primaryHandle &&
+			this.primaryStartedMin &&
+			Math.abs(primary.size - s.opts.railSize) < 1 &&
+			!primaryHandle.state.isMin
+		) {
 			s.log("RAIL-STAYED primary=" + this.primaryIdx)
 			primaryHandle.state.isMin = true
 			anyChange = true
@@ -152,7 +167,10 @@ export class GutterDrag {
 		let anyBelowMin = false
 		for (const h of s.panes) {
 			const p = s.internals.get(h)!
-			if (!h.state.isMin && p.size < p.min - 0.5) { anyBelowMin = true; break }
+			if (!h.state.isMin && p.size < p.min - 0.5) {
+				anyBelowMin = true
+				break
+			}
 		}
 		if (anyBelowMin) {
 			s.log("CLAMP-TO-MIN")
@@ -192,7 +210,7 @@ export class GutterDrag {
 
 		this.dragGutterIdx = g
 		this.primaryIdx = s.primaryNeighbour(g)
-		this.primarySign = (this.primaryIdx === g) ? 1 : -1
+		this.primarySign = this.primaryIdx === g ? 1 : -1
 		const primary = s.internal(this.primaryIdx)
 		const primaryHandle = s.panes[this.primaryIdx]
 		this.primaryStartedMin = primaryHandle.state.isMin
@@ -211,7 +229,11 @@ export class GutterDrag {
 		s.log("pointerdown gutter=" + g + " primary=" + this.primaryIdx + " sign=" + this.primarySign)
 
 		const gut = s.internals.get(handle)!.getGutterEl()
-		try { gut?.setPointerCapture(e.pointerId) } catch { /* iOS */ }
+		try {
+			gut?.setPointerCapture(e.pointerId)
+		} catch {
+			/* iOS */
+		}
 		s.rootEl?.classList.add("fluent-multi-splitter--dragging")
 		gut?.classList.add("fluent-multi-splitter-gutter--active")
 		// Listen on window — pointermove can leave the gutter element during

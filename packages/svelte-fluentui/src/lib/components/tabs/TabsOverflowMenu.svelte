@@ -24,12 +24,7 @@
 	let {anchor, visible, horizontal, tabs, menuEl = $bindable(), onPick}: Props = $props()
 </script>
 
-<PositioningRegion
-	{anchor}
-	{visible}
-	matchWidth={false}
-	position={horizontal ? "bottom" : "end"}
->
+<PositioningRegion {anchor} {visible} matchWidth={false} position={horizontal ? "bottom" : "end"}>
 	<div class="fluent-tabs-overflow-menu context-menu fluent-popup-elevation fluent-popup--layer" bind:this={menuEl}>
 		<fluent-menu>
 			{#each tabs as tab (tab.id)}

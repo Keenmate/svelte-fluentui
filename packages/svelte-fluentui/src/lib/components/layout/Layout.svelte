@@ -24,20 +24,9 @@ Page layout wrapper stacking Header / BodyContent / Footer (vertical) or side-by
 	/** Other native attributes and events (`id`, `role`, `aria-*`, …) go to the root `<div>`. */
 	type Props = OwnProps & RestProps<OwnProps>
 
-	let {
-		children = undefined,
-		orientation = "vertical",
-		class: className = "",
-		style = "",
-		...rest
-	}: Props = $props()
+	let {children = undefined, orientation = "vertical", class: className = "", style = "", ...rest}: Props = $props()
 </script>
 
-<div
-	{...rest}
-	{style}
-	class="layout {className}"
-	data-orientation={orientation === "horizontal" ? "horizontal" : null}
->
+<div {...rest} {style} class="layout {className}" data-orientation={orientation === "horizontal" ? "horizontal" : null}>
 	{@render children?.()}
 </div>

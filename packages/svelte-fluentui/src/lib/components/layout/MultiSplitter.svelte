@@ -40,7 +40,11 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 	import type {Snippet} from "svelte"
 	import {onMount} from "svelte"
 	import type {Orientation, RestProps} from "../../types/index.js"
-	import {MultiSplitterEngine, type MultiSplitterResizeDetail, type MultiSplitterToggleDetail} from "./multi-splitter/splitter.svelte.js"
+	import {
+		MultiSplitterEngine,
+		type MultiSplitterResizeDetail,
+		type MultiSplitterToggleDetail
+	} from "./multi-splitter/splitter.svelte.js"
 
 	type OwnProps = {
 		/** `MultiSplitterPane` children. */
@@ -86,7 +90,7 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 		persistKey = undefined,
 		step = 10,
 		railSize = 40,
-		minimizeThreshold = 0.40,
+		minimizeThreshold = 0.4,
 		width = undefined,
 		height = undefined,
 		class: className = "",
@@ -99,16 +103,36 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 	}: Props = $props()
 
 	const engine = new MultiSplitterEngine({
-		get orientation() { return orientation },
-		get id() { return id },
-		get persistKey() { return persistKey },
-		get step() { return step },
-		get railSize() { return railSize },
-		get minimizeThreshold() { return minimizeThreshold },
-		get debug() { return debug },
-		get onPaneResize() { return onPaneResize },
-		get onPaneCollapse() { return onPaneCollapse },
-		get onPaneExpand() { return onPaneExpand }
+		get orientation() {
+			return orientation
+		},
+		get id() {
+			return id
+		},
+		get persistKey() {
+			return persistKey
+		},
+		get step() {
+			return step
+		},
+		get railSize() {
+			return railSize
+		},
+		get minimizeThreshold() {
+			return minimizeThreshold
+		},
+		get debug() {
+			return debug
+		},
+		get onPaneResize() {
+			return onPaneResize
+		},
+		get onPaneCollapse() {
+			return onPaneCollapse
+		},
+		get onPaneExpand() {
+			return onPaneExpand
+		}
 	})
 	multiSplitterContext.set(engine.createContext())
 
@@ -173,7 +197,8 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 	.fluent-multi-splitter--dragging :global(.fluent-multi-splitter-gutter:not(.fluent-multi-splitter-gutter--active)) {
 		pointer-events: none;
 	}
-	.fluent-multi-splitter--dragging :global(.fluent-multi-splitter-gutter:not(.fluent-multi-splitter-gutter--active):focus-visible) {
+	.fluent-multi-splitter--dragging
+		:global(.fluent-multi-splitter-gutter:not(.fluent-multi-splitter-gutter--active):focus-visible) {
 		box-shadow: none;
 	}
 
@@ -303,7 +328,9 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 		position: relative;
 		flex: 0 0 auto;
 		background-color: var(--neutral-stroke-divider-rest, #e0e0e0);
-		transition: background-color 0.1s ease, box-shadow 0.1s ease;
+		transition:
+			background-color 0.1s ease,
+			box-shadow 0.1s ease;
 		touch-action: none;
 		outline: none;
 	}

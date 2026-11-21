@@ -140,7 +140,6 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 	import {useTranslations} from "../i18n/translate.svelte.js"
 	import type {DialogLabels} from "../i18n/labels.js"
 
-
 	type OwnProps = {
 		/** Modal dialog: locks page scroll while open (`modal` on `<fluent-dialog>`, which sets `aria-modal`).
 		 * `false` makes `<fluent-dialog>` non-modal; unset keeps its modal default but skips the scroll lock. */
@@ -207,55 +206,57 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		    modal = undefined,
-		    open = $bindable(undefined),
-		    trapFocus = undefined,
-		    ariaDescribedby = undefined,
-		    ariaLabelledby = undefined,
-		    ariaLabel = undefined,
-		    preventClose = false,
-		    dismissible = false,
-		    title = undefined,
-		    header = undefined,
-		    children = undefined,
-		    footer = undefined,
-		    primaryAction = undefined,
-		    secondaryAction = undefined,
-		    actions = undefined,
-		    dismissButtonText = undefined,
-		    onOpenChange = undefined,
-		    onAction = undefined,
-		    beforeActionCallback = undefined,
-		    beforeCloseCallback = undefined,
-		    closeOnEscape = true,
-		    size = "medium",
-		    width = undefined,
-		    height = undefined,
-		    labels: labelsProp = undefined,
-		    class: className = undefined,
-		    style = undefined,
-		    ...rest
-	    }: Props = $props()
+		modal = undefined,
+		open = $bindable(undefined),
+		trapFocus = undefined,
+		ariaDescribedby = undefined,
+		ariaLabelledby = undefined,
+		ariaLabel = undefined,
+		preventClose = false,
+		dismissible = false,
+		title = undefined,
+		header = undefined,
+		children = undefined,
+		footer = undefined,
+		primaryAction = undefined,
+		secondaryAction = undefined,
+		actions = undefined,
+		dismissButtonText = undefined,
+		onOpenChange = undefined,
+		onAction = undefined,
+		beforeActionCallback = undefined,
+		beforeCloseCallback = undefined,
+		closeOnEscape = true,
+		size = "medium",
+		width = undefined,
+		height = undefined,
+		labels: labelsProp = undefined,
+		class: className = undefined,
+		style = undefined,
+		...rest
+	}: Props = $props()
 
 	const t = useTranslations("dialog", () => labelsProp)
 
 	// Size mappings
 	const sizeMap = {
-		"small": { width: "400px", height: "auto" },
-		"medium": { width: "600px", height: "auto" },
-		"large": { width: "800px", height: "auto" },
-		"extra-large": { width: "1000px", height: "auto" },
-		"full": { width: "90vw", height: "90vh" }
+		small: {width: "400px", height: "auto"},
+		medium: {width: "600px", height: "auto"},
+		large: {width: "800px", height: "auto"},
+		"extra-large": {width: "1000px", height: "auto"},
+		full: {width: "90vw", height: "90vh"}
 	}
 
 	const dialogWidth = $derived(width || sizeMap[size].width)
 	const dialogHeight = $derived(height || sizeMap[size].height)
 	const dialogStyle = $derived(`--dialog-width: ${dialogWidth}; --dialog-height: ${dialogHeight};`)
 
-	let element: HTMLElement & {
-		show: Function
-		hide: Function
-	} | undefined = undefined
+	let element:
+		| (HTMLElement & {
+				show: Function
+				hide: Function
+		  })
+		| undefined = undefined
 
 	export function show() {
 		if (!element) {
@@ -386,9 +387,7 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 	const primary = $derived(primaryAction ? resolveActionItem(primaryAction, {}) : undefined)
 	const secondary = $derived(secondaryAction ? resolveActionItem(secondaryAction, {}) : undefined)
 
-	const hasFooterContent = $derived(
-		!!footer || !!actions || dismissible || !!primaryAction || !!secondaryAction
-	)
+	const hasFooterContent = $derived(!!footer || !!actions || dismissible || !!primaryAction || !!secondaryAction)
 	// A dedicated header row is rendered only when there's an actual title or custom
 	// header snippet — otherwise the close X floats in the top-right corner so legacy
 	// dialogs that put their own heading in the body don't get an empty strip on top.
@@ -407,12 +406,15 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 	bind:this={element}
 	{...rest}
 	{...attrs({
-		modal, "trap-focus": trapFocus, "aria-describedby": ariaDescribedby,
-		"aria-labelledby": ariaLabelledby, "aria-label": ariaLabel
+		modal,
+		"trap-focus": trapFocus,
+		"aria-describedby": ariaDescribedby,
+		"aria-labelledby": ariaLabelledby,
+		"aria-label": ariaLabel
 	})}
 	hidden={!open}
 	class={["dialog-positioned", className]}
-	style={dialogStyle + (style ? ` ${style}` : '')}
+	style={dialogStyle + (style ? ` ${style}` : "")}
 >
 	<div class="dialog-container">
 		{#if hasHeaderRow}
@@ -424,7 +426,9 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 					{#if !preventClose}
 						<Button appearance="stealth" onclick={() => requestClose("close-button")} aria-label={t("closeAriaLabel")}>
 							<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-								<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
+								<path
+									d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"
+								/>
 							</svg>
 						</Button>
 					{/if}
@@ -438,7 +442,9 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 				aria-label={t("closeAriaLabel")}
 			>
 				<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-					<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
+					<path
+						d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"
+					/>
 				</svg>
 			</button>
 		{/if}
@@ -573,4 +579,3 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 		gap: 0.5rem;
 	}
 </style>
-

@@ -62,8 +62,12 @@ export class UploadQueue {
 
 	constructor(private readonly host: UploadQueueHost) {}
 
-	private get items(): InputFileItem[] { return this.host.items }
-	private set items(value: InputFileItem[]) { this.host.items = value }
+	private get items(): InputFileItem[] {
+		return this.host.items
+	}
+	private set items(value: InputFileItem[]) {
+		this.host.items = value
+	}
 
 	private thumbnailFor(file: File | null): string | null {
 		if (!file || !file.type.startsWith("image/") || !this.host.showThumbnails) return null
@@ -86,10 +90,8 @@ export class UploadQueue {
 
 	private async validateFile(file: File): Promise<string | null> {
 		const {t, maxFileSize, minFileSize, accept, customValidator} = this.host
-		if (maxFileSize && file.size > maxFileSize)
-			return t("fileTooLarge", {max: formatInputFileSize(maxFileSize)})
-		if (minFileSize && file.size < minFileSize)
-			return t("fileTooSmall", {min: formatInputFileSize(minFileSize)})
+		if (maxFileSize && file.size > maxFileSize) return t("fileTooLarge", {max: formatInputFileSize(maxFileSize)})
+		if (minFileSize && file.size < minFileSize) return t("fileTooSmall", {min: formatInputFileSize(minFileSize)})
 		if (!isAcceptedType(file, accept)) return t("fileTypeNotAccepted", {accept: accept ?? ""})
 		if (customValidator) {
 			const r = await customValidator(file)
@@ -102,8 +104,7 @@ export class UploadQueue {
 		const dedupe = this.host.dedupe
 		if (!dedupe) return false
 		if (dedupe === "name") return this.items.some((i) => i.name === file.name)
-		if (dedupe === "name-size")
-			return this.items.some((i) => i.name === file.name && i.size === file.size)
+		if (dedupe === "name-size") return this.items.some((i) => i.name === file.name && i.size === file.size)
 		if (dedupe === "hash") {
 			let h = this.hashCache.get(file)
 			if (!h) {
@@ -156,9 +157,8 @@ export class UploadQueue {
 			if (incoming.length === 0) return
 		}
 
-		let runningTotal = host.totalMaxSize > 0
-			? this.items.reduce((sum, i) => (i.status === "error" ? sum : sum + i.size), 0)
-			: 0
+		let runningTotal =
+			host.totalMaxSize > 0 ? this.items.reduce((sum, i) => (i.status === "error" ? sum : sum + i.size), 0) : 0
 
 		const accepted: InputFileItem[] = []
 		for (const file of incoming) {
@@ -267,10 +267,7 @@ export class UploadQueue {
 		}
 	}
 
-	private async uploadInChunks(
-		item: InputFileItem,
-		signal: AbortSignal
-	): Promise<FileUploadResult | undefined> {
+	private async uploadInChunks(item: InputFileItem, signal: AbortSignal): Promise<FileUploadResult | undefined> {
 		const host = this.host
 		if (!item.file || !host.uploadCallback || !host.chunkSize) return
 		const file = item.file
@@ -313,9 +310,7 @@ export class UploadQueue {
 			}
 		}
 		await Promise.all(Array.from({length: Math.max(1, this.host.concurrency)}, worker))
-		const allDone = this.items.every(
-			(i) => i.status !== "pending" && i.status !== "uploading"
-		)
+		const allDone = this.items.every((i) => i.status !== "pending" && i.status !== "uploading")
 		if (allDone) this.host.onUploadComplete?.({files: this.items})
 	}
 

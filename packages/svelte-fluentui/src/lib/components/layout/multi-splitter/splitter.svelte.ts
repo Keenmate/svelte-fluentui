@@ -38,7 +38,9 @@ export type SplitterOptions = {
 class PaneHandleImpl implements PaneHandle {
 	id: number
 	state = $state({isMin: false})
-	constructor(id: number) { this.id = id }
+	constructor(id: number) {
+		this.id = id
+	}
 }
 
 // Per-handle non-reactive working state. Hot drag loop reads from here.
@@ -72,24 +74,36 @@ export class MultiSplitterEngine {
 		this.drag = new GutterDrag(this)
 	}
 
-	get isVertical(): boolean { return this.opts.orientation === "vertical" }
-	get clientAxis(): "clientHeight" | "clientWidth" { return this.isVertical ? "clientHeight" : "clientWidth" }
-	get clientCoord(): "clientX" | "clientY" { return this.isVertical ? "clientY" : "clientX" }
+	get isVertical(): boolean {
+		return this.opts.orientation === "vertical"
+	}
+	get clientAxis(): "clientHeight" | "clientWidth" {
+		return this.isVertical ? "clientHeight" : "clientWidth"
+	}
+	get clientCoord(): "clientX" | "clientY" {
+		return this.isVertical ? "clientY" : "clientX"
+	}
 
 	log(...args: unknown[]) {
 		if (!this.opts.debug) return
 		console.log("[multi-splitter:" + (this.opts.persistKey || this.opts.id || "anon") + "]", ...args)
 	}
 
-	internal(i: number): PaneInternal { return this.internals.get(this.panes[i])! }
-	sizedPanes(): PaneInternal[] { return this.panes.map(h => this.internals.get(h)!) }
-	isMinFlags(): boolean[] { return this.panes.map(h => h.state.isMin) }
+	internal(i: number): PaneInternal {
+		return this.internals.get(this.panes[i])!
+	}
+	sizedPanes(): PaneInternal[] {
+		return this.panes.map((h) => this.internals.get(h)!)
+	}
+	isMinFlags(): boolean[] {
+		return this.panes.map((h) => h.state.isMin)
+	}
 
 	writeStorage() {
 		if (!this.opts.persistKey) return
 		writeSplitterState(this.opts.persistKey, {
-			sizes: this.panes.map(h => this.internals.get(h)!.size),
-			lasts: this.panes.map(h => this.internals.get(h)!.lastNonZero),
+			sizes: this.panes.map((h) => this.internals.get(h)!.size),
+			lasts: this.panes.map((h) => this.internals.get(h)!.lastNonZero),
 			minimized: this.isMinFlags()
 		})
 	}
@@ -127,7 +141,7 @@ export class MultiSplitterEngine {
 		// Flex `gap` lands between every adjacent child. Panes + gutters
 		// alternate, so 2(N-1) boundaries.
 		const gapCount = 2 * (N - 1)
-		return this.rootEl[this.clientAxis] - this.paddingPx() - this.gutterTotal() - (gapCount * this.gapPx())
+		return this.rootEl[this.clientAxis] - this.paddingPx() - this.gutterTotal() - gapCount * this.gapPx()
 	}
 
 	private resolveConstraints(): number {
@@ -206,8 +220,11 @@ export class MultiSplitterEngine {
 	}
 
 	primaryNeighbour(g: number): number {
-		return primaryNeighbour(g, this.panes.length,
-			() => !!this.rootEl && getComputedStyle(this.rootEl).direction === "rtl")
+		return primaryNeighbour(
+			g,
+			this.panes.length,
+			() => !!this.rootEl && getComputedStyle(this.rootEl).direction === "rtl"
+		)
 	}
 
 	// ---------- Gutter / pane interaction ----------
@@ -218,22 +235,31 @@ export class MultiSplitterEngine {
 		switch (e.key) {
 			case "ArrowLeft":
 			case "ArrowUp":
-				this.shiftPrimary(g, -step); e.preventDefault(); break
+				this.shiftPrimary(g, -step)
+				e.preventDefault()
+				break
 			case "ArrowRight":
 			case "ArrowDown":
-				this.shiftPrimary(g, step); e.preventDefault(); break
+				this.shiftPrimary(g, step)
+				e.preventDefault()
+				break
 			case "Home": {
 				const p = this.primaryNeighbour(g)
-				this.setPrimaryTo(g, this.internal(p).min); e.preventDefault(); break
+				this.setPrimaryTo(g, this.internal(p).min)
+				e.preventDefault()
+				break
 			}
 			case "End": {
 				const p = this.primaryNeighbour(g)
-				this.setPrimaryTo(g, this.internal(p).max); e.preventDefault(); break
+				this.setPrimaryTo(g, this.internal(p).max)
+				e.preventDefault()
+				break
 			}
 			case "Enter":
 			case " ": {
 				this.toggleAdjacent(g)
-				e.preventDefault(); break
+				e.preventDefault()
+				break
 			}
 		}
 	}
@@ -268,7 +294,7 @@ export class MultiSplitterEngine {
 		const primary = this.primaryNeighbour(g)
 		const primaryHandle = this.panes[primary]
 		if (primaryHandle.state.isMin) return
-		const sign = (primary === g) ? 1 : -1
+		const sign = primary === g ? 1 : -1
 		this.setPrimaryTo(g, this.internals.get(primaryHandle)!.size + sign * gutterDelta)
 	}
 
@@ -362,7 +388,7 @@ export class MultiSplitterEngine {
 		let sum = 0
 		for (const h of this.panes) sum += this.internals.get(h)!.min
 		const gapCount = 2 * (this.panes.length - 1)
-		return sum + this.gutterTotal() + (gapCount * this.gapPx()) + this.paddingPx()
+		return sum + this.gutterTotal() + gapCount * this.gapPx() + this.paddingPx()
 	}
 
 	private shouldBeAccordion(): boolean {
@@ -381,11 +407,17 @@ export class MultiSplitterEngine {
 		// Keep priority: non-minimizable > first currently-expanded minimizable > pane 0.
 		let keepIdx = -1
 		for (let i = 0; i < panes.length; i++) {
-			if (!this.internal(i).canMin) { keepIdx = i; break }
+			if (!this.internal(i).canMin) {
+				keepIdx = i
+				break
+			}
 		}
 		if (keepIdx === -1) {
 			for (let i = 0; i < panes.length; i++) {
-				if (this.internal(i).canMin && !panes[i].state.isMin) { keepIdx = i; break }
+				if (this.internal(i).canMin && !panes[i].state.isMin) {
+					keepIdx = i
+					break
+				}
 			}
 		}
 		if (keepIdx === -1) keepIdx = 0
@@ -420,7 +452,9 @@ export class MultiSplitterEngine {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this
 		return {
-			get orientation() { return self.opts.orientation },
+			get orientation() {
+				return self.opts.orientation
+			},
 			registerPane: (opts: PaneRegistration): PaneHandle => {
 				const handle = new PaneHandleImpl(this.nextHandleId++)
 				this.internals.set(handle, {
@@ -443,7 +477,7 @@ export class MultiSplitterEngine {
 			},
 			unregisterPane: (handle: PaneHandle) => {
 				this.internals.delete(handle)
-				this.panes = this.panes.filter(p => p !== handle)
+				this.panes = this.panes.filter((p) => p !== handle)
 			},
 			indexOf: (handle: PaneHandle): number => this.panes.indexOf(handle),
 			isLast: (handle: PaneHandle): boolean => this.panes.length > 0 && this.panes[this.panes.length - 1] === handle,
@@ -536,7 +570,11 @@ export class MultiSplitterEngine {
 
 		// "At least one expanded pane" invariant.
 		let allMin = true
-		for (let sm = 0; sm < N; sm++) if (!startupMinimized[sm]) { allMin = false; break }
+		for (let sm = 0; sm < N; sm++)
+			if (!startupMinimized[sm]) {
+				allMin = false
+				break
+			}
 		if (allMin) startupMinimized[0] = false
 
 		for (let m = 0; m < N; m++) {
@@ -565,10 +603,13 @@ export class MultiSplitterEngine {
 			// Find which pane owns this toggle.
 			let paneEl: HTMLElement | null = null
 			for (const h of this.panes) {
-				if (this.internals.get(h)!.el.contains(toggle)) { paneEl = this.internals.get(h)!.el; break }
+				if (this.internals.get(h)!.el.contains(toggle)) {
+					paneEl = this.internals.get(h)!.el
+					break
+				}
 			}
 			if (!paneEl) return
-			const idx = this.panes.findIndex(h => this.internals.get(h)!.el === paneEl)
+			const idx = this.panes.findIndex((h) => this.internals.get(h)!.el === paneEl)
 			if (idx < 0 || !this.internal(idx).canMin) return
 			e.preventDefault()
 			e.stopPropagation()
@@ -589,7 +630,10 @@ export class MultiSplitterEngine {
 			// running clampToConstraints/scale against total=0 would zero
 			// every flex-basis and the user would lose their layout on the
 			// next reveal.
-			if (total <= 0) { lastTotal = total; return }
+			if (total <= 0) {
+				lastTotal = total
+				return
+			}
 			// Deferred init: container was hidden at mount time, now we
 			// finally have a real box to size against.
 			if (!this.initApplied) {

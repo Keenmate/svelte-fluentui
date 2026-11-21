@@ -20,43 +20,43 @@ Wrapper for `<fluent-checkbox>` with a clickable value label, optional three-sta
 
 	type OwnProps = {
 		/** Checked state; `null` is indeterminate. Bindable. Defaults to `false`. */
-		checked?: boolean | null;
+		checked?: boolean | null
 		/** Clicks also cycle through an indeterminate state (`checked = null`). */
-		threeState?: boolean;
+		threeState?: boolean
 		/** Click order in three-state mode: `"checked-first"` (unchecked → checked → indeterminate, default) or `"indeterminate-first"` (unchecked → indeterminate → checked, Blazor order). */
-		threeStateOrder?: "checked-first" | "indeterminate-first";
+		threeStateOrder?: "checked-first" | "indeterminate-first"
 		/** Focus on page load (`autofocus` attribute). */
-		autofocus?: boolean;
+		autofocus?: boolean
 		/** Label content (rendered after `label` / `labelTemplate`). */
-		children?: Snippet;
+		children?: Snippet
 		/** Disable the checkbox (`disabled` attribute). */
-		disabled?: boolean;
+		disabled?: boolean
 		/** Show the state but block changes (`readonly` attribute). */
-		readonly?: boolean;
+		readonly?: boolean
 		/** Mark as required for form validation (`required` attribute). */
-		required?: boolean;
+		required?: boolean
 		/** Id of `<fluent-checkbox>` (the label's `for`). Generated when omitted. */
-		id?: string;
+		id?: string
 		/** Form field name (`name` attribute). */
-		name?: string;
+		name?: string
 		/** Text label; also the default `aria-label`. */
-		label?: string;
+		label?: string
 		/** Rich label content. */
-		labelTemplate?: Snippet;
+		labelTemplate?: Snippet
 		/** Where the label sits relative to the box. Default: `"end"`. */
-		labelPosition?: "top" | "start" | "end";
+		labelPosition?: "top" | "start" | "end"
 		/** Accessible name (`aria-label`); overrides `label`. */
-		ariaLabel?: string;
+		ariaLabel?: string
 		/** Extra classes for `<fluent-checkbox>`. */
-		class?: string;
+		class?: string
 		/** Inline style for `<fluent-checkbox>`. */
-		style?: string;
+		style?: string
 		/** Status text (string or snippet) shown after the control while checked. Mirrors Switch's `checkedMessage`. */
-		checkedMessage?: string | Snippet;
+		checkedMessage?: string | Snippet
 		/** Status text shown while unchecked. */
-		uncheckedMessage?: string | Snippet;
+		uncheckedMessage?: string | Snippet
 		/** Status text shown while indeterminate (`checked === null`, only reachable with `threeState`). */
-		indeterminateMessage?: string | Snippet;
+		indeterminateMessage?: string | Snippet
 		/** Fires when the user changes the state; `null` is indeterminate. */
 		onChange?: (ctx: {checked: boolean | null}) => void
 		/** Native `click` event, forwarded untouched. */
@@ -103,9 +103,7 @@ Wrapper for `<fluent-checkbox>` with a clickable value label, optional three-sta
 	// wrapper's flex direction changes per labelPosition.
 
 	const currentMessage = $derived(
-		checked === true ? checkedMessage
-			: checked === false ? uncheckedMessage
-			: indeterminateMessage
+		checked === true ? checkedMessage : checked === false ? uncheckedMessage : indeterminateMessage
 	)
 	const isCurrentMessageSnippet = $derived(typeof currentMessage === "function")
 
@@ -201,11 +199,11 @@ Wrapper for `<fluent-checkbox>` with a clickable value label, optional three-sta
 	<fluent-checkbox
 		bind:this={element}
 		{...rest}
-		{...(checked === true ? { checked: true } : {})}
-		{...(checked === null ? { indeterminate: true } : {})}
+		{...checked === true ? {checked: true} : {}}
+		{...checked === null ? {indeterminate: true} : {}}
 		{...attrs({autofocus, readonly, disabled, required, name, class: className, style})}
 		id={effectiveId}
-		{...(ariaLabel || label ? { "aria-label": ariaLabel || label } : {})}
+		{...ariaLabel || label ? {"aria-label": ariaLabel || label} : {}}
 		onclick={handleOnClick}
 	></fluent-checkbox>
 

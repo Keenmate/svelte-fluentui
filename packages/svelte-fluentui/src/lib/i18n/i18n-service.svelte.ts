@@ -84,7 +84,13 @@ function createI18nService() {
 		 * ```
 		 */
 		init(options: I18nInitOptions = {}): void {
-			const {locale: requestedLocale, fallbackLocale: requestedFallback = "en", languages: available, translations = {}, loadTranslations} = options
+			const {
+				locale: requestedLocale,
+				fallbackLocale: requestedFallback = "en",
+				languages: available,
+				translations = {},
+				loadTranslations
+			} = options
 
 			fallbackLocale = requestedFallback
 			if (available) languages = available.map(normalizeLanguage)
@@ -106,7 +112,9 @@ function createI18nService() {
 				return
 			}
 			if (!loadTranslationsFn) {
-				console.warn(`[svelte-fluentui i18n] Locale "${code}" is not loaded and no loader is set. Missing keys fall back to "${fallbackLocale}".`)
+				console.warn(
+					`[svelte-fluentui i18n] Locale "${code}" is not loaded and no loader is set. Missing keys fall back to "${fallbackLocale}".`
+				)
 				locale.set(code)
 				return
 			}

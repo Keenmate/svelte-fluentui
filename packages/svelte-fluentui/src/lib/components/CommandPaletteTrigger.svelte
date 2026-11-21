@@ -47,7 +47,10 @@ Search-field-styled button that opens a `CommandPalette`; shows a placeholder an
 
 {#snippet searchIcon()}
 	<svg class="cp-trigger-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-		<path d="M7 1.75a5.25 5.25 0 1 0 3.215 9.4l3.067 3.068a.75.75 0 1 0 1.061-1.061l-3.066-3.066A5.25 5.25 0 0 0 7 1.75zM3.25 7a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0z" fill="currentColor"/>
+		<path
+			d="M7 1.75a5.25 5.25 0 1 0 3.215 9.4l3.067 3.068a.75.75 0 1 0 1.061-1.061l-3.066-3.066A5.25 5.25 0 0 0 7 1.75zM3.25 7a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0z"
+			fill="currentColor"
+		/>
 	</svg>
 {/snippet}
 

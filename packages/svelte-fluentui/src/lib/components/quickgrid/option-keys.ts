@@ -16,10 +16,18 @@ export class OptionKeys {
 		if (value === null || value === undefined) return EMPTY_KEY
 		let key: string
 		switch (typeof value) {
-			case "string": key = `s:${value}`; break
-			case "number": key = `n:${value}`; break
-			case "boolean": key = `b:${value}`; break
-			case "bigint": key = `i:${value}`; break
+			case "string":
+				key = `s:${value}`
+				break
+			case "number":
+				key = `n:${value}`
+				break
+			case "boolean":
+				key = `b:${value}`
+				break
+			case "bigint":
+				key = `i:${value}`
+				break
 			default: {
 				const known = this.#objectKeys.get(value)
 				key = known ?? `o:${this.#objectKeys.size}`

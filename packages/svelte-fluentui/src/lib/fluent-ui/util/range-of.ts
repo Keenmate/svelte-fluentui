@@ -5,7 +5,7 @@
 export class RangeOf<T> {
 	// Start and End values
 	public start: T | null = null
-	public end: T | null   = null
+	public end: T | null = null
 	/**
 	 * Compares two values and should return negative value if right is bigger or positive if left is bigger
 	 * @protected
@@ -13,14 +13,14 @@ export class RangeOf<T> {
 	protected compare!: (left: T, right: T) => number
 
 	// Default constructor
-	constructor();
+	constructor()
 
 	// Constructor with start and end values
-	constructor(start: T | null, end: T | null);
+	constructor(start: T | null, end: T | null)
 	constructor(start?: T | null, end?: T | null) {
 		if (start !== undefined && end !== undefined) {
 			this.start = start
-			this.end   = end
+			this.end = end
 		}
 	}
 
@@ -42,7 +42,7 @@ export class RangeOf<T> {
 	// Clear the range (set start and end to null)
 	public clear(): void {
 		this.start = null
-		this.end   = null
+		this.end = null
 	}
 
 	// Check if the range includes a value
@@ -54,8 +54,7 @@ export class RangeOf<T> {
 			return false
 		}
 
-		return !(min !== null && this.compare(value, min) < 0) &&
-			!(max !== null && this.compare(value, max) > 0)
+		return !(min !== null && this.compare(value, min) < 0) && !(max !== null && this.compare(value, max) > 0)
 	}
 
 	// Get all values between start and end using the provided function

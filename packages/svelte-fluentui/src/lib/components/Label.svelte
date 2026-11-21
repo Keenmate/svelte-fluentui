@@ -66,7 +66,7 @@ Lightweight tag-style indicator: tinted fill + coloured border in one of six sem
 </script>
 
 <!-- With `onclick` the label becomes role="button" + tab stop + Enter / Space (buttonLike). -->
-<span {...buttonLike(!!onclick)} {...rest} class={classes} style={style || null} onclick={onclick}>
+<span {...buttonLike(!!onclick)} {...rest} class={classes} style={style || null} {onclick}>
 	{#if icon}<span class="fluent-label-icon">{@render icon()}</span>{/if}
 	{@render children?.()}
 </span>
@@ -85,7 +85,10 @@ Lightweight tag-style indicator: tinted fill + coloured border in one of six sem
 		border-radius: var(--control-corner-radius, 4px);
 		border: 1px solid transparent;
 		text-decoration: none;
-		transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
+		transition:
+			background-color 100ms ease,
+			color 100ms ease,
+			border-color 100ms ease;
 	}
 
 	.fluent-label-icon {

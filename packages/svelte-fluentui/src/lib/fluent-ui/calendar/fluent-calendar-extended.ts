@@ -1,5 +1,5 @@
 export type WeekInfo = {
-	firstDay: number,
+	firstDay: number
 	weekend: number[]
 }
 
@@ -15,9 +15,8 @@ export class CalendarExtended {
 			firstDay: 1,
 			weekend: [6, 0]
 		}
-		this.weekInfo = firstDayOfWeek !== undefined && firstDayOfWeek !== null
-			? {...baseInfo, firstDay: firstDayOfWeek}
-			: baseInfo
+		this.weekInfo =
+			firstDayOfWeek !== undefined && firstDayOfWeek !== null ? {...baseInfo, firstDay: firstDayOfWeek} : baseInfo
 		this.date = currentDate
 	}
 
@@ -38,7 +37,7 @@ export class CalendarExtended {
 		if (!maxLimit) {
 			const monthWeek = this.addDays(monthFirst, weekNumber * 7)
 			const weekFirst = this.startOfWeek(monthWeek)
-			const res = Array.from({ length: 7 }, (_, i) => this.addDays(weekFirst, i))
+			const res = Array.from({length: 7}, (_, i) => this.addDays(weekFirst, i))
 			return res
 		}
 
@@ -50,29 +49,29 @@ export class CalendarExtended {
 	}
 
 	getMonthNameFromDate(date: Date): string {
-		return this.toTitleCase(date.toLocaleString(this.culture.toString(), { month: "long" }))
+		return this.toTitleCase(date.toLocaleString(this.culture.toString(), {month: "long"}))
 	}
 
-	getMonthNames(): { index: number; abbreviated: string; name: string }[] {
-		const names: { index: number; abbreviated: string; name: string }[] = []
+	getMonthNames(): {index: number; abbreviated: string; name: string}[] {
+		const names: {index: number; abbreviated: string; name: string}[] = []
 		for (let i = 0; i < 12; i++) {
 			const dt = new Date(this.date.getFullYear(), i, 1)
 			names.push({
 				index: i,
-				abbreviated: this.toTitleCase(dt.toLocaleString(this.culture.toString(), { month: "short" })),
-				name: this.toTitleCase(dt.toLocaleString(this.culture.toString(), { month: "long" })),
+				abbreviated: this.toTitleCase(dt.toLocaleString(this.culture.toString(), {month: "short"})),
+				name: this.toTitleCase(dt.toLocaleString(this.culture.toString(), {month: "long"}))
 			})
 		}
 		return names
 	}
 
-	getYearsRange(): { index: number; year: number }[] {
-		const result: { index: number; year: number }[] = []
+	getYearsRange(): {index: number; year: number}[] {
+		const result: {index: number; year: number}[] = []
 		const currentYear = this.date.getFullYear()
 		const maxYear = 9999 // Mimic .NET max year
 		const count = Math.min(12, maxYear - currentYear + 1)
 		for (let i = 0; i < count; i++) {
-			result.push({ index: i, year: currentYear + i })
+			result.push({index: i, year: currentYear + i})
 		}
 		return result
 	}
@@ -95,18 +94,18 @@ export class CalendarExtended {
 		return min === max ? `${min}` : `${min} - ${max}`
 	}
 
-	getDayNames(): { abbreviated: string; shorted: string; name: string }[] {
-		const df = new Intl.DateTimeFormat(this.culture.toString(), { weekday: "long" })
-		const shortDf = new Intl.DateTimeFormat(this.culture.toString(), { weekday: "short" })
+	getDayNames(): {abbreviated: string; shorted: string; name: string}[] {
+		const df = new Intl.DateTimeFormat(this.culture.toString(), {weekday: "long"})
+		const shortDf = new Intl.DateTimeFormat(this.culture.toString(), {weekday: "short"})
 
 		const baseDate = new Date(Date.UTC(2021, 7, 1)) // arbitrary Sunday
-		const names = Array.from({ length: 7 }, (_, i) => {
+		const names = Array.from({length: 7}, (_, i) => {
 			const date = new Date(baseDate)
 			date.setUTCDate(date.getUTCDate() + i)
 			return {
 				name: this.toTitleCase(df.format(date)),
 				shorted: shortDf.format(date).slice(0, 2),
-				abbreviated: this.toTitleCase(shortDf.format(date)),
+				abbreviated: this.toTitleCase(shortDf.format(date))
 			}
 		})
 

@@ -10,16 +10,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 	import type {Snippet} from "svelte"
 	import {onMount, onDestroy, untrack} from "svelte"
 	import {portal} from "../actions/portal.js"
-	import {
-		computePosition,
-		flip,
-		shift,
-		offset,
-		arrow,
-		hide,
-		autoUpdate,
-		type Placement
-	} from "@floating-ui/dom"
+	import {computePosition, flip, shift, offset, arrow, hide, autoUpdate, type Placement} from "@floating-ui/dom"
 	import type {RestProps} from "../types/index.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 
@@ -103,7 +94,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 		const tokens = (anchorEl.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean)
 		if (!tokens.includes(id)) anchorEl.setAttribute("aria-describedby", [...tokens, id].join(" "))
 		return () => {
-			const remaining = (anchorEl.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(t => t && t !== id)
+			const remaining = (anchorEl.getAttribute("aria-describedby") ?? "").split(/\s+/).filter((t) => t && t !== id)
 			if (remaining.length) anchorEl.setAttribute("aria-describedby", remaining.join(" "))
 			else anchorEl.removeAttribute("aria-describedby")
 		}
@@ -130,12 +121,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 		const anchorEl = getAnchorElement()
 		if (!anchorEl || !tooltipElement) return
 
-		const middleware = [
-			offset(GAP),
-			flip(),
-			shift({padding: 8}),
-			hide()
-		]
+		const middleware = [offset(GAP), flip(), shift({padding: 8}), hide()]
 		if (arrowElement) {
 			middleware.push(arrow({element: arrowElement, padding: 4}))
 		}
@@ -301,7 +287,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 		class:visible={shouldShow && !referenceHidden}
 		class:has-max-width={maxWidth}
 		style:max-width={maxWidth}
-		style={style}
+		{style}
 		role="tooltip"
 		onmouseenter={handleTooltipMouseEnter}
 		onmouseleave={handleTooltipMouseLeave}
@@ -330,11 +316,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 		font-size: var(--type-ramp-base-font-size, 14px);
 		line-height: var(--type-ramp-base-line-height, 20px);
 		white-space: nowrap;
-		box-shadow: var(
-			--elevation-shadow-tooltip,
-			0 0 2px rgba(0, 0, 0, 0.12),
-			0 8px 16px rgba(0, 0, 0, 0.14)
-		);
+		box-shadow: var(--elevation-shadow-tooltip, 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14));
 		pointer-events: auto;
 		opacity: 0;
 		transform: scale(0.95);

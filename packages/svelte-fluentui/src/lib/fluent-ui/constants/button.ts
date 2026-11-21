@@ -1,7 +1,7 @@
 export enum ButtonAppearance {
-	accent      = "accent",
+	accent = "accent",
 	lightweight = "lightweight",
-	neutral     = "neutral",
-	outline     = "outline",
-	stealth     = "stealth",
+	neutral = "neutral",
+	outline = "outline",
+	stealth = "stealth"
 }

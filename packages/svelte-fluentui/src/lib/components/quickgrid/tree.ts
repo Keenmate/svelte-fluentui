@@ -92,7 +92,9 @@ export function getTreeRowInfo<T>(item: T, fields: TreeFields<T>, rowPaths: Set<
 	}
 	const parentPath = fields.parentMember
 		? trimSeparator(String(item[fields.parentMember] ?? ""), sep)
-		: path ? parentPathOf(path, sep) : ""
+		: path
+			? parentPathOf(path, sep)
+			: ""
 	let parent = parentPath
 	while (parent && !rowPaths.has(parent)) parent = parentPathOf(parent, sep)
 	return {path, segments, level, parentPath, parent}

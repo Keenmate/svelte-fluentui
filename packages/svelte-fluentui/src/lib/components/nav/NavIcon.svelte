@@ -14,11 +14,7 @@ Fixed-width icon slot inside a nav link.
 	/** Other native attributes and events go to the root `<span>`. */
 	type Props = OwnProps & RestProps<OwnProps>
 
-	let {
-		children = undefined,
-		class: className = undefined,
-		...rest
-	    }: Props = $props()
+	let {children = undefined, class: className = undefined, ...rest}: Props = $props()
 </script>
 
 <span {...rest} class={["fluent-nav-icon", className]}>

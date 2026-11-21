@@ -171,7 +171,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 	// Each column is a radio group: one tab stop (the selected value, else the first
 	// enabled one); ArrowUp / ArrowDown / Home / End move and select.
 	function columnTabIndex<T>(values: readonly T[], selected: T, isDisabled: (v: T) => boolean, v: T): 0 | -1 {
-		const stop = values.includes(selected) && !isDisabled(selected) ? selected : values.find(x => !isDisabled(x))
+		const stop = values.includes(selected) && !isDisabled(selected) ? selected : values.find((x) => !isDisabled(x))
 		return v === stop ? 0 : -1
 	}
 
@@ -182,11 +182,20 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		if (i < 0) return
 		let n: number
 		switch (event.key) {
-			case "ArrowDown": n = Math.min(i + 1, buttons.length - 1); break
-			case "ArrowUp": n = Math.max(i - 1, 0); break
-			case "Home": n = 0; break
-			case "End": n = buttons.length - 1; break
-			default: return
+			case "ArrowDown":
+				n = Math.min(i + 1, buttons.length - 1)
+				break
+			case "ArrowUp":
+				n = Math.max(i - 1, 0)
+				break
+			case "Home":
+				n = 0
+				break
+			case "End":
+				n = buttons.length - 1
+				break
+			default:
+				return
 		}
 		event.preventDefault()
 		buttons[n].click()
@@ -281,7 +290,10 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		if (!isOpen) return
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
 		const popLayer = pushLayer({onEscape: () => setOpen(false)})
-		const undismiss = dismissOnOutside(() => [wrapperElement, popupElement], () => setOpen(false))
+		const undismiss = dismissOnOutside(
+			() => [wrapperElement, popupElement],
+			() => setOpen(false)
+		)
 		return () => {
 			undismiss()
 			popLayer()
@@ -463,13 +475,19 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 	})
 </script>
 
-<div {...rest} class="fluent-timepicker {className}" style={style}>
+<div {...rest} class="fluent-timepicker {className}" {style}>
 	<FieldLabel for={id} {label} {labelTemplate} {required} />
 
 	<!-- Mouse convenience (a press anywhere on the field opens); keyboard users get
 	     ArrowDown on the input and the clock button. -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="timepicker-wrapper fluent-field-clear-host" bind:this={wrapperElement} onclick={handleWrapperClick} onkeydown={handleWrapperKeydown} style:cursor={openOnInputClick && !disabled && !readonly ? "pointer" : undefined}>
+	<div
+		class="timepicker-wrapper fluent-field-clear-host"
+		bind:this={wrapperElement}
+		onclick={handleWrapperClick}
+		onkeydown={handleWrapperKeydown}
+		style:cursor={openOnInputClick && !disabled && !readonly ? "pointer" : undefined}
+	>
 		<TextField
 			{id}
 			value={displayValue}
@@ -484,60 +502,72 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		>
 			{#snippet end()}
 				<span class="end-buttons">
-				<!-- Clear (×): out of the Tab order (Delete / Backspace on the field clears) and
+					<!-- Clear (×): out of the Tab order (Delete / Backspace on the field clears) and
 				     doesn't take focus; shown while the field is hovered or focused. -->
-				{#if showClear && value && !disabled && !readonly}
+					{#if showClear && value && !disabled && !readonly}
+						<button
+							type="button"
+							class="clear-button fluent-field-clear"
+							tabindex="-1"
+							onpointerdown={(e) => e.preventDefault()}
+							onclick={handleClearClick}
+							aria-label={t("clearAriaLabel")}
+							title={t("clearTooltip")}
+						>
+							<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+								<path
+									d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"
+								/>
+							</svg>
+						</button>
+					{/if}
+					<!-- Clock icon -->
 					<button
+						bind:this={clockButton}
 						type="button"
-						class="clear-button fluent-field-clear"
-						tabindex="-1"
-						onpointerdown={(e) => e.preventDefault()}
-						onclick={handleClearClick}
-						aria-label={t("clearAriaLabel")}
-						title={t("clearTooltip")}
+						class="clock-button"
+						onclick={handleClockButtonClick}
+						{disabled}
+						aria-label={t("openPopupAriaLabel")}
+						aria-haspopup="dialog"
+						aria-expanded={isOpen ? "true" : "false"}
+						aria-controls={isOpen ? popupId : null}
 					>
-						<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-							<path d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"/>
+						<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+							<path
+								d="M10 2a8 8 0 110 16 8 8 0 010-16zm0 1a7 7 0 100 14 7 7 0 000-14zm.5 2a.5.5 0 01.5.5V10h3a.5.5 0 010 1h-3.5a.5.5 0 01-.5-.5v-5a.5.5 0 01.5-.5z"
+							/>
 						</svg>
 					</button>
-				{/if}
-				<!-- Clock icon -->
-				<button
-					bind:this={clockButton}
-					type="button"
-					class="clock-button"
-					onclick={handleClockButtonClick}
-					disabled={disabled}
-					aria-label={t("openPopupAriaLabel")}
-					aria-haspopup="dialog"
-					aria-expanded={isOpen ? "true" : "false"}
-					aria-controls={isOpen ? popupId : null}
-				>
-					<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-						<path d="M10 2a8 8 0 110 16 8 8 0 010-16zm0 1a7 7 0 100 14 7 7 0 000-14zm.5 2a.5.5 0 01.5.5V10h3a.5.5 0 010 1h-3.5a.5.5 0 01-.5-.5v-5a.5.5 0 01.5-.5z"/>
-					</svg>
-				</button>
-
 				</span>
 			{/snippet}
 		</TextField>
 
 		{#if isOpen && wrapperElement}
-			<PositioningRegion
-				anchor={wrapperElement}
-				visible={isOpen}
-				matchWidth={false}
-				style="min-width: 280px;"
-			>
+			<PositioningRegion anchor={wrapperElement} visible={isOpen} matchWidth={false} style="min-width: 280px;">
 				<!-- The click handler only stops propagation (keeps the field's open-on-click
 				     from re-firing); it is not an interaction. -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<div class="time-picker-panel fluent-popup-surface fluent-popup--layer" bind:this={popupElement} id={popupId} role="dialog" tabindex="-1" aria-label={t("popupAriaLabel")} onclick={handlePopupClick}>
+				<div
+					class="time-picker-panel fluent-popup-surface fluent-popup--layer"
+					bind:this={popupElement}
+					id={popupId}
+					role="dialog"
+					tabindex="-1"
+					aria-label={t("popupAriaLabel")}
+					onclick={handlePopupClick}
+				>
 					<div class="time-selectors">
 						<!-- Hour selector -->
 						<div class="time-column">
 							<div class="column-label" id="{popupId}-hour">{t("hour")}</div>
-							<div class="time-list" role="radiogroup" aria-labelledby="{popupId}-hour" tabindex="-1" onkeydown={handleColumnKeydown}>
+							<div
+								class="time-list"
+								role="radiogroup"
+								aria-labelledby="{popupId}-hour"
+								tabindex="-1"
+								onkeydown={handleColumnKeydown}
+							>
 								{#each hours as hour}
 									{@const hourDisabled = isHourCellDisabled(hour)}
 									<button
@@ -548,7 +578,9 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 										tabindex={columnTabIndex(hours, selectedHour, isHourCellDisabled, hour)}
 										class:selected={selectedHour === hour}
 										disabled={hourDisabled}
-										onclick={() => { if (!hourDisabled) selectedHour = hour }}
+										onclick={() => {
+											if (!hourDisabled) selectedHour = hour
+										}}
 									>
 										{hour.toString().padStart(2, "0")}
 									</button>
@@ -559,7 +591,13 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 						<!-- Minute selector -->
 						<div class="time-column">
 							<div class="column-label" id="{popupId}-minute">{t("minute")}</div>
-							<div class="time-list" role="radiogroup" aria-labelledby="{popupId}-minute" tabindex="-1" onkeydown={handleColumnKeydown}>
+							<div
+								class="time-list"
+								role="radiogroup"
+								aria-labelledby="{popupId}-minute"
+								tabindex="-1"
+								onkeydown={handleColumnKeydown}
+							>
 								{#each minutes as minute}
 									{@const minuteDisabled = isMinuteCellDisabled(minute)}
 									<button
@@ -570,7 +608,9 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 										tabindex={columnTabIndex(minutes, selectedMinute, isMinuteCellDisabled, minute)}
 										class:selected={selectedMinute === minute}
 										disabled={minuteDisabled}
-										onclick={() => { if (!minuteDisabled) selectedMinute = minute }}
+										onclick={() => {
+											if (!minuteDisabled) selectedMinute = minute
+										}}
 									>
 										{minute.toString().padStart(2, "0")}
 									</button>
@@ -582,7 +622,13 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 						{#if showSeconds}
 							<div class="time-column">
 								<div class="column-label" id="{popupId}-second">{t("second")}</div>
-								<div class="time-list" role="radiogroup" aria-labelledby="{popupId}-second" tabindex="-1" onkeydown={handleColumnKeydown}>
+								<div
+									class="time-list"
+									role="radiogroup"
+									aria-labelledby="{popupId}-second"
+									tabindex="-1"
+									onkeydown={handleColumnKeydown}
+								>
 									{#each seconds as second}
 										{@const secondDisabled = isSecondCellDisabled(second)}
 										<button
@@ -593,7 +639,9 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 											tabindex={columnTabIndex(seconds, selectedSecond, isSecondCellDisabled, second)}
 											class:selected={selectedSecond === second}
 											disabled={secondDisabled}
-											onclick={() => { if (!secondDisabled) selectedSecond = second }}
+											onclick={() => {
+												if (!secondDisabled) selectedSecond = second
+											}}
 										>
 											{second.toString().padStart(2, "0")}
 										</button>
@@ -608,7 +656,13 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 							{@const pmDisabled = isPeriodCellDisabled("PM")}
 							<div class="time-column period-column">
 								<div class="column-label" id="{popupId}-period">{t("period")}</div>
-								<div class="time-list" role="radiogroup" aria-labelledby="{popupId}-period" tabindex="-1" onkeydown={handleColumnKeydown}>
+								<div
+									class="time-list"
+									role="radiogroup"
+									aria-labelledby="{popupId}-period"
+									tabindex="-1"
+									onkeydown={handleColumnKeydown}
+								>
 									<button
 										type="button"
 										class="time-option"
@@ -617,7 +671,9 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 										tabindex={columnTabIndex(PERIODS, selectedPeriod, isPeriodCellDisabled, "AM")}
 										class:selected={selectedPeriod === "AM"}
 										disabled={amDisabled}
-										onclick={() => { if (!amDisabled) selectedPeriod = "AM" }}
+										onclick={() => {
+											if (!amDisabled) selectedPeriod = "AM"
+										}}
 									>
 										{t("am")}
 									</button>
@@ -629,7 +685,9 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 										tabindex={columnTabIndex(PERIODS, selectedPeriod, isPeriodCellDisabled, "PM")}
 										class:selected={selectedPeriod === "PM"}
 										disabled={pmDisabled}
-										onclick={() => { if (!pmDisabled) selectedPeriod = "PM" }}
+										onclick={() => {
+											if (!pmDisabled) selectedPeriod = "PM"
+										}}
 									>
 										{t("pm")}
 									</button>

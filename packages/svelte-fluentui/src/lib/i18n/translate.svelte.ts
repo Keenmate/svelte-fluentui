@@ -26,7 +26,10 @@ const formatter = fromStore(format)
  * // markup: aria-label={t("openPopupAriaLabel")}
  * ```
  */
-export function useTranslations<C extends string>(component: C, labels: () => ComponentLabels<C> | undefined): Translate<C> {
+export function useTranslations<C extends string>(
+	component: C,
+	labels: () => ComponentLabels<C> | undefined
+): Translate<C> {
 	return (key, values) => {
 		const own = labels()?.[key]
 		if (own != null) {

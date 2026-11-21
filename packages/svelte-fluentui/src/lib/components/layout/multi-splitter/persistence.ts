@@ -13,11 +13,16 @@ export function readSplitterState(persistKey: string | undefined): SavedSplitter
 		const parsed = JSON.parse(raw)
 		if (typeof parsed !== "object" || parsed === null || parsed.v !== 2) return null
 		return parsed
-	} catch { return null }
+	} catch {
+		return null
+	}
 }
 
 export function writeSplitterState(persistKey: string | undefined, state: Required<SavedSplitterState>) {
 	if (!persistKey) return
-	try { localStorage.setItem(STORAGE_PREFIX + persistKey, JSON.stringify({v: 2, ...state})) }
-	catch { /* quota/privacy mode */ }
+	try {
+		localStorage.setItem(STORAGE_PREFIX + persistKey, JSON.stringify({v: 2, ...state}))
+	} catch {
+		/* quota/privacy mode */
+	}
 }

@@ -13,7 +13,12 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	import {CalendarDay} from "../fluent-ui/calendar/calendar-day.js"
 	import {CalendarMonth} from "../fluent-ui/calendar/calendar-month.js"
 	import {CalendarYear} from "../fluent-ui/calendar/calendar-year.js"
-	import type {CalendarSelectMode, CalendarView, IFluentCalendar, CalendarSelectionError} from "../fluent-ui/calendar/fluent-calendar.js"
+	import type {
+		CalendarSelectMode,
+		CalendarView,
+		IFluentCalendar,
+		CalendarSelectionError
+	} from "../fluent-ui/calendar/fluent-calendar.js"
 	import {CalendarExtended} from "../fluent-ui/calendar/fluent-calendar-extended.js"
 	import type DayFormat from "../fluent-ui/calendar/day-format.js"
 	import {CalendarTitles} from "../fluent-ui/calendar/calendar-titles.js"
@@ -54,7 +59,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		/** Disabled dates stay clickable (rendered as disabled but selectable) instead of inactive. Default: `false`. */
 		disabledSelectable?: boolean
 		/** `"2-digit"` pads day numbers (`01`); unset shows `1`. */
-		dayFormat?: typeof DayFormat["TwoDigit"] | null
+		dayFormat?: (typeof DayFormat)["TwoDigit"] | null
 		/** Day-cell edge length; a number is px, a string any CSS length. Default: 28px. Resizes the whole grid proportionally. */
 		cellSize?: string | number
 		/** Gap between cells; a number is px, a string any CSS length. Default: 2px. */
@@ -91,49 +96,49 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		    value                           = $bindable(new Date()),
-		    selectedDates                   = $bindable([]),
-		    pickerMonth                     = $bindable(new Date()),
-		    view                            = "days",
-		    culture: cultureProp            = undefined,
-		    firstDayOfWeek                  = undefined,
-		    disabledCheckAllDaysOfMonthYear = undefined,
-		    animatePeriodChanges            = undefined,
-		    disabledSelectable              = undefined,
-		    readonly                        = undefined,
-		    disabled                        = undefined,
-		    selectMode                      = "single",
-		    checkIfSelectedValueHasChanged  = undefined,
-		    dayFormat                       = undefined,
-		    cellSize                        = undefined,
-		    gap                             = undefined,
-		    getIsDateDisabledCallback       = undefined,
-		    getIsDateSelectableCallback     = undefined,
-		    getDatesToHighlightCallback     = undefined,
-		    getDatesToSelectCallback        = undefined,
-		    maxSelectedDayCount               = undefined,
-		    onSelectionReject               = undefined,
-		    onChange                        = undefined,
-		    onPickerMonthChange             = undefined,
-		    onDayHover                      = undefined,
-		    day: daySnippet                 = undefined,
-		    labels: labelsProp              = undefined,
-		    class: className                = undefined,
-		    style                           = undefined,
-		    ...rest
-	    }: Props = $props()
+		value = $bindable(new Date()),
+		selectedDates = $bindable([]),
+		pickerMonth = $bindable(new Date()),
+		view = "days",
+		culture: cultureProp = undefined,
+		firstDayOfWeek = undefined,
+		disabledCheckAllDaysOfMonthYear = undefined,
+		animatePeriodChanges = undefined,
+		disabledSelectable = undefined,
+		readonly = undefined,
+		disabled = undefined,
+		selectMode = "single",
+		checkIfSelectedValueHasChanged = undefined,
+		dayFormat = undefined,
+		cellSize = undefined,
+		gap = undefined,
+		getIsDateDisabledCallback = undefined,
+		getIsDateSelectableCallback = undefined,
+		getDatesToHighlightCallback = undefined,
+		getDatesToSelectCallback = undefined,
+		maxSelectedDayCount = undefined,
+		onSelectionReject = undefined,
+		onChange = undefined,
+		onPickerMonthChange = undefined,
+		onDayHover = undefined,
+		day: daySnippet = undefined,
+		labels: labelsProp = undefined,
+		class: className = undefined,
+		style = undefined,
+		...rest
+	}: Props = $props()
 
 	const t = useTranslations("calendar", () => labelsProp)
 	const culture = $derived(cultureProp ?? defaultCulture())
 
-	let _rangeSelector                      = $state(new RangeOfDates())
-	let _rangeSelectorMouseOver             = $state(new RangeOfDates())
-	let _pickerView: OwnProps["view"] | null   = $state(null)
-	let _selectedDatesMouseOver: Date[]             = $state([])
+	let _rangeSelector = $state(new RangeOfDates())
+	let _rangeSelectorMouseOver = $state(new RangeOfDates())
+	let _pickerView: OwnProps["view"] | null = $state(null)
+	let _selectedDatesMouseOver: Date[] = $state([])
 	let _animationRunning: CalendarVerticalPosition = $state(CalendarVerticalPosition.Unset)
 
-	const canBeAnimated             = $derived(animatePeriodChanges ?? (view !== "days" && view !== "years"))
-	const calendarExtended          = $derived(new CalendarExtended(culture, pickerMonth, firstDayOfWeek ?? undefined))
+	const canBeAnimated = $derived(animatePeriodChanges ?? (view !== "days" && view !== "years"))
+	const calendarExtended = $derived(new CalendarExtended(culture, pickerMonth, firstDayOfWeek ?? undefined))
 	// Merge the disabled callback with the inverse of the selectable one so the existing logic stays simple.
 	const effectiveDisabledFunc = $derived<(date: Date) => boolean>((date) => {
 		if (getIsDateDisabledCallback?.({date})) return true
@@ -143,32 +148,34 @@ Inline month calendar with single, multiple or range selection and month/year pi
 	const calendar: IFluentCalendar = $derived({
 		view,
 		calendarExtended,
-		culture:                         culture,
+		culture: culture,
 		dayFormat,
 		// Default to true so a month/year is only marked disabled when EVERY day in it is.
 		// With false (Blazor parity), date-range restrictions like min/maxDate make Jan 1 of every
 		// year fail the disabled-date check, blocking the year picker entirely.
 		disabledCheckAllDaysOfMonthYear: disabledCheckAllDaysOfMonthYear ?? true,
-		disabledSelectable:              disabledSelectable ?? false,
+		disabledSelectable: disabledSelectable ?? false,
 		// Treat `disabled` as effectively-readonly for the title/month/year selection gates.
 		// The visual difference (opacity, not-allowed cursor) is layered via `aria-disabled` CSS.
-		readOnly:                        (disabled || readonly) ?? false,
+		readOnly: (disabled || readonly) ?? false,
 		selectMode,
-		value:                           value,
-		selectedDates:                   selectedDates,
+		value: value,
+		selectedDates: selectedDates,
 		allDaysAreDisabled,
-		disabledDateFunc:                effectiveDisabledFunc
+		disabledDateFunc: effectiveDisabledFunc
 	})
-	const titles                    = $derived(new CalendarTitles(calendar))
-	const multipleSelection         = $derived(getMultipleSelection())
-	const year                      = $derived(pickerMonth.getFullYear())
+	const titles = $derived(new CalendarTitles(calendar))
+	const multipleSelection = $derived(getMultipleSelection())
+	const year = $derived(pickerMonth.getFullYear())
 
 	// CSS variable overrides for cell size / gap. Accepts a number (interpreted as px) or any CSS length string.
 	const sizeStyle = $derived.by(() => {
 		const parts: string[] = []
 		if (cellSize !== undefined && cellSize !== null) {
 			const v = typeof cellSize === "number" ? `${cellSize}px` : cellSize
-			parts.push(`--fluent-calendar-day-cell-size: ${v}; --fluent-calendar-month-cell-size: ${v}; --fluent-calendar-year-cell-size: ${v}`)
+			parts.push(
+				`--fluent-calendar-day-cell-size: ${v}; --fluent-calendar-month-cell-size: ${v}; --fluent-calendar-year-cell-size: ${v}`
+			)
 		}
 		if (gap !== undefined && gap !== null) {
 			const v = typeof gap === "number" ? `${gap}px` : gap
@@ -183,24 +190,22 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		if (selectedDates == null || !selectedDates.length) {
 			return {
 				isMultiple: false,
-				min:        new Date(0),
-				max:        new Date(0),
+				min: new Date(0),
+				max: new Date(0),
 				inProgress
 			}
 		}
 
 		return {
 			isMultiple: (selectMode == "multiple" || selectMode == "range") && selectedDates.length > 1,
-			min:        selectedDates.reduce((acc, x) => !acc || x < acc ? x : acc),
-			max:        selectedDates.reduce((acc, x) => !acc || x > acc ? x : acc),
+			min: selectedDates.reduce((acc, x) => (!acc || x < acc ? x : acc)),
+			max: selectedDates.reduce((acc, x) => (!acc || x > acc ? x : acc)),
 			inProgress
 		}
 	}
 
 	function sameDay(a: Date, b: Date) {
-		return a.getFullYear() === b.getFullYear()
-			&& a.getMonth() === b.getMonth()
-			&& a.getDate() === b.getDate()
+		return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 	}
 
 	function dedupeDates(dates: Date[]) {
@@ -218,11 +223,11 @@ Inline month calendar with single, multiple or range selection and month/year pi
 
 	function fireMaxExceeded(attempted: Date[]) {
 		onSelectionReject?.({
-			code:      "max-selected-day-count-exceeded",
-			message:   t("maxSelectedDayCountExceeded", {max: maxSelectedDayCount as number}),
+			code: "max-selected-day-count-exceeded",
+			message: t("maxSelectedDayCountExceeded", {max: maxSelectedDayCount as number}),
 			attempted,
-			current:   selectedDates,
-			max:       maxSelectedDayCount as number
+			current: selectedDates,
+			max: maxSelectedDayCount as number
 		})
 		_selectedDatesMouseOver = []
 	}
@@ -318,12 +323,12 @@ Inline month calendar with single, multiple or range selection and month/year pi
 			// toggle pivot: if it's already in selectedDates, the entire group is
 			// removed; otherwise the group is unioned in.
 			case "multiple": {
-				const group     = getDatesToSelectCallback ? getDatesToSelectCallback({date: value_}) : [value_]
-				const isRemoving = selectedDates.some(d => sameDay(d, value_))
+				const group = getDatesToSelectCallback ? getDatesToSelectCallback({date: value_}) : [value_]
+				const isRemoving = selectedDates.some((d) => sameDay(d, value_))
 
 				let newSelectedDates: Date[]
 				if (isRemoving) {
-					newSelectedDates = selectedDates.filter(d => !group.some(g => sameDay(g, d)))
+					newSelectedDates = selectedDates.filter((d) => !group.some((g) => sameDay(g, d)))
 				} else {
 					newSelectedDates = dedupeDates([...selectedDates, ...group])
 				}
@@ -349,7 +354,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 						return
 					}
 					_rangeSelector.start = getSmallest(group)
-					_rangeSelector.end   = getLargest(group)
+					_rangeSelector.end = getLargest(group)
 					selectDates(group)
 					_selectedDatesMouseOver = []
 					break
@@ -370,7 +375,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 				// Start the selection
 				else {
 					_rangeSelector.start = value_
-					_rangeSelector.end   = null
+					_rangeSelector.end = null
 
 					await onSelectDayMouseOverAsync(value_, false)
 				}
@@ -379,9 +384,12 @@ Inline month calendar with single, multiple or range selection and month/year pi
 				// highlighted between the first and second click of a new range —
 				// otherwise the selection looks empty and they can't tell a new
 				// range has been started.
-				const newSelectedDates = _rangeSelector.end !== null
-					? _rangeSelector.getAllDates()
-					: (_rangeSelector.start ? [_rangeSelector.start] : [])
+				const newSelectedDates =
+					_rangeSelector.end !== null
+						? _rangeSelector.getAllDates()
+						: _rangeSelector.start
+							? [_rangeSelector.start]
+							: []
 
 				if (maxSelectedDayCount !== undefined && newSelectedDates.length > maxSelectedDayCount) {
 					fireMaxExceeded(newSelectedDates)
@@ -416,8 +424,8 @@ Inline month calendar with single, multiple or range selection and month/year pi
 
 		if (selectMode === "range" && _rangeSelector.start && !_rangeSelector.end) {
 			_rangeSelectorMouseOver.start = _rangeSelector.start
-			_rangeSelectorMouseOver.end   = value
-			_selectedDatesMouseOver       = _rangeSelectorMouseOver.getAllDates()
+			_rangeSelectorMouseOver.end = value
+			_selectedDatesMouseOver = _rangeSelectorMouseOver.getAllDates()
 			return
 		}
 
@@ -571,14 +579,30 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		}
 		let next: Date
 		switch (ev.key) {
-			case "ArrowLeft": next = addDays(isRtl(cell) ? 1 : -1); break
-			case "ArrowRight": next = addDays(isRtl(cell) ? -1 : 1); break
-			case "ArrowUp": next = addDays(-7); break
-			case "ArrowDown": next = addDays(7); break
-			case "Home": next = parseDayId(row[0].dataset.value!); break
-			case "End": next = parseDayId(row[row.length - 1].dataset.value!); break
-			case "PageUp": next = addMonths(ev.shiftKey ? -12 : -1); break
-			case "PageDown": next = addMonths(ev.shiftKey ? 12 : 1); break
+			case "ArrowLeft":
+				next = addDays(isRtl(cell) ? 1 : -1)
+				break
+			case "ArrowRight":
+				next = addDays(isRtl(cell) ? -1 : 1)
+				break
+			case "ArrowUp":
+				next = addDays(-7)
+				break
+			case "ArrowDown":
+				next = addDays(7)
+				break
+			case "Home":
+				next = parseDayId(row[0].dataset.value!)
+				break
+			case "End":
+				next = parseDayId(row[row.length - 1].dataset.value!)
+				break
+			case "PageUp":
+				next = addMonths(ev.shiftKey ? -12 : -1)
+				break
+			case "PageDown":
+				next = addMonths(ev.shiftKey ? 12 : 1)
+				break
 			case "Enter":
 			case " ":
 				ev.preventDefault()
@@ -608,13 +632,26 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		const columns = 4
 		let n: number
 		switch (ev.key) {
-			case "ArrowLeft": n = i + (isRtl(container) ? 1 : -1); break
-			case "ArrowRight": n = i + (isRtl(container) ? -1 : 1); break
-			case "ArrowUp": n = i - columns; break
-			case "ArrowDown": n = i + columns; break
-			case "Home": n = 0; break
-			case "End": n = cells.length - 1; break
-			default: return
+			case "ArrowLeft":
+				n = i + (isRtl(container) ? 1 : -1)
+				break
+			case "ArrowRight":
+				n = i + (isRtl(container) ? -1 : 1)
+				break
+			case "ArrowUp":
+				n = i - columns
+				break
+			case "ArrowDown":
+				n = i + columns
+				break
+			case "Home":
+				n = 0
+				break
+			case "End":
+				n = cells.length - 1
+				break
+			default:
+				return
 		}
 		ev.preventDefault()
 		_cellFocusIndex = Math.min(Math.max(n, 0), cells.length - 1)
@@ -652,7 +689,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		fill="var(--neutral-fill-strong-focus)"
 		xmlns="http://www.w3.org/2000/svg"
 	>
-		<path d="M4.2 10.73a.75.75 0 001.1 1.04l5.95-6.25v14.73a.75.75 0 001.5 0V5.52l5.95 6.25a.75.75 0 001.1-1.04l-7.08-7.42a1 1 0 00-1.44 0L4.2 10.73z" />
+		<path
+			d="M4.2 10.73a.75.75 0 001.1 1.04l5.95-6.25v14.73a.75.75 0 001.5 0V5.52l5.95 6.25a.75.75 0 001.1-1.04l-7.08-7.42a1 1 0 00-1.44 0L4.2 10.73z"
+		/>
 	</svg>
 {/snippet}
 {#snippet arrowDown()}
@@ -663,7 +702,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		fill="var(--neutral-fill-strong-focus)"
 		xmlns="http://www.w3.org/2000/svg"
 	>
-		<path d="M19.8 13.27a.75.75 0 00-1.1-1.04l-5.95 6.25V3.75a.75.75 0 10-1.5 0v14.73L5.3 12.23a.75.75 0 10-1.1 1.04l7.08 7.42a1 1 0 001.44 0l7.07-7.42z" />
+		<path
+			d="M19.8 13.27a.75.75 0 00-1.1-1.04l-5.95 6.25V3.75a.75.75 0 10-1.5 0v14.73L5.3 12.23a.75.75 0 10-1.1 1.04l7.08 7.42a1 1 0 001.44 0l7.07-7.42z"
+		/>
 	</svg>
 {/snippet}
 
@@ -684,7 +725,8 @@ Inline month calendar with single, multiple or range selection and month/year pi
 			     by keyboard announces the new month / year. -->
 			<div class="title" part="title">
 				<div
-					part="label" class={getAnimationClass('label')}
+					part="label"
+					class={getAnimationClass("label")}
 					id={titleId}
 					role="button"
 					tabindex={disabled ? null : titles.readOnly ? -1 : 0}
@@ -700,8 +742,10 @@ Inline month calendar with single, multiple or range selection and month/year pi
 						<div class="previous" aria-hidden="true" aria-disabled="true"></div>
 					{:else}
 						<div
-							class="previous" title={t("previousPeriodTooltip", {title: titles.previousTitle, view: titles.view})}
-							role="button" tabindex={disabled ? null : 0}
+							class="previous"
+							title={t("previousPeriodTooltip", {title: titles.previousTitle, view: titles.view})}
+							role="button"
+							tabindex={disabled ? null : 0}
 							aria-label={t("previousPeriodAriaLabel", {title: titles.previousTitle, view: titles.view})}
 							onclick={onPreviousButtonClicked}
 							onkeydown={(ev) => activateOnKey(ev, () => onPreviousButtonClicked(ev as unknown as MouseEvent))}
@@ -713,8 +757,10 @@ Inline month calendar with single, multiple or range selection and month/year pi
 						<div class="next" aria-hidden="true" aria-disabled="true"></div>
 					{:else}
 						<div
-							class="next" title={t("nextPeriodTooltip", {title: titles.nextTitle, view: titles.view})}
-							role="button" tabindex={disabled ? null : 0}
+							class="next"
+							title={t("nextPeriodTooltip", {title: titles.nextTitle, view: titles.view})}
+							role="button"
+							tabindex={disabled ? null : 0}
 							aria-label={t("nextPeriodAriaLabel", {title: titles.nextTitle, view: titles.view})}
 							onclick={onNextButtonHandlerAsync}
 							onkeydown={(ev) => activateOnKey(ev, () => onNextButtonHandlerAsync(ev as unknown as MouseEvent))}
@@ -731,19 +777,30 @@ Inline month calendar with single, multiple or range selection and month/year pi
 				     cells, never on the grid itself. -->
 				<!-- svelte-ignore a11y_interactive_supports_focus -->
 				<div
-					class="days" part="days"
+					class="days"
+					part="days"
 					role="grid"
 					aria-labelledby={titleId}
 					aria-readonly={readonly ? "true" : null}
 					aria-multiselectable={selectMode !== "single" ? "true" : null}
-					onmouseleave={ev => { _selectedDatesMouseOver = []; onDayHover?.({date: null}) }}
+					onmouseleave={(ev) => {
+						_selectedDatesMouseOver = []
+						onDayHover?.({date: null})
+					}}
 					onkeydown={onDaysKeydown}
 					onfocusin={onDaysFocusIn}
 				>
 					<!-- Titles: Mon, Tue, ... -->
 					<div class="week-days" part="week-days" role="row">
 						{#each calendarExtended.getDayNames() as weekDay}
-							<div class="week-day" part="week-day" role="columnheader" aria-label={weekDay.name} title={weekDay.name} data-abbr={weekDay.name}>
+							<div
+								class="week-day"
+								part="week-day"
+								role="columnheader"
+								aria-label={weekDay.name}
+								title={weekDay.name}
+								data-abbr={weekDay.name}
+							>
 								{weekDay.shorted}
 							</div>
 						{/each}
@@ -762,24 +819,33 @@ Inline month calendar with single, multiple or range selection and month/year pi
 								<!-- svelte-ignore a11y_mouse_events_have_key_events -->
 								<div
 									part="day"
-									class={getAnimationClass('day')}
+									class={getAnimationClass("day")}
 									role="gridcell"
 									tabindex={outsideMonth || disabled ? null : sameDay(day, rovingDate) ? 0 : -1}
 									aria-disabled={!outsideMonth && (unselectable || disabled) ? "true" : null}
-									aria-selected={outsideMonth ? null : (dayProperties.isSelected && selectMode === "single") || dayProperties.isMultiDaySelected ? "true" : "false"}
+									aria-selected={outsideMonth
+										? null
+										: (dayProperties.isSelected && selectMode === "single") || dayProperties.isMultiDaySelected
+											? "true"
+											: "false"}
 									aria-current={dayProperties.isToday ? "date" : null}
 									data-disabled={dayProperties.isDisabled}
 									data-inactive={dayProperties.isInactive}
 									data-today={dayProperties.isToday}
 									data-selected={dayProperties.isSelected}
 									data-multi-day={dayProperties.isMultiDaySelected}
-									data-multi-day-over={multipleSelection.inProgress && _selectedDatesMouseOver.some(d => sameDay(d, day))}
-									data-multi-start={multipleSelection.isMultiple && selectMode === "range" && sameDay(multipleSelection.min, day)}
-									data-multi-end={multipleSelection.isMultiple && selectMode === "range" && sameDay(multipleSelection.max, day)}
+									data-multi-day-over={multipleSelection.inProgress &&
+										_selectedDatesMouseOver.some((d) => sameDay(d, day))}
+									data-multi-start={multipleSelection.isMultiple &&
+										selectMode === "range" &&
+										sameDay(multipleSelection.min, day)}
+									data-multi-end={multipleSelection.isMultiple &&
+										selectMode === "range" &&
+										sameDay(multipleSelection.max, day)}
 									aria-label={dayProperties.title}
 									data-value={dayProperties.dayIdentifier}
-									onclick={ev => onSelectDayHandlerAsync(day, unselectable || readonly || disabled || false)}
-									onmouseover={ev => onSelectDayMouseOverAsync(day, unselectable || readonly || disabled || false)}
+									onclick={(ev) => onSelectDayHandlerAsync(day, unselectable || readonly || disabled || false)}
+									onmouseover={(ev) => onSelectDayMouseOverAsync(day, unselectable || readonly || disabled || false)}
 								>
 									{#if daySnippet}
 										{@render daySnippet(dayProperties)}
@@ -792,7 +858,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 					{/each}
 				</div>
 			{:else if view === "months"}
-				{@const selectedMonth = calendarExtended.getMonthNames().findIndex(m => getMonthProperties(year, m.index).isSelected)}
+				{@const selectedMonth = calendarExtended
+					.getMonthNames()
+					.findIndex((m) => getMonthProperties(year, m.index).isSelected)}
 				<!-- Roving tabindex: arrows / Home / End move between the 12 cells. -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div class="months" part="months" onkeydown={onCellsKeydown} onfocusin={onCellsFocusIn}>
@@ -800,7 +868,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 						{@const monthProperties = getMonthProperties(year, month.index)}
 
 						<div
-							class={getAnimationClass('month')}
+							class={getAnimationClass("month")}
 							class:selected={monthProperties.isSelected}
 							class:readonly={monthProperties.isReadOnly}
 							aria-disabled={monthProperties.isDisabled}
@@ -810,22 +878,23 @@ Inline month calendar with single, multiple or range selection and month/year pi
 							data-value={monthProperties.monthIdentifier}
 							role="button"
 							tabindex={cellTabIndex(mi, selectedMonth)}
-							onkeydown={ev => activateOnKey(ev, () => onSelectMonthHandlerAsync(year, month.index, monthProperties.isReadOnly))}
-							onclick={ev => onSelectMonthHandlerAsync(year, month.index, monthProperties.isReadOnly)}
+							onkeydown={(ev) =>
+								activateOnKey(ev, () => onSelectMonthHandlerAsync(year, month.index, monthProperties.isReadOnly))}
+							onclick={(ev) => onSelectMonthHandlerAsync(year, month.index, monthProperties.isReadOnly)}
 						>
 							{month.abbreviated}
 						</div>
 					{/each}
 				</div>
 			{:else if view === "years"}
-				{@const selectedYear = calendarExtended.getYearsRange().findIndex(y => getYearProperties(y.year).isSelected)}
+				{@const selectedYear = calendarExtended.getYearsRange().findIndex((y) => getYearProperties(y.year).isSelected)}
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div class="years" part="years" onkeydown={onCellsKeydown} onfocusin={onCellsFocusIn}>
 					{#each calendarExtended.getYearsRange() as year, yi}
 						{@const yearProperties = getYearProperties(year.year)}
 
 						<div
-							class={getAnimationClass('year')}
+							class={getAnimationClass("year")}
 							class:selected={yearProperties.isSelected}
 							class:readonly={yearProperties.isReadOnly}
 							aria-disabled={yearProperties.isDisabled}
@@ -835,8 +904,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 							data-value={yearProperties.yearIdentifier}
 							role="button"
 							tabindex={cellTabIndex(yi, selectedYear)}
-							onkeydown={ev => activateOnKey(ev, () => onSelectYearHandlerAsync(year.year, yearProperties.isReadOnly))}
-							onclick={ev => onSelectYearHandlerAsync(year.year, yearProperties.isReadOnly)}
+							onkeydown={(ev) =>
+								activateOnKey(ev, () => onSelectYearHandlerAsync(year.year, yearProperties.isReadOnly))}
+							onclick={(ev) => onSelectYearHandlerAsync(year.year, yearProperties.isReadOnly)}
 						>
 							{year.year}
 						</div>
@@ -857,7 +927,7 @@ Inline month calendar with single, multiple or range selection and month/year pi
 			{culture}
 			{disabledSelectable}
 			{animatePeriodChanges}
-			disabledCheckAllDaysOfMonthYear={disabledCheckAllDaysOfMonthYear}
+			{disabledCheckAllDaysOfMonthYear}
 			{getIsDateDisabledCallback}
 			{cellSize}
 			{gap}
@@ -873,9 +943,9 @@ Inline month calendar with single, multiple or range selection and month/year pi
 			{readonly}
 			{disabled}
 			{culture}
-			disabledSelectable={disabledSelectable}
+			{disabledSelectable}
 			{animatePeriodChanges}
-			disabledCheckAllDaysOfMonthYear={disabledCheckAllDaysOfMonthYear}
+			{disabledCheckAllDaysOfMonthYear}
 			{getIsDateDisabledCallback}
 			{cellSize}
 			{gap}
@@ -983,7 +1053,8 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		cursor: default;
 	}
 
-	.fluent-calendar:not([data-readonly="true"]) .day:not([data-disabled="true"]):not([data-inactive="true"]):not([data-today="true"]):hover {
+	.fluent-calendar:not([data-readonly="true"])
+		.day:not([data-disabled="true"]):not([data-inactive="true"]):not([data-today="true"]):hover {
 		background: var(--neutral-fill-stealth-hover);
 	}
 
@@ -998,11 +1069,12 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		cursor: default;
 	}
 
-	.fluent-calendar .day[data-disabled="true"]::before { /* strikethrough */
+	.fluent-calendar .day[data-disabled="true"]::before {
+		/* strikethrough */
 		transform: translate(-4px, 0px) rotate(45deg);
 		content: "";
 		display: inline-block;
-		width: calc(var(--fluent-calendar-day-cell-size) * .8);
+		width: calc(var(--fluent-calendar-day-cell-size) * 0.8);
 		height: calc(var(--stroke-width) * 1px);
 		background: currentcolor;
 		position: absolute;
@@ -1174,7 +1246,8 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		position: relative;
 	}
 
-	.fluent-month .month[aria-disabled="true"]::before { /* strikethrough */
+	.fluent-month .month[aria-disabled="true"]::before {
+		/* strikethrough */
 		transform: rotate(-12deg);
 		content: "";
 		display: inline-block;
@@ -1297,7 +1370,8 @@ Inline month calendar with single, multiple or range selection and month/year pi
 		position: relative;
 	}
 
-	.fluent-year .year[aria-disabled="true"]::before { /* strikethrough */
+	.fluent-year .year[aria-disabled="true"]::before {
+		/* strikethrough */
 		transform: rotate(-12deg);
 		content: "";
 		display: inline-block;

@@ -114,9 +114,7 @@ items collapse into a hamburger-toggled drawer (`Panel`).
 	// The action slot is intentionally NOT counted — it stays visible at every
 	// width (search, account menu, theme toggle should remain reachable on
 	// mobile rather than being hidden inside a hamburger).
-	const hasDrawerContent = $derived(
-		items.length > 0 || navigationGroups.length > 0 || !!drawerContent
-	)
+	const hasDrawerContent = $derived(items.length > 0 || navigationGroups.length > 0 || !!drawerContent)
 
 	// Sync drawer's open state with `drawerPinned` so transitioning to pinned
 	// mode auto-reveals the rail (desktop default) and transitioning back to
@@ -151,19 +149,20 @@ items collapse into a hamburger-toggled drawer (`Panel`).
 			event.preventDefault()
 			return
 		}
-		const run = () => runAction({
-			host: actionHost,
-			detail: {
-				action: item.action ?? "custom",
-				id: item.id,
-				item,
-				source: "toolbar",
-				sourceEvent: event,
-				triggerElement: event.currentTarget as HTMLElement
-			} satisfies TopNavActionDetail,
-			beforeActionCallback,
-			emitAction: (d) => onAction?.(d)
-		})
+		const run = () =>
+			runAction({
+				host: actionHost,
+				detail: {
+					action: item.action ?? "custom",
+					id: item.id,
+					item,
+					source: "toolbar",
+					sourceEvent: event,
+					triggerElement: event.currentTarget as HTMLElement
+				} satisfies TopNavActionDetail,
+				beforeActionCallback,
+				emitAction: (d) => onAction?.(d)
+			})
 		const ran = item.href ? await activateLink(event, run, !!beforeActionCallback) : await run()
 		if (ran) closeMobileMenu()
 	}
@@ -357,7 +356,9 @@ items collapse into a hamburger-toggled drawer (`Panel`).
 		color: inherit;
 		cursor: pointer;
 		border-radius: var(--fluent-border-radius-md, 4px);
-		transition: opacity 0.15s, background-color 0.15s;
+		transition:
+			opacity 0.15s,
+			background-color 0.15s;
 	}
 
 	.mobile-menu-toggle:hover {

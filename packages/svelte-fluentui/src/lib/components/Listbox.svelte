@@ -84,12 +84,12 @@ Wrapper for `<fluent-listbox>`: an always-visible list of `<Option>` children wi
 	// Combine width/height with style (default width: 100%). `<fluent-listbox>` 2.6 has
 	// no max-height hook of its own, so `height` caps the host and lets it scroll.
 	const computedStyle = $derived.by(() => {
-		const styles: string[] = [`width: ${width || '100%'}`]
+		const styles: string[] = [`width: ${width || "100%"}`]
 		if (height) {
 			styles.push(`max-height: ${height}`, "overflow-y: auto")
 		}
 		if (style) styles.push(style)
-		return styles.join('; ')
+		return styles.join("; ")
 	})
 
 	// svelte-ignore state_referenced_locally

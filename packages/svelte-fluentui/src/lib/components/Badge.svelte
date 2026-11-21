@@ -25,8 +25,20 @@ Small status/count indicator — a themed `<span>` with palette colours, appeara
 	 */
 
 	type BadgeColor =
-		| "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark"
-		| "severe" | "subtle" | "brand" | "important" | "informative" | (string & {})
+		| "primary"
+		| "secondary"
+		| "success"
+		| "warning"
+		| "danger"
+		| "info"
+		| "light"
+		| "dark"
+		| "severe"
+		| "subtle"
+		| "brand"
+		| "important"
+		| "informative"
+		| (string & {})
 
 	// Fluent badge colour names → shared palette names.
 	const colorAliases: Record<string, string> = {brand: "primary", important: "dark", informative: "light"}
@@ -143,7 +155,7 @@ Small status/count indicator — a themed `<span>` with palette colours, appeara
 	class={classes}
 	style={computedStyle || null}
 	title={title || null}
-	onclick={onclick}
+	{onclick}
 >
 	{#if icon}<span class="badge-icon">{@render icon()}</span>{/if}
 	{#if isTruncated}

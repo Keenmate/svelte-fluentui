@@ -9,11 +9,11 @@ export class CalendarMonth {
 		this.calendar = calendar
 
 		const startOfMonth = calendar.calendarExtended.startOfMonth(month)
-		const day          = month.getDate()
-		this.month         = day === 1 ? month : startOfMonth
+		const day = month.getDate()
+		this.month = day === 1 ? month : startOfMonth
 
 		if (calendar.disabledCheckAllDaysOfMonthYear) {
-			const endOfMonth      = calendar.calendarExtended.endOfMonth(month)
+			const endOfMonth = calendar.calendarExtended.endOfMonth(month)
 			this.isInDisabledList = calendar.allDaysAreDisabled(startOfMonth, endOfMonth)
 		} else {
 			this.isInDisabledList = calendar.disabledDateFunc ? calendar.disabledDateFunc(this.month) : false
@@ -34,17 +34,12 @@ export class CalendarMonth {
 			return false
 		}
 
-		return (
-			this.month.getFullYear() === value.getFullYear()
-			&& this.month.getMonth() === value.getMonth()
-		)
+		return this.month.getFullYear() === value.getFullYear() && this.month.getMonth() === value.getMonth()
 	}
 
 	get title(): string {
 		const monthName = this.calendar.calendarExtended.getMonthNameFromDate(this.month)
-		const year      = this.month.getFullYear()
-			.toString()
-			.padStart(4, "0")
+		const year = this.month.getFullYear().toString().padStart(4, "0")
 		return `${monthName} ${year}`
 	}
 

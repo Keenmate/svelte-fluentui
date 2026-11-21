@@ -223,13 +223,17 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 		/** Rendered in the file list area when there are no files (`listAppearance="list"`). */
 		empty?: Snippet
 		/** Replace the file-list header actions; receives `{clearAll, uploadAll, pauseAll, resumeAll, retryAll}`. */
-		actions?: Snippet<[{
-			clearAll: () => void
-			uploadAll: () => Promise<void>
-			pauseAll: () => void
-			resumeAll: () => Promise<void>
-			retryAll: () => Promise<void>
-		}]>
+		actions?: Snippet<
+			[
+				{
+					clearAll: () => void
+					uploadAll: () => Promise<void>
+					pauseAll: () => void
+					resumeAll: () => Promise<void>
+					retryAll: () => Promise<void>
+				}
+			]
+		>
 
 		/** Extra class on the root. */
 		class?: string
@@ -307,13 +311,15 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 			currentTotalSize
 		}) ?? null
 	)
-	const dropZoneHints = $derived(dropZoneHintLines(
-		t,
-		{accept, minFileSize, maxFileSize, totalMaxSize, maxFileCount, minFileCount, multiple},
-		limitsHint,
-		items.length,
-		currentTotalSize
-	))
+	const dropZoneHints = $derived(
+		dropZoneHintLines(
+			t,
+			{accept, minFileSize, maxFileSize, totalMaxSize, maxFileCount, minFileCount, multiple},
+			limitsHint,
+			items.length,
+			currentTotalSize
+		)
+	)
 
 	let fileInput: HTMLInputElement | undefined = $state()
 	let isDragging = $state(false)
@@ -327,37 +333,83 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 	function resolveExpandTarget(): HTMLElement | undefined {
 		if (!expandOnDragTarget) return selectorWrapEl
 		if (typeof expandOnDragTarget === "string") {
-			return document.querySelector(expandOnDragTarget) as HTMLElement | null ?? undefined
+			return (document.querySelector(expandOnDragTarget) as HTMLElement | null) ?? undefined
 		}
 		return expandOnDragTarget
 	}
 
 	// File list state machine + upload queue (inputfile/upload-queue.svelte.ts).
 	const queue = new UploadQueue({
-		get items() { return items },
-		set items(value) { items = value },
+		get items() {
+			return items
+		},
+		set items(value) {
+			items = value
+		},
 		t,
-		get accept() { return accept },
-		get multiple() { return multiple },
-		get disabled() { return disabled },
-		get maxFileSize() { return maxFileSize },
-		get minFileSize() { return minFileSize },
-		get totalMaxSize() { return totalMaxSize },
-		get maxFileCount() { return maxFileCount },
-		get customValidator() { return customValidator },
-		get rejectionMode() { return rejectionMode },
-		get dedupe() { return dedupe },
-		get uploadCallback() { return uploadCallback },
-		get autoUpload() { return autoUpload },
-		get concurrency() { return concurrency },
-		get retryPolicy() { return retryPolicy },
-		get chunkSize() { return chunkSize },
-		get showThumbnails() { return showThumbnails },
-		get onFileAdd() { return onFileAdd },
-		get onFileUpload() { return onFileUpload },
-		get onFileError() { return onFileError },
-		get onUploadComplete() { return onUploadComplete },
-		get onFileRemove() { return onFileRemove }
+		get accept() {
+			return accept
+		},
+		get multiple() {
+			return multiple
+		},
+		get disabled() {
+			return disabled
+		},
+		get maxFileSize() {
+			return maxFileSize
+		},
+		get minFileSize() {
+			return minFileSize
+		},
+		get totalMaxSize() {
+			return totalMaxSize
+		},
+		get maxFileCount() {
+			return maxFileCount
+		},
+		get customValidator() {
+			return customValidator
+		},
+		get rejectionMode() {
+			return rejectionMode
+		},
+		get dedupe() {
+			return dedupe
+		},
+		get uploadCallback() {
+			return uploadCallback
+		},
+		get autoUpload() {
+			return autoUpload
+		},
+		get concurrency() {
+			return concurrency
+		},
+		get retryPolicy() {
+			return retryPolicy
+		},
+		get chunkSize() {
+			return chunkSize
+		},
+		get showThumbnails() {
+			return showThumbnails
+		},
+		get onFileAdd() {
+			return onFileAdd
+		},
+		get onFileUpload() {
+			return onFileUpload
+		},
+		get onFileError() {
+			return onFileError
+		},
+		get onUploadComplete() {
+			return onUploadComplete
+		},
+		get onFileRemove() {
+			return onFileRemove
+		}
 	})
 
 	// One-shot seed at construction; later changes to initialItems are ignored
@@ -385,11 +437,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 	const hiddenCount = $derived(items.length - visibleItems.length)
 	const canCollapse = $derived(showAllList && maxVisibleFileCount != null && items.length > maxVisibleFileCount)
 	const listMaxHeightCss = $derived(
-		listMaxHeight == null
-			? null
-			: typeof listMaxHeight === "number"
-				? `${listMaxHeight}px`
-				: listMaxHeight
+		listMaxHeight == null ? null : typeof listMaxHeight === "number" ? `${listMaxHeight}px` : listMaxHeight
 	)
 	const minimalBadgeStatus = $derived(badgeStatus(items))
 
@@ -444,7 +492,9 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 	// counts as inside (it holds the trigger and the hidden file input).
 	$effect(() => {
 		if (!popoverOpen) return
-		const close = () => { popoverOpen = false }
+		const close = () => {
+			popoverOpen = false
+		}
 		const undismiss = dismissOnOutside(() => [rootEl, selectorWrapEl, popoverEl], close)
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
 		const popLayer = pushLayer({onEscape: close})
@@ -464,17 +514,39 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 	})
 
 	// Instance API (bind:this) — delegates to the upload queue.
-	export function addFiles(files: File[]) { return queue.addFiles(files) }
-	export function uploadAll() { return queue.uploadAll() }
-	export function retry(itemId: string) { return queue.retry(itemId) }
-	export function pause(itemId: string) { queue.pause(itemId) }
-	export function resume(itemId: string) { return queue.resume(itemId) }
-	export function cancel(itemId: string) { queue.cancel(itemId) }
-	export function pauseAll() { queue.pauseAll() }
-	export function resumeAll() { return queue.resumeAll() }
-	export function retryAll() { return queue.retryAll() }
-	export function removeAt(index: number) { queue.removeAt(index) }
-	export function removeById(itemId: string) { queue.removeById(itemId) }
+	export function addFiles(files: File[]) {
+		return queue.addFiles(files)
+	}
+	export function uploadAll() {
+		return queue.uploadAll()
+	}
+	export function retry(itemId: string) {
+		return queue.retry(itemId)
+	}
+	export function pause(itemId: string) {
+		queue.pause(itemId)
+	}
+	export function resume(itemId: string) {
+		return queue.resume(itemId)
+	}
+	export function cancel(itemId: string) {
+		queue.cancel(itemId)
+	}
+	export function pauseAll() {
+		queue.pauseAll()
+	}
+	export function resumeAll() {
+		return queue.resumeAll()
+	}
+	export function retryAll() {
+		return queue.retryAll()
+	}
+	export function removeAt(index: number) {
+		queue.removeAt(index)
+	}
+	export function removeById(itemId: string) {
+		queue.removeById(itemId)
+	}
 
 	export function clear() {
 		queue.clear(() => {
@@ -600,9 +672,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 				{cardSize}
 				{isDragging}
 				{disabled}
-				popoverExpanded={listAppearance === "popover" && items.length > 0
-					? popoverOpen
-					: undefined}
+				popoverExpanded={listAppearance === "popover" && items.length > 0 ? popoverOpen : undefined}
 				ariaLabel={t("browseAriaLabel")}
 				ondragenter={handleDragEnter}
 				ondragover={handleDragOver}
@@ -613,18 +683,12 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 				content={cardContent}
 			/>
 		{:else if selectorAppearance === "button"}
-			<InputFileSelectorButton
-				{disabled}
-				label={t("selectFiles")}
-				onclick={handleSelectorClick}
-			/>
+			<InputFileSelectorButton {disabled} label={t("selectFiles")} onclick={handleSelectorClick} />
 		{:else if selectorAppearance === "minimal"}
 			<InputFileSelectorMinimal
 				{disabled}
 				itemsLength={items.length}
-				popoverExpanded={listAppearance === "popover" && items.length > 0
-					? popoverOpen
-					: undefined}
+				popoverExpanded={listAppearance === "popover" && items.length > 0 ? popoverOpen : undefined}
 				ariaLabel={items.length > 0 ? t("viewFilesAriaLabel") : t("browseAriaLabel")}
 				title={items.length > 0
 					? `${t("fileCount", {count: items.length})} — ${statusLabel(t, minimalBadgeStatus)}`
@@ -661,14 +725,7 @@ File picker with drag-and-drop, validation, a file list and an upload queue (pro
 		>
 			{@render selectorBlock()}
 			<div class="chips-wrap">
-				<InputFileChips
-					{visibleItems}
-					{hiddenCount}
-					{canCollapse}
-					{t}
-					onRemove={removeById}
-					onShowAll={setShowAll}
-				/>
+				<InputFileChips {visibleItems} {hiddenCount} {canCollapse} {t} onRemove={removeById} onShowAll={setShowAll} />
 			</div>
 		</div>
 		{@render overallFooter()}

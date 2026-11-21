@@ -50,7 +50,7 @@ Standalone panel wrapping `<fluent-tab-panel>`; shown while `active`. Not used b
 	const renderContent = $derived(!defer || active || activated)
 </script>
 
-<fluent-tab-panel {...rest} class={className} {...(style ? { style } : {})} {...(id ? { id } : {})} hidden={!active} >
+<fluent-tab-panel {...rest} class={className} {...style ? {style} : {}} {...id ? {id} : {}} hidden={!active}>
 	{#if children && renderContent}
 		{@render children()}
 	{/if}

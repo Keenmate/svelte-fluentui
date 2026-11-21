@@ -22,7 +22,7 @@ export interface IFluentCalendar {
 	value: Date
 	selectMode: CalendarSelectMode
 	selectedDates: Date[]
-	dayFormat: typeof DayFormat["TwoDigit"] | undefined | null
+	dayFormat: (typeof DayFormat)["TwoDigit"] | undefined | null
 	culture: Intl.Locale
 	disabledCheckAllDaysOfMonthYear: boolean
 	allDaysAreDisabled(date1: Date, date2: Date): boolean

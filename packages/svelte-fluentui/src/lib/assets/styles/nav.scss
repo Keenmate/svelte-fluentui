@@ -28,8 +28,20 @@
 	position: absolute;
 	inset-inline-end: calc(var(--design-unit) * 2px);
 	border-radius: calc(var(--control-corner-radius) * 1px);
-	width: calc((((var(--base-height-multiplier) / 2) * var(--design-unit)) + ((var(--design-unit) * var(--density)) / 2) + (var(--design-unit) * 2)) * 1px);
-	height: calc((((var(--base-height-multiplier) / 2) * var(--design-unit)) + ((var(--design-unit) * var(--density)) / 2) + (var(--design-unit) * 2)) * 1px);
+	width: calc(
+		(
+				((var(--base-height-multiplier) / 2) * var(--design-unit)) + ((var(--design-unit) * var(--density)) / 2) +
+					(var(--design-unit) * 2)
+			) *
+			1px
+	);
+	height: calc(
+		(
+				((var(--base-height-multiplier) / 2) * var(--design-unit)) + ((var(--design-unit) * var(--density)) / 2) +
+					(var(--design-unit) * 2)
+			) *
+			1px
+	);
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -117,15 +129,30 @@ a.fluent-nav-link.disabled .content-region {
 	padding-inline-start: 24px;
 }
 
-.fluent-collapsible-region-container .fluent-collapsible-region-container > .fluent-nav-menu > .fluent-nav-item .content-region {
+.fluent-collapsible-region-container
+	.fluent-collapsible-region-container
+	> .fluent-nav-menu
+	> .fluent-nav-item
+	.content-region {
 	padding-inline-start: 48px;
 }
 
-.fluent-collapsible-region-container .fluent-collapsible-region-container .fluent-collapsible-region-container > .fluent-nav-menu > .fluent-nav-item .content-region {
+.fluent-collapsible-region-container
+	.fluent-collapsible-region-container
+	.fluent-collapsible-region-container
+	> .fluent-nav-menu
+	> .fluent-nav-item
+	.content-region {
 	padding-inline-start: 72px;
 }
 
-.fluent-collapsible-region-container .fluent-collapsible-region-container .fluent-collapsible-region-container .fluent-collapsible-region-container > .fluent-nav-menu > .fluent-nav-item .content-region {
+.fluent-collapsible-region-container
+	.fluent-collapsible-region-container
+	.fluent-collapsible-region-container
+	.fluent-collapsible-region-container
+	> .fluent-nav-menu
+	> .fluent-nav-item
+	.content-region {
 	padding-inline-start: 96px;
 }
 

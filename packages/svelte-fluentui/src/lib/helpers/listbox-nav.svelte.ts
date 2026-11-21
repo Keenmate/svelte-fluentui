@@ -57,10 +57,18 @@ export class ListNav {
 	handleKey(event: KeyboardEvent): boolean {
 		const page = () => this.#options.pageSize?.() ?? 10
 		switch (event.key) {
-			case "ArrowDown": this.move(1); break
-			case "ArrowUp": this.move(-1); break
-			case "PageDown": this.move(page()); break
-			case "PageUp": this.move(-page()); break
+			case "ArrowDown":
+				this.move(1)
+				break
+			case "ArrowUp":
+				this.move(-1)
+				break
+			case "PageDown":
+				this.move(page())
+				break
+			case "PageUp":
+				this.move(-page())
+				break
 			case "Home":
 			case "End":
 				if (this.#options.count() === 0) return false

@@ -206,16 +206,14 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 			selectionState.value = v ?? []
 		},
 		set(v) {
-			selectionState.value = Array.isArray(v) ? [...v] : (v ? [v] : [])
+			selectionState.value = Array.isArray(v) ? [...v] : v ? [v] : []
 		},
 		toggle(val: string) {
 			if (val == null) return
 			if (readonly) return // readonly: block user-driven selection (Option click path)
 			if (multiple) {
 				const cur = selectionState.value
-				selectionState.value = cur.includes(val)
-					? cur.filter(x => x !== val)
-					: [...cur, val]
+				selectionState.value = cur.includes(val) ? cur.filter((x) => x !== val) : [...cur, val]
 			} else {
 				selectionState.value = [val]
 			}
@@ -228,10 +226,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	$effect(() => {
 		const normalized = normalize(value)
 		const current = untrack(() => selectionState.value)
-		if (
-			normalized.length !== current.length ||
-			normalized.some((v, i) => v !== current[i])
-		) {
+		if (normalized.length !== current.length || normalized.some((v, i) => v !== current[i])) {
 			selectionState.value = normalized
 		}
 	})
@@ -241,7 +236,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		const sel = selectionState.value
 		untrack(() => {
 			if (multiple) {
-				const cur = Array.isArray(value) ? value : (value != null ? [value] : [])
+				const cur = Array.isArray(value) ? value : value != null ? [value] : []
 				if (sel.length !== cur.length || sel.some((v, i) => v !== cur[i])) {
 					value = [...sel]
 				}
@@ -295,13 +290,13 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	let typeAheadTimer: ReturnType<typeof setTimeout> | undefined
 
 	function enabledOptionEls(root: HTMLElement | undefined): HTMLElement[] {
-		return getOptionEls(root).filter(el => !el.hasAttribute("disabled"))
+		return getOptionEls(root).filter((el) => !el.hasAttribute("disabled"))
 	}
 
 	// Keyboard cursor over the enabled options of the open dropdown.
 	const nav = new ListNav({
 		count: () => enabledOptionEls(listEl).length,
-		itemAt: i => enabledOptionEls(listEl)[i],
+		itemAt: (i) => enabledOptionEls(listEl)[i],
 		pageSize: () => listPageSize(listEl, enabledOptionEls(listEl))
 	})
 
@@ -309,7 +304,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	// listbox; the highlighted row is announced via aria-activedescendant.
 	const inlineNav = new ListNav({
 		count: () => enabledOptionEls(inlineListEl).length,
-		itemAt: i => enabledOptionEls(inlineListEl)[i],
+		itemAt: (i) => enabledOptionEls(inlineListEl)[i],
 		pageSize: () => listPageSize(inlineListEl, enabledOptionEls(inlineListEl))
 	})
 
@@ -322,7 +317,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		if (disabled || multiple || readonly) return
 		isOpen = true
 		tick().then(() => {
-			const i = enabledOptionEls(listEl).findIndex(el => optionValue(el) === selectedSingle)
+			const i = enabledOptionEls(listEl).findIndex((el) => optionValue(el) === selectedSingle)
 			nav.set(Math.max(i, 0))
 		})
 	}
@@ -391,9 +386,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		if (after.length === before.length && after.every((v, i) => v === before[i])) return
 		onChange?.({
 			value: multiple ? [...after] : (after[0] ?? ""),
-			option: optEl
-				? {value: optionValue(optEl), text: optionLabel(optEl), data: optionData(optEl)}
-				: undefined
+			option: optEl ? {value: optionValue(optEl), text: optionLabel(optEl), data: optionData(optEl)} : undefined
 		})
 	}
 
@@ -421,7 +414,9 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	function typeAheadJump(ch: string) {
 		clearTimeout(typeAheadTimer)
 		typeAheadBuffer += ch
-		typeAheadTimer = setTimeout(() => { typeAheadBuffer = "" }, 750)
+		typeAheadTimer = setTimeout(() => {
+			typeAheadBuffer = ""
+		}, 750)
 
 		const opts = enabledOptionEls(listEl)
 		if (opts.length === 0) return
@@ -437,8 +432,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		//   even when the buffer timed out between presses.
 		// - "Prefix" (anything else): land on the first option matching the buffer
 		//   from the current position.
-		const isRepeat = typeAheadBuffer.length > 1
-			&& typeAheadBuffer.split("").every(c => c === typeAheadBuffer[0])
+		const isRepeat = typeAheadBuffer.length > 1 && typeAheadBuffer.split("").every((c) => c === typeAheadBuffer[0])
 		const isSingleRepress = typeAheadBuffer.length === 1 && nav.index >= 0 && startsWith(opts[start], typeAheadBuffer)
 		const advance = isRepeat || isSingleRepress
 		const needle = isRepeat ? typeAheadBuffer[0] : typeAheadBuffer
@@ -504,7 +498,10 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 				if (el) selectByValue(optionValue(el), el)
 				break
 			}
-			case "Escape": ev.preventDefault(); closeDropdown(); break
+			case "Escape":
+				ev.preventDefault()
+				closeDropdown()
+				break
 			case "Tab": {
 				// No preventDefault: focus still moves on after the pick
 				const el = selectValueOnTab ? enabledOptionEls(listEl)[nav.index] : undefined
@@ -545,7 +542,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	function handleInlineFocus() {
 		if (inlineNav.index >= 0) return
 		const opts = enabledOptionEls(inlineListEl)
-		const i = opts.findIndex(el => selectionState.value.includes(optionValue(el)))
+		const i = opts.findIndex((el) => selectionState.value.includes(optionValue(el)))
 		inlineNav.set(Math.max(i, 0))
 	}
 
@@ -565,7 +562,10 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	// focus back out of whatever just opened.
 	$effect(() => {
 		if (!isOpen) return
-		return dismissOnOutside(() => [triggerEl, listEl], () => closeDropdown(false))
+		return dismissOnOutside(
+			() => [triggerEl, listEl],
+			() => closeDropdown(false)
+		)
 	})
 
 	// ---------- Multi-mode height calculation (maxVisibleOptionCount) ----------
@@ -607,9 +607,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	})
 
 	// Forced position support: prop -> Floating UI placement.
-	const forcedPlacement = $derived<"top" | "bottom" | undefined>(
-		position
-	)
+	const forcedPlacement = $derived<"top" | "bottom" | undefined>(position)
 
 	const displayText = $derived(getOptionText(selectedSingle) || (selectedSingle ? (valueText ?? "") : ""))
 
@@ -622,133 +620,137 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 <!-- Single DOM root so consumers see one element, not 2–4 siblings. Uses
      display:contents so it's transparent to flex/grid layout in the parent. -->
 <div {...rest} class="select-root">
+	<FieldLabel for={controlId} {label} {labelTemplate} {required} />
 
-<FieldLabel for={controlId} {label} {labelTemplate} {required} />
+	{#if multiple}
+		<!-- ===== Multi mode: always-expanded inline listbox ===== -->
+		<div
+			bind:this={inlineListEl}
+			id={controlId}
+			role="listbox"
+			tabindex={disabled ? -1 : 0}
+			aria-multiselectable="true"
+			aria-readonly={readonly ? "true" : null}
+			aria-disabled={disabled ? "true" : null}
+			aria-required={required ? "true" : null}
+			aria-activedescendant={inlineActiveOptionId}
+			aria-label={ariaLabel || label}
+			class="select-listbox-inline {appearance} {className}"
+			class:disabled
+			class:readonly
+			style={(multiListStyle() ? multiListStyle() + "; " : "") + style}
+			{title}
+			onclickcapture={snapshotSelection}
+			onclick={handleListClick}
+			onfocus={handleInlineFocus}
+			onkeydown={handleInlineKeydown}
+		>
+			{@render children?.()}
+		</div>
+	{:else}
+		<!-- ===== Single mode: trigger + portalled dropdown ===== -->
 
-{#if multiple}
-	<!-- ===== Multi mode: always-expanded inline listbox ===== -->
-	<div
-		bind:this={inlineListEl}
-		id={controlId}
-		role="listbox"
-		tabindex={disabled ? -1 : 0}
-		aria-multiselectable="true"
-		aria-readonly={readonly ? "true" : null}
-		aria-disabled={disabled ? "true" : null}
-		aria-required={required ? "true" : null}
-		aria-activedescendant={inlineActiveOptionId}
-		aria-label={ariaLabel || label}
-		class="select-listbox-inline {appearance} {className}"
-		class:disabled
-		class:readonly
-		style={(multiListStyle() ? multiListStyle() + "; " : "") + style}
-		{title}
-		onclickcapture={snapshotSelection}
-		onclick={handleListClick}
-		onfocus={handleInlineFocus}
-		onkeydown={handleInlineKeydown}
-	>
-		{@render children?.()}
-	</div>
-{:else}
-	<!-- ===== Single mode: trigger + portalled dropdown ===== -->
-
-	<!-- Hidden mirror of <Option> children so getOptionText() can resolve the
+		<!-- Hidden mirror of <Option> children so getOptionText() can resolve the
 	     selected value's display text when the dropdown is closed. Aria-hidden
 	     so screen readers don't see two copies of the options. -->
-	<div bind:this={sourceEl} class="select-options-source" aria-hidden="true">
-		{@render children?.()}
-	</div>
+		<div bind:this={sourceEl} class="select-options-source" aria-hidden="true">
+			{@render children?.()}
+		</div>
 
-	<!-- svelte-ignore a11y_autofocus -->
-	<button
-		bind:this={triggerEl}
-		type="button"
-		id={controlId}
-		role="combobox"
-		aria-haspopup="listbox"
-		aria-expanded={isOpen ? "true" : "false"}
-		aria-controls={listboxId}
-		aria-activedescendant={activeOptionId}
-		aria-label={ariaLabel || label}
-		aria-readonly={readonly ? "true" : null}
-		aria-required={required ? "true" : null}
-		{disabled}
-		{autofocus}
-		{title}
-		class="select-trigger fluent-field-control fluent-field-clear-host {appearance} {className}"
-		class:open={isOpen}
-		class:readonly
-		class:embedded
-		style={(triggerStyle() ? triggerStyle() + "; " : "") + style}
-		onclick={toggleDropdown}
-		onkeydown={handleTriggerKeydown}
-	>
-		<span class="select-trigger-value" class:placeholder={!displayText}>
-			{displayText || placeholder || ""}
-		</span>
-		<!-- A <button> can't nest another; the × is a pointer target only (the
-		     trigger takes Delete / Backspace) and keeps focus on the trigger. -->
-		{#if canClear}
-			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-			<span
-				class="select-clear fluent-field-clear"
-				aria-hidden="true"
-				title={t("clearTooltip")}
-				onpointerdown={(ev) => ev.preventDefault()}
-				onclick={clearValue}
-			>
-				<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-					<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
-				</svg>
-			</span>
-		{/if}
-		<span class="select-trigger-indicator" aria-hidden="true">
-			{#if indicatorTemplate}
-				{@render indicatorTemplate()}
-			{:else}
-				<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-					<path d="M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 1 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06Z"/>
-				</svg>
-			{/if}
-		</span>
-	</button>
-
-	{#if isOpen && triggerEl}
-		<PositioningRegion
-			anchor={triggerEl}
-			visible={isOpen}
-			position={forcedPlacement}
-			matchWidth={!dropdownWidth}
-			availableHeight
+		<!-- svelte-ignore a11y_autofocus -->
+		<button
+			bind:this={triggerEl}
+			type="button"
+			id={controlId}
+			role="combobox"
+			aria-haspopup="listbox"
+			aria-expanded={isOpen ? "true" : "false"}
+			aria-controls={listboxId}
+			aria-activedescendant={activeOptionId}
+			aria-label={ariaLabel || label}
+			aria-readonly={readonly ? "true" : null}
+			aria-required={required ? "true" : null}
+			{disabled}
+			{autofocus}
+			{title}
+			class="select-trigger fluent-field-control fluent-field-clear-host {appearance} {className}"
+			class:open={isOpen}
+			class:readonly
+			class:embedded
+			style={(triggerStyle() ? triggerStyle() + "; " : "") + style}
+			onclick={toggleDropdown}
+			onkeydown={handleTriggerKeydown}
 		>
-			<!-- The keyboard stays on the trigger (aria-activedescendant); the list takes clicks only. -->
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<div
-				bind:this={listEl}
-				id={listboxId}
-				role="listbox"
-				tabindex="-1"
-				aria-label={ariaLabel || label}
-				class={["select-listbox-popover fluent-popup-surface", dropdownClass]}
-				style={[
-					dropdownWidth ? `width: ${dropdownWidth}` : "",
-					maxDropdownHeight ? `--_select-listbox-max-height: ${maxDropdownHeight}` : ""
-				].filter(Boolean).join("; ") || undefined}
-				onclickcapture={snapshotSelection}
-				onclick={handleListClick}
+			<span class="select-trigger-value" class:placeholder={!displayText}>
+				{displayText || placeholder || ""}
+			</span>
+			<!-- A <button> can't nest another; the × is a pointer target only (the
+		     trigger takes Delete / Backspace) and keeps focus on the trigger. -->
+			{#if canClear}
+				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+				<span
+					class="select-clear fluent-field-clear"
+					aria-hidden="true"
+					title={t("clearTooltip")}
+					onpointerdown={(ev) => ev.preventDefault()}
+					onclick={clearValue}
+				>
+					<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+						<path
+							d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"
+						/>
+					</svg>
+				</span>
+			{/if}
+			<span class="select-trigger-indicator" aria-hidden="true">
+				{#if indicatorTemplate}
+					{@render indicatorTemplate()}
+				{:else}
+					<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+						<path
+							d="M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 1 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06Z"
+						/>
+					</svg>
+				{/if}
+			</span>
+		</button>
+
+		{#if isOpen && triggerEl}
+			<PositioningRegion
+				anchor={triggerEl}
+				visible={isOpen}
+				position={forcedPlacement}
+				matchWidth={!dropdownWidth}
+				availableHeight
 			>
-				{@render children?.()}
-			</div>
-		</PositioningRegion>
-	{/if}
+				<!-- The keyboard stays on the trigger (aria-activedescendant); the list takes clicks only. -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<div
+					bind:this={listEl}
+					id={listboxId}
+					role="listbox"
+					tabindex="-1"
+					aria-label={ariaLabel || label}
+					class={["select-listbox-popover fluent-popup-surface", dropdownClass]}
+					style={[
+						dropdownWidth ? `width: ${dropdownWidth}` : "",
+						maxDropdownHeight ? `--_select-listbox-max-height: ${maxDropdownHeight}` : ""
+					]
+						.filter(Boolean)
+						.join("; ") || undefined}
+					onclickcapture={snapshotSelection}
+					onclick={handleListClick}
+				>
+					{@render children?.()}
+				</div>
+			</PositioningRegion>
+		{/if}
 
-	<!-- Hidden input to participate in HTML form submission. -->
-	{#if name}
-		<input type="hidden" {name} {required} value={selectedSingle} />
+		<!-- Hidden input to participate in HTML form submission. -->
+		{#if name}
+			<input type="hidden" {name} {required} value={selectedSingle} />
+		{/if}
 	{/if}
-{/if}
-
 </div>
 
 <style>

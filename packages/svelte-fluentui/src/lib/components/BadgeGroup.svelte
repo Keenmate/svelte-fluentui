@@ -71,8 +71,7 @@ Flex-wrap container that hides child badges past `maxVisibleBadgeCount`, optiona
 	function badgeChildren(): HTMLElement[] {
 		if (!containerEl) return []
 		return Array.from(containerEl.children).filter(
-			(el): el is HTMLElement =>
-				el instanceof HTMLElement && !el.classList.contains("badge-group-toggle")
+			(el): el is HTMLElement => el instanceof HTMLElement && !el.classList.contains("badge-group-toggle")
 		)
 	}
 

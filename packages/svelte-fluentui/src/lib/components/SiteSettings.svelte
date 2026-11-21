@@ -29,13 +29,7 @@ App-specific settings can be added as `children`; they render below the built-in
 	/** Other native attributes and events go to the underlying `<Dialog>` (`<fluent-dialog>`). */
 	type Props = OwnProps & RestProps<OwnProps>
 
-	let {
-		    open = $bindable(false),
-		    onOpenChange,
-		    children,
-		    labels: labelsProp = undefined,
-		    ...rest
-	    }: Props = $props()
+	let {open = $bindable(false), onOpenChange, children, labels: labelsProp = undefined, ...rest}: Props = $props()
 
 	// Forwarded to a child component whose own prop types are narrower than
 	// HTMLAttributes (no `null`), so hand the spread over untyped.
@@ -57,7 +51,7 @@ App-specific settings can be added as `children`; they render below the built-in
 	}
 
 	function handleDirectionChange({checked}: {checked: boolean}) {
-		settings.setDirection(checked ? 'ltr' : 'rtl')
+		settings.setDirection(checked ? "ltr" : "rtl")
 	}
 
 	function handleReset() {
@@ -133,10 +127,7 @@ App-specific settings can be added as `children`; they render below the built-in
 
 		<!-- Direction Toggle -->
 		<div style="margin-bottom: 1.5rem;">
-			<Switch
-				checked={settings.direction === 'ltr'}
-				onChange={handleDirectionChange}
-			>
+			<Switch checked={settings.direction === "ltr"} onChange={handleDirectionChange}>
 				{t("direction")}
 				{#snippet checkedMessage()}
 					{t("leftToRight")}
@@ -176,7 +167,15 @@ App-specific settings can be added as `children`; they render below the built-in
 
 		<!-- OK Button -->
 		<div style="display: flex; justify-content: flex-end;">
-			<Button appearance="accent" onclick={() => { open = false; onOpenChange?.({open: false}) }}>{t("ok")}</Button>
+			<Button
+				appearance="accent"
+				onclick={() => {
+					open = false
+					onOpenChange?.({open: false})
+				}}
+			>
+				{t("ok")}
+			</Button>
 		</div>
 	</Stack>
 </Dialog>

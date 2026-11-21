@@ -59,8 +59,14 @@ Wrapper for `<fluent-data-grid-cell>`: one cell inside a `DataGridRow`.
 	{...rest}
 	class={className}
 	{...attrs({
-		style, "grid-column": gridColumn, "cell-type": cellType, "col-index": colIndex, role,
-		tabindex: tabIndex, title, "aria-label": ariaLabel
+		style,
+		"grid-column": gridColumn,
+		"cell-type": cellType,
+		"col-index": colIndex,
+		role,
+		tabindex: tabIndex,
+		title,
+		"aria-label": ariaLabel
 	})}
 >
 	{#if children}

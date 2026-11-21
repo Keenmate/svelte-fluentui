@@ -26,8 +26,19 @@
 	}
 
 	let {
-		columns, columnStyles, t, sortMode, sort, filterable, filters, filterValidity,
-		actionsColumn, fillerColumn, headerRowIndex, onSortRequest, filterChangeCallback
+		columns,
+		columnStyles,
+		t,
+		sortMode,
+		sort,
+		filterable,
+		filters,
+		filterValidity,
+		actionsColumn,
+		fillerColumn,
+		headerRowIndex,
+		onSortRequest,
+		filterChangeCallback
 	}: Props = $props()
 
 	// `aria-sort` goes on the primary sorted column only (ARIA: one header at a time)
@@ -95,7 +106,9 @@
 				{#if sortable}
 					<span class="sort-indicator" aria-hidden="true">
 						{#if sortState}
-							{sortState.direction === "asc" ? "▲" : "▼"}{#if sort.length > 1}<span class="sort-priority">{sortIndex + 1}</span>{/if}
+							{sortState.direction === "asc" ? "▲" : "▼"}{#if sort.length > 1}<span class="sort-priority">
+									{sortIndex + 1}
+								</span>{/if}
 						{:else}
 							<span class="sort-placeholder">⬍</span>
 						{/if}
@@ -103,9 +116,7 @@
 				{/if}
 			{/snippet}
 			<th
-				class={`column-header ${sortable ? "sortable" : ""} ${
-					sortState ? `sorted sorted-${sortState.direction}` : ""
-				}`}
+				class={`column-header ${sortable ? "sortable" : ""} ${sortState ? `sorted sorted-${sortState.direction}` : ""}`}
 				style={columnStyles[colIndex].header}
 				aria-sort={getAriaSort(column)}
 			>
@@ -169,7 +180,8 @@
 	}
 
 	.column-sort-button:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
+		outline: calc(var(--focus-stroke-width, 2) * 1px) solid
+			var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
 		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
 	}
 

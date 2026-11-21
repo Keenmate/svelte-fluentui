@@ -21,7 +21,7 @@ export function parseLocalDate(value: string): Date | null {
 	const m = ISO_DAY.exec(value)
 	if (!m) return null
 	const date = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
-	date.setFullYear(Number(m[1]))  // the constructor maps years 0–99 to 1900–1999
+	date.setFullYear(Number(m[1])) // the constructor maps years 0–99 to 1900–1999
 	return date.getDate() === Number(m[3]) && date.getMonth() === Number(m[2]) - 1 ? date : null
 }
 
@@ -37,6 +37,7 @@ export function formatLocalDate(date: Date): string {
 export function toLocalDateString(value: unknown): string {
 	if (value === null || value === undefined || value === "") return ""
 	if (typeof value === "string" && ISO_DAY.test(value)) return parseLocalDate(value) ? value : ""
-	const date = value instanceof Date ? value : typeof value === "number" || typeof value === "string" ? new Date(value) : null
+	const date =
+		value instanceof Date ? value : typeof value === "number" || typeof value === "string" ? new Date(value) : null
 	return date && !isNaN(date.getTime()) ? formatLocalDate(date) : ""
 }

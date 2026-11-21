@@ -129,7 +129,7 @@ Range slider wrapping `<fluent-slider>`; `bind:value` is a number.
 	bind:this={element}
 	{...rest}
 	{...attrs({id, min, max, step, orientation, disabled, readonly, required, name, class: className, style})}
-	{...(ariaLabel || label ? { "aria-label": ariaLabel || label } : {})}
+	{...ariaLabel || label ? {"aria-label": ariaLabel || label} : {}}
 	onchange={handleChange}
 	oninput={handleInput}
 >

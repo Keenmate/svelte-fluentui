@@ -60,18 +60,11 @@ Form-field frame around any control: label, required marker, hint and validation
 		...rest
 	}: Props = $props()
 
-	const showMessage = $derived(
-		validationState !== "none" && validationMessage != null && validationMessage !== ""
-	)
+	const showMessage = $derived(validationState !== "none" && validationMessage != null && validationMessage !== "")
 	const showHint = $derived(!showMessage && hint != null && hint !== "")
 </script>
 
-<div
-	{...rest}
-	class="fluent-field fluent-field--{orientation} {className}"
-	data-state={validationState}
-	{style}
->
+<div {...rest} class="fluent-field fluent-field--{orientation} {className}" data-state={validationState} {style}>
 	{#if label || labelTemplate}
 		<label class="fluent-field__label" for={id}>
 			{#if label}{label}{/if}

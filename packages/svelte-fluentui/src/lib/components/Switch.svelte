@@ -15,7 +15,7 @@ On/off toggle wrapping `<fluent-switch>`; `bind:checked` is a boolean.
 <script lang="ts">
 	import {attrs} from "../helpers/attrs.js"
 	import type {Snippet} from "svelte"
-	import { untrack } from 'svelte'
+	import {untrack} from "svelte"
 	import type {NativeEventHandler, RestProps} from "../types/index.js"
 
 	type OwnProps = {
@@ -93,8 +93,8 @@ On/off toggle wrapping `<fluent-switch>`; `bind:checked` is a boolean.
 	// wrapper's flex direction changes per labelPosition.
 
 	// Check if messages are snippets or strings
-	let isCheckedMessageSnippet = $derived(typeof checkedMessage === 'function')
-	let isUncheckedMessageSnippet = $derived(typeof uncheckedMessage === 'function')
+	let isCheckedMessageSnippet = $derived(typeof checkedMessage === "function")
+	let isUncheckedMessageSnippet = $derived(typeof uncheckedMessage === "function")
 
 	function handleChange(e: Event) {
 		const target = e.target as any
@@ -137,7 +137,7 @@ On/off toggle wrapping `<fluent-switch>`; `bind:checked` is a boolean.
 		class={className}
 		{...attrs({style, readonly, disabled, autofocus, name, required, checked})}
 		id={effectiveId}
-		{...(ariaLabel || label ? { "aria-label": ariaLabel || label } : {})}
+		{...ariaLabel || label ? {"aria-label": ariaLabel || label} : {}}
 		aria-checked={checked ? "true" : "false"}
 		onchange={handleChange}
 		role="switch"

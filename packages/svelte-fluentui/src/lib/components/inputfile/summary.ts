@@ -40,14 +40,21 @@ export function dropZoneHints(
 		if (minFileSize) parts.push(t("minSize", {size: formatInputFileSize(minFileSize)}))
 		if (totalMaxSize > 0) {
 			const size = formatInputFileSize(totalMaxSize)
-			parts.push(itemCount > 0
-				? t("totalMaxSizeRemaining", {size, remaining: formatInputFileSize(Math.max(0, totalMaxSize - currentTotalSize))})
-				: t("totalMaxSize", {size}))
+			parts.push(
+				itemCount > 0
+					? t("totalMaxSizeRemaining", {
+							size,
+							remaining: formatInputFileSize(Math.max(0, totalMaxSize - currentTotalSize))
+						})
+					: t("totalMaxSize", {size})
+			)
 		}
 		if (multiple && maxFileCount) {
-			parts.push(itemCount > 0
-				? t("maxFilesRemaining", {max: maxFileCount, remaining: Math.max(0, maxFileCount - itemCount)})
-				: t("maxFiles", {max: maxFileCount}))
+			parts.push(
+				itemCount > 0
+					? t("maxFilesRemaining", {max: maxFileCount, remaining: Math.max(0, maxFileCount - itemCount)})
+					: t("maxFiles", {max: maxFileCount})
+			)
 		}
 		if (minFileCount > 0) parts.push(t("minFiles", {min: minFileCount}))
 	}
@@ -62,8 +69,7 @@ export function validityReasons(
 ): string[] {
 	const reasons: string[] = []
 	if (minFileCount && items.length < minFileCount) reasons.push(t("tooFewFiles", {min: minFileCount}))
-	if (maxFileCount && items.length > maxFileCount)
-		reasons.push(t("tooManyFiles", {max: maxFileCount}))
+	if (maxFileCount && items.length > maxFileCount) reasons.push(t("tooManyFiles", {max: maxFileCount}))
 	if (items.some((i) => i.status === "error")) reasons.push(t("error"))
 	return reasons
 }

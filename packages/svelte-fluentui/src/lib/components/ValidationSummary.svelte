@@ -50,10 +50,7 @@ Lists form errors as links (`#<field>`) in an alert panel; renders nothing while
 	}: Props = $props()
 
 	const errorEntries = $derived(
-		Object.entries(errors).filter(([, msg]) => msg != null && msg !== "") as [
-			string,
-			string
-		][]
+		Object.entries(errors).filter(([, msg]) => msg != null && msg !== "") as [string, string][]
 	)
 	const errorCount = $derived(errorEntries.length)
 
@@ -66,22 +63,12 @@ Lists form errors as links (`#<field>`) in an alert panel; renders nothing while
 </script>
 
 {#if errorCount > 0}
-	<div
-		{...rest}
-		class="fluent-validation-summary {className}"
-		role="alert"
-		aria-live="polite"
-		{style}
-	>
+	<div {...rest} class="fluent-validation-summary {className}" role="alert" aria-live="polite" {style}>
 		<div class="fluent-validation-summary__title">{title}</div>
 		<ul class="fluent-validation-summary__list">
 			{#each errorEntries as [field, error] (field)}
 				<li class="fluent-validation-summary__item">
-					<a
-						href={"#" + field}
-						class="fluent-validation-summary__link"
-						onclick={(e) => handleClick(e, field)}
-					>
+					<a href={"#" + field} class="fluent-validation-summary__link" onclick={(e) => handleClick(e, field)}>
 						{labels[field] ?? field}
 					</a>
 					— {error}

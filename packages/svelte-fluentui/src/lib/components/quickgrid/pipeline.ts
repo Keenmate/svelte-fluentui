@@ -74,7 +74,12 @@ export function sortRows<T>(rows: T[], compare: ((a: T, b: T) => number) | null)
  * column alone, cycling asc → desc → none; in `"multiple"` mode Ctrl / ⌘ + click adds the
  * column to the sort (asc), or cycles the one already there asc → desc → removed.
  */
-export function nextSort(current: QuickGridSortState[], field: string, mode: QuickGridSortMode, additive: boolean): QuickGridSortState[] {
+export function nextSort(
+	current: QuickGridSortState[],
+	field: string,
+	mode: QuickGridSortMode,
+	additive: boolean
+): QuickGridSortState[] {
 	const index = current.findIndex((s) => s.column === field)
 	if (additive && mode === "multiple") {
 		const next = [...current]
@@ -137,7 +142,13 @@ export type FilterOptions<T> = {
 
 /** A predicate for the active filters, or null when none is active. A column's
  *  `filterCallback` returning `null` (incomplete input) leaves that filter off. */
-export function createRowFilter<T>({filters, columns, searchBehavior, getText, textCache}: FilterOptions<T>): ((row: T) => boolean) | null {
+export function createRowFilter<T>({
+	filters,
+	columns,
+	searchBehavior,
+	getText,
+	textCache
+}: FilterOptions<T>): ((row: T) => boolean) | null {
 	const active = Object.entries(filters)
 		.filter(([, term]) => !!term)
 		.map(([field, term]) => ({term, column: columns.find((c) => String(c.field) === field)}))
@@ -151,13 +162,14 @@ export function createRowFilter<T>({filters, columns, searchBehavior, getText, t
 	const fold = textCache
 		? (text: string, behavior: SearchBehavior) => textCache.normalize(text, behavior)
 		: normalizeForSearch
-	return (row) => active.every(({term, column, behavior, query}) => {
-		if (column.filterCallback) {
-			const result = column.filterCallback({term, row, column})
-			return result === null ? true : result
-		}
-		return fold(getText(row, column), behavior).includes(query)
-	})
+	return (row) =>
+		active.every(({term, column, behavior, query}) => {
+			if (column.filterCallback) {
+				const result = column.filterCallback({term, row, column})
+				return result === null ? true : result
+			}
+			return fold(getText(row, column), behavior).includes(query)
+		})
 }
 
 // ---------------------------------------------------------------------------
@@ -187,7 +199,7 @@ export function treeOrder<T>(rows: T[], tree: TreeAccess<T>, compareSiblings: (a
 	const result: T[] = []
 	const walked = new Set<string>()
 	const walk = (parent: string) => {
-		if (walked.has(parent)) return  // duplicate paths / cycles
+		if (walked.has(parent)) return // duplicate paths / cycles
 		walked.add(parent)
 		const list = children.get(parent)
 		if (!list) return

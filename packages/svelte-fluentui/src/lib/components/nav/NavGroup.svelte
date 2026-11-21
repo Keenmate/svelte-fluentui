@@ -42,24 +42,21 @@ Expandable group of nav rows inside a `NavMenu`; the header toggles `expanded`.
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		    persistKey = undefined,
-		    expanded = $bindable(false),
-		    disabled = undefined,
-		    linkIcon = undefined,
-		    linkText = undefined,
-		    children = undefined,
-		    class: className = undefined,
-		    ...rest
-	    }: Props = $props()
+		persistKey = undefined,
+		expanded = $bindable(false),
+		disabled = undefined,
+		linkIcon = undefined,
+		linkText = undefined,
+		children = undefined,
+		class: className = undefined,
+		...rest
+	}: Props = $props()
 
 	// Forwarded to a child component whose own prop types are narrower than
 	// HTMLAttributes (no `null`), so hand the spread over untyped.
 	const forwarded = $derived(rest as Record<string, unknown>)
 
-	const navItemClass = $derived(classList(
-		expanded && "expanded",
-		className
-	))
+	const navItemClass = $derived(classList(expanded && "expanded", className))
 
 	// Load the persisted expanded state on mount (only with persistKey)
 	onMount(() => {
@@ -76,12 +73,7 @@ Expandable group of nav rows inside a `NavMenu`; the header toggles `expanded`.
 	}
 </script>
 
-<NavItem
-	{...forwarded}
-	group
-	{disabled}
-	class={navItemClass}
->
+<NavItem {...forwarded} group {disabled} class={navItemClass}>
 	<NavLink class="notactive" onclick={onNavLinkClicked}>
 		{#snippet icon()}
 			{@render linkIcon?.()}
@@ -90,23 +82,14 @@ Expandable group of nav rows inside a `NavMenu`; the header toggles `expanded`.
 		{@render linkText?.()}
 
 		{#snippet afterText()}
-			<div
-				aria-hidden="true"
-				class="expand-collapse-button"
-				class:rotate={expanded}
-				tabindex="-1"
-			>
+			<div aria-hidden="true" class="expand-collapse-button" class:rotate={expanded} tabindex="-1">
 				<ExpandIcon />
 			</div>
 		{/snippet}
 	</NavLink>
 
-	<div role="group" class="fluent-collapsible-region-container items" style:display={expanded ? 'block' : 'none'}>
-		<div
-			class="fluent-nav-menu"
-			role="menu"
-			data-expanded={expanded}
-		>
+	<div role="group" class="fluent-collapsible-region-container items" style:display={expanded ? "block" : "none"}>
+		<div class="fluent-nav-menu" role="menu" data-expanded={expanded}>
 			{@render children?.()}
 		</div>
 	</div>

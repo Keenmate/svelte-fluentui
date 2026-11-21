@@ -19,22 +19,14 @@ Hamburger button row used by `NavMenu` (`collapsible`) to toggle the collapsed r
 	/** Other native attributes and events (`aria-label`, `title`, …) go to the underlying NavItem `<div>`. */
 	type Props = OwnProps & RestProps<OwnProps>
 
-	let {
-		onclick = undefined,
-		class: className = undefined,
-		...rest
-	    }: Props = $props()
+	let {onclick = undefined, class: className = undefined, ...rest}: Props = $props()
 
 	// Forwarded to a child component whose own prop types are narrower than
 	// HTMLAttributes (no `null`), so hand the spread over untyped.
 	const forwarded = $derived(rest as Record<string, unknown>)
 </script>
 
-<NavItem
-	{...forwarded}
-	class="expander {className || ''}"
-	{onclick}
->
+<NavItem {...forwarded} class="expander {className || ''}" {onclick}>
 	<PositioningRegion>
 		<ContentRegion>
 			<HamburgerIcon />

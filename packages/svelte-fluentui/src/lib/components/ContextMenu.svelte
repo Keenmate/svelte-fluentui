@@ -19,14 +19,21 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {tick} from "svelte"
-	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
-	import { SvelteMap } from "svelte/reactivity"
+	import {computePosition, flip, shift, offset, size, autoUpdate} from "@floating-ui/dom"
+	import {SvelteMap} from "svelte/reactivity"
 	import Icon from "./Icon.svelte"
-	import { portal, portalHost } from "../actions/portal.js"
-	import { pushLayer } from "../helpers/layer-stack.js"
-	import { dismissOnOutside } from "../helpers/dismiss.js"
-	import { ListNav } from "../helpers/listbox-nav.svelte.js"
-	import {getMenuChildren, resolveMenuEntries, runAction, type MenuEntry, type MenuItem, type ResolvedMenuEntry} from "../action-items/index.js"
+	import {portal, portalHost} from "../actions/portal.js"
+	import {pushLayer} from "../helpers/layer-stack.js"
+	import {dismissOnOutside} from "../helpers/dismiss.js"
+	import {ListNav} from "../helpers/listbox-nav.svelte.js"
+	import {
+		getMenuChildren,
+		resolveMenuEntries,
+		runAction,
+		type MenuEntry,
+		type MenuItem,
+		type ResolvedMenuEntry
+	} from "../action-items/index.js"
 	import type {RestProps} from "../types/index.js"
 
 	type Entry = MenuEntry<ContextMenuContext>
@@ -96,7 +103,7 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	const uid = $props.id()
 	/** Focus before the menu opened — restored when it closes from inside (Escape, item, Tab). */
 	let returnFocusEl: HTMLElement | null = null
-	let cursor = $state({ x: 0, y: 0 })
+	let cursor = $state({x: 0, y: 0})
 
 	const menuCtx = $derived<ContextMenuContext>({x: cursor.x, y: cursor.y})
 	const entries = $derived(resolveMenuEntries(items, menuCtx))
@@ -107,7 +114,7 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 		if (disabled || resolveMenuEntries(items, {x: e.clientX, y: e.clientY}).length === 0) return
 		e.preventDefault()
 		e.stopPropagation()
-		cursor = { x: e.clientX, y: e.clientY }
+		cursor = {x: e.clientX, y: e.clientY}
 		if (!open) returnFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null
 		open = true
 		onOpenChange?.({open: true, x: e.clientX, y: e.clientY})
@@ -116,7 +123,7 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	/** Closes the menu; `restoreFocus` returns focus to where it was before opening, if it is in the menu now. */
 	function closeMenu(restoreFocus = false) {
 		if (!open) return
-		const focusWasInside = menuSurfaces().some(el => el.contains(document.activeElement))
+		const focusWasInside = menuSurfaces().some((el) => el.contains(document.activeElement))
 		open = false
 		closeAllSubmenus()
 		onOpenChange?.({open: false})
@@ -229,7 +236,7 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 		for (const [k, v] of openSubmenus) {
 			if (v.parentKey === parentKey && k !== key) closeSubmenuTree(k)
 		}
-		openSubmenus.set(key, { entries: resolveMenuEntries(children, menuCtx), triggerEl, parentKey })
+		openSubmenus.set(key, {entries: resolveMenuEntries(children, menuCtx), triggerEl, parentKey})
 	}
 
 	function scheduleCloseSubmenu(key: string) {
@@ -266,15 +273,15 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	 */
 	function positionSubmenu(node: HTMLElement, triggerEl: HTMLElement) {
 		async function update() {
-			const { x, y } = await computePosition(triggerEl, node, {
+			const {x, y} = await computePosition(triggerEl, node, {
 				placement: "right-start",
 				strategy: "fixed",
 				middleware: [
 					offset(2),
-					flip({ fallbackPlacements: ["left-start", "right-end", "left-end"] }),
-					shift({ padding: 8 }),
+					flip({fallbackPlacements: ["left-start", "right-end", "left-end"]}),
+					shift({padding: 8}),
 					size({
-						apply({ availableHeight, elements }) {
+						apply({availableHeight, elements}) {
 							elements.floating.style.maxHeight = `${Math.max(availableHeight - 8, 80)}px`
 						},
 						padding: 8
@@ -315,7 +322,7 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 
 	async function updatePosition() {
 		if (!menuEl) return
-		const { x, y } = await computePosition(virtualAnchor, menuEl, {
+		const {x, y} = await computePosition(virtualAnchor, menuEl, {
 			placement: "bottom-start",
 			strategy: "fixed",
 			middleware: [
@@ -332,9 +339,9 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 					crossAxis: offsetMenuX
 				}),
 				flip(),
-				shift({ padding: 8 }),
+				shift({padding: 8}),
 				size({
-					apply({ availableHeight, elements }) {
+					apply({availableHeight, elements}) {
 						elements.floating.style.maxHeight = `${Math.max(availableHeight - 8, 80)}px`
 					},
 					padding: 8
@@ -370,7 +377,9 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	}
 
 	function submenuSurface(key: string): HTMLElement | null {
-		return document.querySelector<HTMLElement>(`.fluent-context-submenu[data-menu-id="${uid}"][data-submenu-key="${CSS.escape(key)}"]`)
+		return document.querySelector<HTMLElement>(
+			`.fluent-context-submenu[data-menu-id="${uid}"][data-submenu-key="${CSS.escape(key)}"]`
+		)
 	}
 
 	/*
@@ -391,7 +400,11 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 				else closeMenu(true)
 			}
 		})
-		const undismiss = dismissOnOutside(() => [wrapperEl, ...menuSurfaces()], () => closeMenu(), {scroll: true})
+		const undismiss = dismissOnOutside(
+			() => [wrapperEl, ...menuSurfaces()],
+			() => closeMenu(),
+			{scroll: true}
+		)
 		return () => {
 			undismiss()
 			popLayer()
@@ -430,10 +443,12 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	let navSurface: HTMLElement | null = null
 
 	function surfaceItems(surface: HTMLElement | null): HTMLElement[] {
-		return surface ? Array.from(surface.querySelectorAll<HTMLElement>(":scope > button.fluent-context-menu-item:not(:disabled)")) : []
+		return surface
+			? Array.from(surface.querySelectorAll<HTMLElement>(":scope > button.fluent-context-menu-item:not(:disabled)"))
+			: []
 	}
 
-	const nav = new ListNav({count: () => surfaceItems(navSurface).length, itemAt: i => surfaceItems(navSurface)[i]})
+	const nav = new ListNav({count: () => surfaceItems(navSurface).length, itemAt: (i) => surfaceItems(navSurface)[i]})
 
 	function isRtl(el: HTMLElement) {
 		return getComputedStyle(el).direction === "rtl"
@@ -475,7 +490,11 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 		target?.focus()
 	}
 
-	async function onSubmenuTriggerKeydown(e: KeyboardEvent & {currentTarget: HTMLElement}, entry: Resolved & {kind: "item"}, parentKey: string | null) {
+	async function onSubmenuTriggerKeydown(
+		e: KeyboardEvent & {currentTarget: HTMLElement},
+		entry: Resolved & {kind: "item"},
+		parentKey: string | null
+	) {
 		const triggerEl = e.currentTarget
 		if (e.key !== (isRtl(triggerEl) ? "ArrowLeft" : "ArrowRight") && e.key !== "Enter" && e.key !== " ") return
 		e.preventDefault()
@@ -487,7 +506,13 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	}
 </script>
 
-<span {...rest} bind:this={wrapperEl} class={["fluent-context-menu-wrapper", className]} oncontextmenu={onContextMenu} onpointerdowncapture={onZonePointerDown}>
+<span
+	{...rest}
+	bind:this={wrapperEl}
+	class={["fluent-context-menu-wrapper", className]}
+	oncontextmenu={onContextMenu}
+	onpointerdowncapture={onZonePointerDown}
+>
 	{@render children?.()}
 </span>
 
@@ -524,8 +549,15 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 		>
 			{@render icon(entry)}
 			<span class="fluent-context-menu-item-label">{entry.resolved.text}</span>
-			<svg class="fluent-context-menu-chevron" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
-				<path d="M3.3 5.7a1 1 0 0 1 1.4 0L8 9l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z"/>
+			<svg
+				class="fluent-context-menu-chevron"
+				viewBox="0 0 16 16"
+				width="12"
+				height="12"
+				fill="currentColor"
+				aria-hidden="true"
+			>
+				<path d="M3.3 5.7a1 1 0 0 1 1.4 0L8 9l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z" />
 			</svg>
 		</button>
 		{#if isExpanded(entry)}
@@ -552,8 +584,15 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 		>
 			{@render icon(entry)}
 			<span class="fluent-context-menu-item-label">{entry.resolved.text}</span>
-			<svg class="fluent-context-menu-submenu-arrow" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true">
-				<path d="M5.7 3.3a1 1 0 0 1 1.4 0l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 1 1-1.4-1.4L9 8 5.7 4.7a1 1 0 0 1 0-1.4z"/>
+			<svg
+				class="fluent-context-menu-submenu-arrow"
+				viewBox="0 0 16 16"
+				width="12"
+				height="12"
+				fill="currentColor"
+				aria-hidden="true"
+			>
+				<path d="M5.7 3.3a1 1 0 0 1 1.4 0l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 1 1-1.4-1.4L9 8 5.7 4.7a1 1 0 0 1 0-1.4z" />
 			</svg>
 		</button>
 	{:else}
@@ -643,7 +682,9 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 		background: var(--neutral-layer-1, #ffffff);
 		border: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
 		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
+		box-shadow:
+			0 8px 16px rgba(0, 0, 0, 0.14),
+			0 0 2px rgba(0, 0, 0, 0.12);
 		color: var(--neutral-foreground-rest);
 		font-family: var(--body-font);
 		font-size: var(--type-ramp-base-font-size, 14px);

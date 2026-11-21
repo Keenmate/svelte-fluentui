@@ -23,12 +23,12 @@
  * ```
  */
 
-import { type Plugin, type ResolvedConfig } from 'vite';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'node:url';
+import {type Plugin, type ResolvedConfig} from "vite"
+import fs from "fs"
+import path from "path"
+import {fileURLToPath} from "node:url"
 
-export type IconsMode = 'inline' | 'asset';
+export type IconsMode = "inline" | "asset"
 
 /**
  * An icon to always include, optionally restricting which sizes/variants ship.
@@ -38,11 +38,11 @@ export type IconsMode = 'inline' | 'asset';
  * clamps it to size 16.
  */
 export interface IconInclude {
-	name: string;
+	name: string
 	/** Sizes to bundle for this icon when a usage's size is unknown. */
-	sizes?: number[];
+	sizes?: number[]
 	/** Variants to bundle for this icon when a usage's variant is unknown. */
-	variants?: ('regular' | 'filled')[];
+	variants?: ("regular" | "filled")[]
 }
 
 export interface SvelteFluentUIOptions {
@@ -51,7 +51,7 @@ export interface SvelteFluentUIOptions {
 	 * - `inline` (default): SVG markup baked into the JS bundle (no runtime request).
 	 * - `asset`: emitted as hashed files under `/_app/*` and fetched at runtime.
 	 */
-	iconsMode?: IconsMode;
+	iconsMode?: IconsMode
 
 	/**
 	 * Additional icons to always include (for names the scanner can't see, e.g.
@@ -59,7 +59,7 @@ export interface SvelteFluentUIOptions {
 	 * either a name (all sizes/variants) or an object restricting sizes/variants.
 	 * @example ['home', 'settings', { name: 'history', sizes: [16] }]
 	 */
-	iconsInclude?: (string | IconInclude)[];
+	iconsInclude?: (string | IconInclude)[]
 
 	/**
 	 * Path to a config file containing additional icons to include.
@@ -70,25 +70,25 @@ export interface SvelteFluentUIOptions {
 	 *
 	 * @default 'fluentui-icons.config.json' (if exists)
 	 */
-	iconsConfigFile?: string | false;
+	iconsConfigFile?: string | false
 
 	/**
 	 * File extensions to scan for icon usage.
 	 * @default ['.svelte', '.ts', '.js']
 	 */
-	iconsScanExtensions?: string[];
+	iconsScanExtensions?: string[]
 
 	/**
 	 * Icon sizes to make available for each detected icon.
 	 * @default [16, 20, 24, 28, 32, 48]
 	 */
-	iconsSizes?: number[];
+	iconsSizes?: number[]
 
 	/**
 	 * Icon variants to make available for each detected icon.
 	 * @default ['regular', 'filled']
 	 */
-	iconsVariants?: ('regular' | 'filled')[];
+	iconsVariants?: ("regular" | "filled")[]
 
 	/**
 	 * Also scan svelte-fluentui's own components for the icons they render
@@ -99,67 +99,50 @@ export interface SvelteFluentUIOptions {
 	 * extra icons — the whole library statically references only a few.
 	 * @default true
 	 */
-	iconsScanLibrary?: boolean;
+	iconsScanLibrary?: boolean
 
 	/**
 	 * Enable verbose logging
 	 * @default false
 	 */
-	verbose?: boolean;
+	verbose?: boolean
 }
 
-const VIRTUAL_ID = 'virtual:fluentui-icons';
-const RESOLVED_VIRTUAL_ID = '\0' + VIRTUAL_ID;
+const VIRTUAL_ID = "virtual:fluentui-icons"
+const RESOLVED_VIRTUAL_ID = "\0" + VIRTUAL_ID
 
-const DEFAULT_CONFIG_FILES = [
-	'fluentui-icons.config.json',
-	'fluentui-icons.config.js',
-	'fluentui-icons.config.ts'
-];
+const DEFAULT_CONFIG_FILES = ["fluentui-icons.config.json", "fluentui-icons.config.js", "fluentui-icons.config.ts"]
 
-const DEFAULT_OPTIONS: Required<Omit<SvelteFluentUIOptions, 'iconsConfigFile'>> & {
-	iconsConfigFile: string | false | undefined;
+const DEFAULT_OPTIONS: Required<Omit<SvelteFluentUIOptions, "iconsConfigFile">> & {
+	iconsConfigFile: string | false | undefined
 } = {
-	iconsMode: 'inline',
+	iconsMode: "inline",
 	iconsInclude: [],
 	iconsConfigFile: undefined, // Will auto-detect
-	iconsScanExtensions: ['.svelte', '.ts', '.js'],
+	iconsScanExtensions: [".svelte", ".ts", ".js"],
 	iconsSizes: [16, 20, 24, 28, 32, 48],
-	iconsVariants: ['regular', 'filled'],
+	iconsVariants: ["regular", "filled"],
 	iconsScanLibrary: true,
 	verbose: false
-};
+}
 
 // svelte-fluentui's own components live next to this plugin: in a published
 // install the plugin sits at `dist/vite/…` and components at `dist/components`;
 // in this repo's dev it's `src/lib/vite/…` and `src/lib/components`. Either way
 // `../components` relative to this file is the library's component source, so we
 // find its internal <Icon> usage without walking node_modules.
-const LIBRARY_COMPONENTS_DIR = path.resolve(
-	path.dirname(fileURLToPath(import.meta.url)),
-	'..',
-	'components'
-);
+const LIBRARY_COMPONENTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "components")
 
 // Directories that never contain first-party <Icon> usage worth scanning.
-const IGNORED_DIRS = new Set([
-	'node_modules',
-	'.git',
-	'.svelte-kit',
-	'dist',
-	'build',
-	'.vercel',
-	'.netlify',
-	'.output'
-]);
+const IGNORED_DIRS = new Set(["node_modules", ".git", ".svelte-kit", "dist", "build", ".vercel", ".netlify", ".output"])
 
 /** Parsed contents of a config file. */
 interface LoadedConfig {
-	icons: (string | IconInclude)[];
+	icons: (string | IconInclude)[]
 	/** Default sizes for icons whose size can't be determined statically. */
-	sizes?: number[];
+	sizes?: number[]
 	/** Default variants for icons whose variant can't be determined statically. */
-	variants?: ('regular' | 'filled')[];
+	variants?: ("regular" | "filled")[]
 }
 
 /**
@@ -168,61 +151,59 @@ interface LoadedConfig {
  */
 function normalizeConfig(raw: unknown): LoadedConfig | null {
 	if (Array.isArray(raw)) {
-		return { icons: raw };
+		return {icons: raw}
 	}
-	if (raw && typeof raw === 'object') {
-		const obj = raw as Record<string, unknown>;
-		const icons = obj.icons ?? obj.include;
+	if (raw && typeof raw === "object") {
+		const obj = raw as Record<string, unknown>
+		const icons = obj.icons ?? obj.include
 		if (Array.isArray(icons)) {
 			return {
 				icons: icons as (string | IconInclude)[],
 				sizes: Array.isArray(obj.sizes) ? (obj.sizes as number[]) : undefined,
-				variants: Array.isArray(obj.variants)
-					? (obj.variants as ('regular' | 'filled')[])
-					: undefined
-			};
+				variants: Array.isArray(obj.variants) ? (obj.variants as ("regular" | "filled")[]) : undefined
+			}
 		}
 	}
-	return null;
+	return null
 }
 
 /**
  * Load icons (and optional size/variant defaults) from a config file.
  */
 async function loadConfigFile(configPath: string, verbose: boolean): Promise<LoadedConfig> {
-	const empty: LoadedConfig = { icons: [] };
+	const empty: LoadedConfig = {icons: []}
 	if (!fs.existsSync(configPath)) {
-		return empty;
+		return empty
 	}
 
-	const ext = path.extname(configPath).toLowerCase();
+	const ext = path.extname(configPath).toLowerCase()
 
 	try {
-		let raw: unknown;
-		if (ext === '.json') {
-			raw = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-		} else if (ext === '.js' || ext === '.ts') {
-			const fileUrl = `file://${configPath.replace(/\\/g, '/')}`;
-			const module = await import(fileUrl);
-			raw = module.default ?? module.icons ?? module.include ?? module;
+		let raw: unknown
+		if (ext === ".json") {
+			raw = JSON.parse(fs.readFileSync(configPath, "utf-8"))
+		} else if (ext === ".js" || ext === ".ts") {
+			const fileUrl = `file://${configPath.replace(/\\/g, "/")}`
+			const module = await import(fileUrl)
+			raw = module.default ?? module.icons ?? module.include ?? module
 		} else {
-			console.warn(`[fluentui-icons] Unsupported config file format: ${ext}`);
-			return empty;
+			console.warn(`[fluentui-icons] Unsupported config file format: ${ext}`)
+			return empty
 		}
 
-		const config = normalizeConfig(raw);
+		const config = normalizeConfig(raw)
 		if (!config) {
-			console.warn(`[fluentui-icons] Config file ${configPath} does not contain an icons array`);
-			return empty;
+			console.warn(`[fluentui-icons] Config file ${configPath} does not contain an icons array`)
+			return empty
 		}
 
 		if (verbose) {
-			console.log(`[fluentui-icons] Loaded ${config.icons.length} icon(s) from ${configPath}`);
+			console.log(`[fluentui-icons] Loaded ${config.icons.length} icon(s) from ${configPath}`)
 		}
-		return config;
+		return config
 	} catch (err) {
-		console.error(`[fluentui-icons] Error loading config file ${configPath}:`, err);
-		return empty;
+		console.error(`[fluentui-icons] Error loading config file ${configPath}:`, err)
+		return empty
 	}
 }
 
@@ -231,12 +212,12 @@ async function loadConfigFile(configPath: string, verbose: boolean): Promise<Loa
  */
 function findConfigFile(root: string): string | null {
 	for (const fileName of DEFAULT_CONFIG_FILES) {
-		const filePath = path.join(root, fileName);
+		const filePath = path.join(root, fileName)
 		if (fs.existsSync(filePath)) {
-			return filePath;
+			return filePath
 		}
 	}
-	return null;
+	return null
 }
 
 /**
@@ -245,12 +226,12 @@ function findConfigFile(root: string): string | null {
  * variant" (the safe fallback for dynamic `size={…}` and data-driven names).
  */
 interface IconRequest {
-	name: string;
-	size: number | null;
-	variants: ('regular' | 'filled')[] | null;
+	name: string
+	size: number | null
+	variants: ("regular" | "filled")[] | null
 }
 
-const DEFAULT_ICON_SIZE = 24;
+const DEFAULT_ICON_SIZE = 24
 
 /**
  * Parse a single `<Icon … >` tag into per-name requirements, reading the
@@ -260,49 +241,49 @@ const DEFAULT_ICON_SIZE = 24;
 function parseIconTag(tag: string): IconRequest[] {
 	// Names: static name="x", plus any quoted literals inside a dynamic
 	// name={cond ? "a" : "b"} / name={"home" + suffix} expression.
-	const names = new Set<string>();
-	const staticName = /\sname=["']([^"']+)["']/.exec(tag);
-	if (staticName) names.add(staticName[1]);
-	const dynamicName = /\sname=\{([^}]*)\}/.exec(tag);
+	const names = new Set<string>()
+	const staticName = /\sname=["']([^"']+)["']/.exec(tag)
+	if (staticName) names.add(staticName[1])
+	const dynamicName = /\sname=\{([^}]*)\}/.exec(tag)
 	if (dynamicName) {
-		const literalPattern = /["']([a-z][a-z0-9_]*)["']/g;
-		let literal;
+		const literalPattern = /["']([a-z][a-z0-9_]*)["']/g
+		let literal
 		while ((literal = literalPattern.exec(dynamicName[1])) !== null) {
-			names.add(literal[1]);
+			names.add(literal[1])
 		}
 	}
-	if (names.size === 0) return [];
+	if (names.size === 0) return []
 
 	// Size: literal size={20} / size="20" → that size; no size attr → default;
 	// dynamic size={expr} → null (all sizes).
-	let size: number | null;
-	const sizeLiteral = /\ssize=(?:\{(\d+)\}|["'](\d+)["'])/.exec(tag);
+	let size: number | null
+	const sizeLiteral = /\ssize=(?:\{(\d+)\}|["'](\d+)["'])/.exec(tag)
 	if (sizeLiteral) {
-		size = parseInt(sizeLiteral[1] ?? sizeLiteral[2], 10);
+		size = parseInt(sizeLiteral[1] ?? sizeLiteral[2], 10)
 	} else if (/\ssize=/.test(tag)) {
-		size = null;
+		size = null
 	} else {
-		size = DEFAULT_ICON_SIZE;
+		size = DEFAULT_ICON_SIZE
 	}
 
 	// Variant: static variant="filled" → that; no variant attr → regular;
 	// dynamic variant={expr} → null (both).
-	let variants: ('regular' | 'filled')[] | null;
-	const variantLiteral = /\svariant=["'](regular|filled)["']/.exec(tag);
+	let variants: ("regular" | "filled")[] | null
+	const variantLiteral = /\svariant=["'](regular|filled)["']/.exec(tag)
 	if (variantLiteral) {
-		variants = [variantLiteral[1] as 'regular' | 'filled'];
+		variants = [variantLiteral[1] as "regular" | "filled"]
 	} else if (/\svariant=/.test(tag)) {
-		variants = null;
+		variants = null
 	} else {
-		variants = ['regular'];
+		variants = ["regular"]
 	}
 
 	// hoverEffect swaps to the filled variant on hover, so it needs `filled` too.
-	if (/\shoverEffect\b/.test(tag) && variants && !variants.includes('filled')) {
-		variants = [...variants, 'filled'];
+	if (/\shoverEffect\b/.test(tag) && variants && !variants.includes("filled")) {
+		variants = [...variants, "filled"]
 	}
 
-	return [...names].map((name) => ({ name, size, variants }));
+	return [...names].map((name) => ({name, size, variants}))
 }
 
 /**
@@ -310,12 +291,12 @@ function parseIconTag(tag: string): IconRequest[] {
  * aware) plus object properties (name:/icon:/iconName: "…", all sizes/variants).
  */
 function extractIconRequests(code: string): IconRequest[] {
-	const requests: IconRequest[] = [];
+	const requests: IconRequest[] = []
 
-	const tagPattern = /<Icon\b[^>]*>/g;
-	let match;
+	const tagPattern = /<Icon\b[^>]*>/g
+	let match
 	while ((match = tagPattern.exec(code)) !== null) {
-		requests.push(...parseIconTag(match[0]));
+		requests.push(...parseIconTag(match[0]))
 	}
 
 	// Programmatic usage (data arrays): an `icon:` / `iconName:` property, e.g.
@@ -323,132 +304,130 @@ function extractIconRequests(code: string): IconRequest[] {
 	// `name:` — that collides with unrelated object literals (API-doc tables full
 	// of `{ name: "options", type: ... }` rows) and would bundle phantom icons.
 	// These have no tag context, so the size/variant is unknown → include all.
-	const objectPattern = /\bicon(?:Name)?:\s*["']([a-z][a-z_]*)["']/g;
+	const objectPattern = /\bicon(?:Name)?:\s*["']([a-z][a-z_]*)["']/g
 	while ((match = objectPattern.exec(code)) !== null) {
-		requests.push({ name: match[1], size: null, variants: null });
+		requests.push({name: match[1], size: null, variants: null})
 	}
 
-	return requests;
+	return requests
 }
 
 /**
  * Recursively scan a project directory for icon usage.
  */
 function scanProjectForIcons(root: string, extensions: string[]): IconRequest[] {
-	const requests: IconRequest[] = [];
+	const requests: IconRequest[] = []
 
 	const walk = (dir: string) => {
-		let entries: fs.Dirent[];
+		let entries: fs.Dirent[]
 		try {
-			entries = fs.readdirSync(dir, { withFileTypes: true });
+			entries = fs.readdirSync(dir, {withFileTypes: true})
 		} catch {
-			return;
+			return
 		}
 
 		for (const entry of entries) {
 			if (entry.isDirectory()) {
-				if (IGNORED_DIRS.has(entry.name) || entry.name.startsWith('.')) continue;
-				walk(path.join(dir, entry.name));
+				if (IGNORED_DIRS.has(entry.name) || entry.name.startsWith(".")) continue
+				walk(path.join(dir, entry.name))
 			} else if (entry.isFile() && extensions.includes(path.extname(entry.name))) {
 				try {
-					const code = fs.readFileSync(path.join(dir, entry.name), 'utf-8');
-					requests.push(...extractIconRequests(code));
+					const code = fs.readFileSync(path.join(dir, entry.name), "utf-8")
+					requests.push(...extractIconRequests(code))
 				} catch {
 					// Ignore unreadable files
 				}
 			}
 		}
-	};
+	}
 
-	walk(root);
-	return requests;
+	walk(root)
+	return requests
 }
 
 /**
  * Find the @fluentui/svg-icons package in node_modules
  */
 function findIconsPackage(startDir: string): string | null {
-	let currentDir = startDir;
+	let currentDir = startDir
 
 	while (currentDir !== path.parse(currentDir).root) {
-		const iconsPath = path.join(currentDir, 'node_modules', '@fluentui', 'svg-icons', 'icons');
+		const iconsPath = path.join(currentDir, "node_modules", "@fluentui", "svg-icons", "icons")
 		if (fs.existsSync(iconsPath)) {
-			return iconsPath;
+			return iconsPath
 		}
-		currentDir = path.dirname(currentDir);
+		currentDir = path.dirname(currentDir)
 	}
 
-	return null;
+	return null
 }
 
 export function svelteFluentUI(options: SvelteFluentUIOptions = {}): Plugin {
-	const opts = { ...DEFAULT_OPTIONS, ...options };
-	const includeEntries: (string | IconInclude)[] = [...opts.iconsInclude];
+	const opts = {...DEFAULT_OPTIONS, ...options}
+	const includeEntries: (string | IconInclude)[] = [...opts.iconsInclude]
 
 	// Effective fallback sizes/variants (used when a usage's size/variant can't
 	// be determined). Precedence: explicit plugin option > config file > default.
-	let effectiveSizes = opts.iconsSizes;
-	let effectiveVariants = opts.iconsVariants;
-	const sizesFromOption = options.iconsSizes !== undefined;
-	const variantsFromOption = options.iconsVariants !== undefined;
+	let effectiveSizes = opts.iconsSizes
+	let effectiveVariants = opts.iconsVariants
+	const sizesFromOption = options.iconsSizes !== undefined
+	const variantsFromOption = options.iconsVariants !== undefined
 
-	let config: ResolvedConfig;
-	let iconsSourcePath: string | null = null;
-	let isBuild = false;
+	let config: ResolvedConfig
+	let iconsSourcePath: string | null = null
+	let isBuild = false
 	// The library's own components never change during a session — scan once.
-	let libraryRequests: IconRequest[] | null = null;
+	let libraryRequests: IconRequest[] | null = null
 
 	return {
-		name: 'vite-plugin-fluentui-icons',
+		name: "vite-plugin-fluentui-icons",
 
 		async configResolved(resolvedConfig) {
-			config = resolvedConfig;
-			isBuild = config.command === 'build';
-			iconsSourcePath = findIconsPackage(config.root);
+			config = resolvedConfig
+			isBuild = config.command === "build"
+			iconsSourcePath = findIconsPackage(config.root)
 
 			if (!iconsSourcePath) {
-				console.warn(
-					'[fluentui-icons] @fluentui/svg-icons not found in node_modules. Icons will not be available.'
-				);
+				console.warn("[fluentui-icons] @fluentui/svg-icons not found in node_modules. Icons will not be available.")
 			}
 
 			// Load config file if not disabled
 			if (opts.iconsConfigFile !== false) {
-				let configPath: string | null = null;
-				if (typeof opts.iconsConfigFile === 'string') {
+				let configPath: string | null = null
+				if (typeof opts.iconsConfigFile === "string") {
 					configPath = path.isAbsolute(opts.iconsConfigFile)
 						? opts.iconsConfigFile
-						: path.join(config.root, opts.iconsConfigFile);
+						: path.join(config.root, opts.iconsConfigFile)
 				} else {
-					configPath = findConfigFile(config.root);
+					configPath = findConfigFile(config.root)
 				}
 
 				if (configPath) {
-					const loaded = await loadConfigFile(configPath, opts.verbose);
-					includeEntries.push(...loaded.icons);
+					const loaded = await loadConfigFile(configPath, opts.verbose)
+					includeEntries.push(...loaded.icons)
 					// Config-file defaults fill in only where the plugin option didn't.
-					if (!sizesFromOption && loaded.sizes) effectiveSizes = loaded.sizes;
-					if (!variantsFromOption && loaded.variants) effectiveVariants = loaded.variants;
+					if (!sizesFromOption && loaded.sizes) effectiveSizes = loaded.sizes
+					if (!variantsFromOption && loaded.variants) effectiveVariants = loaded.variants
 				}
 			}
 		},
 
 		resolveId(id) {
-			if (id === VIRTUAL_ID) return RESOLVED_VIRTUAL_ID;
-			return null;
+			if (id === VIRTUAL_ID) return RESOLVED_VIRTUAL_ID
+			return null
 		},
 
 		load(id) {
-			if (id !== RESOLVED_VIRTUAL_ID) return null;
+			if (id !== RESOLVED_VIRTUAL_ID) return null
 
 			if (!iconsSourcePath) {
-				return 'export default {};';
+				return "export default {};"
 			}
 
 			// Collect every icon requirement from scanned usage, and register each
 			// `include` entry (a name pulls every size/variant; an object entry caps
 			// the sizes/variants for that name — even for its auto-detected usage).
-			const requests = scanProjectForIcons(config.root, opts.iconsScanExtensions);
+			const requests = scanProjectForIcons(config.root, opts.iconsScanExtensions)
 
 			// Also pull in the icons svelte-fluentui's own components render (e.g.
 			// the QuickGrid row toolbar). These live inside the library package,
@@ -457,26 +436,26 @@ export function svelteFluentUI(options: SvelteFluentUIOptions = {}): Plugin {
 				if (libraryRequests === null) {
 					libraryRequests = fs.existsSync(LIBRARY_COMPONENTS_DIR)
 						? scanProjectForIcons(LIBRARY_COMPONENTS_DIR, opts.iconsScanExtensions)
-						: [];
+						: []
 					if (opts.verbose) {
 						console.log(
 							`[fluentui-icons] scanned library components at ${LIBRARY_COMPONENTS_DIR}: ` +
 								`${libraryRequests.length} internal icon request(s)`
-						);
+						)
 					}
 				}
-				requests.push(...libraryRequests);
+				requests.push(...libraryRequests)
 			}
 
-			const overrides = new Map<string, { sizes?: number[]; variants?: ('regular' | 'filled')[] }>();
+			const overrides = new Map<string, {sizes?: number[]; variants?: ("regular" | "filled")[]}>()
 			for (const entry of includeEntries) {
-				const name = typeof entry === 'string' ? entry : entry.name;
-				requests.push({ name, size: null, variants: null });
-				if (typeof entry !== 'string' && (entry.sizes?.length || entry.variants?.length)) {
-					const override = overrides.get(name) ?? {};
-					if (entry.sizes?.length) override.sizes = entry.sizes;
-					if (entry.variants?.length) override.variants = entry.variants;
-					overrides.set(name, override);
+				const name = typeof entry === "string" ? entry : entry.name
+				requests.push({name, size: null, variants: null})
+				if (typeof entry !== "string" && (entry.sizes?.length || entry.variants?.length)) {
+					const override = overrides.get(name) ?? {}
+					if (entry.sizes?.length) override.sizes = entry.sizes
+					if (entry.variants?.length) override.variants = entry.variants
+					overrides.set(name, override)
 				}
 			}
 
@@ -484,17 +463,16 @@ export function svelteFluentUI(options: SvelteFluentUIOptions = {}): Plugin {
 			// need. A usage with a literal size/variant is used as-is; an unknown
 			// one falls back to the per-name override, then to the configured
 			// sizes/variants.
-			const wanted = new Set<string>();
-			const names = new Set<string>();
+			const wanted = new Set<string>()
+			const names = new Set<string>()
 			for (const req of requests) {
-				names.add(req.name);
-				const override = overrides.get(req.name);
-				const sizes = req.size !== null ? [req.size] : (override?.sizes ?? effectiveSizes);
-				const variants =
-					req.variants !== null ? req.variants : (override?.variants ?? effectiveVariants);
+				names.add(req.name)
+				const override = overrides.get(req.name)
+				const sizes = req.size !== null ? [req.size] : (override?.sizes ?? effectiveSizes)
+				const variants = req.variants !== null ? req.variants : (override?.variants ?? effectiveVariants)
 				for (const size of sizes) {
 					for (const variant of variants) {
-						wanted.add(`${req.name}_${size}_${variant}`);
+						wanted.add(`${req.name}_${size}_${variant}`)
 					}
 				}
 			}
@@ -502,51 +480,51 @@ export function svelteFluentUI(options: SvelteFluentUIOptions = {}): Plugin {
 			// `asset` mode only emits hashed files during a real build; in dev we
 			// always inline (Vite's asset pipeline isn't running), which also keeps
 			// dev and prod consistent — a missing icon fails the same way in both.
-			const useAsset = isBuild && opts.iconsMode === 'asset';
+			const useAsset = isBuild && opts.iconsMode === "asset"
 
-			const entries: string[] = [];
-			let count = 0;
+			const entries: string[] = []
+			let count = 0
 
 			for (const key of wanted) {
-				const fileName = `${key}.svg`;
-				const sourceFile = path.join(iconsSourcePath, fileName);
-				if (!fs.existsSync(sourceFile)) continue;
+				const fileName = `${key}.svg`
+				const sourceFile = path.join(iconsSourcePath, fileName)
+				if (!fs.existsSync(sourceFile)) continue
 
 				if (useAsset) {
 					const referenceId = this.emitFile({
-						type: 'asset',
+						type: "asset",
 						name: fileName,
 						source: fs.readFileSync(sourceFile)
-					});
-					entries.push(`${JSON.stringify(key)}: import.meta.ROLLUP_FILE_URL_${referenceId}`);
+					})
+					entries.push(`${JSON.stringify(key)}: import.meta.ROLLUP_FILE_URL_${referenceId}`)
 				} else {
-					const svg = fs.readFileSync(sourceFile, 'utf-8');
-					entries.push(`${JSON.stringify(key)}: ${JSON.stringify(svg)}`);
+					const svg = fs.readFileSync(sourceFile, "utf-8")
+					entries.push(`${JSON.stringify(key)}: ${JSON.stringify(svg)}`)
 				}
-				count++;
+				count++
 			}
 
 			if (opts.verbose) {
 				console.log(
 					`[fluentui-icons] ${opts.iconsMode} mode: ${names.size} icon(s), ${count} file(s) ` +
-						`(${useAsset ? 'emitted as assets' : 'inlined'})`
-				);
+						`(${useAsset ? "emitted as assets" : "inlined"})`
+				)
 			}
 
-			return `export default {\n${entries.join(',\n')}\n};`;
+			return `export default {\n${entries.join(",\n")}\n};`
 		},
 
 		handleHotUpdate(ctx) {
 			// When a scanned source file changes, the set of used icons may change —
 			// invalidate the virtual module so it regenerates.
-			if (!opts.iconsScanExtensions.includes(path.extname(ctx.file))) return;
-			const mod = ctx.server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
+			if (!opts.iconsScanExtensions.includes(path.extname(ctx.file))) return
+			const mod = ctx.server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID)
 			if (mod) {
-				ctx.server.moduleGraph.invalidateModule(mod);
-				return [...ctx.modules, mod];
+				ctx.server.moduleGraph.invalidateModule(mod)
+				return [...ctx.modules, mod]
 			}
 		}
-	};
+	}
 }
 
-export default svelteFluentUI;
+export default svelteFluentUI

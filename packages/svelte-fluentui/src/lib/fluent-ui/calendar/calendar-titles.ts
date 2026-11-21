@@ -10,9 +10,9 @@ export class CalendarTitles {
 	public view: CalendarView
 
 	constructor(calendar: IFluentCalendar) {
-		this.calendar         = calendar
+		this.calendar = calendar
 		this.calendarExtended = calendar.calendarExtended
-		this.view             = calendar.view
+		this.view = calendar.view
 	}
 
 	// Get the current date from CalendarExtended
@@ -70,8 +70,7 @@ export class CalendarTitles {
 
 		switch (this.view) {
 			case "days":
-				return this.date.getFullYear() === minDate.getFullYear() &&
-					this.date.getMonth() === minDate.getMonth()
+				return this.date.getFullYear() === minDate.getFullYear() && this.date.getMonth() === minDate.getMonth()
 			case "months":
 				return this.date.getFullYear() === minDate.getFullYear()
 			case "years":
@@ -101,8 +100,7 @@ export class CalendarTitles {
 
 		switch (this.view) {
 			case "days":
-				return this.date.getFullYear() === maxDate.getFullYear() &&
-					this.date.getMonth() === maxDate.getMonth()
+				return this.date.getFullYear() === maxDate.getFullYear() && this.date.getMonth() === maxDate.getMonth()
 			case "months":
 				return this.date.getFullYear() === maxDate.getFullYear()
 			case "years":

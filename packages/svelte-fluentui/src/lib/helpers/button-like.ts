@@ -20,6 +20,10 @@ export function activateOnEnterOrSpace(event: KeyboardEvent): void {
 }
 
 /** `role="button"`, a tab stop and Enter / Space activation — or nothing when `clickable` is false. */
-export function buttonLike(clickable: boolean): {role?: "button"; tabindex?: number; onkeydown?: (event: KeyboardEvent) => void} {
+export function buttonLike(clickable: boolean): {
+	role?: "button"
+	tabindex?: number
+	onkeydown?: (event: KeyboardEvent) => void
+} {
 	return clickable ? {role: "button", tabindex: 0, onkeydown: activateOnEnterOrSpace} : {}
 }

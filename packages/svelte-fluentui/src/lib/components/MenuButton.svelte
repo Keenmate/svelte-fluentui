@@ -22,13 +22,13 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 <script lang="ts">
 	import {tick} from "svelte"
 	import {attrs} from "../helpers/attrs.js"
-	import { computePosition, flip, shift, offset, size, autoUpdate } from "@floating-ui/dom"
+	import {computePosition, flip, shift, offset, size, autoUpdate} from "@floating-ui/dom"
 	import Icon from "./Icon.svelte"
-	import { portal, portalHost } from "../actions/portal.js"
-	import { pushLayer } from "../helpers/layer-stack.js"
-	import { dismissOnOutside } from "../helpers/dismiss.js"
-	import { ListNav } from "../helpers/listbox-nav.svelte.js"
-	import { resolveMenuEntries, runAction } from "../action-items/index.js"
+	import {portal, portalHost} from "../actions/portal.js"
+	import {pushLayer} from "../helpers/layer-stack.js"
+	import {dismissOnOutside} from "../helpers/dismiss.js"
+	import {ListNav} from "../helpers/listbox-nav.svelte.js"
+	import {resolveMenuEntries, runAction} from "../action-items/index.js"
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
@@ -131,10 +131,12 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 	 */
 	function enabledItems(): HTMLElement[] {
 		if (!menuEl) return []
-		return Array.from(menuEl.querySelectorAll<HTMLElement & {disabled?: boolean}>("fluent-menu-item")).filter(el => !el.disabled)
+		return Array.from(menuEl.querySelectorAll<HTMLElement & {disabled?: boolean}>("fluent-menu-item")).filter(
+			(el) => !el.disabled
+		)
 	}
 
-	const nav = new ListNav({count: () => enabledItems().length, itemAt: i => enabledItems()[i]})
+	const nav = new ListNav({count: () => enabledItems().length, itemAt: (i) => enabledItems()[i]})
 
 	async function focusItem(which: "first" | "last") {
 		await tick()
@@ -178,7 +180,14 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 		if (item.shouldCloseOnClick !== false) closeMenu(true)
 		await runAction({
 			host,
-			detail: {action, id: item.id, item, source: "menu", sourceEvent: event, triggerElement: event.currentTarget as HTMLElement},
+			detail: {
+				action,
+				id: item.id,
+				item,
+				source: "menu",
+				sourceEvent: event,
+				triggerElement: event.currentTarget as HTMLElement
+			},
 			beforeActionCallback,
 			emitAction: (detail) => onAction?.(detail)
 		})
@@ -203,15 +212,15 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 
 	async function updatePosition() {
 		if (!anchorEl || !menuEl) return
-		const { x, y } = await computePosition(anchorEl, menuEl, {
+		const {x, y} = await computePosition(anchorEl, menuEl, {
 			placement: preferredPlacement,
 			strategy: "fixed",
 			middleware: [
 				offset(4),
 				flip(),
-				shift({ padding: 8 }),
+				shift({padding: 8}),
 				size({
-					apply({ availableHeight, elements }) {
+					apply({availableHeight, elements}) {
 						elements.floating.style.maxHeight = `${Math.max(availableHeight - 8, 80)}px`
 					},
 					padding: 8
@@ -241,7 +250,10 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 		if (!open) return
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
 		const popLayer = pushLayer({onEscape: () => closeMenu(true)})
-		const undismiss = dismissOnOutside(() => [anchorEl, menuEl], () => closeMenu())
+		const undismiss = dismissOnOutside(
+			() => [anchorEl, menuEl],
+			() => closeMenu()
+		)
 		return () => {
 			undismiss()
 			popLayer()
@@ -375,7 +387,9 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 		/* fluent-menu's built-in elevation is barely visible on dark themes —
 		 * paint the popover shadow on the wrapper instead so the menu reads
 		 * as a distinct surface. Matches the elevation used by ContextMenu. */
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
+		box-shadow:
+			0 8px 16px rgba(0, 0, 0, 0.14),
+			0 0 2px rgba(0, 0, 0, 0.12);
 	}
 
 	.fluent-menu-button-menu :global(fluent-menu) {

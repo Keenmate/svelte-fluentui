@@ -1,11 +1,5 @@
 /** Lifecycle state of a file in the list. */
-export type InputFileStatus =
-	| "pending"
-	| "uploading"
-	| "paused"
-	| "completed"
-	| "error"
-	| "cancelled"
+export type InputFileStatus = "pending" | "uploading" | "paused" | "completed" | "error" | "cancelled"
 
 /** One file in the InputFile list (`bind:items`). */
 export type InputFileItem = {
@@ -53,9 +47,7 @@ export type FileUploadChunk = {
  * (e.g. `{serverGuid, etag}`) so it survives in the item for later use
  * (e.g. firing a DELETE when the user removes the item from the list).
  */
-export type FileUploadResult = Partial<
-	Pick<InputFileItem, "metadata" | "downloadUrl" | "thumbnailUrl" | "name">
->
+export type FileUploadResult = Partial<Pick<InputFileItem, "metadata" | "downloadUrl" | "thumbnailUrl" | "name">>
 
 /** What `uploadCallback` receives. `file.file` is the native `File`. */
 export type InputFileUploadContext = {
@@ -73,9 +65,7 @@ export type FileUploadHandler = (ctx: InputFileUploadContext) => Promise<void | 
 /** An error message rejects the file; `null` / `undefined` accepts it. */
 export type InputFileValidationResult = string | null | undefined
 /** `customValidator`: per-file check, sync or async. */
-export type InputFileValidator = (
-	file: File
-) => InputFileValidationResult | Promise<InputFileValidationResult>
+export type InputFileValidator = (file: File) => InputFileValidationResult | Promise<InputFileValidationResult>
 
 /** Where rejected files go: shown as error rows (`list`), only reported via `onFileError` (`callback`), or dropped (`silent`). */
 export type InputFileRejectionMode = "list" | "callback" | "silent"

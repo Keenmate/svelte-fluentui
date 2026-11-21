@@ -1,11 +1,11 @@
 import {RangeOf} from "../util/range-of.js"
 
 export class RangeOfDates extends RangeOf<Date> {
-	constructor();
-	constructor(start: Date | null, end: Date | null);
+	constructor()
+	constructor(start: Date | null, end: Date | null)
 
 	constructor(start?: Date | null, end?: Date | null) {
-		super(start ?? null, end ?? null);
+		super(start ?? null, end ?? null)
 
 		this.compare = this.compareDates
 	}
@@ -16,8 +16,8 @@ export class RangeOfDates extends RangeOf<Date> {
 			return []
 		}
 
-		const min         = this.start
-		const max         = this.end
+		const min = this.start
+		const max = this.end
 		const daysInRange = (max.getTime() - min.getTime()) / (1000 * 3600 * 24) // Difference in days
 
 		return Array.from({length: daysInRange + 1}, (_, offset) => {
@@ -39,6 +39,6 @@ export class RangeOfDates extends RangeOf<Date> {
 
 	// Custom toString method for RangeOfDates
 	toString(): string {
-		return `From ${this.start?.toISOString().split("T")[0]} to ${this.end?.toISOString().split("T")[0]}.`;
+		return `From ${this.start?.toISOString().split("T")[0]} to ${this.end?.toISOString().split("T")[0]}.`
 	}
 }

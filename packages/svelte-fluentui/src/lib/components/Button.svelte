@@ -80,7 +80,7 @@ Wrapper for `<fluent-button>`.
 		start = undefined,
 		end = undefined,
 		children = undefined,
-		style= "",
+		style = "",
 		class: className = undefined,
 		"aria-label": ariaLabel = undefined,
 		title = undefined,
@@ -92,11 +92,23 @@ Wrapper for `<fluent-button>`.
 <fluent-button
 	{...rest}
 	{...attrs({
-		type, name, appearance, autofocus, formaction, form, formenctype, formmethod,
-		formnovalidate, formtarget, disabled, style, class: className, "aria-label": ariaLabel,
+		type,
+		name,
+		appearance,
+		autofocus,
+		formaction,
+		form,
+		formenctype,
+		formmethod,
+		formnovalidate,
+		formtarget,
+		disabled,
+		style,
+		class: className,
+		"aria-label": ariaLabel,
 		title
 	})}
-	{...(value != null ? { value } : {})}
+	{...value != null ? {value} : {}}
 	{onclick}
 >
 	{#if start}

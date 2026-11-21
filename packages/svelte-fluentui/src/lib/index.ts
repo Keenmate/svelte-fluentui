@@ -30,7 +30,12 @@ export * from "./action-items/index.js"
 export {default as ContextMenu} from "./components/ContextMenu.svelte"
 export {default as CommandPalette} from "./components/CommandPalette.svelte"
 export {default as CommandPaletteTrigger} from "./components/CommandPaletteTrigger.svelte"
-export type {CommandPaletteItem, CommandPaletteFilter, CommandPaletteContext, CommandPaletteActionDetail} from "./components/CommandPalette.types.js"
+export type {
+	CommandPaletteItem,
+	CommandPaletteFilter,
+	CommandPaletteContext,
+	CommandPaletteActionDetail
+} from "./components/CommandPalette.types.js"
 export {default as Tooltip} from "./components/Tooltip.svelte"
 export {default as Accordion} from "./components/Accordion.svelte"
 export {default as Alert} from "./components/Alert.svelte"
@@ -161,7 +166,6 @@ export type {
 	ToastLabels,
 	TopNavLabels
 } from "./i18n/labels.js"
-
 
 // Actions
 export {portal} from "./actions/portal.js"

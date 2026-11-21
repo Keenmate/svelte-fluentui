@@ -98,9 +98,9 @@
 	const controlId = `grid-cell-editor-${uid}`
 	const listboxId = `${controlId}-listbox`
 	let dropdownOpen = $state(false)
-	let comboText = $state("")  // the Combobox input's text (bind:currentValue)
-	let comboGeneration = $state(0)  // remounts the Combobox (drops its free text)
-	let autocompleteTyped = false  // the autocomplete input holds text the user typed (not a picked label)
+	let comboText = $state("") // the Combobox input's text (bind:currentValue)
+	let comboGeneration = $state(0) // remounts the Combobox (drops its free text)
+	let autocompleteTyped = false // the autocomplete input holds text the user typed (not a picked label)
 
 	// Helper functions for valueMember/displayMember
 	function getOptionValue(option: EditorOption): unknown {
@@ -114,7 +114,7 @@
 	}
 
 	// Get effective options (static or loaded)
-	let effectiveOptions = $derived(loadedOptions.length > 0 ? loadedOptions : (options.options || []))
+	let effectiveOptions = $derived(loadedOptions.length > 0 ? loadedOptions : options.options || [])
 	// What autocomplete lists before the user searches
 	const autocompleteInitialOptions = () => options.initialOptions || effectiveOptions
 
@@ -141,20 +141,27 @@
 	// "" = nothing selected (the dropdown shows its placeholder)
 	const currentKey = $derived(
 		internalValue === null || internalValue === undefined
-			? (type === "select" && options.allowEmpty ? EMPTY_KEY : "")
+			? type === "select" && options.allowEmpty
+				? EMPTY_KEY
+				: ""
 			: keys.keyOf(internalValue)
 	)
 	// The text for a value no option has: what the cell shows (e.g. a value that came from
 	// searchCallback, or options not loaded yet), else the value itself.
 	const valueText = $derived(
-		internalValue === null || internalValue === undefined ? "" :
-			internalValue === value && displayText !== undefined ? displayText : String(internalValue)
+		internalValue === null || internalValue === undefined
+			? ""
+			: internalValue === value && displayText !== undefined
+				? displayText
+				: String(internalValue)
 	)
 
 	// The text for a value: its option's label, else valueText's rule.
 	function labelFor(v: unknown): string {
 		if (v === null || v === undefined) return ""
-		const option = [...autocompleteList, ...effectiveOptions, ...(options.initialOptions || [])].find(opt => getOptionValue(opt) === v)
+		const option = [...autocompleteList, ...effectiveOptions, ...(options.initialOptions || [])].find(
+			(opt) => getOptionValue(opt) === v
+		)
 		if (option) return getOptionLabel(option)
 		return v === value && displayText !== undefined ? displayText : String(v)
 	}
@@ -163,9 +170,9 @@
 	// async search — Combobox debounces (`searchDelay`), this aborts superseded / closed
 	// searches and drops stale responses.
 	const search = new AsyncSearch<EditorOption>({
-		search: (query, signal) => options.onSearch ? options.onSearch(query, signal) : [],
-		onResults: results => (searchResults = results),
-		onError: error => {
+		search: (query, signal) => (options.onSearch ? options.onSearch(query, signal) : []),
+		onResults: (results) => (searchResults = results),
+		onError: (error) => {
 			console.error("Autocomplete search failed:", error)
 			searchResults = []
 		}
@@ -176,7 +183,7 @@
 	function handleAutocompleteSearch({term}: {term: string}) {
 		if (term.length < (options.minSearchLength ?? 1)) {
 			search.cancel()
-			searchResults = [...autocompleteInitialOptions()]  // a new array: Combobox re-syncs on every change
+			searchResults = [...autocompleteInitialOptions()] // a new array: Combobox re-syncs on every change
 		} else {
 			search.run(term)
 		}
@@ -186,7 +193,8 @@
 	// own filter); below minSearchLength everything shows.
 	const localFilter: ComboboxFilter | undefined = $derived(
 		(options.minSearchLength ?? 1) > 1
-			? ({term, option}) => term.length < (options.minSearchLength ?? 1) || containsText(option.label, term, options.searchBehavior)
+			? ({term, option}) =>
+					term.length < (options.minSearchLength ?? 1) || containsText(option.label, term, options.searchBehavior)
 			: undefined
 	)
 
@@ -220,15 +228,15 @@
 	$effect(() => {
 		if (editorElement && autofocus) {
 			// The input, or the Select's trigger button
-			const input = editorElement.querySelector('input, select, textarea, button') as HTMLElement | null
+			const input = editorElement.querySelector("input, select, textarea, button") as HTMLElement | null
 			if (input) {
-				input.focus({ preventScroll: true })
+				input.focus({preventScroll: true})
 				// Select all text for text/number inputs
 				if (input instanceof HTMLInputElement && (type === "text" || type === "number")) {
 					input.select()
 				}
 			} else {
-				editorElement.focus?.({ preventScroll: true })
+				editorElement.focus?.({preventScroll: true})
 			}
 		}
 	})
@@ -239,21 +247,22 @@
 	$effect(() => {
 		const query = initialSearchQuery
 		const element = editorElement
-		if (query && element) untrack(() => {
-			if (type === "select") {
-				element.querySelector("button")?.dispatchEvent(
-					new KeyboardEvent("keydown", {key: query, bubbles: true, cancelable: true})
-				)
-			} else if (type === "combobox" || type === "autocomplete") {
-				// After the focus handler's select-all, or the next key would replace the text
-				setTimeout(() => {
-					const input = element.querySelector("input")
-					if (!input) return
-					input.value = query
-					input.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: query}))
-				})
-			}
-		})
+		if (query && element)
+			untrack(() => {
+				if (type === "select") {
+					element
+						.querySelector("button")
+						?.dispatchEvent(new KeyboardEvent("keydown", {key: query, bubbles: true, cancelable: true}))
+				} else if (type === "combobox" || type === "autocomplete") {
+					// After the focus handler's select-all, or the next key would replace the text
+					setTimeout(() => {
+						const input = element.querySelector("input")
+						if (!input) return
+						input.value = query
+						input.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: query}))
+					})
+				}
+			})
 	})
 
 	// optionsLoadTrigger "dropdown-open": load once per edit, when the list first opens
@@ -263,7 +272,8 @@
 			options.optionsLoadTrigger !== "dropdown-open" ||
 			hasLoadedOnDropdown ||
 			isLoadingOptions
-		) return
+		)
+			return
 		isLoadingOptions = true
 		try {
 			loadedOptions = await options.loadOptions()
@@ -281,7 +291,9 @@
 	function handleKeyDownCapture(e: KeyboardEvent) {
 		keyPick = null
 		if (type !== "select" || (e.key !== "Enter" && e.key !== " ")) return
-		const highlighted = document.getElementById(listboxId)?.querySelector<HTMLElement>(".fluent-option[data-highlighted]")
+		const highlighted = document
+			.getElementById(listboxId)
+			?.querySelector<HTMLElement>(".fluent-option[data-highlighted]")
 		if (highlighted) keyPick = optionValue(highlighted)
 	}
 
@@ -419,7 +431,7 @@
 	// The value's own label (also what Escape reverts the input to) is no change.
 	function commitTypedText(): Promise<void> | void {
 		const text = comboText.trim()
-		const match = autocompleteList.find(opt => getOptionLabel(opt) === text)
+		const match = autocompleteList.find((opt) => getOptionLabel(opt) === text)
 		const next = text === "" ? null : match ? getOptionValue(match) : text === labelFor(value) ? value : text
 		autocompleteTyped = false
 		dropdownOpen = false
@@ -453,7 +465,6 @@
 	function formatConstraintDate(val: Date | string | undefined): string | undefined {
 		return toLocalDateString(val) || undefined
 	}
-
 </script>
 
 {#snippet selectOption(opt: OptionItem)}
@@ -513,7 +524,9 @@
 			onChange={({value: key}) => pick(key as string)}
 		>
 			{#if options.allowEmpty}
-				<Option value={EMPTY_KEY} onclick={() => pick(EMPTY_KEY)}>{options.emptyLabel || t("editorEmptyOption")}</Option>
+				<Option value={EMPTY_KEY} onclick={() => pick(EMPTY_KEY)}>
+					{options.emptyLabel || t("editorEmptyOption")}
+				</Option>
 			{/if}
 			{#if selectSegments}
 				{#each selectSegments as segment, i (i)}
@@ -560,7 +573,8 @@
 				value={currentKey ? [currentKey] : []}
 				options={dropdownOptions}
 				{valueText}
-				placeholder={options.placeholder || (autocomplete ? t("editorSearchPlaceholder") : t("editorSelectPlaceholder"))}
+				placeholder={options.placeholder ||
+					(autocomplete ? t("editorSearchPlaceholder") : t("editorSelectPlaceholder"))}
 				searchBehavior={options.searchBehavior}
 				filterCallback={autocomplete ? localFilter : undefined}
 				onSearch={autocomplete && options.onSearch ? handleAutocompleteSearch : undefined}
@@ -568,7 +582,9 @@
 				loading={isLoadingOptions || search.loading}
 				labels={{loading: isLoadingOptions ? t("editorLoading") : t("editorSearching")}}
 				emptyText={autocomplete ? t("editorEmpty") : t("editorNoMatches")}
-				onChange={({value: picked}) => { if (picked.length) pick(picked[0]) }}
+				onChange={({value: picked}) => {
+					if (picked.length) pick(picked[0])
+				}}
 			/>
 		{/key}
 		{#if search.loading}
@@ -639,11 +655,17 @@
 		border-color: var(--fluent-quickgrid-dropdown-border, var(--neutral-stroke-rest, #d1d1d1));
 	}
 
-	:global(.cell-dropdown:is(.select-listbox-popover, .combobox-listbox) .fluent-option[role="option"]:is(:hover, [data-highlighted]):not([disabled])) {
+	:global(
+		.cell-dropdown:is(.select-listbox-popover, .combobox-listbox)
+			.fluent-option[role="option"]:is(:hover, [data-highlighted]):not([disabled])
+	) {
 		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-stealth-hover, #f0f0f0));
 	}
 
-	:global(.cell-dropdown:is(.select-listbox-popover, .combobox-listbox) .fluent-option[role="option"][aria-selected="true"]:is(:hover, [data-highlighted]):not([disabled])) {
+	:global(
+		.cell-dropdown:is(.select-listbox-popover, .combobox-listbox)
+			.fluent-option[role="option"][aria-selected="true"]:is(:hover, [data-highlighted]):not([disabled])
+	) {
 		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-secondary-hover, #ebebeb));
 	}
 

@@ -9,9 +9,9 @@ import type {TabEntry} from "./tabs.types.js"
  * about yet are appended.
  */
 export function orderTabs(tabs: TabEntry[], displayOrder: string[]): TabEntry[] {
-	const filtered = tabs.filter(t => t.visible !== false)
+	const filtered = tabs.filter((t) => t.visible !== false)
 	if (displayOrder.length === 0) return filtered
-	const byId = new Map(filtered.map(t => [t.id, t]))
+	const byId = new Map(filtered.map((t) => [t.id, t]))
 	const seen = new Set<string>()
 	const result: TabEntry[] = []
 	for (const id of displayOrder) {
@@ -56,16 +56,20 @@ export function keyboardTarget(
 	nextKey: string
 ): TabEntry | null | undefined {
 	if (tabs.length === 0) return null
-	const idx = tabs.findIndex(t => t.id === activeId)
+	const idx = tabs.findIndex((t) => t.id === activeId)
 	if (idx < 0) return null
 	let targetIdx = idx
 	let step = 0
 
 	if (key === nextKey) step = 1
 	else if (key === prevKey) step = -1
-	else if (key === "Home") { targetIdx = -1; step = 1 }
-	else if (key === "End") { targetIdx = tabs.length; step = -1 }
-	else return null
+	else if (key === "Home") {
+		targetIdx = -1
+		step = 1
+	} else if (key === "End") {
+		targetIdx = tabs.length
+		step = -1
+	} else return null
 
 	// Step until we find a non-disabled tab or loop back to start.
 	const total = tabs.length
@@ -79,7 +83,7 @@ export function keyboardTarget(
 /** Nearest enabled tab in `direction` from the active one (no wrap-around), or null. */
 export function adjacentEnabledTab(tabs: TabEntry[], activeId: string | undefined, direction: 1 | -1): TabEntry | null {
 	if (tabs.length === 0) return null
-	const currentIdx = tabs.findIndex(t => t.id === activeId)
+	const currentIdx = tabs.findIndex((t) => t.id === activeId)
 	if (currentIdx < 0) return null
 	for (let i = currentIdx + direction; i >= 0 && i < tabs.length; i += direction) {
 		if (!tabs[i].disabled) return tabs[i]

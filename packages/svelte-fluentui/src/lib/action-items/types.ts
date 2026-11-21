@@ -5,15 +5,7 @@ import type {Snippet} from "svelte"
  * shared across components; a component may add its own.
  */
 export type ActionSource =
-	| "menu"
-	| "context-menu"
-	| "row-toolbar"
-	| "dialog"
-	| "palette"
-	| "toast"
-	| "toolbar"
-	| "keyboard"
-	| (string & {})
+	"menu" | "context-menu" | "row-toolbar" | "dialog" | "palette" | "toast" | "toolbar" | "keyboard" | (string & {})
 
 /**
  * One clickable item — a menu item, a toolbar button, a dialog action, a palette

@@ -23,13 +23,13 @@ Generic `role="menuitem"` row of a `NavMenu`; `NavLinkItem` and `NavGroup` build
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		    disabled    = undefined,
-		    group    = undefined,
-		    onclick = undefined,
-		    children = undefined,
-		    class: className = undefined,
-		    ...rest
-	    }: Props = $props()
+		disabled = undefined,
+		group = undefined,
+		onclick = undefined,
+		children = undefined,
+		class: className = undefined,
+		...rest
+	}: Props = $props()
 
 	// The row is the tab stop, so Enter / Space on it act like a click on its
 	// link (navigates, or toggles a NavGroup) — or on the row itself (NavExpander).
@@ -50,9 +50,8 @@ Generic `role="menuitem"` row of a `NavMenu`; `NavLinkItem` and `NavGroup` build
 	class="fluent-nav-item {className || ''}"
 	class:fluent-nav-group={group}
 	class:disabled
-	onclick={onclick}
+	{onclick}
 	onkeydown={handleKeydown}
 >
 	{@render children?.()}
-
 </div>

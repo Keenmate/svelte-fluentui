@@ -76,7 +76,7 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 
 	const t = useTranslations("compositeBadge", () => labelsProp)
 	// The built-in × glyph needs a name; custom `button` content names itself.
-	const buttonAriaLabel = $derived(button ? null : (buttonTitle || t("dismissAriaLabel")))
+	const buttonAriaLabel = $derived(button ? null : buttonTitle || t("dismissAriaLabel"))
 
 	let classes = $derived.by(() => {
 		let cls = ["composite-badge", `composite-badge-${color}`]
@@ -91,9 +91,21 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 <div {...rest} class={classes} style={style || null}>
 	{#if icon}<span class="composite-badge-icon">{@render icon()}</span>{/if}
 	<!-- With `onLabelClick` the label becomes role="button" + tab stop + Enter / Space (buttonLike). -->
-	<span {...buttonLike(!!onLabelClick)} class="composite-badge-label" onclick={onLabelClick ? (event) => onLabelClick({sourceEvent: event}) : undefined}>{@render label?.()}</span>
+	<span
+		{...buttonLike(!!onLabelClick)}
+		class="composite-badge-label"
+		onclick={onLabelClick ? (event) => onLabelClick({sourceEvent: event}) : undefined}
+	>
+		{@render label?.()}
+	</span>
 	{#if showButton}
-		<button class="composite-badge-button" type="button" title={buttonTitle || null} aria-label={buttonAriaLabel} onclick={(event) => onButtonClick?.({sourceEvent: event})}>
+		<button
+			class="composite-badge-button"
+			type="button"
+			title={buttonTitle || null}
+			aria-label={buttonAriaLabel}
+			onclick={(event) => onButtonClick?.({sourceEvent: event})}
+		>
 			{#if button}{@render button()}{:else}&times;{/if}
 		</button>
 	{/if}

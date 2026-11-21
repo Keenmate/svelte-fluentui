@@ -37,10 +37,11 @@ export type SvelteFluentUITranslationKey = keyof typeof en
 export type SvelteFluentUITranslations = Record<string, string>
 
 /** The local keys of one component: `LabelKey<"datePicker">` → `"placeholder" | "openPopupAriaLabel" | …`. */
-export type LabelKey<C extends string> =
-	SvelteFluentUITranslationKey extends infer K
-		? K extends `svelteFluentUI.${C}.${infer Rest}` ? Rest : never
+export type LabelKey<C extends string> = SvelteFluentUITranslationKey extends infer K
+	? K extends `svelteFluentUI.${C}.${infer Rest}`
+		? Rest
 		: never
+	: never
 
 /**
  * A component's `labels` prop: any of its keys, values in the same ICU syntax as the dictionary

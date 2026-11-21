@@ -26,7 +26,8 @@ export const en = {
 	"svelteFluentUI.autocomplete.closePopupAriaLabel": "Close options",
 	"svelteFluentUI.autocomplete.removeAriaLabel": "Remove {item}",
 	"svelteFluentUI.autocomplete.removeTooltip": "Remove {item}",
-	"svelteFluentUI.autocomplete.maxSelectionReached": "{max, plural, one {Maximum # selection reached} other {Maximum # selections reached}}",
+	"svelteFluentUI.autocomplete.maxSelectionReached":
+		"{max, plural, one {Maximum # selection reached} other {Maximum # selections reached}}",
 
 	// BadgeGroup
 	"svelteFluentUI.badgeGroup.showMore": "+{count} more",
@@ -37,7 +38,8 @@ export const en = {
 	"svelteFluentUI.calendar.previousPeriodTooltip": "{title}",
 	"svelteFluentUI.calendar.nextPeriodAriaLabel": "{title}",
 	"svelteFluentUI.calendar.nextPeriodTooltip": "{title}",
-	"svelteFluentUI.calendar.maxSelectedDayCountExceeded": "{max, plural, one {You can select a maximum of # day.} other {You can select a maximum of # days.}} Delete a day to select a new one.",
+	"svelteFluentUI.calendar.maxSelectedDayCountExceeded":
+		"{max, plural, one {You can select a maximum of # day.} other {You can select a maximum of # days.}} Delete a day to select a new one.",
 
 	// Chip
 	"svelteFluentUI.chip.removeAriaLabel": "Remove {item}",
@@ -56,7 +58,7 @@ export const en = {
 	"svelteFluentUI.commandPalette.placeholder": "Search…",
 	"svelteFluentUI.commandPalette.resultsAriaLabel": "Command palette results",
 	"svelteFluentUI.commandPalette.empty": "No items",
-	"svelteFluentUI.commandPalette.noMatches": "No matches for \"{query}\"",
+	"svelteFluentUI.commandPalette.noMatches": 'No matches for "{query}"',
 	"svelteFluentUI.commandPalette.escapeHint": "esc to close",
 	"svelteFluentUI.commandPalette.navigateHint": "navigate",
 	"svelteFluentUI.commandPalette.selectHint": "select",
@@ -118,11 +120,13 @@ export const en = {
 	"svelteFluentUI.inputFile.fileTooSmall": "File size below {min}",
 	"svelteFluentUI.inputFile.fileTypeNotAccepted": "File type not accepted. Accepted: {accept}",
 	"svelteFluentUI.inputFile.tooManyFiles": "Maximum {max} files allowed",
-	"svelteFluentUI.inputFile.tooFewFiles": "{min, plural, one {At least # file required} other {At least # files required}}",
+	"svelteFluentUI.inputFile.tooFewFiles":
+		"{min, plural, one {At least # file required} other {At least # files required}}",
 	"svelteFluentUI.inputFile.duplicate": "Duplicate file",
 	"svelteFluentUI.inputFile.fileCount": "{count, plural, one {# file} other {# files}}",
 	"svelteFluentUI.inputFile.totalProgress": "{completed} of {total} done · {uploadedSize} / {totalSize}",
-	"svelteFluentUI.inputFile.totalProgressWithFailed": "{completed} of {total} done · {failed} failed · {uploadedSize} / {totalSize}",
+	"svelteFluentUI.inputFile.totalProgressWithFailed":
+		"{completed} of {total} done · {failed} failed · {uploadedSize} / {totalSize}",
 	"svelteFluentUI.inputFile.empty": "No files selected",
 	"svelteFluentUI.inputFile.uploadedAnnouncement": "Uploaded {name}",
 	"svelteFluentUI.inputFile.failedAnnouncement": "Failed to upload {name}: {error}",
@@ -153,7 +157,8 @@ export const en = {
 	"svelteFluentUI.quickGrid.pageInfo": "Page {page} of {pageCount}",
 	"svelteFluentUI.quickGrid.itemCount": "{count, plural, one {# item} other {# items}}",
 	"svelteFluentUI.quickGrid.perPage": "per page",
-	"svelteFluentUI.quickGrid.sortedBy": "Sorted by {column}, {direction, select, ascending {ascending} other {descending}}",
+	"svelteFluentUI.quickGrid.sortedBy":
+		"Sorted by {column}, {direction, select, ascending {ascending} other {descending}}",
 	"svelteFluentUI.quickGrid.sortCleared": "Sort removed from {column}",
 	"svelteFluentUI.quickGrid.expandAriaLabel": "Expand",
 	"svelteFluentUI.quickGrid.expandTooltip": "Expand",
@@ -201,8 +206,10 @@ export const en = {
 	"svelteFluentUI.siteSettings.direction": "Direction",
 	"svelteFluentUI.siteSettings.leftToRight": "Left to Right",
 	"svelteFluentUI.siteSettings.rightToLeft": "Right to Left",
-	"svelteFluentUI.siteSettings.persistenceNote": "These values (except for Direction) are persisted in the LocalStorage and will be recovered during your next visits.",
-	"svelteFluentUI.siteSettings.resetNote": "Use the “Reset settings” button below to go back to the system theme and default color.",
+	"svelteFluentUI.siteSettings.persistenceNote":
+		"These values (except for Direction) are persisted in the LocalStorage and will be recovered during your next visits.",
+	"svelteFluentUI.siteSettings.resetNote":
+		"Use the “Reset settings” button below to go back to the system theme and default color.",
 	"svelteFluentUI.siteSettings.reset": "Reset settings",
 	"svelteFluentUI.siteSettings.ok": "OK",
 

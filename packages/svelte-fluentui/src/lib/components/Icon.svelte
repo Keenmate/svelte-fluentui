@@ -7,12 +7,23 @@ FluentUI system icon rendered as inline SVG (resolved at build time by the `svel
 ```
 -->
 <script lang="ts">
-	import iconMap from 'virtual:fluentui-icons'
-	import type {RestProps} from '../types/index.js'
+	import iconMap from "virtual:fluentui-icons"
+	import type {RestProps} from "../types/index.js"
 
 	type IconSize = 16 | 20 | 24 | 28 | 32 | 48
-	type IconVariant = 'regular' | 'filled'
-	type IconColor = 'neutral' | 'accent' | 'warning' | 'info' | 'error' | 'success' | 'fill' | 'fill-inverse' | 'lightweight' | 'disabled' | 'custom'
+	type IconVariant = "regular" | "filled"
+	type IconColor =
+		| "neutral"
+		| "accent"
+		| "warning"
+		| "info"
+		| "error"
+		| "success"
+		| "fill"
+		| "fill-inverse"
+		| "lightweight"
+		| "disabled"
+		| "custom"
 
 	type OwnProps = {
 		/** FluentUI icon name without the `ic_fluent_` prefix and size/variant suffix, e.g. "folder". */
@@ -42,28 +53,28 @@ FluentUI system icon rendered as inline SVG (resolved at build time by the `svel
 
 	// Color enum to CSS variable mapping (matching FluentUI Blazor)
 	const colorMap: Record<IconColor, string> = {
-		'neutral': 'var(--neutral-foreground-rest)',
-		'accent': 'var(--accent-fill-rest)',
-		'warning': 'var(--fluent-color-warning-foreground)',
-		'info': 'var(--fluent-color-info-foreground)',
-		'error': 'var(--fluent-color-danger-foreground)',
-		'success': 'var(--fluent-color-success-foreground)',
-		'fill': 'var(--neutral-fill-rest)',
-		'fill-inverse': 'var(--neutral-fill-inverse-rest)',
-		'lightweight': 'var(--neutral-layer-1)',
-		'disabled': 'var(--neutral-stroke-rest)',
-		'custom': ''  // Uses customColor prop
+		neutral: "var(--neutral-foreground-rest)",
+		accent: "var(--accent-fill-rest)",
+		warning: "var(--fluent-color-warning-foreground)",
+		info: "var(--fluent-color-info-foreground)",
+		error: "var(--fluent-color-danger-foreground)",
+		success: "var(--fluent-color-success-foreground)",
+		fill: "var(--neutral-fill-rest)",
+		"fill-inverse": "var(--neutral-fill-inverse-rest)",
+		lightweight: "var(--neutral-layer-1)",
+		disabled: "var(--neutral-stroke-rest)",
+		custom: "" // Uses customColor prop
 	}
 
 	let {
 		name,
 		size = 24,
-		variant = 'regular',
+		variant = "regular",
 		color = undefined,
 		customColor = undefined,
 		hoverEffect = false,
-		class: className = '',
-		style: styleParam = '',
+		class: className = "",
+		style: styleParam = "",
 		title = undefined,
 		width = undefined,
 		...rest
@@ -71,23 +82,23 @@ FluentUI system icon rendered as inline SVG (resolved at build time by the `svel
 
 	// Resolve the fill color: color enum > customColor > currentColor
 	let resolvedFill = $derived.by(() => {
-		if (color === 'custom' && customColor) {
+		if (color === "custom" && customColor) {
 			return customColor
 		}
 		if (color && colorMap[color]) {
 			return colorMap[color]
 		}
-		return 'currentColor'
+		return "currentColor"
 	})
 
-	let svgContent = $state<string>('')
-	let svgContentFilled = $state<string>('')
+	let svgContent = $state<string>("")
+	let svgContentFilled = $state<string>("")
 	let isLoading = $state<boolean>(true)
 	let error = $state<string | null>(null)
 
 	// Derived computed style
 	let computedStyle = $derived.by(() => {
-		let styles = styleParam || ''
+		let styles = styleParam || ""
 		styles += ` --fluent-icon-size: ${size}px;`
 		styles += ` --fluent-icon-fill: ${resolvedFill};`
 		if (width) {
@@ -100,7 +111,7 @@ FluentUI system icon rendered as inline SVG (resolved at build time by the `svel
 
 	// An inline-mode entry is raw SVG markup; an asset-mode entry is a URL.
 	function isMarkup(entry: string): boolean {
-		return entry.trimStart().startsWith('<')
+		return entry.trimStart().startsWith("<")
 	}
 
 	// Resolve one icon key to its SVG markup. Inline entries are returned as-is;
@@ -132,7 +143,7 @@ FluentUI system icon rendered as inline SVG (resolved at build time by the `svel
 					`through a dynamic name, add it to the svelteFluentUI({ iconsInclude: [...] }) option.`
 			)
 			error = `Icon not found: ${name}`
-			svgContent = ''
+			svgContent = ""
 			isLoading = false
 			return
 		}
@@ -153,7 +164,7 @@ FluentUI system icon rendered as inline SVG (resolved at build time by the `svel
 				.catch((err) => {
 					console.error(`[svelte-fluentui] Failed to load icon: ${key}`, err)
 					error = `Icon not found: ${name}`
-					svgContent = ''
+					svgContent = ""
 				})
 				.finally(() => {
 					isLoading = false
@@ -161,16 +172,16 @@ FluentUI system icon rendered as inline SVG (resolved at build time by the `svel
 		}
 
 		// If hover effect is enabled, also resolve the filled variant.
-		if (hoverEffect && variant === 'regular') {
+		if (hoverEffect && variant === "regular") {
 			resolveMarkup(`${name}_${size}_filled`)
 				.then((content) => {
 					svgContentFilled = content
 				})
 				.catch(() => {
-					svgContentFilled = ''
+					svgContentFilled = ""
 				})
 		} else {
-			svgContentFilled = ''
+			svgContentFilled = ""
 		}
 	})
 </script>

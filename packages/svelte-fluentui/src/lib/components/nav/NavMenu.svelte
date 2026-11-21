@@ -31,28 +31,22 @@ Vertical navigation menu of `NavLinkItem`s and `NavGroup`s, optionally collapsib
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		    width       = undefined,
-		    collapsed   = $bindable(),
-		    collapsible = undefined,
-		    children    = undefined,
-		    class: className = undefined,
-		    ...rest
-	    }: Props = $props()
+		width = undefined,
+		collapsed = $bindable(),
+		collapsible = undefined,
+		children = undefined,
+		class: className = undefined,
+		...rest
+	}: Props = $props()
 
-	const computedStyle = $derived(styleList(
-			collapsed ? "width: 40px; min-width: 40px" : width ? `width: ${width}` : "width: 100%"
-	))
+	const computedStyle = $derived(
+		styleList(collapsed ? "width: 40px; min-width: 40px" : width ? `width: ${width}` : "width: 100%")
+	)
 </script>
 
-<div
-	role="menu"
-	{...rest}
-	class="fluent-nav-menu {className || ''}"
-	class:collapsed
-	style={computedStyle}
->
+<div role="menu" {...rest} class="fluent-nav-menu {className || ''}" class:collapsed style={computedStyle}>
 	{#if collapsible}
-		<NavExpander onclick={() => collapsed = !collapsed} />
+		<NavExpander onclick={() => (collapsed = !collapsed)} />
 	{/if}
 
 	{@render children?.()}

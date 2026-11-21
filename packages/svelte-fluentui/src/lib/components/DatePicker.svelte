@@ -72,7 +72,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		/** When true, treat a month/year as disabled only if every contained day is disabled. */
 		disabledCheckAllDaysOfMonthYear?: boolean
 		/** Day cell format. "2-digit" renders "01" instead of "1". */
-		dayFormat?: typeof DayFormat["TwoDigit"] | null
+		dayFormat?: (typeof DayFormat)["TwoDigit"] | null
 		/** Day-cell edge length for the calendar popup (default 28px). Resizes the whole grid proportionally. */
 		cellSize?: string | number
 		/** Gap between cells in the calendar popup (default 2px). */
@@ -121,7 +121,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		labelTemplate = undefined,
 		appearance = undefined,
 		culture: cultureProp = undefined,
-		dateFormat = { year: 'numeric', month: 'long', day: 'numeric' },
+		dateFormat = {year: "numeric", month: "long", day: "numeric"},
 		minDate = undefined,
 		maxDate = undefined,
 		getIsDateDisabledCallback = undefined,
@@ -210,7 +210,10 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		if (!isOpen) return
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
 		const popLayer = pushLayer({onEscape: () => setOpen(false)})
-		const undismiss = dismissOnOutside(() => [wrapperElement, popupElement], () => setOpen(false))
+		const undismiss = dismissOnOutside(
+			() => [wrapperElement, popupElement],
+			() => setOpen(false)
+		)
 		return () => {
 			undismiss()
 			popLayer()
@@ -294,13 +297,18 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	}
 </script>
 
-<div {...rest} class="fluent-datepicker {className}" style={style}>
+<div {...rest} class="fluent-datepicker {className}" {style}>
 	<FieldLabel for={id} {label} {labelTemplate} {required} />
 
 	<!-- Mouse convenience (a press anywhere on the field opens); keyboard users get
 	     ArrowDown on the input and the calendar button. -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="datepicker-wrapper fluent-field-clear-host" bind:this={wrapperElement} onclick={handleWrapperClick} onkeydown={handleWrapperKeydown}>
+	<div
+		class="datepicker-wrapper fluent-field-clear-host"
+		bind:this={wrapperElement}
+		onclick={handleWrapperClick}
+		onkeydown={handleWrapperKeydown}
+	>
 		<TextField
 			{id}
 			value={inputValue}
@@ -316,52 +324,57 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		>
 			{#snippet end()}
 				<span class="end-buttons">
-				<!-- Clear (×): out of the Tab order (Delete / Backspace on the field clears) and
+					<!-- Clear (×): out of the Tab order (Delete / Backspace on the field clears) and
 				     doesn't take focus; shown while the field is hovered or focused. -->
-				{#if showClear && value && !disabled && !readonly}
+					{#if showClear && value && !disabled && !readonly}
+						<button
+							type="button"
+							class="clear-button fluent-field-clear"
+							tabindex="-1"
+							onpointerdown={(e) => e.preventDefault()}
+							onclick={handleClear}
+							aria-label={t("clearAriaLabel")}
+							title={t("clearTooltip")}
+						>
+							<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+								<path
+									d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"
+								/>
+							</svg>
+						</button>
+					{/if}
+					<!-- Calendar icon -->
 					<button
+						bind:this={calendarButton}
 						type="button"
-						class="clear-button fluent-field-clear"
-						tabindex="-1"
-						onpointerdown={(e) => e.preventDefault()}
-						onclick={handleClear}
-						aria-label={t("clearAriaLabel")}
-						title={t("clearTooltip")}
+						class="calendar-button"
+						onclick={handleInputClick}
+						{disabled}
+						aria-label={t("openPopupAriaLabel")}
+						aria-haspopup="dialog"
+						aria-expanded={isOpen ? "true" : "false"}
+						aria-controls={isOpen ? popupId : null}
 					>
-						<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-							<path d="M2.09 2.22a.75.75 0 011.06-.13L6 4.94l2.85-2.85a.75.75 0 111.06 1.06L7.06 6l2.85 2.85a.75.75 0 11-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 01-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 01-.13-1.06z"/>
+						<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+							<path
+								d="M14 2a1 1 0 011 1v1h1.5A1.5 1.5 0 0118 5.5v11a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 16.5v-11A1.5 1.5 0 013.5 4H5V3a1 1 0 112 0v1h6V3a1 1 0 011-1zM5 6H3.5a.5.5 0 00-.5.5v10a.5.5 0 00.5.5h13a.5.5 0 00.5-.5v-10a.5.5 0 00-.5-.5H15v1a1 1 0 11-2 0V6H7v1a1 1 0 01-2 0V6zm1.5 4a.5.5 0 110 1h-1a.5.5 0 110-1h1zm0 3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm3.5-3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm0 3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm3.5-3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm0 3a.5.5 0 110 1h-1a.5.5 0 110-1h1z"
+							/>
 						</svg>
 					</button>
-				{/if}
-				<!-- Calendar icon -->
-				<button
-					bind:this={calendarButton}
-					type="button"
-					class="calendar-button"
-					onclick={handleInputClick}
-					disabled={disabled}
-					aria-label={t("openPopupAriaLabel")}
-					aria-haspopup="dialog"
-					aria-expanded={isOpen ? "true" : "false"}
-					aria-controls={isOpen ? popupId : null}
-				>
-					<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-						<path d="M14 2a1 1 0 011 1v1h1.5A1.5 1.5 0 0118 5.5v11a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 16.5v-11A1.5 1.5 0 013.5 4H5V3a1 1 0 112 0v1h6V3a1 1 0 011-1zM5 6H3.5a.5.5 0 00-.5.5v10a.5.5 0 00.5.5h13a.5.5 0 00.5-.5v-10a.5.5 0 00-.5-.5H15v1a1 1 0 11-2 0V6H7v1a1 1 0 01-2 0V6zm1.5 4a.5.5 0 110 1h-1a.5.5 0 110-1h1zm0 3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm3.5-3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm0 3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm3.5-3a.5.5 0 110 1h-1a.5.5 0 110-1h1zm0 3a.5.5 0 110 1h-1a.5.5 0 110-1h1z"/>
-					</svg>
-				</button>
-
 				</span>
 			{/snippet}
 		</TextField>
 
 		{#if isOpen && wrapperElement}
-			<PositioningRegion
-				anchor={wrapperElement}
-				visible={isOpen}
-				matchWidth={false}
-			>
+			<PositioningRegion anchor={wrapperElement} visible={isOpen} matchWidth={false}>
 				<!-- Surface + padding live here, not on the region, so a press anywhere on the popup is "inside". -->
-				<div class="datepicker-popup fluent-popup-surface fluent-popup--layer" bind:this={popupElement} id={popupId} role="dialog" aria-label={t("popupAriaLabel")}>
+				<div
+					class="datepicker-popup fluent-popup-surface fluent-popup--layer"
+					bind:this={popupElement}
+					id={popupId}
+					role="dialog"
+					aria-label={t("popupAriaLabel")}
+				>
 					<Calendar
 						value={value || new Date()}
 						pickerMonth={value || new Date()}

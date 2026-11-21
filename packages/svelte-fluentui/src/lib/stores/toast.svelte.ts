@@ -4,13 +4,7 @@
  */
 export type ToastVariant = "success" | "error" | "warning" | "info"
 
-export type ToastPosition =
-	| "top-end"
-	| "top-start"
-	| "top-center"
-	| "bottom-end"
-	| "bottom-start"
-	| "bottom-center"
+export type ToastPosition = "top-end" | "top-start" | "top-center" | "bottom-end" | "bottom-start" | "bottom-center"
 
 export interface ToastOptions {
 	variant?: ToastVariant
@@ -56,7 +50,11 @@ function createToastService() {
 		} = options
 		const id = `fluent-toast-${++counter}`
 		items = [...items, {id, variant, title, message, position, duration, showProgress, persistent}]
-		if (!persistent) timers.set(id, setTimeout(() => dismiss(id), duration))
+		if (!persistent)
+			timers.set(
+				id,
+				setTimeout(() => dismiss(id), duration)
+			)
 		return id
 	}
 

@@ -7,49 +7,42 @@ export function createSelectedOptions(initialValue: ValueType, isMulti?: boolean
 			return val
 		}
 		if (isMulti) {
-			return (val && typeof val === "string")
-				? [val]
-				: null
+			return val && typeof val === "string" ? [val] : null
 		} else {
-			return (val && typeof val === "string")
-				? [val]
-				: null
+			return val && typeof val === "string" ? [val] : null
 		}
 	}
 
 	let ctx = $state({
-			value: toContextValue(initialValue),
-			toContextValue,
-			set(val: ValueType) {
-				this.value = toContextValue(val)
-			},
-			toggle(val: OptionItem["value"]) {
-				if (!val) {
-					return
-				}
+		value: toContextValue(initialValue),
+		toContextValue,
+		set(val: ValueType) {
+			this.value = toContextValue(val)
+		},
+		toggle(val: OptionItem["value"]) {
+			if (!val) {
+				return
+			}
 
-				let newValue = $state.snapshot(ctx.value)
+			let newValue = $state.snapshot(ctx.value)
 
-				if (newValue) {
-					if (isMulti) {
-						if (!newValue.includes(val)) {
-							newValue.push(val)
-						} else {
-							newValue = newValue.filter(x => x !== val)
-						}
+			if (newValue) {
+				if (isMulti) {
+					if (!newValue.includes(val)) {
+						newValue.push(val)
 					} else {
-						newValue = newValue[0] === val
-							? []
-							: [val]
+						newValue = newValue.filter((x) => x !== val)
 					}
 				} else {
-					newValue = [val]
+					newValue = newValue[0] === val ? [] : [val]
 				}
-
-				ctx.value = newValue
+			} else {
+				newValue = [val]
 			}
+
+			ctx.value = newValue
 		}
-	)
+	})
 
 	return ctx
 }

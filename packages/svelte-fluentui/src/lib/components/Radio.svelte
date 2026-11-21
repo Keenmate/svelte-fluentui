@@ -77,7 +77,7 @@ Wrapper for `<fluent-radio>`. Inside a `RadioGroup` it reads and sets the group'
 	const ctx = radioGroupContext.get()
 
 	// Determine if checked - explicit prop takes precedence over context
-	const isChecked = $derived(checked !== undefined ? checked : (ctx?.value === value))
+	const isChecked = $derived(checked !== undefined ? checked : ctx?.value === value)
 
 	function handleOnClick(ev: MouseEvent) {
 		onclick?.(ev)
@@ -104,11 +104,17 @@ Wrapper for `<fluent-radio>`. Inside a `RadioGroup` it reads and sets the group'
 	{...rest}
 	{value}
 	{...attrs({
-		name, disabled, readonly, required, checked: isChecked, autofocus, "aria-label": ariaLabel,
-		class: className, style
+		name,
+		disabled,
+		readonly,
+		required,
+		checked: isChecked,
+		autofocus,
+		"aria-label": ariaLabel,
+		class: className,
+		style
 	})}
 	onclick={handleOnClick}
 >
 	{@render children?.()}
 </fluent-radio>
-

@@ -33,7 +33,12 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	import type {Orientation, RestProps} from "../types/index.js"
 	import {toTabInfo, type TabEntry, type TabInfo} from "./tabs/tabs.types.js"
 	import {adjacentEnabledTab, keyboardTarget, orderTabs, swapIntoStrip} from "./tabs/order.js"
-	import {cssIdSelector, indicatorStyle as computeIndicatorStyle, measureVisibleCount, scrollState} from "./tabs/measure.js"
+	import {
+		cssIdSelector,
+		indicatorStyle as computeIndicatorStyle,
+		measureVisibleCount,
+		scrollState
+	} from "./tabs/measure.js"
 	import {SwipeTracker} from "./tabs/swipe.js"
 	import TabsScrollButton from "./tabs/TabsScrollButton.svelte"
 	import {useTranslations} from "../i18n/translate.svelte.js"
@@ -122,12 +127,12 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 
 	tabsContext.set({
 		register: (entry) => {
-			const idx = tabs.findIndex(t => t.id === entry.id)
+			const idx = tabs.findIndex((t) => t.id === entry.id)
 			if (idx >= 0) tabs[idx] = entry
 			else tabs.push(entry)
 		},
 		unregister: (tabId) => {
-			const idx = tabs.findIndex(t => t.id === tabId)
+			const idx = tabs.findIndex((t) => t.id === tabId)
 			if (idx >= 0) tabs.splice(idx, 1)
 		}
 	})
@@ -166,12 +171,8 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	 */
 	let truncateLastTabSize = $state(0)
 
-	const renderedTabs = $derived(
-		isMenuMode ? orderedTabs.slice(0, visibleCount) : orderedTabs
-	)
-	const overflowTabs = $derived(
-		isMenuMode ? orderedTabs.slice(visibleCount) : []
-	)
+	const renderedTabs = $derived(isMenuMode ? orderedTabs.slice(0, visibleCount) : orderedTabs)
+	const overflowTabs = $derived(isMenuMode ? orderedTabs.slice(visibleCount) : [])
 
 	// Default-select the first visible tab if caller didn't set activeId.
 	$effect(() => {
@@ -196,9 +197,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 			indicatorStyle = "opacity: 0;"
 			return
 		}
-		const activeBtn = tablistRef.querySelector<HTMLButtonElement>(
-			`button${cssIdSelector(activeId)}`
-		)
+		const activeBtn = tablistRef.querySelector<HTMLButtonElement>(`button${cssIdSelector(activeId)}`)
 		indicatorStyle = computeIndicatorStyle(activeBtn, isHorizontal, readRtl)
 	}
 
@@ -246,7 +245,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 			updateIndicator()
 		})
 		ro.observe(list)
-		list.querySelectorAll<HTMLElement>("button[data-tab-id]").forEach(btn => ro.observe(btn))
+		list.querySelectorAll<HTMLElement>("button[data-tab-id]").forEach((btn) => ro.observe(btn))
 		// Re-run once after layout
 		const frame = requestAnimationFrame(() => {
 			updateScrollState()
@@ -264,10 +263,10 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 		if (isHorizontal) {
 			// `direction` is logical (-1 = toward start); RTL scrolls start-ward with positive left.
 			const step = tablistRef.clientWidth * 0.8 * (readRtl() ? -1 : 1)
-			tablistRef.scrollBy({ left: direction * step, behavior: "smooth" })
+			tablistRef.scrollBy({left: direction * step, behavior: "smooth"})
 		} else {
 			const step = tablistRef.clientHeight * 0.8
-			tablistRef.scrollBy({ top: direction * step, behavior: "smooth" })
+			tablistRef.scrollBy({top: direction * step, behavior: "smooth"})
 		}
 	}
 
@@ -282,8 +281,8 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	 */
 	async function canLeaveCurrent(targetId: string): Promise<boolean> {
 		if (!activeId || activeId === targetId) return true
-		const current = orderedTabs.find(t => t.id === activeId)
-		const target = orderedTabs.find(t => t.id === targetId)
+		const current = orderedTabs.find((t) => t.id === activeId)
+		const target = orderedTabs.find((t) => t.id === targetId)
 		if (!current?.beforeLeaveCallback || !target) return true
 		try {
 			return (await current.beforeLeaveCallback({tab: toTabInfo(current), newTab: toTabInfo(target)})) !== false
@@ -300,7 +299,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	}
 
 	async function selectTab(tabId: string, focus = false) {
-		const tab = orderedTabs.find(t => t.id === tabId)
+		const tab = orderedTabs.find((t) => t.id === tabId)
 		if (!tab || tab.disabled) return
 		if (activeId !== tabId) {
 			if (!(await canLeaveCurrent(tabId))) return
@@ -311,7 +310,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 			const btn = tablistRef?.querySelector<HTMLButtonElement>(`button${cssIdSelector(tabId)}`)
 			if (!btn) return
 			if (responsive === "scroll") {
-				btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" })
+				btn.scrollIntoView({behavior: "smooth", block: "nearest", inline: "nearest"})
 			}
 			if (focus) btn.focus()
 		})
@@ -322,7 +321,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 		// Delete closes a closable tab: the keyboard path to its (pointer-only) × control.
 		if (e.key === "Delete") {
 			const id = (e.target as HTMLElement).closest<HTMLElement>("[role='tab']")?.dataset.tabId
-			const tab = orderedTabs.find(t => t.id === id)
+			const tab = orderedTabs.find((t) => t.id === id)
 			if (tab?.showClose && !tab.disabled) void handleCloseClick(tab, e)
 			return
 		}
@@ -409,15 +408,13 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	 * it's activated. The displaced tab falls off into the overflow menu.
 	 */
 	async function onOverflowTabClick(tabId: string) {
-		const tab = orderedTabs.find(t => t.id === tabId)
+		const tab = orderedTabs.find((t) => t.id === tabId)
 		if (!tab || tab.disabled) return
 		// Guard before reordering/activating. When called from the auto-swap
 		// effect the tab is already active, so canLeaveCurrent short-circuits.
 		if (!(await canLeaveCurrent(tabId))) return
 
-		const currentOrder = displayOrder.length > 0
-			? [...displayOrder]
-			: orderedTabs.map(t => t.id)
+		const currentOrder = displayOrder.length > 0 ? [...displayOrder] : orderedTabs.map((t) => t.id)
 
 		const next = swapIntoStrip(currentOrder, tabId, visibleCount)
 		if (next) displayOrder = next
@@ -436,7 +433,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	$effect(() => {
 		if (!isMenuMode || !activeId) return
 		if (!Number.isFinite(visibleCount)) return
-		const idx = orderedTabs.findIndex(t => t.id === activeId)
+		const idx = orderedTabs.findIndex((t) => t.id === activeId)
 		if (idx < 0 || idx < visibleCount) return
 		// Active tab is currently in overflow — swap into visible range.
 		untrack(() => onOverflowTabClick(activeId!))
@@ -447,7 +444,9 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	// Scrolls inside the menu are ignored so a long overflow list can scroll.
 	$effect(() => {
 		if (!overflowOpen) return
-		const close = () => { overflowOpen = false }
+		const close = () => {
+			overflowOpen = false
+		}
 		const undismiss = dismissOnOutside(() => [moreBtnRef, overflowMenuRef], close, {scroll: true})
 		// Escape goes to the topmost open layer (helpers/layer-stack.ts)
 		const popLayer = pushLayer({onEscape: close})
@@ -502,7 +501,7 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 					class:active={tab.id === activeId}
 					class:disabled={tab.disabled}
 					class:truncated={isLastAndTruncated}
-					style={`${tab.style || ''}${isLastAndTruncated ? `; max-width: ${truncateLastTabSize}px; ${isHorizontal ? '' : `max-height: ${truncateLastTabSize}px;`}` : ''}`}
+					style={`${tab.style || ""}${isLastAndTruncated ? `; max-width: ${truncateLastTabSize}px; ${isHorizontal ? "" : `max-height: ${truncateLastTabSize}px;`}` : ""}`}
 					data-tab-id={tab.id}
 					title={tab.label || undefined}
 					aria-selected={tab.id === activeId}
@@ -527,7 +526,9 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 							spellcheck="false"
 							class="fluent-tab-label editable-label"
 							title={t("editNameTooltip")}
-						>{tab.label}</span>
+						>
+							{tab.label}
+						</span>
 					{:else if tab.label}
 						<span class="fluent-tab-label">{tab.label}</span>
 					{/if}
@@ -545,7 +546,9 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 							onclick={(e) => handleCloseClick(tab, e)}
 						>
 							<svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" aria-hidden="true">
-								<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
+								<path
+									d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"
+								/>
 							</svg>
 						</span>
 					{/if}
@@ -558,13 +561,15 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 					bind:this={moreBtnRef}
 					class="fluent-tab fluent-tabs-more-btn fluent-focus-ring"
 					class:active={overflowOpen}
-					onclick={() => overflowOpen = !overflowOpen}
+					onclick={() => (overflowOpen = !overflowOpen)}
 					aria-label={t("moreTabsAriaLabel")}
 					aria-haspopup="menu"
 					aria-expanded={overflowOpen}
 				>
 					<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
-						<path d="M4.5 8a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0zm4.75 0a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0zM12.75 9.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"/>
+						<path
+							d="M4.5 8a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0zm4.75 0a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0zM12.75 9.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"
+						/>
 					</svg>
 				</button>
 			{/if}
@@ -832,7 +837,10 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 		justify-content: center;
 		gap: 0.5rem;
 		padding: 0 calc((6 + (var(--design-unit, 4) * 2)) * 1px);
-		height: calc(((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) + (var(--design-unit, 4) * 2)) * 1px);
+		height: calc(
+			((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) + (var(--design-unit, 4) * 2)) *
+				1px
+		);
 		min-height: 36px;
 		box-sizing: border-box;
 		background: transparent;
@@ -848,7 +856,9 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 		flex-shrink: 0;
 		user-select: none;
 		position: relative;
-		transition: color 0.15s ease, background-color 0.15s ease;
+		transition:
+			color 0.15s ease,
+			background-color 0.15s ease;
 	}
 
 	.fluent-tabs-vertical .fluent-tab {
@@ -933,7 +943,11 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 		left: 0;
 		background-color: var(--accent-fill-rest);
 		pointer-events: none;
-		transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1), height 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease;
+		transition:
+			transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+			width 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+			height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+			opacity 0.15s ease;
 		border-radius: var(--fluent-border-radius-sm) var(--fluent-border-radius-sm) 0 0;
 	}
 

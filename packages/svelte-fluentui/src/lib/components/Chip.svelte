@@ -86,7 +86,9 @@ Theme it with the `--fluent-chip-*` custom properties.
 			onclick={(event) => onRemove?.({sourceEvent: event})}
 		>
 			<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-				<path d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"/>
+				<path
+					d="M2.09 2.22a.75.75 0 0 1 1.06-.13L6 4.94l2.85-2.85a.75.75 0 1 1 1.06 1.06L7.06 6l2.85 2.85a.75.75 0 1 1-1.06 1.06L6 7.06l-2.85 2.85a.75.75 0 0 1-1.06-1.06L4.94 6 2.09 3.15a.75.75 0 0 1-.13-1.06z"
+				/>
 			</svg>
 		</button>
 	{/if}
@@ -141,7 +143,9 @@ Theme it with the `--fluent-chip-*` custom properties.
 		color: var(--fluent-chip-remove-text, var(--accent-fill-rest, #0078d4));
 		border-radius: var(--fluent-border-radius-sm);
 		flex-shrink: 0;
-		transition: color 0.1s ease, background 0.1s ease;
+		transition:
+			color 0.1s ease,
+			background 0.1s ease;
 	}
 
 	.fluent-chip-remove:hover {

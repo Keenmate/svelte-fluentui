@@ -18,78 +18,78 @@ Wrapper for `<fluent-number-field>`: a numeric input with optional step buttons 
 	import FieldLabel from "./FieldLabel.svelte"
 	import type {Snippet} from "svelte"
 	import type {NativeEventHandler, RestProps} from "../types/index.js"
-	import { setAutocompleteOnShadowInput } from "../utils/shadow-dom.js";
+	import {setAutocompleteOnShadowInput} from "../utils/shadow-dom.js"
 
 	type OwnProps = {
 		/** Id of the field (also the label's `for`). */
-		id?: string | null | undefined;
+		id?: string | null | undefined
 		/** Numeric value; `null` when the field is empty. The underlying element's string value is converted at the boundary. */
-		value?: number | null;
+		value?: number | null
 		/** Placeholder text (`placeholder` attribute). */
-		placeholder?: string;
+		placeholder?: string
 		/** Visual style (`appearance` attribute). Default: `outline` (element default). */
-		appearance?: "outline" | "filled";
+		appearance?: "outline" | "filled"
 		/** Disables the field (`disabled` attribute). */
-		disabled?: boolean;
+		disabled?: boolean
 		/** Makes the field read-only (`readonly` attribute). */
-		readonly?: boolean;
+		readonly?: boolean
 		/** Marks the field as required (`required` attribute). */
-		required?: boolean;
+		required?: boolean
 		/** Form field name (`name` attribute). */
-		name?: string;
+		name?: string
 		/** Text rendered in a `<label>` above the field; also used as `aria-label` when `ariaLabel` is unset. */
-		label?: string;
+		label?: string
 		/** Custom label content, rendered after `label`. */
-		labelTemplate?: Snippet | null | undefined;
+		labelTemplate?: Snippet | null | undefined
 		/** Focus the field on mount (`autofocus` attribute). */
-		autofocus?: boolean;
+		autofocus?: boolean
 		/** Browser autofill hint, applied to the inner shadow `<input>`. Default: `off`. */
-		autocomplete?: string;
+		autocomplete?: string
 		/** Increment used by the step buttons and arrow keys (`step` attribute). Default: `1` (element default). */
-		step?: number;
+		step?: number
 		/** Minimum value (`min` attribute); the element clamps to it. */
-		min?: number;
+		min?: number
 		/** Maximum value (`max` attribute); the element clamps to it. */
-		max?: number;
+		max?: number
 		/** Minimum text length (`minlength` attribute). */
-		minlength?: number;
+		minlength?: number
 		/** Maximum text length (`maxlength` attribute). */
-		maxlength?: number;
+		maxlength?: number
 		/** Visible width in characters (`size` attribute). */
-		size?: number;
+		size?: number
 		/** Id of a `<datalist>` with suggestions (`list` attribute). */
-		list?: string;
+		list?: string
 		/** Hide the step up/down buttons (`hide-step` attribute). */
-		hideStep?: boolean;
+		hideStep?: boolean
 		/** Accessible name (`aria-label`); falls back to `label`. */
-		ariaLabel?: string;
+		ariaLabel?: string
 		/** Tooltip text (`title` attribute). */
-		title?: string;
+		title?: string
 		/** CSS width, appended to `style`. */
-		width?: string;
+		width?: string
 		/** CSS height, appended to `style`. */
-		height?: string;
+		height?: string
 		/** Extra CSS class on `<fluent-number-field>`. */
-		class?: string;
+		class?: string
 		/** Inline style on `<fluent-number-field>`. */
-		style?: string;
+		style?: string
 		/** Default slot of `<fluent-number-field>` (its built-in label part, hidden by this wrapper's CSS); use `label` / `labelTemplate`. */
-		children?: Snippet;
+		children?: Snippet
 		/** Content in the element's `start` slot (before the input). */
-		start?: Snippet;
+		start?: Snippet
 		/** Content in the element's `end` slot (after the input). */
-		end?: Snippet;
+		end?: Snippet
 
 		/** Fires when the user commits a value (blur / Enter / step buttons). The live value is `bind:value`. */
-		onChange?: (ctx: {value: number | null}) => void;
+		onChange?: (ctx: {value: number | null}) => void
 		/** Native `input` event, forwarded untouched. */
-		oninput?: NativeEventHandler;
+		oninput?: NativeEventHandler
 		/** Native `change` event, forwarded untouched. */
-		onchange?: NativeEventHandler;
-	};
+		onchange?: NativeEventHandler
+	}
 
 	/** Other native attributes and events (`onkeydown`, `onfocus`, `onblur`, …) go to `<fluent-number-field>`. */
-	type Props = OwnProps & RestProps<OwnProps>;
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		id = undefined,
@@ -125,108 +125,108 @@ Wrapper for `<fluent-number-field>`: a numeric input with optional step buttons 
 		oninput,
 		onchange,
 		...rest
-	}: Props = $props();
+	}: Props = $props()
 
 	// Compute style with width/height
 	let computedStyle = $derived.by(() => {
-		let s = style || "";
-		if (width) s += (s ? "; " : "") + `width: ${width}`;
-		if (height) s += (s ? "; " : "") + `height: ${height}`;
-		return s || null;
-	});
+		let s = style || ""
+		if (width) s += (s ? "; " : "") + `width: ${width}`
+		if (height) s += (s ? "; " : "") + `height: ${height}`
+		return s || null
+	})
 
 	// Handle title separately to avoid rendering "null" as text
-	let titleProps = $derived(title ? { title } : {});
+	let titleProps = $derived(title ? {title} : {})
 
 	let element: HTMLElement & {
-		value: string;
-		valueAsNumber: number;
-		stepUp: () => void;
-		stepDown: () => void;
-		checkValidity: () => boolean;
-		reportValidity: () => boolean;
-		setCustomValidity: (message: string) => void;
-		focus: () => void;
-		blur: () => void;
-		select: () => void;
-	};
+		value: string
+		valueAsNumber: number
+		stepUp: () => void
+		stepDown: () => void
+		checkValidity: () => boolean
+		reportValidity: () => boolean
+		setCustomValidity: (message: string) => void
+		focus: () => void
+		blur: () => void
+		select: () => void
+	}
 
 	// Exposed methods
 	export function stepUp() {
-		element?.stepUp();
+		element?.stepUp()
 	}
 
 	export function stepDown() {
-		element?.stepDown();
+		element?.stepDown()
 	}
 
 	export function checkValidity() {
-		return element?.checkValidity();
+		return element?.checkValidity()
 	}
 
 	export function reportValidity() {
-		return element?.reportValidity();
+		return element?.reportValidity()
 	}
 
 	export function setCustomValidity(message: string) {
-		element?.setCustomValidity(message);
+		element?.setCustomValidity(message)
 	}
 
 	export function focus() {
-		element?.focus();
+		element?.focus()
 	}
 
 	export function blur() {
-		element?.blur();
+		element?.blur()
 	}
 
 	export function select() {
-		element?.select();
+		element?.select()
 	}
 
 	// <fluent-number-field> keeps a sanitized string `value` ("" or a valid,
 	// min/max-clamped number) while the inner input keeps the raw typed text, so
 	// partial input like "-" or "1." maps to null / 1 without clobbering typing.
 	function parseValue(raw: string | null | undefined): number | null {
-		if (raw == null || raw.trim() === "") return null;
-		const n = Number(raw);
-		return Number.isFinite(n) ? n : null;
+		if (raw == null || raw.trim() === "") return null
+		const n = Number(raw)
+		return Number.isFinite(n) ? n : null
 	}
 
 	// True while pushing `value` into the element: FAST re-emits input/change on
 	// programmatic value sets, which must not echo back as user edits.
-	let syncing = false;
+	let syncing = false
 
 	// Prop -> element (string at the boundary). Skipped when the element already
 	// represents the same number, so live typing is never overwritten.
 	$effect(() => {
-		const next = value ?? null;
-		if (!element) return;
-		if (parseValue(element.value) === next) return;
-		syncing = true;
+		const next = value ?? null
+		if (!element) return
+		if (parseValue(element.value) === next) return
+		syncing = true
 		try {
-			element.value = next == null ? "" : String(next);
+			element.value = next == null ? "" : String(next)
 		} finally {
-			syncing = false;
+			syncing = false
 		}
-	});
+	})
 
 	function handleOnInput(event: Event) {
-		if (!syncing) value = parseValue((event.target as HTMLInputElement).value);
-		oninput?.(event);
+		if (!syncing) value = parseValue((event.target as HTMLInputElement).value)
+		oninput?.(event)
 	}
 
 	function handleOnChange(event: Event) {
-		onchange?.(event);
-		if (!syncing) onChange?.({value: parseValue((event.target as HTMLInputElement).value)});
+		onchange?.(event)
+		if (!syncing) onChange?.({value: parseValue((event.target as HTMLInputElement).value)})
 	}
 
 	// Apply autocomplete attribute via shadow DOM
 	$effect(() => {
 		if (autocomplete !== undefined) {
-			setAutocompleteOnShadowInput(element, autocomplete);
+			setAutocompleteOnShadowInput(element, autocomplete)
 		}
-	});
+	})
 </script>
 
 <FieldLabel for={id} {label} {labelTemplate} />
@@ -235,11 +235,27 @@ Wrapper for `<fluent-number-field>`: a numeric input with optional step buttons 
 	bind:this={element}
 	{...rest}
 	{...attrs({
-		id, class: className, style: computedStyle, placeholder, appearance, disabled, readonly,
-		required, autofocus, autocomplete, step, min, max, minlength, maxlength, size, list,
-		"hide-step": hideStep, name
+		id,
+		class: className,
+		style: computedStyle,
+		placeholder,
+		appearance,
+		disabled,
+		readonly,
+		required,
+		autofocus,
+		autocomplete,
+		step,
+		min,
+		max,
+		minlength,
+		maxlength,
+		size,
+		list,
+		"hide-step": hideStep,
+		name
 	})}
-	{...(ariaLabel || label ? { "aria-label": ariaLabel ?? label } : {})}
+	{...ariaLabel || label ? {"aria-label": ariaLabel ?? label} : {}}
 	{...titleProps}
 	oninput={handleOnInput}
 	onchange={handleOnChange}

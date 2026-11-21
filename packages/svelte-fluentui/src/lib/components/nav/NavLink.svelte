@@ -39,24 +39,21 @@ The link part of a nav row: icon, text and trailing content; an `<a>` with `href
 	type Props = OwnProps & AnchorRestProps<OwnProps>
 
 	let {
-		    href      = undefined,
-		    rel       = undefined,
-		    target    = undefined,
-		    title     = undefined,
-		    disabled  = undefined,
-		    icon      = undefined,
-		    onclick   = undefined,
-		    afterText = undefined,
-		    children  = undefined,
-		    linkAction = undefined,
-		    class: className = undefined,
-		    ...rest
-	    }: Props = $props()
+		href = undefined,
+		rel = undefined,
+		target = undefined,
+		title = undefined,
+		disabled = undefined,
+		icon = undefined,
+		onclick = undefined,
+		afterText = undefined,
+		children = undefined,
+		linkAction = undefined,
+		class: className = undefined,
+		...rest
+	}: Props = $props()
 
-	let renderElement = $derived(href
-		? "a"
-		: "div"
-	)
+	let renderElement = $derived(href ? "a" : "div")
 
 	function applyLinkAction(node: HTMLElement) {
 		linkAction?.(node)
@@ -68,13 +65,13 @@ The link part of a nav row: icon, text and trailing content; an `<a>` with `href
 <svelte:element
 	this={renderElement}
 	{...rest}
-	{...(href ? {href, rel} : {})}
+	{...href ? {href, rel} : {}}
 	{...attrs({target})}
 	{title}
 	aria-disabled={disabled}
 	class="fluent-nav-link {className || ''}"
 	class:disabled
-	onclick={onclick}
+	{onclick}
 	use:applyLinkAction
 >
 	<PositioningRegion>

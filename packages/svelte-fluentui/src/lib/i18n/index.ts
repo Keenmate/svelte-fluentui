@@ -6,7 +6,14 @@
  */
 export {i18n} from "./i18n-service.svelte.js"
 export {useTranslations, type Translate, type TranslationValues} from "./translate.svelte.js"
-export type {ComponentLabels, I18nInitOptions, LabelKey, Language, SvelteFluentUITranslationKey, SvelteFluentUITranslations} from "./types.js"
+export type {
+	ComponentLabels,
+	I18nInitOptions,
+	LabelKey,
+	Language,
+	SvelteFluentUITranslationKey,
+	SvelteFluentUITranslations
+} from "./types.js"
 export {en} from "./locales/en.js"
 export {de} from "./locales/de.js"
 export {

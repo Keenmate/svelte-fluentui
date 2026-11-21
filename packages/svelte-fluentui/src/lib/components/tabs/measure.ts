@@ -30,23 +30,23 @@ export function measureVisibleCount(
 	shadowTablist: HTMLElement,
 	horizontal: boolean
 ): {visibleCount: number; truncate: number} {
-	const shadowBtns = Array.from(
-		shadowTablist.querySelectorAll<HTMLElement>("[data-shadow-tab-id]")
-	)
+	const shadowBtns = Array.from(shadowTablist.querySelectorAll<HTMLElement>("[data-shadow-tab-id]"))
 	const shadowMoreBtn = shadowTablist.querySelector<HTMLElement>("[data-shadow-more]")
 
 	if (shadowBtns.length === 0) return {visibleCount: 0, truncate: 0}
 
 	const containerSize = horizontal ? tablist.clientWidth : tablist.clientHeight
-	const moreBtnSize = shadowMoreBtn
-		? (horizontal ? shadowMoreBtn.offsetWidth : shadowMoreBtn.offsetHeight)
-		: 40
-	const sizes = shadowBtns.map(btn => horizontal ? btn.offsetWidth : btn.offsetHeight)
+	const moreBtnSize = shadowMoreBtn ? (horizontal ? shadowMoreBtn.offsetWidth : shadowMoreBtn.offsetHeight) : 40
+	const sizes = shadowBtns.map((btn) => (horizontal ? btn.offsetWidth : btn.offsetHeight))
 	return fitTabs(sizes, containerSize, moreBtnSize)
 }
 
 /** Pure part of {@link measureVisibleCount}: how many of `sizes` fit `containerSize`. */
-export function fitTabs(sizes: number[], containerSize: number, moreBtnSize: number): {visibleCount: number; truncate: number} {
+export function fitTabs(
+	sizes: number[],
+	containerSize: number,
+	moreBtnSize: number
+): {visibleCount: number; truncate: number} {
 	// First pass: does everything fit without the `⋯` button at all?
 	let cumulative = 0
 	let fitAll = true
@@ -113,21 +113,23 @@ export function indicatorStyle(activeBtn: HTMLElement | null, horizontal: boolea
 	if (horizontal) {
 		const x = activeBtn.offsetLeft
 		const y = activeBtn.offsetTop + activeBtn.offsetHeight - thickness
-		return `opacity: 1;` +
+		return (
+			`opacity: 1;` +
 			`transform: translate(${x}px, ${y}px);` +
 			`width: ${activeBtn.offsetWidth}px;` +
 			`height: ${thickness}px;`
+		)
 	}
 	// The indicator sits on the tab's inline-end edge (facing the panels):
 	// the right edge in LTR, the left edge in RTL.
-	const x = rtl()
-		? activeBtn.offsetLeft
-		: activeBtn.offsetLeft + activeBtn.offsetWidth - thickness
+	const x = rtl() ? activeBtn.offsetLeft : activeBtn.offsetLeft + activeBtn.offsetWidth - thickness
 	const y = activeBtn.offsetTop
-	return `opacity: 1;` +
+	return (
+		`opacity: 1;` +
 		`transform: translate(${x}px, ${y}px);` +
 		`width: ${thickness}px;` +
 		`height: ${activeBtn.offsetHeight}px;`
+	)
 }
 
 /**
@@ -135,7 +137,10 @@ export function indicatorStyle(activeBtn: HTMLElement | null, horizontal: boolea
  * 0 at the start and goes negative toward the end, so the distance from the
  * start is its magnitude in both directions.
  */
-export function scrollState(tablist: HTMLElement, horizontal: boolean): {canScrollStart: boolean; canScrollEnd: boolean} {
+export function scrollState(
+	tablist: HTMLElement,
+	horizontal: boolean
+): {canScrollStart: boolean; canScrollEnd: boolean} {
 	if (horizontal) {
 		const {clientWidth, scrollWidth} = tablist
 		const scrolled = Math.abs(tablist.scrollLeft)

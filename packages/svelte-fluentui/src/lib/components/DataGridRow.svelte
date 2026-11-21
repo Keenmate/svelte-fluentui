@@ -16,19 +16,19 @@ Wrapper for `<fluent-data-grid-row>`: one row of `DataGridCell`s inside a `DataG
 
 	type OwnProps = {
 		/** Extra class on `<fluent-data-grid-row>`. */
-		class?: string;
+		class?: string
 		/** Inline style on the row. */
-		style?: string;
+		style?: string
 		/** Row index, rendered as `data-row-index`. */
-		rowIndex?: number;
+		rowIndex?: number
 		/** Row kind: `default`, `header` or `sticky-header` (`row-type` attribute). */
-		rowType?: string;
+		rowType?: string
 		/** `<DataGridCell>` children. */
-		children?: Snippet;
-	};
+		children?: Snippet
+	}
 
 	/** Native attributes and events (`onclick`, `ondblclick`, `onkeydown`, `onfocus`, …) go to `<fluent-data-grid-row>`. */
-	type Props = OwnProps & RestProps<OwnProps>;
+	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
 		class: className = "",
@@ -37,7 +37,7 @@ Wrapper for `<fluent-data-grid-row>`: one row of `DataGridCell`s inside a `DataG
 		rowType = undefined,
 		children = undefined,
 		...rest
-	}: Props = $props();
+	}: Props = $props()
 </script>
 
 <fluent-data-grid-row

@@ -18,11 +18,7 @@ Scrollable main content area of a page layout; fills its parent and scrolls vert
 	/** Other native attributes and events (`id`, `class`, `style`, `aria-*`, …) go to the root `<div>`. */
 	type Props = OwnProps & RestProps<OwnProps>
 
-	let {
-		children = undefined,
-		class: className = undefined,
-		...rest
-	    }: Props = $props()
+	let {children = undefined, class: className = undefined, ...rest}: Props = $props()
 </script>
 
 <div {...rest} class={["body-content", className]}>

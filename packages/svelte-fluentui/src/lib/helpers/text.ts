@@ -19,8 +19,20 @@ export type SearchBehavior = "normalized" | "case-insensitive" | "exact"
 /** Letters `normalized` folds by hand — they have no Unicode decomposition (or, for `ς`,
  *  lowercase differently by position) so stripping combining marks alone misses them. */
 const FOLD_EXTRA: Record<string, string> = {
-	"ł": "l", "ø": "o", "đ": "d", "ð": "d", "ħ": "h", "ı": "i", "ß": "ss", "æ": "ae", "œ": "oe", "ς": "σ",
-	"ŧ": "t", "þ": "th", "ĳ": "ij", "ŀ": "l"
+	ł: "l",
+	ø: "o",
+	đ: "d",
+	ð: "d",
+	ħ: "h",
+	ı: "i",
+	ß: "ss",
+	æ: "ae",
+	œ: "oe",
+	ς: "σ",
+	ŧ: "t",
+	þ: "th",
+	ĳ: "ij",
+	ŀ: "l"
 }
 const FOLD_EXTRA_RE = /[łøđðħıßæœςŧþĳŀ]/g
 
@@ -58,7 +70,7 @@ function foldCodePoint(ch: string, behavior: SearchBehavior, afterDiacriticBase:
 		base = DIACRITIC_BASE.test(part)
 		out += part
 	}
-	return [out.toLowerCase().replace(FOLD_EXTRA_RE, c => FOLD_EXTRA[c] ?? c), base]
+	return [out.toLowerCase().replace(FOLD_EXTRA_RE, (c) => FOLD_EXTRA[c] ?? c), base]
 }
 
 /**

@@ -35,7 +35,10 @@ export class AsyncSearch<T> {
 
 	constructor(options: AsyncSearchOptions<T>) {
 		this.#options = options
-		this.#debounced = debounce((term: string) => this.run(term), () => this.#delay())
+		this.#debounced = debounce(
+			(term: string) => this.run(term),
+			() => this.#delay()
+		)
 	}
 
 	/** Waiting out the debounce or loading — results for the current input are still coming. */
@@ -83,12 +86,12 @@ export class AsyncSearch<T> {
 
 		this.loading = true
 		Promise.resolve(result).then(
-			results => {
+			(results) => {
 				if (isStale()) return
 				this.loading = false
 				this.#options.onResults(results, term)
 			},
-			error => {
+			(error) => {
 				if (isStale()) return
 				this.loading = false
 				if (!isAbortError(error)) this.#options.onError(error, term)

@@ -14,11 +14,7 @@ Full-width, non-wrapping flex row with a start margin — a simple region for in
 	/** Other native attributes and events go to the root `<div>`. */
 	type Props = OwnProps & RestProps<OwnProps>
 
-	let {
-		children = undefined,
-		class: className = "",
-		...rest
-	}: Props = $props()
+	let {children = undefined, class: className = "", ...rest}: Props = $props()
 </script>
 
 <div {...rest} class={["content-region", className]}>

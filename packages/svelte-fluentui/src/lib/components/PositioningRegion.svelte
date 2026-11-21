@@ -9,15 +9,7 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {portal, portalHost} from "../actions/portal.js"
-	import {
-		computePosition,
-		flip,
-		shift,
-		offset,
-		size,
-		autoUpdate,
-		type Placement
-	} from "@floating-ui/dom"
+	import {computePosition, flip, shift, offset, size, autoUpdate, type Placement} from "@floating-ui/dom"
 	import type {RestProps} from "../types/index.js"
 
 	/** Logical position: `start` / `end` follow the anchor's text direction. */
@@ -70,7 +62,9 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 		...rest
 	}: Props = $props()
 
-	const isRtl = $derived(!!anchor && typeof getComputedStyle !== "undefined" && getComputedStyle(anchor).direction === "rtl")
+	const isRtl = $derived(
+		!!anchor && typeof getComputedStyle !== "undefined" && getComputedStyle(anchor).direction === "rtl"
+	)
 	const physicalSide = $derived((positionProp === "start") !== isRtl ? "left" : "right")
 
 	const placement = $derived<Placement>(
@@ -120,7 +114,11 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 		}
 		return {
 			destroy() {
-				try { node.hidePopover?.() } catch { /* already hidden */ }
+				try {
+					node.hidePopover?.()
+				} catch {
+					/* already hidden */
+				}
 			}
 		}
 	}
@@ -132,11 +130,7 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 		function attach(p: PositionParams) {
 			cleanup()
 			async function update() {
-				const middleware = [
-					offset(0),
-					flip(),
-					shift({padding: SHIFT_PADDING})
-				]
+				const middleware = [offset(0), flip(), shift({padding: SHIFT_PADDING})]
 				if (p.matchWidth || p.availableHeight) {
 					middleware.push(
 						size({
@@ -146,10 +140,7 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 									elements.floating.style.width = `${rects.reference.width}px`
 								}
 								if (p.availableHeight) {
-									elements.floating.style.setProperty(
-										"--_available-height",
-										`${Math.max(0, Math.floor(h))}px`
-									)
+									elements.floating.style.setProperty("--_available-height", `${Math.max(0, Math.floor(h))}px`)
 								}
 							}
 						})

@@ -91,7 +91,7 @@ Breakpoints resolve against the viewport, or a container with `container`.
 	//  ""            → default self-container (static/global CSS)
 	//  containerId   → external ancestor named container
 	//  generatedName → this Grid, with per-Grid breakpoints
-	const cqName = $derived(!container ? undefined : containerId ?? (hasCustomBreakpoints ? generatedName : ""))
+	const cqName = $derived(!container ? undefined : (containerId ?? (hasCustomBreakpoints ? generatedName : "")))
 	// Whether the Grid itself is the query container (vs an external ancestor).
 	const selfContainer = $derived(container && containerId == null)
 	const effectiveBreakpoints = $derived(getEffectiveBreakpoints(containerBreakpoints))
@@ -155,7 +155,7 @@ Breakpoints resolve against the viewport, or a container with `container`.
 	})
 </script>
 
-<div {...rest} class="grid-container {className}" style="{style}">
+<div {...rest} class="grid-container {className}" {style}>
 	<div
 		bind:this={gridElement}
 		class="fluent-grid"

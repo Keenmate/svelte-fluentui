@@ -71,7 +71,10 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 	// locale group separators ("1,234", "1.234", "1 234"), so it stays one bold run.
 	const NUMBER = /(\d+(?:[.,\s]\d{3})*)/
 	function numberParts(text: string): {text: string; isNumber: boolean}[] {
-		return text.split(NUMBER).filter(Boolean).map((part) => ({text: part, isNumber: /^\d/.test(part)}))
+		return text
+			.split(NUMBER)
+			.filter(Boolean)
+			.map((part) => ({text: part, isNumber: /^\d/.test(part)}))
 	}
 
 	const backEnabled = $derived(canGoBack ?? currentPageIndex > 0)
@@ -103,7 +106,7 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 	<nav class="paginator-nav" aria-label={t("paginationAriaLabel")}>
 		<fluent-button
 			onclick={() => goTo(0)}
-			{...(!backEnabled || disabled ? { disabled: true } : {})}
+			{...!backEnabled || disabled ? {disabled: true} : {}}
 			title={t("firstPageTooltip")}
 			aria-label={t("firstPageAriaLabel")}
 		>
@@ -112,7 +115,7 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 
 		<fluent-button
 			onclick={() => goTo(currentPageIndex - 1)}
-			{...(!backEnabled || disabled ? { disabled: true } : {})}
+			{...!backEnabled || disabled ? {disabled: true} : {}}
 			title={t("previousPageTooltip")}
 			aria-label={t("previousPageAriaLabel")}
 		>
@@ -130,7 +133,7 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 
 		<fluent-button
 			onclick={() => goTo(currentPageIndex + 1)}
-			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}
+			{...!forwardsEnabled || disabled ? {disabled: true} : {}}
 			title={t("nextPageTooltip")}
 			aria-label={t("nextPageAriaLabel")}
 		>
@@ -139,7 +142,7 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 
 		<fluent-button
 			onclick={() => goTo(lastPageIndex)}
-			{...(!forwardsEnabled || disabled ? { disabled: true } : {})}
+			{...!forwardsEnabled || disabled ? {disabled: true} : {}}
 			title={t("lastPageTooltip")}
 			aria-label={t("lastPageAriaLabel")}
 		>

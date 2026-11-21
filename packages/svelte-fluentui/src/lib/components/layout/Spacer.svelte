@@ -18,11 +18,7 @@ Flex spacer: a fixed-width gap, or (without `width`) grows to push siblings apar
 	/** Other native attributes and events (`id`, `class`, `style`, …) go to the root `<div>`. */
 	type Props = OwnProps & RestProps<OwnProps>
 
-	let {
-		width = undefined,
-		class: className = undefined,
-		...rest
-	}: Props = $props()
+	let {width = undefined, class: className = undefined, ...rest}: Props = $props()
 
 	// Numbers and bare numeric strings ("100") get `px`; CSS lengths pass through.
 	let widthCssVar = $derived(
@@ -30,12 +26,7 @@ Flex spacer: a fixed-width gap, or (without `width`) grows to push siblings apar
 	)
 </script>
 
-<div
-	{...rest}
-	class={["spacer", className]}
-	class:auto-width={!width}
-	style:--fluent-spacer-width={widthCssVar}
-></div>
+<div {...rest} class={["spacer", className]} class:auto-width={!width} style:--fluent-spacer-width={widthCssVar}></div>
 
 <style lang="scss">
 	.spacer {

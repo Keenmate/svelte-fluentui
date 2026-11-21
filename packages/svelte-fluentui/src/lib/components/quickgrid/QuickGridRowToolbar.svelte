@@ -21,7 +21,7 @@
 		target: {row: T; viewIndex: number}
 		/** Changes on every open (even of the same row): forgets that the row moved. */
 		session: number
-		align: 'center' | 'top'
+		align: "center" | "top"
 		t: Translate<"quickGrid">
 		entries: RowToolbarConfig<T>[]
 		rowContext: RowContext<T>
@@ -39,12 +39,25 @@
 	}
 
 	let {
-		anchor, table, target, session, align, t, entries, rowContext, presets,
-		element = $bindable(), focused = $bindable(false), onItemClick, onCloseRequest, onpointerenter, onpointerleave
+		anchor,
+		table,
+		target,
+		session,
+		align,
+		t,
+		entries,
+		rowContext,
+		presets,
+		element = $bindable(),
+		focused = $bindable(false),
+		onItemClick,
+		onCloseRequest,
+		onpointerenter,
+		onpointerleave
 	}: Props = $props()
 
 	function itemDefaults(item: ActionItem<RowContext<T>, RowToolbarAction>) {
-		return item.action && item.action !== 'custom' ? presets[item.action] : undefined
+		return item.action && item.action !== "custom" ? presets[item.action] : undefined
 	}
 
 	// Split entries into lines (`toolbarRow`, default 1), furthest line first.
@@ -53,9 +66,9 @@
 		const byLine = new Map<number, RowToolbarConfig<T>[]>()
 		let currentLine = 1
 		for (const entry of entries) {
-			if (typeof entry !== 'string' && !('divider' in entry && entry.divider)) {
+			if (typeof entry !== "string" && !("divider" in entry && entry.divider)) {
 				currentLine = (entry as RowToolbarItem<T>).toolbarRow ?? 1
-			} else if (typeof entry === 'string') {
+			} else if (typeof entry === "string") {
 				currentLine = 1
 			}
 			if (!byLine.has(currentLine)) byLine.set(currentLine, [])
@@ -65,22 +78,35 @@
 	})
 
 	function handleKeyDown(event: KeyboardEvent) {
-		const buttons = [...(element?.querySelectorAll<HTMLElement>('.row-toolbar-btn:not(:disabled)') ?? [])]
+		const buttons = [...(element?.querySelectorAll<HTMLElement>(".row-toolbar-btn:not(:disabled)") ?? [])]
 		const index = buttons.indexOf(document.activeElement as HTMLElement)
-		const rtl = !!element && getComputedStyle(element).direction === 'rtl'
+		const rtl = !!element && getComputedStyle(element).direction === "rtl"
 		let next: number
 		switch (event.key) {
-			case 'ArrowRight': next = index + (rtl ? -1 : 1); break
-			case 'ArrowLeft': next = index + (rtl ? 1 : -1); break
-			case 'ArrowDown': next = index + 1; break
-			case 'ArrowUp': next = index - 1; break
-			case 'Home': next = 0; break
-			case 'End': next = buttons.length - 1; break
-			case 'Tab':
+			case "ArrowRight":
+				next = index + (rtl ? -1 : 1)
+				break
+			case "ArrowLeft":
+				next = index + (rtl ? 1 : -1)
+				break
+			case "ArrowDown":
+				next = index + 1
+				break
+			case "ArrowUp":
+				next = index - 1
+				break
+			case "Home":
+				next = 0
+				break
+			case "End":
+				next = buttons.length - 1
+				break
+			case "Tab":
 				event.preventDefault()
 				onCloseRequest()
 				return
-			default: return
+			default:
+				return
 		}
 		event.preventDefault()
 		if (buttons.length === 0) return
@@ -92,30 +118,30 @@
 	}
 
 	// Physical side, decided from the space around the table: 1. left, 2. right, 3. top
-	let side = $state<'left' | 'right' | 'top'>('left')
+	let side = $state<"left" | "right" | "top">("left")
 	$effect(() => {
 		void anchor
 		const tableRect = table.getBoundingClientRect()
 		// The side needs room for the whole toolbar (measured once it has rendered —
 		// `element` re-runs this effect), or a wide toolbar ends up off-screen.
 		const minSpace = Math.max(100, (element?.offsetWidth ?? 0) + 8)
-		if (tableRect.left >= minSpace) side = 'left'
-		else if (window.innerWidth - tableRect.right >= minSpace) side = 'right'
-		else side = 'top'
+		if (tableRect.left >= minSpace) side = "left"
+		else if (window.innerWidth - tableRect.right >= minSpace) side = "right"
+		else side = "top"
 	})
 
 	// PositioningRegion takes logical start / end and flips them for RTL itself.
 	const regionPosition = $derived.by(() => {
-		if (side === 'top') return 'top' as const
-		const rtl = getComputedStyle(anchor).direction === 'rtl'
-		return (side === 'left') !== rtl ? 'start' as const : 'end' as const
+		if (side === "top") return "top" as const
+		const rtl = getComputedStyle(anchor).direction === "rtl"
+		return (side === "left") !== rtl ? ("start" as const) : ("end" as const)
 	})
 
 	// Bracket-shaped connector from the toolbar to its row, once the row moved away from `anchor`
 	let movedSession = $state(-1)
-	let connector = $state<{path: string; x: number; y: number; dir: 'left' | 'right'} | null>(null)
+	let connector = $state<{path: string; x: number; y: number; dir: "left" | "right"} | null>(null)
 	$effect(() => {
-		const currentRowEl = table.querySelectorAll(':scope > tbody > tr')[target.viewIndex] as HTMLElement | undefined
+		const currentRowEl = table.querySelectorAll(":scope > tbody > tr")[target.viewIndex] as HTMLElement | undefined
 		if (!element || !currentRowEl) {
 			connector = null
 			return
@@ -130,8 +156,8 @@
 		const popupRect = element.getBoundingClientRect()
 		const rowRect = currentRowEl.getBoundingClientRect()
 		const tableRect = table.getBoundingClientRect()
-		const isRTL = document.dir === 'rtl' || document.documentElement.dir === 'rtl'
-		const dir = isRTL ? 'left' : 'right'
+		const isRTL = document.dir === "rtl" || document.documentElement.dir === "rtl"
+		const dir = isRTL ? "left" : "right"
 		const isOverlapping = !(rowRect.bottom < popupRect.top || rowRect.top > popupRect.bottom)
 
 		// Out to the table's start edge, along it to the row, then in to the row
@@ -139,7 +165,7 @@
 		const endX = isRTL ? rowRect.right + 8 : rowRect.left - 8
 		const endY = rowRect.top + rowRect.height / 2
 
-		if (side === 'top' && isOverlapping && !isAdjacent) {
+		if (side === "top" && isOverlapping && !isAdjacent) {
 			// Overlapping (but not adjacent) - back-loop pointing to itself
 			const startY = rowRect.top + rowRect.height * 0.75
 			const loopEndY = rowRect.top + rowRect.height * 0.25
@@ -147,7 +173,8 @@
 			return
 		}
 		// From the toolbar's side facing the table (above it: its start side)
-		const startX = side === 'left' ? popupRect.right : side === 'right' ? popupRect.left : isRTL ? popupRect.right : popupRect.left
+		const startX =
+			side === "left" ? popupRect.right : side === "right" ? popupRect.left : isRTL ? popupRect.right : popupRect.left
 		const startY = popupRect.top + popupRect.height / 2
 		connector = {path: `M ${startX} ${startY} H ${cornerX} V ${endY} H ${endX}`, x: endX, y: endY, dir}
 	})
@@ -169,7 +196,7 @@
 		{#each lines as line}
 			<div class="row-toolbar-row">
 				{#each resolveMenuEntries(line, rowContext, itemDefaults) as entry}
-					{#if entry.kind === 'divider'}
+					{#if entry.kind === "divider"}
 						<div class="row-toolbar-divider"></div>
 					{:else}
 						{@const r = entry.resolved}
@@ -182,7 +209,7 @@
 							disabled={r.isDisabled}
 							onclick={(event) => onItemClick({item: entry.item as RowToolbarItem<T>, action: r.action, event})}
 						>
-							{#if typeof r.icon === 'string'}
+							{#if typeof r.icon === "string"}
 								<Icon name={r.icon} size={16} />
 							{:else if r.icon}
 								{@render r.icon()}
@@ -203,7 +230,7 @@
 		<path d={connector.path} />
 		<!-- Arrow head pointing at the row -->
 		<polygon
-			points={connector.dir === 'left' ? '0,-4 -8,0 0,4' : '0,-4 8,0 0,4'}
+			points={connector.dir === "left" ? "0,-4 -8,0 0,4" : "0,-4 8,0 0,4"}
 			transform="translate({connector.x}, {connector.y})"
 		/>
 	</svg>
@@ -279,7 +306,8 @@
 	}
 
 	.row-toolbar-btn:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
+		outline: calc(var(--focus-stroke-width, 2) * 1px) solid
+			var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
 		outline-offset: 1px;
 	}
 

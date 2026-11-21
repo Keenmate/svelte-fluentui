@@ -9,7 +9,7 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 -->
 <script lang="ts">
 	import {toast, type ToastInstance, type ToastPosition} from "../stores/toast.svelte.js"
-		import DismissIcon from "./icons/DismissIcon.svelte"
+	import DismissIcon from "./icons/DismissIcon.svelte"
 	import {portal} from "../actions/portal.js"
 	import {useTranslations} from "../i18n/translate.svelte.js"
 	import type {ToastContainerLabels} from "../i18n/labels.js"
@@ -43,7 +43,11 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 		}
 		return {
 			destroy() {
-				try { node.hidePopover?.() } catch { /* already hidden */ }
+				try {
+					node.hidePopover?.()
+				} catch {
+					/* already hidden */
+				}
 			}
 		}
 	}
@@ -136,10 +140,7 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 						<DismissIcon size={14} />
 					</button>
 					{#if toastItem.showProgress && !toastItem.persistent}
-						<div
-							class="fluent-toast__progress"
-							style="animation-duration: {toastItem.duration}ms;"
-						></div>
+						<div class="fluent-toast__progress" style="animation-duration: {toastItem.duration}ms;"></div>
 					{/if}
 				</div>
 			{/each}

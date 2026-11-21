@@ -34,12 +34,9 @@ export function optionData(el: HTMLElement): Record<string, unknown> | undefined
 }
 
 /** First option with `value` in the first root that has one. */
-export function findOption(
-	roots: readonly (ParentNode | null | undefined)[],
-	value: string
-): HTMLElement | undefined {
+export function findOption(roots: readonly (ParentNode | null | undefined)[], value: string): HTMLElement | undefined {
 	for (const root of roots) {
-		const el = getOptionEls(root).find(o => optionValue(o) === value)
+		const el = getOptionEls(root).find((o) => optionValue(o) === value)
 		if (el) return el
 	}
 	return undefined

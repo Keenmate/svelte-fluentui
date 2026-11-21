@@ -3,11 +3,12 @@
  * Converts SCSS variables to CSS custom properties for runtime theme switching
  */
 
-@use 'tokens' as *;
-@use 'variables' as *;
+@use "tokens" as *;
+@use "variables" as *;
 
 // Generate CSS custom properties from SCSS variables
-:root, [data-theme="light"] {
+:root,
+[data-theme="light"] {
 	color-scheme: light;
 
 	// Background colors
@@ -84,11 +85,11 @@
 	// Use sm for tight indicators (progress bars), md for default UI (buttons, fields),
 	// lg/xl for container surfaces (popovers, drop-zones, chips). Pill for fully rounded
 	// badges; circle for round dots/spinners.
-	--fluent-border-radius-sm:     #{$border-radius-sm};
-	--fluent-border-radius-md:     #{$border-radius-md};
-	--fluent-border-radius-lg:     #{$border-radius-lg};
-	--fluent-border-radius-xl:     #{$border-radius-xl};
-	--fluent-border-radius-pill:   #{$border-radius-pill};
+	--fluent-border-radius-sm: #{$border-radius-sm};
+	--fluent-border-radius-md: #{$border-radius-md};
+	--fluent-border-radius-lg: #{$border-radius-lg};
+	--fluent-border-radius-xl: #{$border-radius-xl};
+	--fluent-border-radius-pill: #{$border-radius-pill};
 	--fluent-border-radius-circle: #{$border-radius-circle};
 
 	// Transitions
@@ -100,16 +101,16 @@
 	// Panel uses it too (it only needs its own stacking context, not to cover the page).
 	// "popover" is intentionally above modal so dropdowns/calendars opened from inside a modal
 	// render on top of the modal.
-	--fluent-z-raised:          #{$z-index-raised};
-	--fluent-z-panel-pinned:    var(--fluent-z-raised);
-	--fluent-z-dropdown:        #{$z-index-dropdown};
-	--fluent-z-sticky:          #{$z-index-sticky};
-	--fluent-z-fixed:           #{$z-index-fixed};
-	--fluent-z-modal-backdrop:  #{$z-index-modal-backdrop};
-	--fluent-z-modal:           #{$z-index-modal};
-	--fluent-z-popover:         #{$z-index-popover};
-	--fluent-z-tooltip:         #{$z-index-tooltip};
-	--fluent-z-toast:           #{$z-index-toast};
+	--fluent-z-raised: #{$z-index-raised};
+	--fluent-z-panel-pinned: var(--fluent-z-raised);
+	--fluent-z-dropdown: #{$z-index-dropdown};
+	--fluent-z-sticky: #{$z-index-sticky};
+	--fluent-z-fixed: #{$z-index-fixed};
+	--fluent-z-modal-backdrop: #{$z-index-modal-backdrop};
+	--fluent-z-modal: #{$z-index-modal};
+	--fluent-z-popover: #{$z-index-popover};
+	--fluent-z-tooltip: #{$z-index-tooltip};
+	--fluent-z-toast: #{$z-index-toast};
 }
 
 [data-theme="dark"] {
@@ -170,7 +171,9 @@
 body {
 	background-color: var(--neutral-layer-1);
 	color: var(--neutral-foreground-rest);
-	transition: background-color 0.3s ease, color 0.3s ease;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
 }
 
 // While a theme swap is in flight the theme store adds `.fluent-theme-switching`

@@ -26,7 +26,8 @@ export type QuickGridRowIdentity = {
 // ---------------------------------------------------------------------------
 
 /** Built-in cell editor kinds (`"custom"` hands editing to `Column.editCallback`). */
-export type QuickGridEditorType = "text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
+export type QuickGridEditorType =
+	"text" | "number" | "checkbox" | "select" | "combobox" | "date" | "autocomplete" | "custom"
 
 /** What puts a cell into edit mode. */
 export type QuickGridEditTrigger = "click" | "dblclick" | "button" | "always" | "navigate"
@@ -117,9 +118,18 @@ type QuickGridEditorOptionsBase = {
 /** Per-column editor configuration (`Column.editorOptions`). */
 export type QuickGridEditorOptions<T = any> = QuickGridEditorOptionsBase & {
 	/** Loads the options for this row. `signal` aborts when a newer load for the column starts or the grid unmounts. */
-	loadOptionsCallback?: (ctx: {row: T; column: QuickGridColumn<T>; signal: AbortSignal}) => Promise<QuickGridEditorOption[]>
+	loadOptionsCallback?: (ctx: {
+		row: T
+		column: QuickGridColumn<T>
+		signal: AbortSignal
+	}) => Promise<QuickGridEditorOption[]>
 	/** Server-side search for the autocomplete editor. */
-	searchCallback?: (ctx: {term: string; row: T; column: QuickGridColumn<T>; signal?: AbortSignal}) => Promise<QuickGridEditorOption[]>
+	searchCallback?: (ctx: {
+		term: string
+		row: T
+		column: QuickGridColumn<T>
+		signal?: AbortSignal
+	}) => Promise<QuickGridEditorOption[]>
 }
 
 /**
@@ -255,7 +265,9 @@ export type QuickGridColumn<T = any> = {
 	/** Validates a new value: return an error message, or null when valid. Prefer beforeCommitCallback. */
 	validateCallback?: (ctx: {value: any; row: T; column: QuickGridColumn<T>}) => string | null | Promise<string | null>
 	/** Validates and optionally transforms a value before it is committed (see QuickGridBeforeCommitResult). */
-	beforeCommitCallback?: (ctx: QuickGridBeforeCommitContext<T>) => QuickGridBeforeCommitResult | Promise<QuickGridBeforeCommitResult>
+	beforeCommitCallback?: (
+		ctx: QuickGridBeforeCommitContext<T>
+	) => QuickGridBeforeCommitResult | Promise<QuickGridBeforeCommitResult>
 	/** Custom editor (`editor: "custom"`): open your own UI, then call `ctx.commit(value)` or `ctx.cancel()`. */
 	editCallback?: (ctx: QuickGridCustomEditorContext<T>) => void
 	/** Show an edit button in the cell. */
@@ -415,8 +427,7 @@ export type QuickGridContextMenuAction = "expand-all" | "collapse-all" | "expand
 
 /** A `contextMenu` entry: a built-in name, or a full menu entry (item or divider). */
 export type QuickGridContextMenuConfig<T = any> =
-	| QuickGridContextMenuAction
-	| MenuEntry<QuickGridContextMenuContext<T>, QuickGridContextMenuAction>
+	QuickGridContextMenuAction | MenuEntry<QuickGridContextMenuContext<T>, QuickGridContextMenuAction>
 
 /** What `onAction` / `beforeActionCallback` receive — the row (and, from the context menu, the cell). */
 export type QuickGridActionDetail<T = any> = ActionEventDetail<

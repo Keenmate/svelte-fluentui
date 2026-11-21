@@ -36,21 +36,21 @@ One `AppBar` entry: an icon link (a button when it has no `href`) with a label a
 	type Props = OwnProps & AnchorRestProps<OwnProps>
 
 	let {
-		    href     = undefined,
-		    count    = undefined,
-		    maxCount = 99,
-		    countLabel = undefined,
-		    active   = undefined,
-		    tooltip  = undefined,
-		    onclick = undefined,
-		    icon = undefined,
-		    children = undefined,
-		    class: className = undefined,
-		    id = undefined,
-		    "aria-label": ariaLabel = undefined,
-		    "aria-labelledby": ariaLabelledby = undefined,
-		    ...rest
-	    }: Props = $props()
+		href = undefined,
+		count = undefined,
+		maxCount = 99,
+		countLabel = undefined,
+		active = undefined,
+		tooltip = undefined,
+		onclick = undefined,
+		icon = undefined,
+		children = undefined,
+		class: className = undefined,
+		id = undefined,
+		"aria-label": ariaLabel = undefined,
+		"aria-labelledby": ariaLabelledby = undefined,
+		...rest
+	}: Props = $props()
 
 	const appBar = getContext<AppBarContext | undefined>(APP_BAR_CONTEXT)
 
@@ -71,12 +71,14 @@ One `AppBar` entry: an icon link (a button when it has no `href`) with a label a
 		if (!appBar || !itemEl) return
 		const element = itemEl
 		// untrack: register() reads the bar's entry list; tracking it would re-register on every change.
-		return untrack(() => appBar.register({
-			id: uid,
-			element,
-			getText: () => element.querySelector(".fluent-appbar-item-label")?.textContent?.trim() ?? "",
-			popoverTile
-		}))
+		return untrack(() =>
+			appBar.register({
+				id: uid,
+				element,
+				getText: () => element.querySelector(".fluent-appbar-item-label")?.textContent?.trim() ?? "",
+				popoverTile
+			})
+		)
 	})
 
 	function handlePopoverClick(ev: MouseEvent) {
@@ -148,7 +150,10 @@ One `AppBar` entry: an icon link (a button when it has no `href`) with a label a
 		position: relative;
 		width: calc(var(--fluent-appbar-item-size, 68) * 1px);
 		--fluent-appbar-active-indicator-width: calc(var(--design-unit) * 0.5px);
-		height: var(--fluent-appbar-item-block-size, calc(var(--fluent-appbar-item-size, 68) * 1px - var(--design-unit) * 5px));
+		height: var(
+			--fluent-appbar-item-block-size,
+			calc(var(--fluent-appbar-item-size, 68) * 1px - var(--design-unit) * 5px)
+		);
 	}
 
 	.fluent-appbar-item[data-overflowed] {
@@ -185,7 +190,8 @@ One `AppBar` entry: an icon link (a button when it has no `href`) with a label a
 		justify-content: center;
 		block-size: 100%;
 		box-sizing: border-box;
-		padding: calc(var(--design-unit) * 1px) calc(var(--fluent-appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
+		padding: calc(var(--design-unit) * 1px)
+			calc(var(--fluent-appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
 	}
 
 	/* Active indicator: an accent bar on the start edge (vertical) or the bottom (horizontal).
@@ -225,7 +231,9 @@ One `AppBar` entry: an icon link (a button when it has no `href`) with a label a
 		display: none;
 	}
 
-	.fluent-appbar-item:is(:hover, .active) .fluent-appbar-item-icon:has(:global(svg[part="icon-active"])) :global(svg[part="icon-rest"]) {
+	.fluent-appbar-item:is(:hover, .active)
+		.fluent-appbar-item-icon:has(:global(svg[part="icon-active"]))
+		:global(svg[part="icon-rest"]) {
 		display: none;
 	}
 

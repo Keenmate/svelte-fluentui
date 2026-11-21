@@ -110,11 +110,7 @@ Single-line text input wrapping `<fluent-text-field>`; `bind:value` is a string.
 		checkValidity: () => boolean
 		reportValidity: () => boolean
 		setCustomValidity: (message: string) => void
-		setSelectionRange: (
-			start: number,
-			end: number,
-			direction?: "forward" | "backward" | "none"
-		) => void
+		setSelectionRange: (start: number, end: number, direction?: "forward" | "backward" | "none") => void
 	}
 
 	// Expose methods
@@ -134,11 +130,7 @@ Single-line text input wrapping `<fluent-text-field>`; `bind:value` is a string.
 		element?.setCustomValidity(message)
 	}
 
-	export function setSelectionRange(
-		start: number,
-		end: number,
-		direction?: "forward" | "backward" | "none"
-	) {
+	export function setSelectionRange(start: number, end: number, direction?: "forward" | "backward" | "none") {
 		element?.setSelectionRange(start, end, direction)
 	}
 
@@ -182,11 +174,21 @@ Single-line text input wrapping `<fluent-text-field>`; `bind:value` is a string.
 	bind:this={element}
 	{...rest}
 	{...attrs({
-		id, placeholder, appearance, disabled, readonly, required, type, name, autofocus,
-		autocomplete, style, title
+		id,
+		placeholder,
+		appearance,
+		disabled,
+		readonly,
+		required,
+		type,
+		name,
+		autofocus,
+		autocomplete,
+		style,
+		title
 	})}
-	{...(value != null ? { value } : {})}
-	{...(label || labelTemplate ? { "aria-label": label } : {})}
+	{...value != null ? {value} : {}}
+	{...label || labelTemplate ? {"aria-label": label} : {}}
 	oninput={handleOnInput}
 	onchange={handleOnChange}
 >

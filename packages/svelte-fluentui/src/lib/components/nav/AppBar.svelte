@@ -41,15 +41,15 @@ Vertical (or horizontal) application bar of `AppBarItem` icon links. Items that 
 	type Props = OwnProps & RestProps<OwnProps>
 
 	let {
-		    orientation = "vertical",
-		    showSearch = false,
-		    searchBehavior = "normalized",
-		    onOverflowOpenChange = undefined,
-		    labels: labelsProp = undefined,
-		    children    = undefined,
-		    class: className = undefined,
-		    ...rest
-	    }: Props = $props()
+		orientation = "vertical",
+		showSearch = false,
+		searchBehavior = "normalized",
+		onOverflowOpenChange = undefined,
+		labels: labelsProp = undefined,
+		children = undefined,
+		class: className = undefined,
+		...rest
+	}: Props = $props()
 
 	const t = useTranslations("appBar", () => labelsProp)
 
@@ -88,10 +88,11 @@ Vertical (or horizontal) application bar of `AppBarItem` icon links. Items that 
 		},
 		register(entry) {
 			entries = [...entries, entry]
-			return () => untrack(() => {
-				entries = entries.filter((e) => e !== entry)
-				if (overflowed.has(entry.id)) overflowed = new Set([...overflowed].filter((id) => id !== entry.id))
-			})
+			return () =>
+				untrack(() => {
+					entries = entries.filter((e) => e !== entry)
+					if (overflowed.has(entry.id)) overflowed = new Set([...overflowed].filter((id) => id !== entry.id))
+				})
 		},
 		isOverflowed: (id) => overflowed.has(id),
 		closeOverflow: () => setOpen(false)
@@ -126,7 +127,10 @@ Vertical (or horizontal) application bar of `AppBarItem` icon links. Items that 
 
 	$effect(() => {
 		if (!open) return
-		const undismiss = dismissOnOutside(() => [moreBtn, popupEl], () => setOpen(false))
+		const undismiss = dismissOnOutside(
+			() => [moreBtn, popupEl],
+			() => setOpen(false)
+		)
 		const popLayer = pushLayer({
 			onEscape: () => {
 				setOpen(false)
@@ -150,11 +154,7 @@ Vertical (or horizontal) application bar of `AppBarItem` icon links. Items that 
 	const computedClasses = $derived(classList("fluent-appbar", orientation, className))
 </script>
 
-<nav
-	{...rest}
-	data-orientation={orientation}
-	class={computedClasses}
->
+<nav {...rest} data-orientation={orientation} class={computedClasses}>
 	<div class="fluent-appbar-items" bind:this={itemsEl}>
 		{@render children?.()}
 	</div>
@@ -172,7 +172,9 @@ Vertical (or horizontal) application bar of `AppBarItem` icon links. Items that 
 			onclick={toggle}
 		>
 			<svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
-				<path d="M4.5 8a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0zm4.75 0a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0zM12.75 9.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"/>
+				<path
+					d="M4.5 8a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0zm4.75 0a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0zM12.75 9.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"
+				/>
 			</svg>
 		</button>
 	{/if}
@@ -254,7 +256,10 @@ Vertical (or horizontal) application bar of `AppBarItem` icon links. Items that 
 		align-items: center;
 		justify-content: center;
 		inline-size: calc(var(--fluent-appbar-item-size, 68) * 1px);
-		block-size: var(--fluent-appbar-item-block-size, calc(var(--fluent-appbar-item-size, 68) * 1px - var(--design-unit) * 5px));
+		block-size: var(
+			--fluent-appbar-item-block-size,
+			calc(var(--fluent-appbar-item-size, 68) * 1px - var(--design-unit) * 5px)
+		);
 		margin: 0;
 		padding: 0;
 		border: 0;
@@ -282,7 +287,10 @@ Vertical (or horizontal) application bar of `AppBarItem` icon links. Items that 
 		gap: var(--fluent-appbar-popover-gap, calc(var(--design-unit) * 2px));
 		padding: var(--fluent-appbar-popover-padding, calc(var(--design-unit) * 2px));
 		/* Three tiles per row (+ padding + the 1px surface border). */
-		max-inline-size: calc(var(--fluent-appbar-item-size, 68) * 3px + 2 * var(--fluent-appbar-popover-padding, calc(var(--design-unit) * 2px)) + 2px);
+		max-inline-size: calc(
+			var(--fluent-appbar-item-size, 68) * 3px + 2 *
+				var(--fluent-appbar-popover-padding, calc(var(--design-unit) * 2px)) + 2px
+		);
 	}
 
 	.fluent-appbar-popover :global(.fluent-appbar-popover-search) {

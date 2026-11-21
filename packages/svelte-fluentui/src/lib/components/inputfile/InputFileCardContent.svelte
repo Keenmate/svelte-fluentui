@@ -17,12 +17,7 @@
 
 <div class="drop-zone-content">
 	<div class="drop-zone-icon">
-		<svg
-			viewBox="0 0 48 48"
-			fill="currentColor"
-			class="upload-icon"
-			aria-hidden="true"
-		>
+		<svg viewBox="0 0 48 48" fill="currentColor" class="upload-icon" aria-hidden="true">
 			<path
 				d="M24 4a2 2 0 012 2v20.586l5.293-5.293a2 2 0 112.828 2.828l-8.707 8.708a2 2 0 01-2.828 0l-8.707-8.708a2 2 0 112.828-2.828L22 26.586V6a2 2 0 012-2z"
 			/>

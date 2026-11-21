@@ -69,9 +69,7 @@ function colChain(key: keyof GridBreakpoints): string {
 }
 
 const supportsConstructed =
-	typeof document !== "undefined" &&
-	typeof CSSStyleSheet !== "undefined" &&
-	"adoptedStyleSheets" in Document.prototype
+	typeof document !== "undefined" && typeof CSSStyleSheet !== "undefined" && "adoptedStyleSheets" in Document.prototype
 
 let globalOverride: Partial<GridBreakpoints> = {}
 let configured = false

@@ -44,13 +44,7 @@ Labelled `role="group"` section of `<Option>` rows inside a Select or Combobox l
 	/** Other native attributes and events go to the group `<div>`. */
 	type Props = OwnProps & RestProps<OwnProps>
 
-	let {
-		label = undefined,
-		class: className = undefined,
-		style = undefined,
-		children,
-		...rest
-	}: Props = $props()
+	let {label = undefined, class: className = undefined, style = undefined, children, ...rest}: Props = $props()
 </script>
 
 <div
