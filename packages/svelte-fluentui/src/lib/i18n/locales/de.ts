@@ -234,6 +234,10 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 
 	// ToastContainer
 	"svelteFluentUI.toastContainer.closeAriaLabel": "Schließen",
+	"svelteFluentUI.toastContainer.successTitle": "Erfolg",
+	"svelteFluentUI.toastContainer.errorTitle": "Fehler",
+	"svelteFluentUI.toastContainer.warningTitle": "Warnung",
+	"svelteFluentUI.toastContainer.infoTitle": "Information",
 
 	// TopNav
 	"svelteFluentUI.topNav.openMenuAriaLabel": "Menü öffnen",

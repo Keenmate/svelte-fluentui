@@ -231,6 +231,9 @@ tests skipped; both checks clean):
    → 2026-11-21: AppBar finished to Blazor parity — bar surface, horizontal layout, indicator on
    `data-orientation`, "…" overflow popover with search, item `tooltip`, danger count badge.
 3. Stores → runes (decided in principle, Q7): which API shape?
+   → 2026-11-22: `i18n`-style reactive singletons (`stores/*.svelte.ts`): `settings` (theme folded in,
+   applies design tokens itself, `effectiveTheme`, `toggleTheme()`), `toast.items`, `navigationStore`
+   → `navigation`; translated toast default titles. e2e/services.spec.ts.
 4. Q5 Prettier pass over the package — yes/no?
 5. Popup surfaces: Autocomplete/pickers/menus keep `--neutral-layer-1` + 16px shadow (`.fluent-popup--layer`);
    unify on `--neutral-layer-floating` + flyout shadow (needs Autocomplete highlighted-row recolour in dark)?

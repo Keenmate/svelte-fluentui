@@ -17,8 +17,6 @@
 		    children
 	    }: Props = $props()
 
-	let localSettings = $derived($settings)
-
 	function handleThemeChange({value}: {value: string | string[]}) {
 		settings.setThemeMode(value as ThemeMode)
 	}
@@ -52,7 +50,7 @@
 			</label>
 			<Select
 				id="theme-select"
-				value={localSettings.themeMode}
+				value={settings.themeMode}
 				style="width: 100%; margin-bottom: 1.5rem;"
 				onChange={handleThemeChange}
 			>
@@ -69,7 +67,7 @@
 			</label>
 			<Select
 				id="color-select"
-				value={localSettings.accentColor}
+				value={settings.accentColor}
 				style="width: 100%; margin-bottom: 1.5rem;"
 				onChange={handleAccentColorChange}
 			>
@@ -95,7 +93,7 @@
 				<TextField
 					id="neutral-color"
 					type="color"
-					value={localSettings.neutralColor}
+					value={settings.neutralColor}
 					style="width: 150px;"
 					oninput={handleNeutralColorChange}
 				/>
@@ -110,7 +108,7 @@
 		<!-- Direction Toggle -->
 		<div style="margin-bottom: 1.5rem;">
 			<Switch
-				checked={localSettings.direction === 'ltr'}
+				checked={settings.direction === 'ltr'}
 				onChange={handleDirectionChange}
 			>
 				Direction

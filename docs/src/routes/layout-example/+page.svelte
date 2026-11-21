@@ -30,7 +30,9 @@
     NavMenu,
     NavGroup,
     NavLinkItem,
-    Button
+    Button,
+    Icon,
+    settings
   &#125; from '@keenmate/svelte-fluentui'
 &lt;/script&gt;
 
@@ -39,8 +41,8 @@
   &lt;div class="topnav"&gt;
     &lt;a href="/" class="topnav-brand"&gt;Svelte FluentUI&lt;/a&gt;
     &lt;div class="topnav-actions"&gt;
-      &lt;Button appearance="stealth" onclick=&#123;toggleTheme&#125;&gt;
-        &#123;$theme === "light" ? "🌙" : "☀️"&#125;
+      &lt;Button appearance="stealth" onclick=&#123;() =&gt; settings.toggleTheme()&#125;&gt;
+        &lt;Icon name=&#123;settings.effectiveTheme === "light" ? "weather_moon" : "weather_sunny"&#125; size=&#123;20&#125; /&gt;
       &lt;/Button&gt;
     &lt;/div&gt;
   &lt;/div&gt;

@@ -15,7 +15,7 @@ Expandable group of nav rows inside a `NavMenu`; the header toggles `expanded`.
 	import NavLink from "./NavLink.svelte"
 	import ExpandIcon from "../icons/ExpandIcon.svelte"
 	import {classList} from "../../helpers/html.js"
-	import {navigationStore} from "../../stores/navigation.js"
+	import {navigation} from "../../stores/navigation.svelte.js"
 	import {onMount} from "svelte"
 	import type {RestProps} from "../../types/index.js"
 
@@ -63,14 +63,7 @@ Expandable group of nav rows inside a `NavMenu`; the header toggles `expanded`.
 
 	// Load the persisted expanded state on mount (only with persistKey)
 	onMount(() => {
-		if (persistKey) {
-			navigationStore.subscribe(state => {
-				const storedExpanded = state[persistKey]
-				if (storedExpanded !== undefined) {
-					expanded = storedExpanded
-				}
-			})()
-		}
+		if (persistKey) expanded = navigation.isGroupExpanded(persistKey, expanded)
 	})
 
 	function onNavLinkClicked(ev: MouseEvent) {
@@ -78,7 +71,7 @@ Expandable group of nav rows inside a `NavMenu`; the header toggles `expanded`.
 
 		// Persist to localStorage
 		if (persistKey) {
-			navigationStore.setGroupExpanded(persistKey, expanded)
+			navigation.setGroupExpanded(persistKey, expanded)
 		}
 	}
 </script>

@@ -204,6 +204,15 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   `height="100%"` to fill a sized parent.
 - **Store types renamed: `Toast` → `ToastInstance`, `SiteSettings` → `SiteSettingsState`.** They were
   shadowed by the `Toast` / `SiteSettings` component exports and unreachable from the package root.
+- **Stores are runes services: `$settings` / `$theme` / `navigationStore` are gone.** `settings`,
+  `toast` and `navigation` are reactive objects read directly (`settings.themeMode`,
+  `settings.effectiveTheme`, `toast.items`); no `$` prefix, no `subscribe`. The `theme` store is folded
+  into `settings` (`theme.toggle()` → `settings.toggleTheme()`, `$theme` → `settings.effectiveTheme`;
+  the `fluent-theme` localStorage key is no longer read). `settings` now applies the FluentUI design
+  tokens itself (luminance, accent and neutral palettes) — an app no longer needs its own
+  `baseLayerLuminance` / `accentBaseColor` code. `settings.update(fn)` → `settings.set(partial)`.
+  `navigationStore` → `navigation` (`getGroupExpanded` → `isGroupExpanded`). Toast default titles are
+  translated (`svelteFluentUI.toastContainer.<variant>Title`, follow the locale live).
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added

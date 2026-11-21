@@ -6,9 +6,8 @@
 	import {Layout, Footer, BodyContent, Button, NavMenu, NavGroup, NavLinkItem, ToastContainer, Icon, TopNav, CommandPalette, CommandPaletteTrigger} from "svelte-fluentui"
 	import type {CommandPaletteItem} from "svelte-fluentui"
 	import SiteSettings from "../lib/components/SiteSettings.svelte"
-	import {settings, accentColors, i18n} from "svelte-fluentui"
+	import {settings, i18n} from "svelte-fluentui"
 	import {onMount, tick} from "svelte"
-	import {baseLayerLuminance, StandardLuminance, accentBaseColor, neutralBaseColor, SwatchRGB} from "@fluentui/web-components"
 	import {page} from "$app/stores"
 
 	let {children} = $props()
@@ -31,19 +30,6 @@
 
 	let settingsOpen = $state(false)
 
-	// Convert hex color to SwatchRGB for FluentUI
-	function hexToSwatchRGB(hex: string): SwatchRGB {
-		const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-		if (!result) {
-			throw new Error(`Invalid hex color: ${hex}`)
-		}
-		return SwatchRGB.create(
-			parseInt(result[1], 16) / 255,
-			parseInt(result[2], 16) / 255,
-			parseInt(result[3], 16) / 255
-		)
-	}
-
 	// Docs language switch: the components' built-in text (English / German), kept across reloads.
 	const LOCALE_KEY = "docs-locale"
 	function toggleLocale() {
@@ -64,42 +50,6 @@
 		}
 	})
 
-	// Set data-theme attribute and colors immediately for CSS (before render to avoid FOUC)
-	if (typeof window !== "undefined") {
-		const siteSettings = $settings
-		let effectiveTheme = siteSettings.themeMode
-
-		// Handle system theme
-		if (effectiveTheme === "system") {
-			effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-		}
-
-		document.documentElement.setAttribute("data-theme", effectiveTheme)
-		document.documentElement.setAttribute("dir", siteSettings.direction)
-
-		// Apply colors immediately to avoid FOUC
-		try {
-			// Apply luminance to document element (html tag)
-			baseLayerLuminance.setValueFor(
-				document.documentElement,
-				effectiveTheme === "dark" ? StandardLuminance.DarkMode : StandardLuminance.LightMode
-			)
-
-			// Apply accent color
-			const accentColorHex = accentColors[siteSettings.accentColor as keyof typeof accentColors]
-			if (accentColorHex) {
-				const accentSwatch = hexToSwatchRGB(accentColorHex)
-				accentBaseColor.setValueFor(document.documentElement, accentSwatch)
-			}
-
-			// Apply neutral base color
-			const neutralSwatch = hexToSwatchRGB(siteSettings.neutralColor)
-			neutralBaseColor.setValueFor(document.documentElement, neutralSwatch)
-		} catch (e) {
-			console.warn("Failed to apply initial theme colors:", e)
-		}
-	}
-
 	// Track viewport width so we can flip TopNav between pinned and overlay
 	// drawer. SSR is `false` so initial render assumes narrow; corrected on mount.
 	onMount(() => {
@@ -110,164 +60,9 @@
 		return () => mq.removeEventListener("change", update)
 	})
 
-	// Set FluentUI luminance and apply settings after components mount
-	// Not async: Svelte ignores the cleanup returned from an async callback.
-	onMount(() => {
-		const siteSettings = $settings
-		let effectiveTheme = siteSettings.themeMode
-
-		// Handle system theme
-		if (effectiveTheme === "system") {
-			effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-		}
-
-		tick().then(() => {
-			// Apply theme
-			document.documentElement.setAttribute("data-theme", effectiveTheme)
-			baseLayerLuminance.setValueFor(
-				document.documentElement,
-				effectiveTheme === "dark" ? StandardLuminance.DarkMode : StandardLuminance.LightMode
-			)
-
-			// Apply direction
-			document.documentElement.setAttribute("dir", siteSettings.direction)
-		})
-
-		// Watch for system theme changes if mode is "system"
-		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-		const handleSystemThemeChange = () => {
-			const currentSettings = $settings
-			if (currentSettings.themeMode === "system") {
-				const systemTheme = mediaQuery.matches ? "dark" : "light"
-				document.documentElement.classList.add("fluent-theme-switching")
-				document.documentElement.setAttribute("data-theme", systemTheme)
-				baseLayerLuminance.setValueFor(
-					document.documentElement,
-					systemTheme === "dark" ? StandardLuminance.DarkMode : StandardLuminance.LightMode
-				)
-				endThemeTransitionSuppression()
-			}
-		}
-
-		mediaQuery.addEventListener("change", handleSystemThemeChange)
-
-		return () => {
-			mediaQuery.removeEventListener("change", handleSystemThemeChange)
-		}
-	})
-
-	// Disable transitions for the couple of frames a theme swap takes, so
-	// interactive-feedback transitions on custom controls (Combobox, Autocomplete,
-	// Select, InputFile, CommandPaletteTrigger, …) and the Fluent switch track don't
-	// animate their colours from the old palette to the new one (see the
-	// `.fluent-theme-switching` rule in the library's theme.scss).
-	function endThemeTransitionSuppression() {
-		const root = document.documentElement
-		void root.offsetHeight
-		requestAnimationFrame(() => {
-			requestAnimationFrame(() => {
-				root.classList.remove("fluent-theme-switching")
-			})
-		})
-	}
-
-	// Function to apply theme settings (called explicitly when settings change)
-	function applyThemeSettings() {
-		if (typeof window === "undefined") return
-
-		const siteSettings = $settings
-		let effectiveTheme = siteSettings.themeMode
-
-		// Handle system theme
-		if (effectiveTheme === "system") {
-			effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-		}
-
-		document.documentElement.classList.add("fluent-theme-switching")
-
-		// Apply theme attribute
-		document.documentElement.setAttribute("data-theme", effectiveTheme)
-
-		// Apply direction
-		document.documentElement.setAttribute("dir", siteSettings.direction)
-
-		// Apply FluentUI design tokens in next microtask to avoid circular dependencies
-		queueMicrotask(() => {
-			try {
-				// Apply luminance first
-				baseLayerLuminance.setValueFor(
-					document.documentElement,
-					effectiveTheme === "dark" ? StandardLuminance.DarkMode : StandardLuminance.LightMode
-				)
-
-				// Apply accent color
-				const accentColorHex = accentColors[siteSettings.accentColor as keyof typeof accentColors]
-				if (accentColorHex) {
-					const accentSwatch = hexToSwatchRGB(accentColorHex)
-					accentBaseColor.setValueFor(document.documentElement, accentSwatch)
-				}
-
-				// Apply neutral base color last (it generates the most derived tokens)
-				const neutralSwatch = hexToSwatchRGB(siteSettings.neutralColor)
-				neutralBaseColor.setValueFor(document.documentElement, neutralSwatch)
-			} catch (e) {
-				console.error("Error applying FluentUI design tokens:", e)
-			} finally {
-				endThemeTransitionSuppression()
-			}
-		})
-
-		// NOTE: We don't update the old theme store here because it has its own
-		// baseLayerLuminance.setValueFor() call which causes circular dependencies
-	}
-
-	// Apply the FluentUI design tokens (luminance / accent / neutral) live whenever
-	// any site setting changes — not only when the settings dialog closes. The
-	// library store's applySettings() sets `data-theme` and a few raw CSS vars, but
-	// the docs' dark/light rendering is driven by FluentUI's baseLayerLuminance,
-	// which lives in applyThemeSettings(). Without this effect, picking "Dark" in
-	// the dialog only flipped `data-theme` and appeared to do nothing until close.
-	$effect(() => {
-		void $settings // track: re-run on any settings change
-		applyThemeSettings()
-	})
-
-	// Derive the effective theme for UI display
-	let effectiveTheme = $derived.by(() => {
-		const siteSettings = $settings
-		let theme = siteSettings.themeMode
-
-		// Handle system theme
-		if (theme === "system" && typeof window !== "undefined") {
-			theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-		}
-
-		return theme as "light" | "dark"
-	})
-
-	function toggleTheme() {
-		const currentSettings = $settings
-		let currentTheme = currentSettings.themeMode
-
-		// Handle system theme
-		if (currentTheme === "system") {
-			currentTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-		}
-
-		// Toggle between light and dark
-		settings.setThemeMode(currentTheme === "light" ? "dark" : "light")
-
-		// Apply the theme immediately
-		applyThemeSettings()
-	}
-
+	// Theme, colours and direction are applied to <html> by the `settings` service itself.
 	function openSettings() {
 		settingsOpen = true
-	}
-
-	function handleSettingsOpenChange({open}: {open: boolean}) {
-		// Apply theme settings when dialog closes
-		if (!open) applyThemeSettings()
 	}
 
 	const navigation = [
@@ -584,8 +379,8 @@
 		<Button appearance="stealth" onclick={toggleLocale} aria-label="Language: {i18n.currentLocale === 'de' ? 'Deutsch' : 'English'}" title="Switch the components' built-in text between English and German">
 			<span class="docs-locale-toggle">{i18n.currentLocale === "de" ? "DE" : "EN"}</span>
 		</Button>
-		<Button appearance="stealth" onclick={toggleTheme}>
-			{#if effectiveTheme === "light"}
+		<Button appearance="stealth" onclick={() => settings.toggleTheme()}>
+			{#if settings.effectiveTheme === "light"}
 				<Icon name="weather_moon" size={20} />
 			{:else}
 				<Icon name="weather_sunny" size={20} />
@@ -597,7 +392,7 @@
 	</TopNav>
 
 	<!-- Site Settings Dialog -->
-	<SiteSettings bind:open={settingsOpen} onOpenChange={handleSettingsOpenChange} />
+	<SiteSettings bind:open={settingsOpen} />
 
 	<!-- Ctrl/Cmd + K command palette -->
 	<CommandPalette bind:open={paletteOpen} items={paletteItems} placeholder="Search pages and components…" />

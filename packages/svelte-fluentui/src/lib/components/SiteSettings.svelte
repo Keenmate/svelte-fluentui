@@ -1,5 +1,5 @@
 <!-- @component
-Modal dialog for the site-wide theme settings (theme mode, accent and neutral colour, text direction), backed by the `settings` store.
+Modal dialog for the site-wide theme settings (theme mode, accent and neutral colour, text direction), backed by the `settings` service.
 App-specific settings can be added as `children`; they render below the built-in ones.
 
 ```svelte
@@ -10,7 +10,7 @@ App-specific settings can be added as `children`; they render below the built-in
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {Dialog, Select, Option, Switch, Button, Divider, TextField, Stack} from "../index.js"
-	import {settings, accentColors, type ThemeMode} from "../stores/settings.js"
+	import {settings, accentColors, type ThemeMode} from "../stores/settings.svelte.js"
 	import type {RestProps} from "../types/index.js"
 	import {useTranslations} from "../i18n/translate.svelte.js"
 	import type {SiteSettingsLabels} from "../i18n/labels.js"
@@ -42,8 +42,6 @@ App-specific settings can be added as `children`; they render below the built-in
 	const forwarded = $derived(rest as Record<string, unknown>)
 
 	const t = useTranslations("siteSettings", () => labelsProp)
-
-	let localSettings = $derived($settings)
 
 	function handleThemeChange({value}: {value: string | string[]}) {
 		settings.setThemeMode(value as ThemeMode)
@@ -78,7 +76,7 @@ App-specific settings can be added as `children`; they render below the built-in
 			</label>
 			<Select
 				id="theme-select"
-				value={localSettings.themeMode}
+				value={settings.themeMode}
 				style="width: 100%; margin-bottom: 1.5rem;"
 				onChange={handleThemeChange}
 			>
@@ -95,7 +93,7 @@ App-specific settings can be added as `children`; they render below the built-in
 			</label>
 			<Select
 				id="color-select"
-				value={localSettings.accentColor}
+				value={settings.accentColor}
 				style="width: 100%; margin-bottom: 1.5rem;"
 				onChange={handleAccentColorChange}
 			>
@@ -121,7 +119,7 @@ App-specific settings can be added as `children`; they render below the built-in
 				<TextField
 					id="neutral-color"
 					type="color"
-					value={localSettings.neutralColor}
+					value={settings.neutralColor}
 					style="width: 150px;"
 					oninput={handleNeutralColorChange}
 				/>
@@ -136,7 +134,7 @@ App-specific settings can be added as `children`; they render below the built-in
 		<!-- Direction Toggle -->
 		<div style="margin-bottom: 1.5rem;">
 			<Switch
-				checked={localSettings.direction === 'ltr'}
+				checked={settings.direction === 'ltr'}
 				onChange={handleDirectionChange}
 			>
 				{t("direction")}

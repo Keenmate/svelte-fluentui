@@ -158,10 +158,16 @@
 
 	const storeMethodsData: Property[] = [
 		{
+			name: "toast.items",
+			type: "ToastInstance[]",
+			default: "[]",
+			description: "The toasts currently shown (reactive; read it in markup or $derived)."
+		},
+		{
 			name: "toast.success(message, options?)",
 			type: "(message: string, options?: ToastOptions) => string",
 			default: "-",
-			description: "Show success toast. Returns toast ID."
+			description: "Show success toast (default title: the translated \"Success\"). Returns toast ID."
 		},
 		{
 			name: "toast.error(message, options?)",
@@ -374,7 +380,7 @@ toast.dismissAll('top-end');`}</code></pre>
 	<Grid spacing={3}>
 		<GridItem xs={12} xl={6}>
 			<Card>
-				<h2>Store Methods</h2>
+				<h2>Service Members</h2>
 				<QuickGrid items={storeMethodsData} columns={propertyColumns} sortMode="single" filterable striped />
 			</Card>
 		</GridItem>

@@ -234,6 +234,10 @@ export const en = {
 
 	// ToastContainer
 	"svelteFluentUI.toastContainer.closeAriaLabel": "Close",
+	"svelteFluentUI.toastContainer.successTitle": "Success",
+	"svelteFluentUI.toastContainer.errorTitle": "Error",
+	"svelteFluentUI.toastContainer.warningTitle": "Warning",
+	"svelteFluentUI.toastContainer.infoTitle": "Information",
 
 	// TopNav
 	"svelteFluentUI.topNav.openMenuAriaLabel": "Open menu",

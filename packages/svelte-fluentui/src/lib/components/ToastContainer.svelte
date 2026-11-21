@@ -1,5 +1,5 @@
 <!-- @component
-Renders the toasts queued through the `toast` store (`toast.success(…)`, `toast.error(…)`, …) at their positions,
+Renders the toasts queued through the `toast` service (`toast.success(…)`, `toast.error(…)`, …) at their positions,
 in the browser top layer. Mount it once, e.g. in the root layout; its only prop is `labels`.
 
 ```svelte
@@ -8,9 +8,8 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 ```
 -->
 <script lang="ts">
-	import {toast, type ToastInstance, type ToastPosition} from "../stores/toast.js"
-	import {onDestroy} from "svelte"
-	import DismissIcon from "./icons/DismissIcon.svelte"
+	import {toast, type ToastInstance, type ToastPosition} from "../stores/toast.svelte.js"
+		import DismissIcon from "./icons/DismissIcon.svelte"
 	import {portal} from "../actions/portal.js"
 	import {useTranslations} from "../i18n/translate.svelte.js"
 	import type {ToastContainerLabels} from "../i18n/labels.js"
@@ -49,7 +48,7 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 		}
 	}
 
-	let toasts = $state<ToastInstance[]>([])
+	const toasts = $derived(toast.items)
 	let mountedToasts = $state(new Set<string>())
 
 	// Group toasts by position
@@ -69,12 +68,6 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 
 		return grouped
 	})
-
-	// Subscribe to toast store
-	const unsubscribe = toast.subscribe((value) => {
-		toasts = value
-	})
-	onDestroy(unsubscribe)
 
 	// Icons for variants
 	const icons: Record<string, string> = {
@@ -127,7 +120,7 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 				>
 					<div class="fluent-toast__icon">{icons[toastItem.variant] || "ℹ"}</div>
 					<div class="fluent-toast__content">
-						<div class="fluent-toast__title">{toastItem.title}</div>
+						<div class="fluent-toast__title">{toastItem.title || t(`${toastItem.variant}Title`)}</div>
 						{#if toastItem.message}
 							<div class="fluent-toast__message">{toastItem.message}</div>
 						{/if}
