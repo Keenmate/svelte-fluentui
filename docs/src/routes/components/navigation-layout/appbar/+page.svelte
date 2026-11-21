@@ -1,7 +1,21 @@
 <script lang="ts">
-	import {AppBar, AppBarItem, ResourcesIcon, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
+	import {AppBar, AppBarItem, ResourcesIcon, QuickGrid, Stack, Grid, GridItem, Card, Switch} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 	import {AppBarOrientation} from "svelte-fluentui/constants"
+
+	// Overflow demo
+	let showSearch = $state(true)
+	let vertical = $state(true)
+	let activeApp = $state("Console")
+	const apps = [
+		{label: "Resources", count: 0},
+		{label: "Console", count: 2},
+		{label: "Logs", count: 4},
+		{label: "Traces", count: 0},
+		{label: "Metrics", count: 0},
+		{label: "Settings", count: 0},
+		{label: "Help", count: 0}
+	]
 
 	function onAppBarItemClicked(ev: Event) {
 		console.log("Nav appbar item clicked", ev)
@@ -15,11 +29,16 @@
 	}
 
 	const appBarProperties: Property[] = [
-		{name: "orientation", type: '"horizontal" | "vertical"', default: '"vertical"', description: "AppBar orientation"},
+		{name: "orientation", type: '"horizontal" | "vertical"', default: '"vertical"', description: "AppBar orientation. Vertical fills its container's height, horizontal its width."},
+		{name: "showSearch", type: "boolean", default: "false", description: "Search field in the overflow popover. A term searches every item (visible ones too), matched with searchBehavior."},
+		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How the popover search matches item labels (normalized ignores case and diacritics)"},
+		{name: "labels", type: "AppBarLabels", default: "undefined", description: "Overrides of the built-in text (svelteFluentUI.appBar.* keys: moreItemsTooltip, moreItemsAriaLabel, popupAriaLabel, searchPlaceholder, searchAriaLabel, noResults) for this instance"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root nav"}
 	]
 
-	const appBarCallbacks: Property[] = []
+	const appBarCallbacks: Property[] = [
+		{name: "onOverflowOpenChange", type: "(ctx: {open: boolean}) => void", default: "undefined", description: "Fires when the overflow popover opens or closes"}
+	]
 
 	const appBarSlots: Property[] = [
 		{name: "children", type: "Snippet", default: "undefined", description: "AppBarItem components"}
@@ -27,10 +46,11 @@
 
 	const appBarItemProperties: Property[] = [
 		{name: "href", type: "string", default: "undefined", description: "URL — renders the item as a link"},
-		{name: "count", type: "number", default: "undefined", description: "Counter badge on the icon (accent fill, top end corner). Hidden when 0 or undefined. The full count is appended to the link's accessible name as visually hidden text (and to a consumer aria-label / aria-labelledby). Restyle via the --fluent-appbar-count-* CSS variables."},
+		{name: "count", type: "number", default: "undefined", description: "Counter badge on the icon (danger fill, top end corner). Hidden when 0 or undefined. The full count is appended to the link's accessible name as visually hidden text (and to a consumer aria-label / aria-labelledby). Restyle via the --fluent-appbar-count-* CSS variables."},
 		{name: "maxCount", type: "number", default: "99", description: "Largest count shown verbatim; above it the badge reads e.g. \"99+\". The accessible name always carries the full count."},
 		{name: "countLabel", type: "(count: number) => string", default: "undefined", description: "Localisable wording for the count in the accessible name, e.g. (count) => `${count} unread`. Receives the full, uncapped count. Default: the bare number."},
-		{name: "active", type: "boolean", default: "undefined", description: "Marks the item as active (controlled by the app, e.g. from the current route)"},
+		{name: "active", type: "boolean", default: "undefined", description: "Marks the item as active: accent indicator on the start edge (vertical) or the bottom (horizontal), and the icon-active icon. Controlled by the app, e.g. from the current route."},
+		{name: "tooltip", type: "string", default: "undefined", description: "Tooltip on hover / focus, beside a vertical bar and below a horizontal one"},
 		{name: "class", type: "string", default: "undefined", description: "Additional CSS class"},
 		{name: "...rest", type: "HTMLAnchorAttributes", default: "-", description: "Other native and anchor attributes (target, rel, download, hreflang, title, aria-*, data-*, …) and DOM events (lowercase onclick, onkeydown, …) are forwarded untouched to the inner a"}
 	]
@@ -41,13 +61,20 @@
 
 	const appBarItemSlots: Property[] = [
 		{name: "children", type: "Snippet", default: "undefined", description: "Item label content"},
-		{name: "icon", type: "Snippet", default: "undefined", description: "Icon rendered above the label"}
+		{name: "icon", type: "Snippet", default: "undefined", description: "Icon rendered above the label. Two SVGs marked part=icon-rest / part=icon-active swap on hover and while active."}
 	]
 
 	const appBarItemCssVariables: Property[] = [
-		{name: "--fluent-appbar-count-bg", type: "color", default: "var(--accent-fill-rest)", description: "Count badge fill"},
-		{name: "--fluent-appbar-count-text", type: "color", default: "var(--foreground-on-accent-rest)", description: "Count badge text colour"},
-		{name: "--fluent-appbar-count-ring-color", type: "color", default: "var(--neutral-layer-1)", description: "1px ring separating the badge from the icon (match the AppBar background)"},
+		{name: "--fluent-appbar-background", type: "color", default: "var(--neutral-layer-2)", description: "Bar background"},
+		{name: "--fluent-appbar-item-size", type: "number", default: "68", description: "Item width in px (unitless); the item height derives from it"},
+		{name: "--fluent-appbar-item-block-size", type: "length", default: "item size - 5 design units", description: "Item (and more button) height"},
+		{name: "--fluent-appbar-padding-block", type: "length", default: "1 design unit", description: "Block padding of the item strip (room for the count badge above the first icon)"},
+		{name: "--fluent-appbar-indicator-color", type: "color", default: "var(--accent-fill-rest)", description: "Active indicator colour"},
+		{name: "--fluent-appbar-popover-padding", type: "length", default: "2 design units", description: "Overflow popover padding"},
+		{name: "--fluent-appbar-popover-gap", type: "length", default: "2 design units", description: "Gap between the popover search and the tiles"},
+		{name: "--fluent-appbar-count-bg", type: "color", default: "var(--fluent-color-danger)", description: "Count badge fill"},
+		{name: "--fluent-appbar-count-text", type: "color", default: "var(--fluent-color-danger-contrast)", description: "Count badge text colour"},
+		{name: "--fluent-appbar-count-ring-color", type: "color", default: "var(--fluent-appbar-background)", description: "1px ring separating the badge from the icon"},
 		{name: "--fluent-appbar-count-size", type: "length", default: "16px", description: "Badge height, minimum width and line height"},
 		{name: "--fluent-appbar-count-font-size", type: "length", default: "10px", description: "Badge text size"},
 		{name: "--fluent-appbar-count-font-weight", type: "number", default: "600", description: "Badge text weight"},
@@ -64,11 +91,11 @@
 		`<AppBarItem href="/inbox" icon={inboxIcon} count={unread}`,
 		`            countLabel={(count) => \`\${count} unread\`}>Inbox</AppBarItem>`,
 		``,
-		`<AppBar class="danger-count">…</AppBar>`,
+		`<AppBar class="accent-count">…</AppBar>`,
 		``,
-		`.danger-count {`,
-		`  --fluent-appbar-count-bg: var(--fluent-color-danger);`,
-		`  --fluent-appbar-count-text: var(--fluent-color-danger-contrast);`,
+		`.accent-count {`,
+		`  --fluent-appbar-count-bg: var(--accent-fill-rest);`,
+		`  --fluent-appbar-count-text: var(--foreground-on-accent-rest);`,
 		`  --fluent-appbar-count-size: 18px;`,
 		`  --fluent-appbar-count-font-size: 11px;`,
 		`  --fluent-appbar-count-radius: 4px;`,
@@ -141,18 +168,46 @@
 
 				<Stack verticalAlign="start" horizontalAlign="start">
 					<AppBar orientation={AppBarOrientation.Horizontal}>
-						<AppBarItem title="Item 1 tooltip" icon={commonItemIcon}>
+						<AppBarItem tooltip="Item 1 tooltip" icon={commonItemIcon} active>
 							Item 1
 						</AppBarItem>
-						<AppBarItem title="Item 2 tooltip" icon={commonItemIcon}>
+						<AppBarItem tooltip="Item 2 tooltip" icon={commonItemIcon}>
 							Item 2
 						</AppBarItem>
-						<AppBarItem title="Item 4 tooltip" icon={commonItemIcon}>
+						<AppBarItem tooltip="Item 4 tooltip" icon={commonItemIcon}>
 							Item 4
 						</AppBarItem>
 					</AppBar>
 				</Stack>
 			</div>
+		</div>
+	</Card>
+
+	<Card>
+		<h2 id="overflow">Overflow and active item</h2>
+		<p>
+			Drag the corner of the box to make it smaller. Items that don't fit move into the <strong>…</strong>
+			popover (in order); with <code>showSearch</code> its search field finds any item, visible ones too. The
+			active item has the accent indicator on the bar's start edge (bottom when horizontal); click an item to
+			move it.
+		</p>
+		<Stack orientation="horizontal" gap="1.5rem">
+			<Switch bind:checked={showSearch} label="Show search in popover" />
+			<Switch bind:checked={vertical} label="Vertical" />
+		</Stack>
+		<div class="resizable-box" class:horizontal={!vertical}>
+			<AppBar orientation={vertical ? "vertical" : "horizontal"} {showSearch}>
+				{#each apps as app (app.label)}
+					<AppBarItem
+						href="#overflow"
+						icon={commonItemIcon}
+						count={app.count}
+						active={activeApp === app.label}
+						tooltip={app.label}
+						onclick={() => (activeApp = app.label)}
+					>{app.label}</AppBarItem>
+				{/each}
+			</AppBar>
 		</div>
 	</Card>
 
@@ -186,11 +241,11 @@
 			</div>
 			<div class="example-item">
 				<h3>Restyled via CSS variables</h3>
-				<AppBar class="danger-count">
+				<AppBar class="accent-count">
 					<AppBarItem href="#count-badge" icon={commonItemIcon} count={5}>Errors</AppBarItem>
 					<AppBarItem href="#count-badge" icon={commonItemIcon} count={1234} maxCount={999}>Logs</AppBarItem>
 				</AppBar>
-				<p class="caption">Danger palette, larger badge, square-ish corners</p>
+				<p class="caption">Accent fill, larger badge, square-ish corners</p>
 			</div>
 		</div>
 		<pre class="code">{countBadgeCode}</pre>
@@ -260,6 +315,26 @@
 		flex: 1;
 	}
 
+	.resizable-box {
+		block-size: 260px;
+		inline-size: fit-content;
+		min-block-size: 120px;
+		margin-block-start: 1rem;
+		padding: calc(var(--design-unit) * 2px);
+		overflow: hidden;
+		resize: vertical;
+		border: 1px solid var(--neutral-stroke-rest);
+		border-radius: calc(var(--control-corner-radius) * 1px);
+	}
+
+	.resizable-box.horizontal {
+		block-size: auto;
+		inline-size: 360px;
+		min-inline-size: 160px;
+		max-inline-size: 100%;
+		resize: horizontal;
+	}
+
 	.caption {
 		font-size: 12px;
 		color: var(--neutral-foreground-hint);
@@ -273,9 +348,9 @@
 		font-size: 12px;
 	}
 
-	:global(.danger-count) {
-		--fluent-appbar-count-bg: var(--fluent-color-danger);
-		--fluent-appbar-count-text: var(--fluent-color-danger-contrast);
+	:global(.accent-count) {
+		--fluent-appbar-count-bg: var(--accent-fill-rest);
+		--fluent-appbar-count-text: var(--foreground-on-accent-rest);
 		--fluent-appbar-count-size: 18px;
 		--fluent-appbar-count-font-size: 11px;
 		--fluent-appbar-count-radius: 4px;

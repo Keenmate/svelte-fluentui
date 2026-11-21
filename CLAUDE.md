@@ -120,7 +120,7 @@ Located in `src/lib/components/layout/`:
 
 #### Navigation Components (Custom implementations)
 Located in `src/lib/components/nav/`:
-- **AppBar** - Application bar
+- **AppBar** - Application bar (Blazor `FluentAppBar`): `AppBarItem`s register via the `fluent-appbar` context (`nav/appbar.context.ts`); an IntersectionObserver on the clipped item strip marks items that don't fit (hidden + inert), listed in a "…" popover (PositioningRegion, optional `showSearch`) by rendering each item's `popoverTile` snippet. Active indicator on `data-orientation`.
 - **NavMenu** - Navigation menu container
 - **NavGroup** - Navigation group
 - **NavLinkItem** - Navigation link item

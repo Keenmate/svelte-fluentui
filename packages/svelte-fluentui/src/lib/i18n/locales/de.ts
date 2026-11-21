@@ -8,6 +8,14 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 	// Alert
 	"svelteFluentUI.alert.dismissAriaLabel": "Schließen",
 
+	// AppBar
+	"svelteFluentUI.appBar.moreItemsTooltip": "Weitere Apps anzeigen",
+	"svelteFluentUI.appBar.moreItemsAriaLabel": "Weitere Apps anzeigen",
+	"svelteFluentUI.appBar.popupAriaLabel": "Weitere Apps",
+	"svelteFluentUI.appBar.searchPlaceholder": "Apps durchsuchen",
+	"svelteFluentUI.appBar.searchAriaLabel": "Apps durchsuchen",
+	"svelteFluentUI.appBar.noResults": "Keine Apps gefunden",
+
 	// Autocomplete
 	"svelteFluentUI.autocomplete.placeholder": "Zum Suchen tippen...",
 	"svelteFluentUI.autocomplete.noMatches": "Keine Ergebnisse gefunden",

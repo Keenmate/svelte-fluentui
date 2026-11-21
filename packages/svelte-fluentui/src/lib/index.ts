@@ -139,6 +139,7 @@ export {default as ValidationSummary} from "./components/ValidationSummary.svelt
 export * from "./i18n/index.js"
 export type {
 	AlertLabels,
+	AppBarLabels,
 	AutocompleteLabels,
 	BadgeGroupLabels,
 	CalendarLabels,

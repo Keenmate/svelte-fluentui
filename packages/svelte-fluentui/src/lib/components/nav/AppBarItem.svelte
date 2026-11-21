@@ -1,12 +1,15 @@
 <!-- @component
-One `AppBar` entry: an icon link with a label and an optional count badge.
+One `AppBar` entry: an icon link with a label and an optional count badge. Shows the active indicator when `active`; moves into the bar's "…" popover when it doesn't fit.
 -->
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import {getContext, untrack} from "svelte"
 	import type {AnchorRestProps} from "../../types/index.js"
 	import Stack from "../layout/Stack.svelte"
+	import Tooltip from "../Tooltip.svelte"
 	import {StackHorizontalAlign, StackOrientation, StackVerticalAlign} from "../../fluent-ui/constants/stack.js"
+	import {APP_BAR_CONTEXT, type AppBarContext} from "./appbar.context.js"
 
 	type OwnProps = {
 		/** Link URL. */
@@ -17,11 +20,13 @@ One `AppBar` entry: an icon link with a label and an optional count badge.
 		maxCount?: number
 		/** Wording for the count in the accessible name (localisation), e.g. `(count) => count + " unread"`. Receives the full, uncapped count. Default: the bare number. */
 		countLabel?: (count: number) => string
-		/** Highlights the item as the current one. Controlled by the app (e.g. from the current route). */
+		/** Highlights the item as the current one (active indicator + `icon-active` icon). Controlled by the app (e.g. from the current route). */
 		active?: boolean
+		/** Tooltip text shown on hover / focus (beside a vertical bar, below a horizontal one). */
+		tooltip?: string
 		/** Native `click` event, forwarded untouched. */
 		onclick?: (ev: MouseEvent) => void
-		/** Icon shown above the label (the count badge sits on it). */
+		/** Icon shown above the label (the count badge sits on it). Two SVGs marked `part="icon-rest"` / `part="icon-active"` swap on hover and while active. */
 		icon?: Snippet
 		/** Item label. */
 		children?: Snippet
@@ -29,7 +34,7 @@ One `AppBar` entry: an icon link with a label and an optional count badge.
 		class?: string
 	}
 
-	/** Other native attributes and events (`target`, `rel`, `download`, `title`, `aria-current`, `onkeydown`, …) go to the inner `<a>`. */
+	/** Other native attributes and events (`id`, `target`, `rel`, `download`, `title`, `aria-current`, `onkeydown`, …) go to the inner `<a>`. */
 	type Props = OwnProps & AnchorRestProps<OwnProps>
 
 	let {
@@ -38,86 +43,128 @@ One `AppBar` entry: an icon link with a label and an optional count badge.
 		    maxCount = 99,
 		    countLabel = undefined,
 		    active   = undefined,
+		    tooltip  = undefined,
 		    onclick = undefined,
 		    icon = undefined,
 		    children = undefined,
 		    class: className = undefined,
+		    id = undefined,
 		    "aria-label": ariaLabel = undefined,
 		    "aria-labelledby": ariaLabelledby = undefined,
 		    ...rest
 	    }: Props = $props()
 
+	const appBar = getContext<AppBarContext | undefined>(APP_BAR_CONTEXT)
+
 	const uid = $props.id()
-	const countTextId = `${uid}-count`
+	const linkId = $derived(id ?? `${uid}-link`)
+
+	let itemEl: HTMLElement | undefined = $state()
+
+	const orientation = $derived(appBar?.orientation ?? "vertical")
+	const overflowed = $derived(appBar?.isOverflowed(uid) ?? false)
 
 	const showCount = $derived(typeof count === "number" && count > 0)
 	const countText = $derived(showCount ? (count! > maxCount ? `${maxCount}+` : String(count)) : "")
 	/** Full count wording for the accessible name (never capped). */
 	const countSpoken = $derived(showCount ? (countLabel?.(count!) ?? String(count)) : "")
 
-	// A consumer `aria-label` / `aria-labelledby` replaces the link content as the
-	// accessible name, which would drop the visually hidden count; append it.
-	const computedAriaLabel = $derived(ariaLabel && showCount ? `${ariaLabel}, ${countSpoken}` : ariaLabel)
-	const computedAriaLabelledby = $derived(ariaLabelledby && showCount ? `${ariaLabelledby} ${countTextId}` : ariaLabelledby)
+	$effect(() => {
+		if (!appBar || !itemEl) return
+		const element = itemEl
+		// untrack: register() reads the bar's entry list; tracking it would re-register on every change.
+		return untrack(() => appBar.register({
+			id: uid,
+			element,
+			getText: () => element.querySelector(".fluent-appbar-item-label")?.textContent?.trim() ?? "",
+			popoverTile
+		}))
+	})
+
+	function handlePopoverClick(ev: MouseEvent) {
+		onclick?.(ev)
+		appBar?.closeOverflow()
+	}
 </script>
 
-<div
-	class="fluent-appbar-item {className || ''}"
->
-	<div class="fluentui-counterbadge-container">
-		<a
-			{...rest}
-			{href}
-			aria-label={computedAriaLabel}
-			aria-labelledby={computedAriaLabelledby}
-			class:active
-			{onclick}
+<!-- The link with icon, count badge and label: in the bar and as an overflow popover tile. -->
+{#snippet link(inPopover: boolean)}
+	{@const countTextId = `${uid}-count${inPopover ? "-popover" : ""}`}
+	<a
+		{...rest}
+		id={inPopover ? null : linkId}
+		{href}
+		aria-label={ariaLabel && showCount ? `${ariaLabel}, ${countSpoken}` : ariaLabel}
+		aria-labelledby={ariaLabelledby && showCount ? `${ariaLabelledby} ${countTextId}` : ariaLabelledby}
+		class="fluent-focus-ring"
+		class:active
+		onclick={inPopover ? handlePopoverClick : onclick}
+	>
+		<Stack
+			orientation={StackOrientation.Vertical}
+			verticalAlign={StackVerticalAlign.Center}
+			horizontalAlign={StackHorizontalAlign.Center}
+			horizontalGap="10px"
+			verticalGap="0"
+			width="100%"
+			height="100%"
 		>
-			<Stack
-				orientation={StackOrientation.Vertical}
-				verticalAlign={StackVerticalAlign.Center}
-				horizontalAlign={StackHorizontalAlign.Center}
-				horizontalGap="10px"
-				verticalGap="0"
-				width="100%"
-				height="100%"
-			>
-				{#if icon || showCount}
-					<span class="fluent-appbar-item-icon">
-						{@render icon?.()}
-						{#if showCount}
-							<span class="fluent-appbar-item-count" data-count={count} aria-hidden="true">{countText}</span>
-						{/if}
-					</span>
-				{/if}
+			{#if icon || showCount}
+				<span class="fluent-appbar-item-icon">
+					{@render icon?.()}
+					{#if showCount}
+						<span class="fluent-appbar-item-count" data-count={count} aria-hidden="true">{countText}</span>
+					{/if}
+				</span>
+			{/if}
 
-				<div part="label">
-					{@render children?.()}
-					{#if showCount}<span id={countTextId} class="fluent-appbar-item-count-text">, {countSpoken}</span>{/if}
-				</div>
-			</Stack>
-		</a>
+			<div part="label">
+				<span class="fluent-appbar-item-label">{@render children?.()}</span>
+				{#if showCount}<span id={countTextId} class="fluent-appbar-item-count-text">, {countSpoken}</span>{/if}
+			</div>
+		</Stack>
+	</a>
+{/snippet}
+
+{#snippet popoverTile()}
+	<div class="fluent-appbar-item {className || ''}" class:active data-in-popover>
+		{@render link(true)}
 	</div>
+{/snippet}
 
+<!-- Clipped by the bar's strip: hidden (and inert), listed in the "…" popover instead. -->
+<div
+	bind:this={itemEl}
+	class="fluent-appbar-item {className || ''}"
+	class:active
+	data-orientation={orientation}
+	data-overflowed={overflowed || null}
+	inert={overflowed}
+>
+	{@render link(false)}
 </div>
+
+{#if tooltip && !overflowed}
+	<Tooltip anchor={linkId} position={orientation === "horizontal" ? "bottom" : "end"}>{tooltip}</Tooltip>
+{/if}
 
 <style>
 	/* Item box, link, label and hover (moved from the global Blazor compat CSS in 2.0).
 	   `--fluent-appbar-item-size` is set on the parent `.fluent-appbar`. */
 	.fluent-appbar-item {
+		flex: none;
+		position: relative;
 		width: calc(var(--fluent-appbar-item-size, 68) * 1px);
 		--fluent-appbar-active-indicator-width: calc(var(--design-unit) * 0.5px);
-		height: calc(var(--fluent-appbar-item-size, 68) * 1px - 20px);
+		height: var(--fluent-appbar-item-block-size, calc(var(--fluent-appbar-item-size, 68) * 1px - var(--design-unit) * 5px));
+	}
+
+	.fluent-appbar-item[data-overflowed] {
+		visibility: hidden;
 	}
 
 	.fluent-appbar-item:hover {
 		background-color: var(--neutral-fill-secondary-rest);
-	}
-
-	.fluentui-counterbadge-container {
-		display: inline;
-		position: relative;
-		height: 100%;
 	}
 
 	a {
@@ -126,14 +173,38 @@ One `AppBar` entry: an icon link with a label and an optional count badge.
 		font-size: var(--type-ramp-minus-2-font-size);
 		line-height: var(--type-ramp-minus-2-line-height);
 		position: relative;
-		display: inline-block;
+		display: block;
 		height: 100%;
 		width: 100%;
+		box-sizing: border-box;
+		border-radius: calc(var(--control-corner-radius, 4) * 1px);
 	}
 
 	a :global(.stack-vertical) {
 		padding: calc(var(--design-unit) * 1px) calc(var(--fluent-appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
 		height: 100%;
+		box-sizing: border-box;
+	}
+
+	/* Active indicator: an accent bar on the start edge (vertical) or the bottom (horizontal).
+	   Not in the overflow popover. */
+	.fluent-appbar-item[data-orientation] a.active::before {
+		content: "";
+		position: absolute;
+		background-color: var(--fluent-appbar-indicator-color, var(--accent-fill-rest));
+		border-radius: calc(var(--control-corner-radius, 4) * 1px);
+	}
+
+	.fluent-appbar-item[data-orientation="vertical"] a.active::before {
+		inset-block: 0;
+		inset-inline-start: calc(var(--design-unit) * 0.5px);
+		inline-size: var(--fluent-appbar-active-indicator-width);
+	}
+
+	.fluent-appbar-item[data-orientation="horizontal"] a.active::before {
+		inset-inline: calc(var(--design-unit) * 2px);
+		inset-block-end: calc(var(--design-unit) * 0.5px);
+		block-size: var(--fluent-appbar-active-indicator-width);
 	}
 
 	div[part="label"] {
@@ -147,13 +218,15 @@ One `AppBar` entry: an icon link with a label and an optional count badge.
 
 	/* Rest/active icon pair: an icon snippet may hold two SVGs marked `part="icon-rest"` and
 	   `part="icon-active"`; the active one shows on hover and while the item is active. */
-	.fluent-appbar-item:hover :global(svg[part="icon-rest"]),
-	.fluent-appbar-item:not(:hover):not(.active) :global(svg[part="icon-active"]),
-	.fluent-appbar-item:not(:hover) a.active :global(svg[part="icon-rest"]) {
+	.fluent-appbar-item-icon :global(svg[part="icon-active"]) {
 		display: none;
 	}
 
-	.fluent-appbar-item:not(:hover) .active :global(svg[part="icon-active"]) {
+	.fluent-appbar-item:is(:hover, .active) .fluent-appbar-item-icon:has(:global(svg[part="icon-active"])) :global(svg[part="icon-rest"]) {
+		display: none;
+	}
+
+	.fluent-appbar-item:is(:hover, .active) .fluent-appbar-item-icon :global(svg[part="icon-active"]) {
 		display: block;
 	}
 
@@ -181,9 +254,9 @@ One `AppBar` entry: an icon link with a label and an optional count badge.
 		block-size: var(--fluent-appbar-count-size, 16px);
 		padding-inline: var(--fluent-appbar-count-padding-inline, 4px);
 		border-radius: var(--fluent-appbar-count-radius, 9999px);
-		background-color: var(--fluent-appbar-count-bg, var(--accent-fill-rest, #0078d4));
-		color: var(--fluent-appbar-count-text, var(--foreground-on-accent-rest, #ffffff));
-		box-shadow: 0 0 0 1px var(--fluent-appbar-count-ring-color, var(--neutral-layer-1, #ffffff));
+		background-color: var(--fluent-appbar-count-bg, var(--fluent-color-danger));
+		color: var(--fluent-appbar-count-text, var(--fluent-color-danger-contrast));
+		box-shadow: 0 0 0 1px var(--fluent-appbar-count-ring-color, var(--fluent-appbar-background, var(--neutral-layer-2)));
 		font-size: var(--fluent-appbar-count-font-size, 10px);
 		font-weight: var(--fluent-appbar-count-font-weight, 600);
 		line-height: var(--fluent-appbar-count-size, 16px);

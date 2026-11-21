@@ -228,6 +228,8 @@ tests skipped; both checks clean):
    dropping it was discussed and rejected); folded into the key cleanup in `07-labels-plan.md`.
 2. AppBar vertical active indicator never rendered (rules keyed on a non-existent attribute; removed).
    Restore it on `data-orientation` (visible change) or leave it gone?
+   → 2026-11-21: AppBar finished to Blazor parity — bar surface, horizontal layout, indicator on
+   `data-orientation`, "…" overflow popover with search, item `tooltip`, danger count badge.
 3. Stores → runes (decided in principle, Q7): which API shape?
 4. Q5 Prettier pass over the package — yes/no?
 5. Popup surfaces: Autocomplete/pickers/menus keep `--neutral-layer-1` + 16px shadow (`.fluent-popup--layer`);

@@ -8,6 +8,14 @@ export const en = {
 	// Alert
 	"svelteFluentUI.alert.dismissAriaLabel": "Dismiss",
 
+	// AppBar
+	"svelteFluentUI.appBar.moreItemsTooltip": "View more apps",
+	"svelteFluentUI.appBar.moreItemsAriaLabel": "View more apps",
+	"svelteFluentUI.appBar.popupAriaLabel": "More apps",
+	"svelteFluentUI.appBar.searchPlaceholder": "Search apps",
+	"svelteFluentUI.appBar.searchAriaLabel": "Search apps",
+	"svelteFluentUI.appBar.noResults": "No apps found",
+
 	// Autocomplete
 	"svelteFluentUI.autocomplete.placeholder": "Type to search...",
 	"svelteFluentUI.autocomplete.noMatches": "No results found",

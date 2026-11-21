@@ -88,3 +88,100 @@ test("NavLinkItem top-level link props win over linkProps, others merge", async 
 	await expect(link).toHaveAttribute("rel", "noopener")
 	await expect(link).toHaveAttribute("target", "_blank")
 })
+
+/* ---------- 2.0: bar surface, active indicator, overflow popover, tooltip ---------- */
+
+const ovItem = (page, i: number) => page.locator(`#ov-bar .fluent-appbar-items > .fluent-appbar-item:has(a#ov-${i})`)
+const more = (page) => page.locator("#ov-bar .fluent-appbar-more")
+const popover = (page) => page.locator(".fluent-appbar-popover")
+
+test("items that don't fit are hidden + inert and the more button appears", async ({page}) => {
+	await expect(more(page)).toBeVisible()
+	await expect(more(page)).toHaveAccessibleName("View more apps")
+	await expect(ovItem(page, 0)).not.toHaveAttribute("data-overflowed")
+	await expect(ovItem(page, 6)).toHaveAttribute("data-overflowed", "true")
+	await expect(ovItem(page, 6)).toHaveAttribute("inert", "")
+	await expect(ovItem(page, 6)).toBeHidden()
+	// Growing the bar brings everything back and removes the button.
+	await page.locator("#grow").click()
+	await expect(ovItem(page, 6)).not.toHaveAttribute("data-overflowed")
+	await expect(more(page)).toHaveCount(0)
+})
+
+test("the popover lists the hidden items in order; picking one closes it", async ({page}) => {
+	await more(page).click()
+	await expect(popover(page)).toBeVisible()
+	await expect(popover(page)).toHaveAttribute("role", "dialog")
+	await expect(more(page)).toHaveAttribute("aria-expanded", "true")
+	const labels = await popover(page).locator(".fluent-appbar-item-label").allTextContents()
+	expect(labels.length).toBeGreaterThan(0)
+	expect(labels.at(-1)).toBe("Settings")
+	expect(labels).not.toContain("Resources")
+	// Popover tiles carry no id (the bar's link keeps it) and no active indicator orientation.
+	await expect(popover(page).locator("a[id]")).toHaveCount(0)
+	await popover(page).getByRole("link", {name: "Settings"}).click()
+	await expect(page.locator("#clicked")).toHaveText("Settings")
+	await expect(popover(page)).toHaveCount(0)
+	await expect(page.locator("#overflow-events")).toHaveText("true,false")
+})
+
+test("the search focuses on open, searches all items (diacritics-insensitive) and shows an empty state", async ({page}) => {
+	await more(page).click()
+	await expect(popover(page).locator("fluent-search")).toBeFocused()
+	await page.keyboard.type("zurn")
+	await expect(popover(page).locator(".fluent-appbar-item-label")).toHaveText(["Žurnál"])
+	await page.keyboard.press("Control+A")
+	await page.keyboard.type("res")
+	// A visible item is found too.
+	await expect(popover(page).locator(".fluent-appbar-item-label")).toHaveText(["Resources"])
+	await page.keyboard.press("Control+A")
+	await page.keyboard.type("nothing")
+	await expect(popover(page).locator(".fluent-appbar-popover-empty")).toHaveText("No apps found")
+})
+
+test("Escape and an outside click close the popover; Escape returns focus to the button", async ({page}) => {
+	await more(page).click()
+	await expect(popover(page)).toBeVisible()
+	await page.keyboard.press("Escape")
+	await expect(popover(page)).toHaveCount(0)
+	await expect(more(page)).toBeFocused()
+	await more(page).click()
+	await expect(popover(page)).toBeVisible()
+	await page.mouse.click(600, 20)
+	await expect(popover(page)).toHaveCount(0)
+})
+
+test("active item shows the indicator on the start edge (vertical) and the bottom (horizontal)", async ({page}) => {
+	const vertical = await page.locator("a#ov-1").evaluate((a) => {
+		const s = getComputedStyle(a, "::before")
+		return {content: s.content, width: s.width, left: s.left}
+	})
+	expect(vertical.content).toBe('""')
+	expect(parseFloat(vertical.width)).toBeGreaterThan(0)
+	const inactive = await page.locator("a#ov-0").evaluate((a) => getComputedStyle(a, "::before").content)
+	expect(inactive).toBe("none")
+	const horizontal = await page.locator("a#h-0").evaluate((a) => {
+		const s = getComputedStyle(a, "::before")
+		const r = a.getBoundingClientRect()
+		return {content: s.content, height: parseFloat(s.height), bottom: parseFloat(s.bottom), linkHeight: r.height}
+	})
+	expect(horizontal.content).toBe('""')
+	expect(horizontal.height).toBeLessThan(horizontal.linkHeight / 2)
+})
+
+test("horizontal bar lays items in a row and overflows into the popover", async ({page}) => {
+	const boxes = await Promise.all([0, 1].map((i) => page.locator(`a#h-${i}`).boundingBox()))
+	expect(Math.abs(boxes[0]!.y - boxes[1]!.y)).toBeLessThan(1)
+	expect(boxes[1]!.x).toBeGreaterThan(boxes[0]!.x)
+	await expect(page.locator("#h-bar .fluent-appbar-more")).toBeVisible()
+})
+
+test("tooltip prop shows our Tooltip on hover", async ({page}) => {
+	await page.locator("a#ov-0").hover()
+	await expect(page.getByText("Resources tooltip")).toBeVisible()
+})
+
+test("count badge defaults to the danger palette", async ({page}) => {
+	const bg = await badge(page, "inbox").evaluate((el) => getComputedStyle(el).backgroundColor)
+	expect(bg).toBe("rgb(197, 15, 31)")
+})

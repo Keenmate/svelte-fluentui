@@ -5,6 +5,7 @@
 import type {ComponentLabels} from "./types.js"
 
 export type AlertLabels = ComponentLabels<"alert">
+export type AppBarLabels = ComponentLabels<"appBar">
 export type AutocompleteLabels = ComponentLabels<"autocomplete">
 export type BadgeGroupLabels = ComponentLabels<"badgeGroup">
 export type CalendarLabels = ComponentLabels<"calendar">

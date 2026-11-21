@@ -30,6 +30,10 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
   `labels.openPopupAriaLabel`; TimePicker `openClockIconAriaLabel` → `labels.openPopupAriaLabel`;
   Combobox `loadingText` → `labels.loading`; BadgeGroup `moreLabel` / `lessLabel` → `labels.showMore`
   (`"+{count} more"`) / `labels.showLess`; Chip `removeLabel` → `labels.removeAriaLabel` / `labels.removeTooltip`.
+- **AppBar is a full bar now** (it was a bare `<nav>` of item boxes): a `--fluent-appbar-background`
+  surface that fills its container's height (vertical) or width (horizontal); `orientation="horizontal"`
+  lays the items in a row (it had no layout). AppBarItem `count` badge defaults to the danger palette
+  (was accent blue; `--fluent-appbar-count-bg` / `-text` restore it).
 - **Calendar, DatePicker, QuickGrid `culture`** defaults to the i18n locale (`i18n.currentLocale`; the
   browser's own locale when it is the same language, so `en-GB` / `de-AT` keep their region) and follows
   `setLocale()` — was `navigator.language`. Without `i18n.init()` that is English: a Czech browser now
@@ -214,6 +218,11 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - `--fluent-color-{success,warning,danger,info}-foreground` tokens with dark-theme values.
 - Autocomplete bindable `open`; `onOpenChange` consistent across Select/Combobox/Autocomplete/DatePicker/TimePicker (real changes only, incl. `bind:open`).
 - AppBarItem `countLabel` and `--fluent-appbar-count-*` CSS variables; NavLinkItem `linkProps`.
+- AppBar overflow: items that don't fit move into a "…" popover (`showSearch`, `searchBehavior`,
+  `onOverflowOpenChange`, `labels`; keys `svelteFluentUI.appBar.*`). AppBarItem `active` shows the accent
+  indicator (start edge / bottom; the 1.x rule never matched), `tooltip` prop (our Tooltip); the
+  `icon-rest` / `icon-active` pair swaps reliably. Spacing from `--design-unit`, overridable via
+  `--fluent-appbar-item-block-size`, `-padding-block`, `-popover-padding`, `-popover-gap`, `-indicator-color`.
 - AppBarItem `count` badge + `maxCount`; MultiSplitter / NavGroup `persistKey`.
 - Select / Combobox `onOpenChange`; Combobox `height` works.
 - Native attributes and events (`...rest`) on every component that renders an element.
