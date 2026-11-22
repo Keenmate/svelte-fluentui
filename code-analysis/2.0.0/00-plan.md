@@ -256,8 +256,14 @@ tests skipped; both checks clean):
 **Status 2026-11-22:** questions 1–6 done (6 → 09-positioning-plan.md, all phases done). Next: **7 (export `portal` / `portalHost`)**, then 8–10. Also open:
 the reboot-layer fix from `08-css-layers-reboot.md` (`@layer reset`, drop the `border: 1px solid black`
 rule, maybe layer the other global CSS — needs the user's yes), German translations want a
-native-speaker review. Full e2e: 427 passed / 2 skipped. Flaky (pre-existing, ~3 in 20 with
+native-speaker review. Full e2e: 435 passed / 2 skipped. Flaky (pre-existing, ~3 in 20 with
 `--repeat-each`): popup-tabs.spec.ts "active indicator sits under the active tab" (ltr / rtl).
+Also done 2026-11-22 (all pushed, origin/prod = 5c9ffe2): field-popup gap 4px (`FIELD_POPUP_OFFSET`, user chose
+it over Fluent's 8px; `--fluent-popup-offset` override); inline chip row no longer makes Autocomplete /
+Combobox 1.6px taller; `minSelectionCount` (Autocomplete, Combobox / Select multiple) + Select `required`
+(validation stand-in input) and Combobox-multiple `required` fixed, with "Required & minimum selection"
+demos on all three docs pages. Possible small fix: `.prettierrc` `endOfLine: "auto"` (CRLF checkout makes
+`npm run lint` report 149 files) — offered, not done.
 
 Deferred (see 06-quickgrid-plan.md for QuickGrid ones): per-row deriveds in QuickGrid for non-virtual
 teardown cost; variable row heights with `virtualize`; NavMenu menuitem+link double tab stop (needs a
