@@ -18,6 +18,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 	import {tick, untrack} from "svelte"
 	import TextField from "./TextField.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import {FIELD_POPUP_OFFSET} from "../helpers/floating.js"
 	import FieldLabel from "./FieldLabel.svelte"
 	import Button from "./Button.svelte"
 	import {pushLayer} from "../helpers/layer-stack.js"
@@ -544,7 +545,13 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 		</TextField>
 
 		{#if isOpen && wrapperElement}
-			<PositioningRegion anchor={wrapperElement} visible={isOpen} matchWidth={false} style="min-width: 280px;">
+			<PositioningRegion
+				anchor={wrapperElement}
+				offset={FIELD_POPUP_OFFSET}
+				visible={isOpen}
+				matchWidth={false}
+				style="min-width: 280px;"
+			>
 				<!-- The click handler only stops propagation (keeps the field's open-on-click
 				     from re-firing); it is not an interaction. -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->

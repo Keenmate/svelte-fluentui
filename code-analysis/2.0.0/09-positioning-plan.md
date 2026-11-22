@@ -26,7 +26,7 @@ as a CSS variable so width stays a CSS decision; combine author cap and measured
 grace after opening.
 Not taken: its fixed 320px height (ignores the viewport — our measured cap is better); z-index tiers
 (we use the top layer); containing-block drift warnings (top layer is positioned against the viewport);
-mobile full-screen sheet (later, separate feature); offset from a CSS variable (each popup has its own gap).
+mobile full-screen sheet (later, separate feature); offset from a CSS variable (each popup has its own gap) — reversed 2026-11-22, see Status.
 
 ## Design
 
@@ -75,6 +75,11 @@ opening, ignoring the first two frames (browser scrolling a focused field into v
 
 ## Status
 
+- 2026-11-22 (later): gap. FluentUI web components put `<fluent-select>`'s listbox `designUnit × 2` (8px)
+  + 1px below the control (tooltip 12px; React v9 Combobox 2px from memory). Field popups now default to
+  `FIELD_POPUP_OFFSET` = `calc(var(--design-unit, 4) * 2px)`; `--fluent-popup-offset` (registered
+  `<length> | auto`, read from the *anchor* since popups are portalled) overrides every popup but Tooltip.
+  User is testing the 8px look.
 - 2026-11-22: all five phases done. Beyond the plan: ContextMenu and the InputFile popover moved to the
   floating layer + flyout shadow (Q5 had missed them), MenuButton / QuickGrid menus to the flyout shadow,
   InputFile hovers to the stealth fill. `opacity: 0` (not `visibility`) until placed so focus can move in

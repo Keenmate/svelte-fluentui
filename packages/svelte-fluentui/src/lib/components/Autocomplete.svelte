@@ -19,6 +19,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	import type {Snippet} from "svelte"
 	import {untrack} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import {FIELD_POPUP_OFFSET} from "../helpers/floating.js"
 	import FieldLabel from "./FieldLabel.svelte"
 	import Chip from "./Chip.svelte"
 	import {chipNavFromChip, chipNavFromInput, type ChipNavOptions} from "../helpers/chip-nav.js"
@@ -895,6 +896,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		{#if isOpen && containerElement}
 			<PositioningRegion
 				anchor={containerElement}
+				offset={FIELD_POPUP_OFFSET}
 				visible={isOpen}
 				matchWidth={!dropdownWidth}
 				style="{dropdownWidth ? `width: ${dropdownWidth}; ` : ''}{maxDropdownHeight

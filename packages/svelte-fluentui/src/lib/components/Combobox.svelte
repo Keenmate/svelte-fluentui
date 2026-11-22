@@ -33,6 +33,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	import type {Snippet} from "svelte"
 	import {untrack, tick} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import {FIELD_POPUP_OFFSET} from "../helpers/floating.js"
 	import FieldLabel from "./FieldLabel.svelte"
 	import Chip from "./Chip.svelte"
 	import Option from "./Option.svelte"
@@ -965,7 +966,13 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	{/if}
 
 	{#if isOpen && controlEl}
-		<PositioningRegion anchor={controlEl} visible={isOpen} position={forcedPlacement} matchWidth={!dropdownWidth}>
+		<PositioningRegion
+			anchor={controlEl}
+			offset={FIELD_POPUP_OFFSET}
+			visible={isOpen}
+			position={forcedPlacement}
+			matchWidth={!dropdownWidth}
+		>
 			<!-- The popup surface (and scroll container) holds the listbox plus, outside it,
 			     the empty / loading message — a listbox may only contain options. -->
 			<div

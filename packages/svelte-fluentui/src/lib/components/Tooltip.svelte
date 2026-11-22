@@ -152,6 +152,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 		floatingHandle = anchorFloating(anchorEl, tooltipElement, {
 			placement: physicalPlacement(position, anchorEl),
 			offset: GAP,
+			offsetVariable: false,
 			lockPlacement: false,
 			arrow: arrowElement,
 			hide: true,

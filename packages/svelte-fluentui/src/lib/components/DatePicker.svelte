@@ -20,6 +20,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 	import TextField from "./TextField.svelte"
 	import Calendar from "./Calendar.svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import {FIELD_POPUP_OFFSET} from "../helpers/floating.js"
 	import FieldLabel from "./FieldLabel.svelte"
 	import type DayFormat from "../fluent-ui/calendar/day-format.js"
 	import {defaultCulture} from "../helpers/locale.js"
@@ -366,7 +367,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 		</TextField>
 
 		{#if isOpen && wrapperElement}
-			<PositioningRegion anchor={wrapperElement} visible={isOpen} matchWidth={false}>
+			<PositioningRegion anchor={wrapperElement} offset={FIELD_POPUP_OFFSET} visible={isOpen} matchWidth={false}>
 				<!-- Surface + padding live here, not on the region, so a press anywhere on the popup is "inside". -->
 				<div
 					class="datepicker-popup fluent-popup-surface"

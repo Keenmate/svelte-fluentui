@@ -9,6 +9,11 @@
  * - `--fluent-popup-available-width` — the same horizontally,
  * - `--fluent-popup-anchor-width` — the anchor's width (`matchWidth` uses it).
  *
+ * Reads one: `--fluent-popup-offset` (a length) overrides the gap between anchor and popup. It is
+ * read from the anchor, not the popup — popups are portalled to `<body>` and wouldn't inherit a value
+ * set on a container (`.my-form { --fluent-popup-offset: 4px }`). Registered as `<length> | auto` so
+ * it computes to px; `auto` (unset) keeps the popup's own default.
+ *
  * The side is locked after the first placement (`lockPlacement`): the popup doesn't jump above /
  * below while the page scrolls or a filter shrinks the list. It decides again on a viewport resize,
  * when it grows while capped by the available height (async results), or on `reposition()`.
@@ -35,8 +40,11 @@ export type FloatingOptions = {
 	placement?: Placement
 	/** Placements `flip` tries, in order, when the preferred one doesn't fit. Default: the opposite side. */
 	fallbackPlacements?: Placement[]
-	/** Gap between anchor and popup (Floating UI `offset`). Default: `0`. */
-	offset?: OffsetOptions
+	/** Gap between anchor and popup: px, a CSS length (`"calc(var(--design-unit) * 2px)"`) or a Floating UI
+	 * `offset` object. `--fluent-popup-offset` on the anchor overrides the main-axis gap. Default: `0`. */
+	offset?: OffsetOptions | string
+	/** Let `--fluent-popup-offset` override `offset`. Default: `true` (Tooltip: `false`, its arrow needs its gap). */
+	offsetVariable?: boolean
 	/** Minimum distance to the viewport edges, px. Default: `8`. */
 	padding?: number
 	/** Popup width = anchor width (`width: var(--fluent-popup-anchor-width)`). Default: `false`. */
@@ -62,6 +70,40 @@ export type FloatingHandle = {
 const AVAILABLE_HEIGHT = "--fluent-popup-available-height"
 const AVAILABLE_WIDTH = "--fluent-popup-available-width"
 const ANCHOR_WIDTH = "--fluent-popup-anchor-width"
+const OFFSET = "--fluent-popup-offset"
+
+/** Default gap below a form field (Select, Combobox, Autocomplete, DatePicker, TimePicker) — FluentUI's
+ * `<fluent-select>` listbox sits `designUnit * 2` (8px) from its control. */
+export const FIELD_POPUP_OFFSET = "calc(var(--design-unit, 4) * 2px)"
+
+// Registered so getComputedStyle resolves `calc(var(--design-unit) * 2px)` to px; `auto` = not set.
+if (typeof CSS !== "undefined" && "registerProperty" in CSS) {
+	try {
+		CSS.registerProperty({name: OFFSET, syntax: "<length> | auto", inherits: true, initialValue: "auto"})
+	} catch {
+		/* already registered (HMR, two copies of the library) */
+	}
+}
+
+/** px value of `--fluent-popup-offset` on `el`, or null when unset / not a length. */
+function offsetVariable(el: Element): number | null {
+	const value = parseFloat(getComputedStyle(el).getPropertyValue(OFFSET))
+	return Number.isFinite(value) ? value : null
+}
+
+/** The gap to use: the anchor's `--fluent-popup-offset` if set, else `offset` (a CSS length resolved on the popup). */
+function resolveOffset(reference: ReferenceElement, floating: HTMLElement, options: FloatingOptions): OffsetOptions {
+	const anchorEl = reference instanceof Element ? reference : reference.contextElement
+	const override = options.offsetVariable !== false && anchorEl ? offsetVariable(anchorEl) : null
+	const own = options.offset ?? 0
+	if (override !== null)
+		return typeof own === "object" && typeof own !== "function" ? {...own, mainAxis: override} : override
+	if (typeof own !== "string") return own
+	floating.style.setProperty(OFFSET, own)
+	const px = offsetVariable(floating)
+	floating.style.removeProperty(OFFSET)
+	return px ?? 0
+}
 
 export function anchorFloating(
 	reference: ReferenceElement,
@@ -75,6 +117,7 @@ export function anchorFloating(
 	let run = 0
 	let availableHeight = Infinity
 	let lastHeight = 0
+	let gap = resolveOffset(reference, floating, options)
 
 	floating.style.position = "fixed"
 	floating.style.opacity = "0"
@@ -85,7 +128,7 @@ export function anchorFloating(
 		floating.style.setProperty(ANCHOR_WIDTH, `${reference.getBoundingClientRect().width}px`)
 		if (matchWidth) floating.style.width = `var(${ANCHOR_WIDTH})`
 
-		const middleware = [offset(options.offset ?? 0)]
+		const middleware = [offset(gap)]
 		if (!locked) middleware.push(flip({padding, fallbackPlacements: options.fallbackPlacements}))
 		middleware.push(
 			shift({padding}),
@@ -151,6 +194,7 @@ export function anchorFloating(
 	return {
 		update(next) {
 			options = next
+			gap = resolveOffset(reference, floating, options)
 			reposition()
 		},
 		reposition,

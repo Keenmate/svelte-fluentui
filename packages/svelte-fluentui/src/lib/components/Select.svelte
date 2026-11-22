@@ -31,6 +31,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	import type {Snippet} from "svelte"
 	import {untrack, tick} from "svelte"
 	import PositioningRegion from "./PositioningRegion.svelte"
+	import {FIELD_POPUP_OFFSET} from "../helpers/floating.js"
 	import FieldLabel from "./FieldLabel.svelte"
 	import type {SelectedOptionSvelteContext} from "../types/combobox.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
@@ -714,7 +715,13 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		</button>
 
 		{#if isOpen && triggerEl}
-			<PositioningRegion anchor={triggerEl} visible={isOpen} position={forcedPlacement} matchWidth={!dropdownWidth}>
+			<PositioningRegion
+				anchor={triggerEl}
+				offset={FIELD_POPUP_OFFSET}
+				visible={isOpen}
+				position={forcedPlacement}
+				matchWidth={!dropdownWidth}
+			>
 				<!-- The keyboard stays on the trigger (aria-activedescendant); the list takes clicks only. -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div

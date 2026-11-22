@@ -39,6 +39,9 @@ The region publishes `--fluent-popup-available-height` (room left on the side it
 		/** Overlay width = the anchor's width (`var(--fluent-popup-anchor-width)`), so
 		 * dropdown options align under the input. Default: `true`. */
 		matchWidth?: boolean
+		/** Gap between anchor and overlay: px or a CSS length (`"calc(var(--design-unit) * 2px)"`).
+		 * `--fluent-popup-offset` set on the anchor (or any ancestor of it) overrides it. Default: `0`. */
+		offset?: number | string
 		/** Overlay content. */
 		children?: Snippet
 	}
@@ -54,6 +57,7 @@ The region publishes `--fluent-popup-available-height` (room left on the side it
 		position: positionProp = "bottom",
 		align: alignProp = "center",
 		matchWidth = true,
+		offset = 0,
 		children = undefined,
 		class: className = undefined,
 		...rest
@@ -120,7 +124,7 @@ The region publishes `--fluent-popup-available-height` (room left on the side it
 			{...rest}
 			use:portal={portalHost(anchor)}
 			use:topLayer
-			use:floating={{reference: anchor, placement, matchWidth}}
+			use:floating={{reference: anchor, placement, matchWidth, offset}}
 			popover="manual"
 			class={["positioning-region positioning-region-floating", className]}
 			{title}
