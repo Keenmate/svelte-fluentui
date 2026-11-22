@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Combobox, Option, Stack, Grid, GridItem, Card, QuickGrid, Icon, Slider } from "svelte-fluentui";
+	import { Combobox, Option, Stack, Grid, GridItem, Card, QuickGrid, Icon, Slider, Button } from "svelte-fluentui";
 	import {References, Meta} from "$lib/components";
 	import { songs } from "$lib/demo-data/datasets";
 
@@ -80,6 +80,10 @@
 	let clearMultiValue = $state<string[]>(["small", "large"])
 	let multiValue = $state<string[]>(["3"])
 	let multiClosingValue = $state<string[]>([])
+	let minSelectionValue = $state<string[]>(["1"])
+	let requiredMultiValue = $state<string[]>([])
+	let minSelectionSubmitted = $state("")
+	let requiredMultiSubmitted = $state("")
 	let tagsInlineValue = $state<string[]>(["1", "3"])
 	let tagsAboveValue = $state<string[]>(["1", "3"])
 	let tagsBelowValue = $state<string[]>(["1", "3"])
@@ -307,6 +311,37 @@
 					<Combobox id="multi-closing" bind:value={multiClosingValue} options={songs} multiple closeOnSelect={true} label="Select songs" placeholder="Filter songs…" />
 					<small>Selected: {multiClosingValue.length ? multiClosingValue.join(", ") : "None"}</small>
 				</Stack>
+			</GridItem>
+		</Grid>
+
+		<h3>Required &amp; minimum selection</h3>
+		<p>
+			<code>minSelectionCount</code> makes a filled-in field invalid until enough values are picked: with
+			1 … min − 1 chosen the browser blocks the submit with "Select at least N items." (translated,
+			<code>labels.minSelectionRequired</code>). An empty field stays valid unless it is also
+			<code>required</code> — in multiple mode that means at least one value. Press <em>Submit</em> to see the
+			browser's validation message.
+		</p>
+		<Grid columns={2} gap="1rem">
+			<GridItem>
+				<form onsubmit={(e) => { e.preventDefault(); minSelectionSubmitted = minSelectionValue.join(", ") }}>
+					<Stack orientation="vertical" gap="0.5rem">
+						<strong>minSelectionCount={"{2}"}</strong>
+						<Combobox id="min-selection" bind:value={minSelectionValue} options={songs} multiple minSelectionCount={2} label="Pick at least two songs" placeholder="Filter songs…" />
+						<Button type="submit" appearance="accent">Submit</Button>
+						<small>Submitted: {minSelectionSubmitted || "—"}</small>
+					</Stack>
+				</form>
+			</GridItem>
+			<GridItem>
+				<form onsubmit={(e) => { e.preventDefault(); requiredMultiSubmitted = requiredMultiValue.join(", ") }}>
+					<Stack orientation="vertical" gap="0.5rem">
+						<strong>required multiple</strong>
+						<Combobox id="required-multi" bind:value={requiredMultiValue} options={songs} multiple required label="Pick songs" placeholder="Filter songs…" />
+						<Button type="submit" appearance="accent">Submit</Button>
+						<small>Submitted: {requiredMultiSubmitted || "—"}</small>
+					</Stack>
+				</form>
 			</GridItem>
 		</Grid>
 
