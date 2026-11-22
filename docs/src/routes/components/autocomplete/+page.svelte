@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Autocomplete, Stack, Grid, GridItem, Card, QuickGrid, Icon, Slider } from "svelte-fluentui"
+	import { Autocomplete, Stack, Grid, GridItem, Card, QuickGrid, Icon, Slider, Button } from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 	import { countries } from "$lib/demo-data/datasets"
 
@@ -75,6 +75,10 @@
 	// State for examples
 	let basicValue = $state<string[]>([])
 	let preselectedValue = $state<string[]>(["us", "uk"])
+	let minSelectionValue = $state<string[]>(["us"])
+	let requiredMultiValue = $state<string[]>([])
+	let minSelectionSubmitted = $state("")
+	let requiredMultiSubmitted = $state("")
 	let singleSelectValue = $state<string[]>([])
 	let maxSelectValue = $state<string[]>([])
 	let stayOpenValue = $state<string[]>([])
@@ -287,6 +291,36 @@
 					/>
 					<small>Selected: {singleSelectValue[0] || "None"}</small>
 				</Stack>
+			</GridItem>
+		</Grid>
+
+		<h3>Required &amp; minimum selection</h3>
+		<p>
+			<code>minSelectionCount</code> makes a filled-in field invalid until enough values are picked: with
+			1 … min − 1 chosen the browser blocks the submit with "Select at least N items." (translated,
+			<code>labels.minSelectionRequired</code>). An empty field stays valid unless it is also
+			<code>required</code> — at least one value. Press <em>Submit</em> to see the browser's validation message.
+		</p>
+		<Grid columns={2} gap="1rem">
+			<GridItem>
+				<form onsubmit={(e) => { e.preventDefault(); minSelectionSubmitted = minSelectionValue.join(", ") }}>
+					<Stack orientation="vertical" gap="0.5rem">
+						<strong>minSelectionCount={"{2}"}</strong>
+						<Autocomplete bind:value={minSelectionValue} options={countries} minSelectionCount={2} label="Pick at least two countries" />
+						<Button type="submit" appearance="accent">Submit</Button>
+						<small>Submitted: {minSelectionSubmitted || "—"}</small>
+					</Stack>
+				</form>
+			</GridItem>
+			<GridItem>
+				<form onsubmit={(e) => { e.preventDefault(); requiredMultiSubmitted = requiredMultiValue.join(", ") }}>
+					<Stack orientation="vertical" gap="0.5rem">
+						<strong>required</strong>
+						<Autocomplete bind:value={requiredMultiValue} options={countries} required label="Pick countries" />
+						<Button type="submit" appearance="accent">Submit</Button>
+						<small>Submitted: {requiredMultiSubmitted || "—"}</small>
+					</Stack>
+				</form>
 			</GridItem>
 		</Grid>
 

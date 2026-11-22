@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {Select, Option, OptionGroup, Stack, Grid, GridItem, Card, QuickGrid, Slider, Icon} from "svelte-fluentui";
+	import {Select, Option, OptionGroup, Stack, Grid, GridItem, Card, QuickGrid, Slider, Icon, Button} from "svelte-fluentui";
 	import {References, Meta} from "$lib/components";
 
 	// searchBehavior example
@@ -20,6 +20,10 @@
 
 	// Two-way binding example
 	let selectedFruit = $state("apple");
+	let minSelectionValue = $state<string[]>(["apple"]);
+	let requiredSingleValue = $state<string | undefined>(undefined);
+	let minSelectionSubmitted = $state("");
+	let requiredSingleSubmitted = $state("");
 
 	// Icons-in-options example
 	let selectedStatus = $state("available");
@@ -236,6 +240,46 @@
 				<Option value="option4">Option 4</Option>
 			{/snippet}
 		</Select>
+
+		<h3>Required &amp; minimum selection</h3>
+		<p>
+			<code>minSelectionCount</code> makes a filled-in field invalid until enough values are picked: with
+			1 … min − 1 chosen the browser blocks the submit with "Select at least N items." (translated,
+			<code>labels.minSelectionRequired</code>). An empty field stays valid unless it is also
+			<code>required</code> (single mode: a value picked; multiple mode: at least one). Press <em>Submit</em> to see the browser's validation message.
+		</p>
+		<Grid columns={2} gap="1rem">
+			<GridItem>
+				<form onsubmit={(e) => { e.preventDefault(); minSelectionSubmitted = minSelectionValue.join(", ") }}>
+					<Stack orientation="vertical" gap="0.5rem">
+						<strong>multiple minSelectionCount={"{2}"}</strong>
+						<Select label="Pick at least two fruits" multiple minSelectionCount={2} bind:value={minSelectionValue}>
+							<Option value="apple">Apple</Option>
+							<Option value="banana">Banana</Option>
+							<Option value="cherry">Cherry</Option>
+							<Option value="grape">Grape</Option>
+						</Select>
+						<Button type="submit" appearance="accent">Submit</Button>
+						<small>Submitted: {minSelectionSubmitted || "—"}</small>
+					</Stack>
+				</form>
+			</GridItem>
+			<GridItem>
+				<form onsubmit={(e) => { e.preventDefault(); requiredSingleSubmitted = requiredSingleValue ?? "" }}>
+					<Stack orientation="vertical" gap="0.5rem">
+						<strong>required (single)</strong>
+						<Select label="Pick a fruit" required placeholder="Choose…" bind:value={requiredSingleValue}>
+							<Option value="apple">Apple</Option>
+							<Option value="banana">Banana</Option>
+							<Option value="cherry">Cherry</Option>
+							<Option value="grape">Grape</Option>
+						</Select>
+						<Button type="submit" appearance="accent">Submit</Button>
+						<small>Submitted: {requiredSingleSubmitted || "—"}</small>
+					</Stack>
+				</form>
+			</GridItem>
+		</Grid>
 
 		<h3>Grouped options</h3>
 		<p>Wrap <code>&lt;Option&gt;</code> rows in <code>&lt;OptionGroup label="…"&gt;</code> to section the list under non-interactive headers.</p>
