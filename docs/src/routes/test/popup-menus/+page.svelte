@@ -53,3 +53,6 @@
 <output id="cm-open">{cmOpen}</output>
 <output id="dialog-open">{dialogOpen}</output>
 <output id="log">{log.join(" | ")}</output>
+
+<!-- Makes the page scrollable: a page scroll moves the anchors (scroll light dismiss). -->
+<div style="height: 150vh"></div>

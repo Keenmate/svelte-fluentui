@@ -15,9 +15,8 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
  * Custom Select that replaces the previous <fluent-select> wrapper.
  *
  * Single mode: custom combobox-style trigger + portalled listbox via
- * PositioningRegion. The listbox max-height is capped to the available
- * viewport space via PositioningRegion's availableHeight middleware, so
- * the dropdown never extends past the viewport edges.
+ * PositioningRegion. The listbox is capped to `maxDropdownHeight` and to the
+ * room PositioningRegion measured to the viewport edge, so it never runs off-screen.
  *
  * Multi mode: always-expanded inline listbox (matches Blazor
  * FluentSelect, which renders multi-select inline because the underlying
@@ -101,9 +100,8 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		width?: string
 		/** Multi mode: explicit height for the inline listbox. */
 		height?: string
-		/** Single mode: cap the dropdown listbox height (e.g. "300px", "50vh").
-		 * The listbox is always also capped to the space available to the
-		 * viewport edge; this lets a shorter ceiling be set per-instance. */
+		/** Single mode: cap the dropdown height (e.g. "200px", "50vh"; sets `--fluent-select-dropdown-max-height`).
+		 * Default: `300px`. The dropdown is always also capped to the room left to the viewport edge. */
 		maxDropdownHeight?: string
 		/** Single mode: width of the dropdown listbox (e.g. "360px", "24rem").
 		 * When unset the listbox matches the control width; when set it uses this
@@ -716,13 +714,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		</button>
 
 		{#if isOpen && triggerEl}
-			<PositioningRegion
-				anchor={triggerEl}
-				visible={isOpen}
-				position={forcedPlacement}
-				matchWidth={!dropdownWidth}
-				availableHeight
-			>
+			<PositioningRegion anchor={triggerEl} visible={isOpen} position={forcedPlacement} matchWidth={!dropdownWidth}>
 				<!-- The keyboard stays on the trigger (aria-activedescendant); the list takes clicks only. -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div
@@ -734,7 +726,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 					class={["select-listbox-popover fluent-popup-surface", dropdownClass]}
 					style={[
 						dropdownWidth ? `width: ${dropdownWidth}` : "",
-						maxDropdownHeight ? `--_select-listbox-max-height: ${maxDropdownHeight}` : ""
+						maxDropdownHeight ? `--fluent-select-dropdown-max-height: ${maxDropdownHeight}` : ""
 					]
 						.filter(Boolean)
 						.join("; ") || undefined}
@@ -821,10 +813,8 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		flex-direction: column;
 		/* Surface (background, border, radius, shadow) = `.fluent-popup-surface`. */
 		padding: calc(var(--design-unit, 4) * 1px);
-		/* Cap to the available viewport space exposed by PositioningRegion
-		 * (fallback 280px), and — when the `maxHeight` prop is set — to that
-		 * ceiling too, whichever is smaller. */
-		max-height: min(var(--_available-height, 280px), var(--_select-listbox-max-height, 100vh));
+		/* `maxDropdownHeight` (default 300px) or the room PositioningRegion measured, whichever is smaller. */
+		max-height: min(var(--fluent-select-dropdown-max-height, 300px), var(--fluent-popup-available-height, 100vh));
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		box-sizing: border-box;

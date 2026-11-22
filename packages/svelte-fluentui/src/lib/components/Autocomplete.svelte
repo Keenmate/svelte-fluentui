@@ -74,9 +74,8 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		width?: string
 		/** Control height (any CSS length). */
 		height?: string
-		/** Cap the dropdown listbox height (e.g. "300px", "50vh"). The listbox is
-		 * always also capped to the space available to the viewport edge; this
-		 * lets a shorter ceiling be set per-instance. Defaults to 300px. */
+		/** Cap the dropdown height (e.g. "200px", "50vh"; sets `--fluent-autocomplete-dropdown-max-height`).
+		 * Default: `300px`. The dropdown is always also capped to the room left to the viewport edge. */
 		maxDropdownHeight?: string
 		/** Width of the dropdown listbox (e.g. "360px", "24rem"). When unset the
 		 * listbox matches the control width; when set it uses this width instead
@@ -897,10 +896,9 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 			<PositioningRegion
 				anchor={containerElement}
 				visible={isOpen}
-				availableHeight
 				matchWidth={!dropdownWidth}
 				style="{dropdownWidth ? `width: ${dropdownWidth}; ` : ''}{maxDropdownHeight
-					? `--_autocomplete-listbox-max-height: ${maxDropdownHeight};`
+					? `--fluent-autocomplete-dropdown-max-height: ${maxDropdownHeight};`
 					: ''}"
 			>
 				<div class="options-list fluent-popup-surface" bind:this={optionsListElement}>
@@ -1206,7 +1204,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		box-sizing: border-box;
 		padding: 0.25rem;
 		min-width: 200px;
-		max-height: min(var(--_available-height, 100vh), var(--_autocomplete-listbox-max-height, 300px));
+		max-height: min(var(--fluent-autocomplete-dropdown-max-height, 300px), var(--fluent-popup-available-height, 100vh));
 		overflow-y: auto;
 		overscroll-behavior: contain;
 	}

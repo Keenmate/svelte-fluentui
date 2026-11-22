@@ -10,7 +10,8 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 	import type {Snippet} from "svelte"
 	import {onMount, onDestroy, untrack} from "svelte"
 	import {portal} from "../actions/portal.js"
-	import {computePosition, flip, shift, offset, arrow, hide, autoUpdate, type Placement} from "@floating-ui/dom"
+	import type {MiddlewareData, Placement} from "@floating-ui/dom"
+	import {anchorFloating, type FloatingHandle} from "../helpers/floating.js"
 	import type {RestProps} from "../types/index.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 
@@ -77,7 +78,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 	let referenceHidden = $state(false)
 	let showDelayTimer: ReturnType<typeof setTimeout> | null = null
 	let hideDelayTimer: ReturnType<typeof setTimeout> | null = null
-	let cleanupAutoUpdate: (() => void) | null = null
+	let floatingHandle: FloatingHandle | null = null
 
 	const shouldShow = $derived(visible === true || (visible === undefined && isVisible))
 
@@ -117,29 +118,15 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 		return anchor ? document.getElementById(anchor) : null
 	}
 
-	async function updatePosition() {
-		const anchorEl = getAnchorElement()
-		if (!anchorEl || !tooltipElement) return
+	// After each placement (helpers/floating.ts): remember the side, hide when the anchor is
+	// scrolled out of view, and put the arrow on the side facing the anchor.
+	function onPlaced({placement, middlewareData}: {placement: Placement; middlewareData: MiddlewareData}) {
+		actualPlacement = placement
+		referenceHidden = middlewareData.hide?.referenceHidden ?? false
 
-		const middleware = [offset(GAP), flip(), shift({padding: 8}), hide()]
-		if (arrowElement) {
-			middleware.push(arrow({element: arrowElement, padding: 4}))
-		}
-
-		const result = await computePosition(anchorEl, tooltipElement, {
-			placement: physicalPlacement(position, anchorEl),
-			strategy: "fixed",
-			middleware
-		})
-
-		tooltipElement.style.left = `${result.x}px`
-		tooltipElement.style.top = `${result.y}px`
-		actualPlacement = result.placement
-		referenceHidden = result.middlewareData.hide?.referenceHidden ?? false
-
-		const arrowData = result.middlewareData.arrow
+		const arrowData = middlewareData.arrow
 		if (arrowElement && arrowData) {
-			const side = result.placement.split("-")[0] as PhysicalSide
+			const side = placement.split("-")[0] as PhysicalSide
 			const staticSideMap: Record<PhysicalSide, string> = {
 				top: "bottom",
 				bottom: "top",
@@ -161,12 +148,20 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 		const anchorEl = getAnchorElement()
 		if (!anchorEl || !tooltipElement) return
 		stopAutoUpdate()
-		cleanupAutoUpdate = autoUpdate(anchorEl, tooltipElement, updatePosition)
+		// Not locked: a tooltip should flip to wherever it fits as the page moves.
+		floatingHandle = anchorFloating(anchorEl, tooltipElement, {
+			placement: physicalPlacement(position, anchorEl),
+			offset: GAP,
+			lockPlacement: false,
+			arrow: arrowElement,
+			hide: true,
+			onPlaced
+		})
 	}
 
 	function stopAutoUpdate() {
-		cleanupAutoUpdate?.()
-		cleanupAutoUpdate = null
+		floatingHandle?.destroy()
+		floatingHandle = null
 	}
 
 	function show() {
@@ -269,7 +264,7 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 	})
 
 	$effect(() => {
-		if (visible === true && tooltipElement && !cleanupAutoUpdate) {
+		if (visible === true && tooltipElement && !floatingHandle) {
 			startAutoUpdate()
 		}
 	})

@@ -191,7 +191,7 @@
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessible name of the search input (the role=\"combobox\"); defaults to the label text."},
 		{name: "width", type: "string", default: "undefined", description: "Component width"},
 		{name: "height", type: "string", default: "undefined", description: "Component height"},
-		{name: "maxDropdownHeight", type: "string", default: '"300px"', description: "Cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
+		{name: "maxDropdownHeight", type: "string", default: '"300px"', description: "Cap the dropdown height (e.g. '240px', '50vh'); sets --fluent-autocomplete-dropdown-max-height. Always also capped to the room left to the viewport edge (--fluent-popup-available-height), whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "showSearchIcon", type: "boolean", default: "true", description: "Built-in magnifier in the end slot when nothing higher-priority (spinner, custom end) occupies it"},
 		{name: "showClear", type: "boolean", default: "true", description: "A clear (×) button before the end slot while something is selected or typed, visible while the control is hovered or focused (like fluent-search); empties the value (every chip in multi-select) and the search text, fires onChange({value: []}). Not a Tab stop; focus stays in the input."},

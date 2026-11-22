@@ -41,3 +41,6 @@
 		{/each}
 	</Tabs>
 </section>
+
+<!-- Makes the page scrollable: a page scroll moves the anchors (scroll light dismiss). -->
+<div style="height: 150vh"></div>

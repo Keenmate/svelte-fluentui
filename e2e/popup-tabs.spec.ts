@@ -33,9 +33,12 @@ test.describe("overflow menu", () => {
 		await expect(menu(page)).toBeHidden()
 	})
 
-	test("outside scroll closes it", async ({page}) => {
+	test("a scroll that moves the anchor closes it; an unrelated panel scrolling does not", async ({page}) => {
 		await openOverflow(page)
 		await page.locator("#scroller").evaluate(el => el.scrollTop = 50)
+		await page.waitForTimeout(100)
+		await expect(menu(page)).toBeVisible()
+		await page.evaluate(() => window.scrollBy(0, 50))
 		await expect(menu(page)).toBeHidden()
 	})
 

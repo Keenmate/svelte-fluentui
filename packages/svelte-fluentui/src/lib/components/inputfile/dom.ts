@@ -1,6 +1,7 @@
 // Internal (InputFile): DOM helpers — popover / drag-overlay positioning actions and folder-drop traversal. Not exported from the package.
 
-import {computePosition, flip, shift, offset, size, autoUpdate} from "@floating-ui/dom"
+import {autoUpdate} from "@floating-ui/dom"
+import {anchorFloating} from "../../helpers/floating.js"
 
 /** Keeps the drag overlay centred on `anchor` and at least its size (fixed positioning). */
 export function positionOverlay(node: HTMLElement, anchor: HTMLElement) {
@@ -25,44 +26,14 @@ export function positionOverlay(node: HTMLElement, anchor: HTMLElement) {
 	}
 }
 
-/** Places the file-list popover under (or above) `anchor`, capped to the viewport. */
+/** Places the file-list popover under (or above) `anchor`; the CSS caps it to the room left (`--fluent-popup-available-height`). */
 export function positionPopover(node: HTMLElement, anchor: HTMLElement) {
-	async function update() {
-		const {x, y} = await computePosition(anchor, node, {
-			placement: "bottom-end",
-			strategy: "fixed",
-			middleware: [
-				offset(6),
-				flip({fallbackPlacements: ["top-end", "bottom-start", "top-start"]}),
-				shift({padding: 8}),
-				size({
-					apply({availableHeight, elements}) {
-						// Clear any prior inline cap so getComputedStyle reflects the
-						// CSS rule (which reads --fluent-inputfile-popover-max-height).
-						// Then only re-apply an inline cap when the viewport actually
-						// has less room than the CSS-defined ceiling — otherwise we'd
-						// silently override the theme variable on tall screens and the
-						// popover would grow to whatever the viewport allows.
-						const floating = elements.floating as HTMLElement
-						floating.style.maxHeight = ""
-						const cssMax = parseFloat(getComputedStyle(floating).maxHeight)
-						const viewportCap = availableHeight - 16
-						const effective = Number.isFinite(cssMax) ? Math.min(cssMax, viewportCap) : viewportCap
-						floating.style.maxHeight = `${Math.max(effective, 160)}px`
-					},
-					padding: 8
-				})
-			]
-		})
-		node.style.left = `${x}px`
-		node.style.top = `${y}px`
-	}
-	const cleanup = autoUpdate(anchor, node, update)
-	return {
-		destroy() {
-			cleanup()
-		}
-	}
+	const handle = anchorFloating(anchor, node, {
+		placement: "bottom-end",
+		fallbackPlacements: ["top-end", "bottom-start", "top-start"],
+		offset: 6
+	})
+	return {destroy: () => handle.destroy()}
 }
 
 /** Files from a drop (null when there's no file list); with `allowFolderDrop`, dropped directories are walked recursively. */

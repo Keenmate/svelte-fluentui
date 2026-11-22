@@ -21,8 +21,10 @@ export type DismissOptions = {
 	/** Close on focus moving outside (Tab-ing away, a modal opening). Default `true`. */
 	focusOut?: boolean
 	/**
-	 * Close on scroll outside the surfaces. Default `false` — for popups that
-	 * don't follow their anchor (PositioningRegion's autoUpdate does follow).
+	 * Close when a scroll outside the surfaces moves the anchor (`inside()[0]`) by 3px or
+	 * more. Scrolling an unrelated panel, a 1px correction or the browser scrolling a
+	 * focused field into view right after opening (first two frames) doesn't close.
+	 * Default `false`.
 	 */
 	scroll?: boolean
 }
@@ -72,8 +74,33 @@ export function dismissOnOutside(
 		onDismiss("focus", event)
 	}
 
+	// Where the anchor was once the popup settled (two frames after opening).
+	let anchorAt: {x: number; y: number} | null = null
+	let settleFrame = 0
+	// A `display: contents` anchor (ContextMenu's wrapper) has no box: measure its first child that has one.
+	function anchorPosition() {
+		let el: Element | null | undefined = inside()[0]
+		while (el) {
+			const rect = el.getBoundingClientRect()
+			if (rect.width || rect.height) return {x: rect.left, y: rect.top}
+			el = el.firstElementChild
+		}
+		return null
+	}
+	if (scroll)
+		settleFrame = requestAnimationFrame(
+			() =>
+				(settleFrame = requestAnimationFrame(() => {
+					settleFrame = 0
+					anchorAt = anchorPosition()
+				}))
+		)
+
 	function onScroll(event: Event) {
-		if (!isInside(event)) onDismiss("scroll", event)
+		if (settleFrame || isInside(event)) return
+		const now = anchorPosition()
+		if (anchorAt && now && Math.abs(now.x - anchorAt.x) < 3 && Math.abs(now.y - anchorAt.y) < 3) return
+		onDismiss("scroll", event)
 	}
 
 	document.addEventListener("pointerdown", onPointerDown, true)
@@ -83,6 +110,7 @@ export function dismissOnOutside(
 	if (scroll) window.addEventListener("scroll", onScroll, true)
 
 	return () => {
+		if (settleFrame) cancelAnimationFrame(settleFrame)
 		document.removeEventListener("pointerdown", onPointerDown, true)
 		document.removeEventListener("contextmenu", onContextMenu, true)
 		document.removeEventListener("focusin", onFocusIn, true)

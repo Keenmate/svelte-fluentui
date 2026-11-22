@@ -1,15 +1,20 @@
 <!-- @component
-Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, inside its focus trap) and positioned against `anchor` with Floating UI (flip / shift, top layer via the Popover API). Used by Select, Combobox, DatePicker and friends for their dropdowns.
+Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, inside its focus trap) and placed against `anchor` by the shared positioning helper (`helpers/floating.ts`; top layer via the Popover API). Used by Select, Combobox, DatePicker and friends for their dropdowns.
+
+The region publishes `--fluent-popup-available-height` (room left on the side it opened), `--fluent-popup-available-width` and `--fluent-popup-anchor-width`; cap a scroll container inside with them. It keeps the side it first opened on until the viewport resizes or it grows while capped.
 
 ```svelte
-<PositioningRegion anchor={inputEl} visible={open} availableHeight>…</PositioningRegion>
+<PositioningRegion anchor={inputEl} visible={open}>
+	<div style="max-height: min(300px, var(--fluent-popup-available-height, 100vh)); overflow-y: auto">…</div>
+</PositioningRegion>
 ```
 -->
 
 <script lang="ts">
 	import type {Snippet} from "svelte"
+	import type {Placement} from "@floating-ui/dom"
 	import {portal, portalHost} from "../actions/portal.js"
-	import {computePosition, flip, shift, offset, size, autoUpdate, type Placement} from "@floating-ui/dom"
+	import {floating} from "../helpers/floating.js"
 	import type {RestProps} from "../types/index.js"
 
 	/** Logical position: `start` / `end` follow the anchor's text direction. */
@@ -31,16 +36,9 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 		 * overlay's bottom edge to the anchor's bottom (so it extends upward);
 		 * "center" centers it on the anchor (default). */
 		align?: AlignType
-		/** When true (default), the overlay width is forced to match the anchor's
-		 * width via Floating UI's `size` middleware. Useful for dropdowns whose
-		 * options should align under the input. */
+		/** Overlay width = the anchor's width (`var(--fluent-popup-anchor-width)`), so
+		 * dropdown options align under the input. Default: `true`. */
 		matchWidth?: boolean
-		/** When true, exposes the remaining viewport height as the CSS custom
-		 * property `--_available-height` on the floating element (minus the
-		 * shift padding). Consumers should set max-height: var(--_available-height)
-		 * on a scroll container inside, so the dropdown stays inside the viewport
-		 * regardless of which side flip() picks. */
-		availableHeight?: boolean
 		/** Overlay content. */
 		children?: Snippet
 	}
@@ -56,7 +54,6 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 		position: positionProp = "bottom",
 		align: alignProp = "center",
 		matchWidth = true,
-		availableHeight = false,
 		children = undefined,
 		class: className = undefined,
 		...rest
@@ -80,13 +77,6 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 						? "right-end"
 						: "right"
 	)
-
-	type PositionParams = {
-		anchor: HTMLElement
-		placement: Placement
-		matchWidth: boolean
-		availableHeight: boolean
-	}
 
 	// Promote the floating element into the browser top layer via the Popover API.
 	// The top layer paints above ALL z-indexed content — including a modal dialog
@@ -122,52 +112,6 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 			}
 		}
 	}
-
-	function position(node: HTMLElement, params: PositionParams) {
-		let cleanup: () => void = () => {}
-		const SHIFT_PADDING = 8
-
-		function attach(p: PositionParams) {
-			cleanup()
-			async function update() {
-				const middleware = [offset(0), flip(), shift({padding: SHIFT_PADDING})]
-				if (p.matchWidth || p.availableHeight) {
-					middleware.push(
-						size({
-							padding: SHIFT_PADDING,
-							apply({rects, elements, availableHeight: h}) {
-								if (p.matchWidth) {
-									elements.floating.style.width = `${rects.reference.width}px`
-								}
-								if (p.availableHeight) {
-									elements.floating.style.setProperty("--_available-height", `${Math.max(0, Math.floor(h))}px`)
-								}
-							}
-						})
-					)
-				}
-				const result = await computePosition(p.anchor, node, {
-					placement: p.placement,
-					strategy: "fixed",
-					middleware
-				})
-				node.style.left = `${result.x}px`
-				node.style.top = `${result.y}px`
-			}
-			cleanup = autoUpdate(p.anchor, node, update)
-		}
-
-		attach(params)
-
-		return {
-			update(newParams: PositionParams) {
-				attach(newParams)
-			},
-			destroy() {
-				cleanup()
-			}
-		}
-	}
 </script>
 
 {#if anchor}
@@ -176,7 +120,7 @@ Floating overlay portalled to `<body>` (or into the anchor's `<fluent-dialog>`, 
 			{...rest}
 			use:portal={portalHost(anchor)}
 			use:topLayer
-			use:position={{anchor, placement, matchWidth, availableHeight}}
+			use:floating={{reference: anchor, placement, matchWidth}}
 			popover="manual"
 			class={["positioning-region positioning-region-floating", className]}
 			{title}

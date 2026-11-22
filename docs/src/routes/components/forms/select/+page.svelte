@@ -123,7 +123,7 @@
 		{name: "height", type: "string", default: "undefined", description: "Multi mode: height of the inline listbox (e.g., '200px')"},
 		{name: "id", type: "string", default: "undefined", description: "Element ID"},
 		{name: "label", type: "string", default: "undefined", description: "Visible label"},
-		{name: "maxDropdownHeight", type: "string", default: "undefined (available viewport space)", description: "Single mode: cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
+		{name: "maxDropdownHeight", type: "string", default: '"300px"', description: "Single mode: cap the dropdown height (e.g. '240px', '50vh'); sets --fluent-select-dropdown-max-height. Always also capped to the room left to the viewport edge (--fluent-popup-available-height), whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Single mode: width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "maxVisibleOptionCount", type: "number", default: "undefined", description: "Limits visible options in multiple select, enables scrolling"},
 		{name: "placeholder", type: "string", default: "undefined", description: "Single mode: text shown in the trigger while nothing is selected."},

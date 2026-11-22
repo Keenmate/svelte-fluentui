@@ -120,11 +120,17 @@ $control-radius: calc(var(--control-corner-radius, 4) * 1px);
    Every popup (listboxes, Autocomplete, picker panels, menus) sits on Fluent's
    floating layer with the flyout shadow. Rows inside use the stealth fills
    (`--neutral-fill-stealth-hover`, like Option): in dark mode
-   `--neutral-fill-secondary-hover` equals the floating layer and would vanish. */
+   `--neutral-fill-secondary-hover` equals the floating layer and would vanish.
+   Inside a PositioningRegion the popup is capped to the room left to the viewport
+   edge (`--fluent-popup-available-height`, helpers/floating.ts) and scrolls; a
+   component with its own cap (the listboxes) overrides `max-height`. */
 .fluent-popup-surface,
 .fluent-popup-elevation {
 	z-index: var(--fluent-z-popover);
 	box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
+	box-sizing: border-box;
+	max-height: var(--fluent-popup-available-height, none);
+	overflow-y: auto;
 }
 
 .fluent-popup-surface {

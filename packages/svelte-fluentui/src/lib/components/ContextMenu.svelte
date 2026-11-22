@@ -19,12 +19,12 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 <script lang="ts">
 	import type {Snippet} from "svelte"
 	import {tick} from "svelte"
-	import {computePosition, flip, shift, offset, size, autoUpdate} from "@floating-ui/dom"
 	import {SvelteMap} from "svelte/reactivity"
 	import Icon from "./Icon.svelte"
 	import {portal, portalHost} from "../actions/portal.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
+	import {anchorFloating} from "../helpers/floating.js"
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
 	import {
 		getMenuChildren,
@@ -265,45 +265,23 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 	}
 
 	/*
-	 * Floating UI action for each submenu body. `autoUpdate` keeps the
-	 * submenu glued to its trigger as the viewport changes; since we also
-	 * dismiss the whole menu on outside scroll (see effect below), this
-	 * really only matters for resize and sibling movements while the menu
-	 * is open.
+	 * Action for each submenu body (helpers/floating.ts): beside its trigger, flipping to
+	 * the other side when there's no room, glued to the trigger as the viewport changes.
+	 * The side isn't locked — submenus are short-lived and should follow their trigger.
 	 */
 	function positionSubmenu(node: HTMLElement, triggerEl: HTMLElement) {
-		async function update() {
-			const {x, y} = await computePosition(triggerEl, node, {
-				placement: "right-start",
-				strategy: "fixed",
-				middleware: [
-					offset(2),
-					flip({fallbackPlacements: ["left-start", "right-end", "left-end"]}),
-					shift({padding: 8}),
-					size({
-						apply({availableHeight, elements}) {
-							elements.floating.style.maxHeight = `${Math.max(availableHeight - 8, 80)}px`
-						},
-						padding: 8
-					})
-				]
-			})
-			node.style.left = `${x}px`
-			node.style.top = `${y}px`
-		}
-		const cleanup = autoUpdate(triggerEl, node, update)
-		return {
-			destroy() {
-				cleanup()
-			}
-		}
+		const handle = anchorFloating(triggerEl, node, {
+			placement: "right-start",
+			fallbackPlacements: ["left-start", "right-end", "left-end"],
+			offset: 2,
+			lockPlacement: false
+		})
+		return {destroy: () => handle.destroy()}
 	}
 
 	/*
-	 * Floating UI virtual element — a zero-sized anchor at the cursor
-	 * position. `computePosition` and `autoUpdate` treat this the same as
-	 * a DOM anchor, so the menu gets flipped / shifted / size-capped by
-	 * the usual middleware when it'd otherwise clip the viewport.
+	 * Floating UI virtual element — a zero-sized anchor at the cursor position, treated
+	 * like a DOM anchor (flipped / shifted / size-capped the same way).
 	 */
 	const virtualAnchor = $derived({
 		getBoundingClientRect: () => ({
@@ -320,54 +298,26 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 
 	const BASE_OFFSET = 2
 
-	async function updatePosition() {
-		if (!menuEl) return
-		const {x, y} = await computePosition(virtualAnchor, menuEl, {
-			placement: "bottom-start",
-			strategy: "fixed",
-			middleware: [
-				/*
-				 * offset is { mainAxis, crossAxis } — with `bottom-start`
-				 * mainAxis is vertical (positive = further below cursor)
-				 * and crossAxis is horizontal (positive = further right).
-				 * The consumer-provided `offsetMenuX` / `offsetMenuY`
-				 * stack on top of a small baseline gap so the cursor
-				 * isn't sitting on the first menu item at 0 offset.
-				 */
-				offset({
-					mainAxis: BASE_OFFSET + offsetMenuY,
-					crossAxis: offsetMenuX
-				}),
-				flip(),
-				shift({padding: 8}),
-				size({
-					apply({availableHeight, elements}) {
-						elements.floating.style.maxHeight = `${Math.max(availableHeight - 8, 80)}px`
-					},
-					padding: 8
-				})
-			]
-		})
-		menuEl.style.left = `${x}px`
-		menuEl.style.top = `${y}px`
-	}
+	/*
+	 * offset is { mainAxis, crossAxis } — with `bottom-start` mainAxis is vertical
+	 * (positive = further below the cursor) and crossAxis horizontal (positive =
+	 * further right). The consumer's `offsetMenuX` / `offsetMenuY` stack on a small
+	 * baseline gap so the cursor isn't sitting on the first item.
+	 */
+	const menuOffset = $derived({mainAxis: BASE_OFFSET + offsetMenuY, crossAxis: offsetMenuX})
 
 	/*
-	 * autoUpdate keeps the menu positioned relative to its *virtual anchor*
-	 * (the cursor position captured at right-click). The cursor doesn't
-	 * move while the menu is open, but autoUpdate still handles scrolling
-	 * and viewport resize.
+	 * Positioned (helpers/floating.ts) against its *virtual anchor*, the cursor position
+	 * captured at right-click: flips / shifts into the viewport and is capped to the room
+	 * left (`--fluent-popup-available-height`). Re-attached when the offsets change or the
+	 * menu re-opens at a new spot while open (`virtualAnchor` reads `cursor` lazily).
 	 */
 	$effect(() => {
 		if (!open || !menuEl) return
-		// Re-subscribe when offsets change so updatePosition gets the new values, and when
-		// the menu re-opens at a new spot while open (`virtualAnchor` reads `cursor` lazily).
-		void offsetMenuX
-		void offsetMenuY
 		void cursor.x
 		void cursor.y
-		const cleanup = autoUpdate(virtualAnchor, menuEl, updatePosition)
-		return cleanup
+		const handle = anchorFloating(virtualAnchor, menuEl, {placement: "bottom-start", offset: menuOffset})
+		return () => handle.destroy()
 	})
 
 	/** Root menu + this instance's open submenus (portalled to <body>). */
@@ -675,16 +625,16 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 		top: 0;
 		left: 0;
 		z-index: var(--fluent-z-popover);
+		box-sizing: border-box;
+		max-height: var(--fluent-popup-available-height, none);
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		min-width: 200px;
 		padding: 0.25rem 0;
-		background: var(--neutral-layer-1, #ffffff);
+		background: var(--neutral-layer-floating, #ffffff);
 		border: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
 		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		box-shadow:
-			0 8px 16px rgba(0, 0, 0, 0.14),
-			0 0 2px rgba(0, 0, 0, 0.12);
+		box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
 		color: var(--neutral-foreground-rest);
 		font-family: var(--body-font);
 		font-size: var(--type-ramp-base-font-size, 14px);

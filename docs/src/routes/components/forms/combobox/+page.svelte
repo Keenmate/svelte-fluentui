@@ -213,7 +213,7 @@
 		{name: "width", type: "string", default: "undefined", description: "Component width (e.g., '300px', '100%')"},
 		{name: "height", type: "string", default: "undefined", description: "Height of the control (inline style, e.g. '40px'). The control never shrinks below its design-token min-height"},
 		{name: "currentValue", type: "string", default: "undefined", description: "Read-only bindable (bind:currentValue): the text currently in the input — the typed filter while searching, otherwise the selected option's label"},
-		{name: "maxDropdownHeight", type: "string", default: "undefined (280px cap)", description: "Cap the dropdown listbox height (e.g. '240px', '50vh'). Always also capped to the viewport-available space, whichever is smaller."},
+		{name: "maxDropdownHeight", type: "string", default: '"300px"', description: "Cap the dropdown height (e.g. '240px', '50vh'); sets --fluent-combobox-dropdown-max-height. Always also capped to the room left to the viewport edge (--fluent-popup-available-height), whichever is smaller."},
 		{name: "dropdownWidth", type: "string", default: "undefined (matches control)", description: "Width of the dropdown listbox (e.g. '360px'). When unset the list matches the control width; when set it uses this width instead."},
 		{name: "class", type: "string", default: '""', description: "Additional CSS classes"},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},

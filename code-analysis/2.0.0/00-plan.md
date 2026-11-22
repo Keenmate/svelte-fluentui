@@ -242,6 +242,8 @@ tests skipped; both checks clean):
    Autocomplete rows / TimePicker hover on `--neutral-fill-stealth-hover` (secondary-hover = floating in dark).
 6. `PositioningRegion availableHeight` documents the private `--_available-height`; make it public
    (`--fluent-positioning-available-height`) or keep?
+   → 2026-11-22: replaced by a new positioning design, `09-positioning-plan.md` (public
+   `--fluent-popup-available-height`, `availableHeight` prop removed, one helper for every popup).
 7. Export `portal` / `portalHost` publicly?
 8. Combobox/Autocomplete `closeOnSelect={false}` in single mode still closes — OK?
 9. Badge keeps `brand` / `important` / `informative` as aliases of primary/dark/light — keep or drop?
@@ -251,10 +253,10 @@ tests skipped; both checks clean):
 11. Push (`prod` is 31+ ahead) and version bump to 2.0.0-rc01 via /publish when ready.
     → 2026-11-22: everything pushed (origin/prod = b2dc331). Version bump still pending (only when asked).
 
-**Status 2026-11-22:** questions 1–5 done. Next: **6 (PositioningRegion available height)**, then 7–10. Also open:
+**Status 2026-11-22:** questions 1–6 done (6 → 09-positioning-plan.md, all phases done). Next: **7 (export `portal` / `portalHost`)**, then 8–10. Also open:
 the reboot-layer fix from `08-css-layers-reboot.md` (`@layer reset`, drop the `border: 1px solid black`
 rule, maybe layer the other global CSS — needs the user's yes), German translations want a
-native-speaker review. Full e2e: 420 passed / 2 skipped. Flaky (pre-existing, ~3 in 20 with
+native-speaker review. Full e2e: 427 passed / 2 skipped. Flaky (pre-existing, ~3 in 20 with
 `--repeat-each`): popup-tabs.spec.ts "active indicator sits under the active tab" (ltr / rtl).
 
 Deferred (see 06-quickgrid-plan.md for QuickGrid ones): per-row deriveds in QuickGrid for non-virtual

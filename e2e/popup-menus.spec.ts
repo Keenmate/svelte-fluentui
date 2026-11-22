@@ -174,11 +174,13 @@ test.describe("ContextMenu", () => {
 		await expect(page.locator("#log")).toHaveText("cm:doc")
 	})
 
-	test("outside scroll closes; scrolling inside does not", async ({page}) => {
+	test("a scroll that moves the anchor closes; scrolling inside or an unrelated panel does not", async ({page}) => {
 		await openContextMenu(page)
 		await page.locator(".fluent-context-menu").first().evaluate(el => el.dispatchEvent(new Event("scroll")))
-		await expect(page.locator("#cm-open")).toHaveText("true")
 		await page.locator("#scroller").evaluate(el => (el.scrollTop = 100))
+		await page.waitForTimeout(100)
+		await expect(page.locator("#cm-open")).toHaveText("true")
+		await page.evaluate(() => window.scrollBy(0, 50))
 		await expect(page.locator("#cm-open")).toHaveText("false")
 	})
 

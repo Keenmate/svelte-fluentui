@@ -8,7 +8,7 @@
 <script lang="ts" generics="T">
 	import Icon from "../Icon.svelte"
 	import {portal, portalHost} from "../../actions/portal.js"
-	import {computePosition, flip, shift, autoUpdate} from "@floating-ui/dom"
+	import {anchorFloating, type FloatingHandle} from "../../helpers/floating.js"
 	import type {MenuItem, ResolvedMenuEntry} from "../../action-items/index.js"
 	import type {
 		QuickGridContextMenuAction as ContextMenuAction,
@@ -45,12 +45,12 @@
 		if (!disabled) onItemSelect({item, action, event})
 	}
 
-	// Placed at the pointer's spot in its cell (floating-ui keeps it in the viewport and follows
-	// the cell when the grid or the page scrolls)
+	// Placed at the pointer's spot in its cell (helpers/floating.ts keeps it in the viewport, caps it
+	// to the room left and follows the cell when the grid or the page scrolls)
 	function placeContextMenu(node: HTMLElement, anchor: Anchor) {
-		let stop = () => {}
+		let handle: FloatingHandle | undefined
 		function attach({cell, dx, dy}: Anchor) {
-			stop()
+			handle?.destroy()
 			const reference = {
 				contextElement: cell,
 				getBoundingClientRect() {
@@ -60,18 +60,10 @@
 					return {x, y, left: x, top: y, right: x, bottom: y, width: 0, height: 0}
 				}
 			}
-			stop = autoUpdate(reference, node, async () => {
-				const {x, y} = await computePosition(reference, node, {
-					placement: "bottom-start",
-					strategy: "fixed",
-					middleware: [flip(), shift({padding: 8})]
-				})
-				node.style.left = `${x}px`
-				node.style.top = `${y}px`
-			})
+			handle = anchorFloating(reference, node, {placement: "bottom-start"})
 		}
 		attach(anchor)
-		return {update: attach, destroy: () => stop()}
+		return {update: attach, destroy: () => handle?.destroy()}
 	}
 </script>
 
@@ -120,7 +112,13 @@
 		/* Popover elevation — paint shadow on the wrapper so the menu reads
 		 * as a distinct surface on dark themes (fluent-menu's own shadow is
 		 * too subtle there). Matches ContextMenu's elevation. */
-		box-shadow: var(--fluent-quickgrid-menu-shadow, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
+		box-shadow: var(
+			--fluent-quickgrid-menu-shadow,
+			var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12))
+		);
+		max-height: var(--fluent-popup-available-height, none);
+		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	.context-menu fluent-menu {

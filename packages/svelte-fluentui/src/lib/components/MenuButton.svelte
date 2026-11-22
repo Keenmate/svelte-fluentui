@@ -22,11 +22,11 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 <script lang="ts">
 	import {tick} from "svelte"
 	import {attrs} from "../helpers/attrs.js"
-	import {computePosition, flip, shift, offset, size, autoUpdate} from "@floating-ui/dom"
 	import Icon from "./Icon.svelte"
 	import {portal, portalHost} from "../actions/portal.js"
 	import {pushLayer} from "../helpers/layer-stack.js"
 	import {dismissOnOutside} from "../helpers/dismiss.js"
+	import {anchorFloating} from "../helpers/floating.js"
 	import {ListNav} from "../helpers/listbox-nav.svelte.js"
 	import {resolveMenuEntries, runAction} from "../action-items/index.js"
 	import type {RestProps} from "../types/index.js"
@@ -194,54 +194,17 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 	}
 
 	/*
-	 * Floating UI positioning. `autoUpdate` re-runs `computePosition` on
-	 * scroll / resize / DOM mutation, so the menu follows its anchor live
-	 * instead of floating detached the moment the user scrolls. Middleware:
-	 *   - offset(4)   — 4px gap between anchor and menu
-	 *   - flip()      — if the preferred placement would clip the viewport,
-	 *                   flip to the other side (bottom ↔ top)
-	 *   - shift()     — slide the menu along the cross axis to stay inside
-	 *                   the viewport (with 8px padding) when the anchor is
-	 *                   near the left/right edge of the screen
-	 *   - size()      — cap the menu's max-height to whatever space is
-	 *                   actually available so a tall menu near the bottom
-	 *                   of the viewport doesn't get cut off — it becomes
-	 *                   scrollable instead
+	 * Positioning (helpers/floating.ts): 4px below the button (`position="top"`: above), flips
+	 * when there's no room, shifts to stay 8px inside the viewport, follows the anchor on
+	 * scroll / resize, and caps the menu to the room left (`--fluent-popup-available-height`,
+	 * read by the CSS below) so a tall menu scrolls instead of running off-screen.
 	 */
 	const preferredPlacement = $derived(position === "top" ? "top-start" : "bottom-start")
 
-	async function updatePosition() {
-		if (!anchorEl || !menuEl) return
-		const {x, y} = await computePosition(anchorEl, menuEl, {
-			placement: preferredPlacement,
-			strategy: "fixed",
-			middleware: [
-				offset(4),
-				flip(),
-				shift({padding: 8}),
-				size({
-					apply({availableHeight, elements}) {
-						elements.floating.style.maxHeight = `${Math.max(availableHeight - 8, 80)}px`
-					},
-					padding: 8
-				})
-			]
-		})
-		menuEl.style.left = `${x}px`
-		menuEl.style.top = `${y}px`
-	}
-
-	/*
-	 * Wire autoUpdate while the menu is open. autoUpdate returns a cleanup
-	 * fn that removes its own listeners; we call it in the effect's return.
-	 * The effect also re-subscribes when `preferredPlacement` changes (the
-	 * consumer toggled the `position` prop).
-	 */
 	$effect(() => {
 		if (!open || !anchorEl || !menuEl) return
-		void preferredPlacement
-		const cleanup = autoUpdate(anchorEl, menuEl, updatePosition)
-		return cleanup
+		const handle = anchorFloating(anchorEl, menuEl, {placement: preferredPlacement, offset: 4})
+		return () => handle.destroy()
 	})
 
 	// Light dismiss (outside press, focus moving away) + Escape while open. `autoUpdate`
@@ -361,15 +324,9 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 	}
 
 	/*
-	 * Menu element — positioned by Floating UI via top/left inline styles.
-	 * `position: fixed` matches the `strategy: "fixed"` passed to
-	 * computePosition(), and keeps the menu pinned to viewport coordinates
-	 * (no ancestor-transform surprises).
-	 */
-	/*
-	 * Wrapper is the Floating-UI target — `size` middleware caps its
-	 * max-height for viewport fit, so it owns the `overflow-y: auto`
-	 * scroll. The inner `<fluent-menu>` has rounded corners; without a
+	 * Wrapper is the positioned element (`position: fixed`, top / left set by
+	 * helpers/floating.ts). It is capped to the room left to the viewport edge,
+	 * so it owns the `overflow-y: auto` scroll. The inner `<fluent-menu>` has rounded corners; without a
 	 * matching `border-radius` here, the wrapper's square corners (or
 	 * its scrollbar gutter) would peek out behind the rounded menu and
 	 * show as gray pixels. `background: transparent` is explicit so
@@ -380,6 +337,7 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 		top: 0;
 		left: 0;
 		z-index: var(--fluent-z-popover);
+		max-height: var(--fluent-popup-available-height, none);
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		background: transparent;
@@ -387,9 +345,7 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 		/* fluent-menu's built-in elevation is barely visible on dark themes —
 		 * paint the popover shadow on the wrapper instead so the menu reads
 		 * as a distinct surface. Matches the elevation used by ContextMenu. */
-		box-shadow:
-			0 8px 16px rgba(0, 0, 0, 0.14),
-			0 0 2px rgba(0, 0, 0, 0.12);
+		box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
 	}
 
 	.fluent-menu-button-menu :global(fluent-menu) {

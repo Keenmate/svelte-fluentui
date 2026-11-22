@@ -108,9 +108,8 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		width?: string
 		/** Explicit height of the control (inline style, e.g. "40px"). */
 		height?: string
-		/** Cap the dropdown listbox height (e.g. "300px", "50vh"). The listbox is
-		 * always also capped to the space available to the viewport edge; this
-		 * lets a shorter ceiling be set per-instance. */
+		/** Cap the dropdown height (e.g. "200px", "50vh"; sets `--fluent-combobox-dropdown-max-height`).
+		 * Default: `300px`. The dropdown is always also capped to the room left to the viewport edge. */
 		maxDropdownHeight?: string
 		/** Width of the dropdown listbox (e.g. "360px", "24rem"). When unset the
 		 * listbox matches the control width; when set it uses this width instead
@@ -966,13 +965,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	{/if}
 
 	{#if isOpen && controlEl}
-		<PositioningRegion
-			anchor={controlEl}
-			visible={isOpen}
-			position={forcedPlacement}
-			matchWidth={!dropdownWidth}
-			availableHeight
-		>
+		<PositioningRegion anchor={controlEl} visible={isOpen} position={forcedPlacement} matchWidth={!dropdownWidth}>
 			<!-- The popup surface (and scroll container) holds the listbox plus, outside it,
 			     the empty / loading message — a listbox may only contain options. -->
 			<div
@@ -980,7 +973,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				class={["combobox-listbox fluent-popup-surface", dropdownClass]}
 				style={[
 					dropdownWidth ? `width: ${dropdownWidth}` : "",
-					maxDropdownHeight ? `--_combobox-listbox-max-height: ${maxDropdownHeight}` : ""
+					maxDropdownHeight ? `--fluent-combobox-dropdown-max-height: ${maxDropdownHeight}` : ""
 				]
 					.filter(Boolean)
 					.join("; ") || undefined}
@@ -1161,9 +1154,8 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		display: flex;
 		flex-direction: column;
 		padding: calc(var(--design-unit, 4) * 1px);
-		/* Cap to the space PositioningRegion measured to the viewport edge, and
-		 * (when set) to the per-instance `maxDropdownHeight` prop — whichever is smaller. */
-		max-height: min(var(--_available-height, 280px), var(--_combobox-listbox-max-height, 100vh));
+		/* `maxDropdownHeight` (default 300px) or the room PositioningRegion measured, whichever is smaller. */
+		max-height: min(var(--fluent-combobox-dropdown-max-height, 300px), var(--fluent-popup-available-height, 100vh));
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		box-sizing: border-box;

@@ -222,7 +222,7 @@
 		cursor: pointer;
 
 		&:hover:not(:disabled) {
-			background: var(--neutral-fill-secondary-hover, var(--neutral-layer-2));
+			background: var(--neutral-fill-stealth-hover, var(--neutral-layer-2));
 		}
 		&:disabled {
 			opacity: 0.5;
@@ -289,12 +289,14 @@
 		left: 0;
 		width: var(--fluent-inputfile-popover-width, 28rem);
 		max-width: 90vw;
-		min-height: var(--fluent-inputfile-popover-min-height, 16rem);
-		max-height: var(--fluent-inputfile-popover-max-height, 24rem);
-		background: var(--neutral-layer-1, white);
+		box-sizing: border-box;
+		/* Both bounds also give way to the room left to the viewport edge (helpers/floating.ts). */
+		min-height: min(var(--fluent-inputfile-popover-min-height, 16rem), var(--fluent-popup-available-height, 100vh));
+		max-height: min(var(--fluent-inputfile-popover-max-height, 24rem), var(--fluent-popup-available-height, 100vh));
+		background: var(--neutral-layer-floating, white);
 		border: 1px solid var(--neutral-stroke-rest);
 		border-radius: var(--fluent-border-radius-lg);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+		box-shadow: var(--elevation-shadow-flyout, 0 8px 24px rgba(0, 0, 0, 0.14));
 		padding: 0.75rem;
 		z-index: var(--fluent-z-popover);
 		overflow-y: auto;
@@ -398,7 +400,7 @@
 			color 0.1s ease;
 
 		&:hover {
-			background: var(--neutral-fill-secondary-hover, var(--neutral-layer-3));
+			background: var(--neutral-fill-stealth-hover, var(--neutral-layer-3));
 		}
 		&:focus-visible {
 			@include primitives.focus-ring;
@@ -513,7 +515,7 @@
 			color 0.1s ease;
 
 		&:hover {
-			background: var(--neutral-fill-secondary-hover, var(--neutral-layer-3));
+			background: var(--neutral-fill-stealth-hover, var(--neutral-layer-3));
 			color: var(--neutral-foreground-rest);
 		}
 		&:focus-visible {
@@ -600,7 +602,7 @@
 		border-radius: var(--fluent-border-radius-md);
 
 		&:hover:not(:disabled) {
-			background: var(--neutral-fill-secondary-hover, var(--neutral-layer-2));
+			background: var(--neutral-fill-stealth-hover, var(--neutral-layer-2));
 		}
 		&:disabled {
 			opacity: 0.5;
@@ -746,7 +748,7 @@
 		min-height: 1.75rem;
 
 		&:hover:not(:disabled) {
-			background: var(--neutral-fill-secondary-hover, var(--neutral-layer-3));
+			background: var(--neutral-fill-stealth-hover, var(--neutral-layer-3));
 		}
 		&:disabled {
 			opacity: 0.5;
