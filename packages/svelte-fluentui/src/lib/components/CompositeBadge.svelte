@@ -23,7 +23,18 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 	 * shared semantic palette (`--fluent-color-<name>-*`).
 	 */
 
-	type CompositeColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark"
+	type CompositeColor =
+		| "primary"
+		| "secondary"
+		| "success"
+		| "warning"
+		| "danger"
+		| "info"
+		| "light"
+		| "dark"
+		| "brand"
+		| "important"
+		| "informative"
 
 	type OwnProps = {
 		/** Palette colour for all sections. Default: `"primary"`. */
@@ -227,6 +238,24 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 		--_v-tint: var(--fluent-color-dark-tint, rgba(36, 36, 36, 0.1));
 		--_v-emphasis: var(--fluent-color-dark-emphasis, #242424);
 	}
+	.composite-badge-brand {
+		--_v-solid: var(--fluent-color-brand, #0078d4);
+		--_v-contrast: var(--fluent-color-brand-contrast, #fff);
+		--_v-tint: var(--fluent-color-brand-tint, rgba(0, 120, 212, 0.12));
+		--_v-emphasis: var(--fluent-color-brand-emphasis, #0067b8);
+	}
+	.composite-badge-important {
+		--_v-solid: var(--fluent-color-important, #242424);
+		--_v-contrast: var(--fluent-color-important-contrast, #fff);
+		--_v-tint: var(--fluent-color-important-tint, rgba(36, 36, 36, 0.1));
+		--_v-emphasis: var(--fluent-color-important-emphasis, #242424);
+	}
+	.composite-badge-informative {
+		--_v-solid: var(--fluent-color-informative, #f0f0f0);
+		--_v-contrast: var(--fluent-color-informative-contrast, #242424);
+		--_v-tint: var(--fluent-color-informative-tint, #f5f5f5);
+		--_v-emphasis: var(--fluent-color-informative-emphasis, #8a8a8a);
+	}
 
 	/* Label-section overrides */
 	.composite-badge-label-primary {
@@ -261,6 +290,18 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 		--_lv-tint: var(--fluent-color-dark-tint, rgba(36, 36, 36, 0.1));
 		--_lv-emphasis: var(--fluent-color-dark-emphasis, #242424);
 	}
+	.composite-badge-label-brand {
+		--_lv-tint: var(--fluent-color-brand-tint, rgba(0, 120, 212, 0.12));
+		--_lv-emphasis: var(--fluent-color-brand-emphasis, #0067b8);
+	}
+	.composite-badge-label-important {
+		--_lv-tint: var(--fluent-color-important-tint, rgba(36, 36, 36, 0.1));
+		--_lv-emphasis: var(--fluent-color-important-emphasis, #242424);
+	}
+	.composite-badge-label-informative {
+		--_lv-tint: var(--fluent-color-informative-tint, #f5f5f5);
+		--_lv-emphasis: var(--fluent-color-informative-emphasis, #8a8a8a);
+	}
 
 	/* Button-section overrides */
 	.composite-badge-btn-primary {
@@ -294,5 +335,17 @@ Three-section `[icon][label][button]` chip for notification pills, status + coun
 	.composite-badge-btn-dark {
 		--_bv-solid: var(--fluent-color-dark, #242424);
 		--_bv-contrast: var(--fluent-color-dark-contrast, #fff);
+	}
+	.composite-badge-btn-brand {
+		--_bv-solid: var(--fluent-color-brand, #0078d4);
+		--_bv-contrast: var(--fluent-color-brand-contrast, #fff);
+	}
+	.composite-badge-btn-important {
+		--_bv-solid: var(--fluent-color-important, #242424);
+		--_bv-contrast: var(--fluent-color-important-contrast, #fff);
+	}
+	.composite-badge-btn-informative {
+		--_bv-solid: var(--fluent-color-informative, #f0f0f0);
+		--_bv-contrast: var(--fluent-color-informative-contrast, #242424);
 	}
 </style>

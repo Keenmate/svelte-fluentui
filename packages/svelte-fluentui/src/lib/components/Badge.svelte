@@ -19,8 +19,8 @@ Small status/count indicator — a themed `<span>` with palette colours, appeara
 	 * - --fluent-color-[color]-contrast: text colour
 	 *
 	 * Built-in colours: primary, secondary, success, warning, danger, info, light, dark,
-	 * severe, subtle. The Fluent badge names brand / important / informative are accepted
-	 * as aliases of primary / dark / light. Any other name reads
+	 * severe, subtle, and Fluent's badge names brand / important / informative (palette
+	 * entries of their own; by default they look like primary / dark / light). Any other name reads
 	 * `--fluent-color-<name>` / `--fluent-color-<name>-contrast` (define them yourself).
 	 */
 
@@ -40,9 +40,6 @@ Small status/count indicator — a themed `<span>` with palette colours, appeara
 		| "informative"
 		| (string & {})
 
-	// Fluent badge colour names → shared palette names.
-	const colorAliases: Record<string, string> = {brand: "primary", important: "dark", informative: "light"}
-	const paletteName = (name: string) => colorAliases[name] ?? name
 	type BadgeAppearance = "accent" | "lightweight" | "neutral" | "outline" | "tint" | (string & {})
 	type BadgeSize = "extra-small" | "small" | "medium" | "large" | "extra-large"
 
@@ -123,10 +120,10 @@ Small status/count indicator — a themed `<span>` with palette colours, appeara
 		if (!color && !effectiveFill) return ""
 		let styles = ""
 		if (effectiveFill) {
-			styles += `background-color: var(--fluent-color-${paletteName(effectiveFill)});`
+			styles += `background-color: var(--fluent-color-${effectiveFill});`
 		}
 		if (color) {
-			styles += `color: var(--fluent-color-${paletteName(color)}-contrast);`
+			styles += `color: var(--fluent-color-${color}-contrast);`
 		}
 		return styles
 	})

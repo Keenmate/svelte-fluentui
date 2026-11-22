@@ -28,7 +28,7 @@
 	]
 
 	const labelProps: Property[] = [
-		{name: "color", type: '"primary" | "secondary" | "success" | "warning" | "danger" | "info"', default: '"primary"', description: "Semantic color."},
+		{name: "color", type: '"primary" | "secondary" | "success" | "warning" | "danger" | "info" | "brand" | "important" | "informative"', default: '"primary"', description: "Semantic color."},
 		{name: "size", type: '"extra-small" | "small" | "medium" | "large" | "extra-large"', default: '"medium"', description: "Size scale (matches Badge)."},
 		{name: "outline", type: "boolean", default: "false", description: "Transparent background; fills with the tint on hover."},
 		{name: "icon", type: "Snippet", default: "undefined", description: "Icon slot before the label text."},
@@ -36,7 +36,7 @@
 	]
 
 	const compositeProps: Property[] = [
-		{name: "color", type: '"primary" | … | "dark"', default: '"primary"', description: "Base color applied to all three sections."},
+		{name: "color", type: '"primary" | … | "dark" | "brand" | "important" | "informative"', default: '"primary"', description: "Base color applied to all three sections."},
 		{name: "labelColor", type: "string", default: "undefined", description: "Override only the label (middle) section color."},
 		{name: "buttonColor", type: "string", default: "undefined", description: "Override only the button (right) section color."},
 		{name: "icon", type: "Snippet", default: "undefined", description: "Left icon section (omitted when not set)."},
@@ -100,7 +100,7 @@
 		<h2>Examples</h2>
 
 		<h3>Built-in Colors</h3>
-		<p>Pre-defined colors: brand, danger, important, informative, severe, subtle, success, warning (brand / important / informative are aliases of the shared palette names primary / dark / light; secondary and info also work)</p>
+		<p>Pre-defined colors: brand, danger, important, informative, severe, subtle, success, warning — brand, important and informative are Fluent's badge names and have palette entries of their own (<code>--fluent-color-brand</code> …), by default looking like primary / dark / light; primary, secondary, info, light and dark also work</p>
 		<Stack orientation="horizontal" gap="0.5rem" style="flex-wrap: wrap;">
 			<Badge color="brand">brand</Badge>
 			<Badge color="danger">danger</Badge>
@@ -306,6 +306,9 @@
 			<Label color="warning">Enhancement</Label>
 			<Label color="danger">Breaking Change</Label>
 			<Label color="info">Documentation</Label>
+			<Label color="brand">brand</Label>
+			<Label color="important">important</Label>
+			<Label color="informative">informative</Label>
 		</Stack>
 
 		<h3>Outline</h3>

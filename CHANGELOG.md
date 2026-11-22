@@ -217,6 +217,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 - **`svelte` peer dependency is `^5.29.0`** (was `^5.0.0`). Needed for `$props.id()` and attachments.
 
 ### Added
+- `brand` / `important` / `informative` (Fluent's badge colour names) are palette colours of their own — `--fluent-color-brand` / `-important` / `-informative` with `-contrast` / `-emphasis` / `-tint`, defaulting to primary / dark / light — and work on Label and CompositeBadge too, not only as Badge aliases.
 - `portalHost(anchor)` exported next to `portal`: the container a custom popup should portal into — the anchor's enclosing `<fluent-dialog>` (inside its focus trap), else `<body>`. Use `use:portal={portalHost(anchorEl)}`.
 - `minSelectionCount` on Autocomplete and on Combobox / Select with `multiple`: with 1 … min − 1 values picked the field fails form validation with a translated "Select at least N items." (`labels.minSelectionRequired`); none picked is valid unless `required`.
 - Shared style classes in the main stylesheet, usable in your own markup: `.fluent-field-control` (Fluent input box with `filled` / `readonly` / `disabled` / `embedded` / `open` / `focused` states), `.fluent-popup-surface` (+ `.fluent-popup-elevation`), `.fluent-required-indicator`, `.fluent-focus-ring`; `@keyframes fluent-spin` / `fluent-pulse`.

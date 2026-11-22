@@ -19,11 +19,12 @@ Lightweight tag-style indicator: tinted fill + coloured border in one of six sem
 	 * (`--fluent-color-<name>-*`, see fluent-blazor-compat.scss).
 	 */
 
-	type LabelColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info"
+	type LabelColor =
+		"primary" | "secondary" | "success" | "warning" | "danger" | "info" | "brand" | "important" | "informative"
 	type LabelSize = "extra-small" | "small" | "medium" | "large" | "extra-large"
 
 	type OwnProps = {
-		/** Semantic colour: primary, secondary, success, warning, danger, info. Default: `"primary"`. */
+		/** Semantic colour: primary, secondary, success, warning, danger, info, or Fluent's badge names brand / important / informative. Default: `"primary"`. */
 		color?: LabelColor
 		/** Size scale `extra-small` … `extra-large`. Default: `"medium"`. */
 		size?: LabelSize
@@ -145,6 +146,18 @@ Lightweight tag-style indicator: tinted fill + coloured border in one of six sem
 	.fluent-label-info {
 		--_lc: var(--fluent-color-info-emphasis, #0a6a9a);
 		--_tc: var(--fluent-color-info-tint, rgba(10, 148, 214, 0.12));
+	}
+	.fluent-label-brand {
+		--_lc: var(--fluent-color-brand-emphasis, #0067b8);
+		--_tc: var(--fluent-color-brand-tint, rgba(0, 120, 212, 0.12));
+	}
+	.fluent-label-important {
+		--_lc: var(--fluent-color-important-emphasis, #242424);
+		--_tc: var(--fluent-color-important-tint, rgba(36, 36, 36, 0.1));
+	}
+	.fluent-label-informative {
+		--_lc: var(--fluent-color-informative-emphasis, #8a8a8a);
+		--_tc: var(--fluent-color-informative-tint, #f5f5f5);
 	}
 
 	.fluent-label {

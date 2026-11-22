@@ -247,14 +247,17 @@ tests skipped; both checks clean):
 7. Export `portal` / `portalHost` publicly?
    → 2026-11-22: `portal` already was; `portalHost` now exported too. `anchorFloating` / `floating` stay internal for now.
 8. Combobox/Autocomplete `closeOnSelect={false}` in single mode still closes — OK?
+   → 2026-11-22: yes, keep; already documented (JSDoc + both docs pages: "Single-select always closes").
 9. Badge keeps `brand` / `important` / `informative` as aliases of primary/dark/light — keep or drop?
+   → 2026-11-22: made standard — own palette entries (`--fluent-color-brand` …, default = primary / dark /
+   light), alias map gone, Label + CompositeBadge accept them too.
 10. Housekeeping: delete `C:\tmp_qg` (blocked for me), old `/tmp/gce*`, `/tmp/qg*`, repo-root
     `probe*.tmp.mjs` / `shot.tmp.mjs` (Nov 11, git-excluded); `.claude/commands/publish.md` got a
     release-notes gate (local only — `.claude` is gitignored); its Section 7 still says "no e2e harness".
 11. Push (`prod` is 31+ ahead) and version bump to 2.0.0-rc01 via /publish when ready.
     → 2026-11-22: everything pushed (origin/prod = b2dc331). Version bump still pending (only when asked).
 
-**Status 2026-11-22:** questions 1–7 done (6 → 09-positioning-plan.md, all phases done). Next: **8 (`closeOnSelect={false}` in single mode)**, then 9–10. Also open:
+**Status 2026-11-22:** questions 1–9 done (6 → 09-positioning-plan.md, all phases done). Next: **10 (housekeeping)**. Also open:
 the reboot-layer fix from `08-css-layers-reboot.md` (`@layer reset`, drop the `border: 1px solid black`
 rule, maybe layer the other global CSS — needs the user's yes), German translations want a
 native-speaker review. Full e2e: 435 passed / 2 skipped. Flaky (pre-existing, ~3 in 20 with

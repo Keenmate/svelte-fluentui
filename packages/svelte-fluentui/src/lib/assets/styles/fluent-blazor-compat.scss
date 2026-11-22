@@ -22,6 +22,8 @@
 //                                  Toast accents). success/warning/danger/info
 //                                  only; re-declared for [data-theme="dark"]
 //                                  below so it stays readable on dark layers.
+// brand / important / informative are Fluent's own badge colour names; they read
+// primary / dark / light by default and can be overridden on their own.
 // FluentUI tokens back the neutral/brand roles so themes flow through; the
 // semantic hues (success/warning/danger/info/severe) are hardcoded since
 // FluentUI 2.6 ships no semantic palette.
@@ -90,6 +92,24 @@
 	--fluent-color-dark-contrast: var(--neutral-layer-1, #ffffff);
 	--fluent-color-dark-emphasis: var(--neutral-foreground-rest, #242424);
 	--fluent-color-dark-tint: color-mix(in srgb, var(--neutral-foreground-rest, #242424) 10%, transparent);
+
+	// brand (Fluent badge name — the accent, like primary)
+	--fluent-color-brand: var(--fluent-color-primary);
+	--fluent-color-brand-contrast: var(--fluent-color-primary-contrast);
+	--fluent-color-brand-emphasis: var(--fluent-color-primary-emphasis);
+	--fluent-color-brand-tint: var(--fluent-color-primary-tint);
+
+	// important (Fluent badge name — high-contrast neutral, like dark)
+	--fluent-color-important: var(--fluent-color-dark);
+	--fluent-color-important-contrast: var(--fluent-color-dark-contrast);
+	--fluent-color-important-emphasis: var(--fluent-color-dark-emphasis);
+	--fluent-color-important-tint: var(--fluent-color-dark-tint);
+
+	// informative (Fluent badge name — quiet neutral, like light)
+	--fluent-color-informative: var(--fluent-color-light);
+	--fluent-color-informative-contrast: var(--fluent-color-light-contrast);
+	--fluent-color-informative-emphasis: var(--fluent-color-light-emphasis);
+	--fluent-color-informative-tint: var(--fluent-color-light-tint);
 }
 
 // Dark-theme status foregrounds (the light values above are too dark to read
