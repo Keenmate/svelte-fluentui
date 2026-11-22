@@ -247,6 +247,12 @@ tests skipped; both checks clean):
     `probe*.tmp.mjs` / `shot.tmp.mjs` (Nov 11, git-excluded); `.claude/commands/publish.md` got a
     release-notes gate (local only — `.claude` is gitignored); its Section 7 still says "no e2e harness".
 11. Push (`prod` is 31+ ahead) and version bump to 2.0.0-rc01 via /publish when ready.
+    → 2026-11-22: everything pushed (origin/prod = b2dc331). Version bump still pending (only when asked).
+
+**Status 2026-11-22:** questions 1–4 done. Next: **5 (popup surfaces)**, then 6–10. Also open:
+the reboot-layer fix from `08-css-layers-reboot.md` (`@layer reset`, drop the `border: 1px solid black`
+rule, maybe layer the other global CSS — needs the user's yes), German translations want a
+native-speaker review. Full e2e: 420 passed / 2 skipped.
 
 Deferred (see 06-quickgrid-plan.md for QuickGrid ones): per-row deriveds in QuickGrid for non-virtual
 teardown cost; variable row heights with `virtualize`; NavMenu menuitem+link double tab stop (needs a
