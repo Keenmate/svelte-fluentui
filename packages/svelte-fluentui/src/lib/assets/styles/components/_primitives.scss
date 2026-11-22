@@ -8,7 +8,6 @@
    - .fluent-field-control      bordered input box (Select, Combobox, Autocomplete)
    - .fluent-popup-surface      floating panel (dropdowns, picker popups)
    - .fluent-popup-elevation    z-index + shadow only (wrappers whose child paints the surface, e.g. <fluent-menu>)
-   - .fluent-popup--layer       modifier: page-layer background + menu shadow (pickers, Autocomplete, menus)
    - .fluent-required-indicator the "*" after a required field's label
    - .fluent-focus-ring         keyboard focus outline (+ `focus-ring` mixin for SCSS partials)
    - danger menu item           ContextMenu / MenuButton / QuickGrid menu `danger` items
@@ -118,27 +117,18 @@ $control-radius: calc(var(--control-corner-radius, 4) * 1px);
 }
 
 /* ---------- Popup surface ----------
-   Two looks are in use: listbox dropdowns (Select, Combobox) sit on the
-   floating layer with Fluent's flyout shadow; pickers, Autocomplete and menus
-   add `.fluent-popup--layer` (page-layer background, lighter shadow). Their row
-   hover fill (`--neutral-fill-secondary-hover`) is close to the floating layer
-   in dark mode, so they can't drop the modifier without recolouring rows. */
+   Every popup (listboxes, Autocomplete, picker panels, menus) sits on Fluent's
+   floating layer with the flyout shadow. Rows inside use the stealth fills
+   (`--neutral-fill-stealth-hover`, like Option): in dark mode
+   `--neutral-fill-secondary-hover` equals the floating layer and would vanish. */
 .fluent-popup-surface,
 .fluent-popup-elevation {
 	z-index: var(--fluent-z-popover);
-	box-shadow: var(
-		--_popup-shadow,
-		var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12))
-	);
-}
-
-.fluent-popup--layer {
-	--_popup-bg: var(--neutral-layer-1, #ffffff);
-	--_popup-shadow: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
+	box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
 }
 
 .fluent-popup-surface {
-	background: var(--_popup-bg, var(--neutral-layer-floating, #ffffff));
+	background: var(--neutral-layer-floating, #ffffff);
 	border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
 	border-radius: $control-radius;
 }

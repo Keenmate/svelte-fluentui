@@ -369,7 +369,7 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 			<PositioningRegion anchor={wrapperElement} visible={isOpen} matchWidth={false}>
 				<!-- Surface + padding live here, not on the region, so a press anywhere on the popup is "inside". -->
 				<div
-					class="datepicker-popup fluent-popup-surface fluent-popup--layer"
+					class="datepicker-popup fluent-popup-surface"
 					bind:this={popupElement}
 					id={popupId}
 					role="dialog"

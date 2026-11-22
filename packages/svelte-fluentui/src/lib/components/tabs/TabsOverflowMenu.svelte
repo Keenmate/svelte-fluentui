@@ -25,7 +25,7 @@
 </script>
 
 <PositioningRegion {anchor} {visible} matchWidth={false} position={horizontal ? "bottom" : "end"}>
-	<div class="fluent-tabs-overflow-menu context-menu fluent-popup-elevation fluent-popup--layer" bind:this={menuEl}>
+	<div class="fluent-tabs-overflow-menu context-menu fluent-popup-elevation" bind:this={menuEl}>
 		<fluent-menu>
 			{#each tabs as tab (tab.id)}
 				<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
@@ -44,7 +44,7 @@
 
 <style>
 	/* Overflow menu — `<fluent-menu>` paints the surface; the wrapper adds the
-	 * popup elevation (`.fluent-popup-elevation` + `--layer`: z-index + menu shadow,
+	 * popup elevation (`.fluent-popup-elevation`: z-index + flyout shadow,
 	 * since fluent-menu's own shadow is too subtle on dark themes). Transparent, with
 	 * the menu's border-radius so its rounded corners aren't framed by gray pixels. */
 	.fluent-tabs-overflow-menu {

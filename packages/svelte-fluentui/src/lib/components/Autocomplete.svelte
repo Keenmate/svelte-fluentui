@@ -903,7 +903,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 					? `--_autocomplete-listbox-max-height: ${maxDropdownHeight};`
 					: ''}"
 			>
-				<div class="options-list fluent-popup-surface fluent-popup--layer" bind:this={optionsListElement}>
+				<div class="options-list fluent-popup-surface" bind:this={optionsListElement}>
 					{#if headerContent}
 						<div class="options-header">
 							{@render headerContent()}
@@ -1198,7 +1198,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	}
 
 	/* ===== Dropdown Options ===== */
-	/* The popup: surface from `.fluent-popup-surface` (+ `--layer`); capped to the space
+	/* The popup: surface from `.fluent-popup-surface`; capped to the space
 	   PositioningRegion measured (and the `maxDropdownHeight` prop), scrolls. */
 	.options-list {
 		display: flex;
@@ -1239,12 +1239,9 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		font-size: 0.875rem;
 	}
 
-	.option-item:hover:not(.disabled) {
-		background: var(--neutral-fill-secondary-hover, #e0e0e0);
-	}
-
+	.option-item:hover:not(.disabled),
 	.option-item.highlighted {
-		background: var(--neutral-fill-secondary-hover, #e0e0e0);
+		background: var(--neutral-fill-stealth-hover, #f0f0f0);
 	}
 
 	.option-item.disabled {

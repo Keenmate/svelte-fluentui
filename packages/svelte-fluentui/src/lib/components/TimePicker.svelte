@@ -549,7 +549,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 				     from re-firing); it is not an interaction. -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div
-					class="time-picker-panel fluent-popup-surface fluent-popup--layer"
+					class="time-picker-panel fluent-popup-surface"
 					bind:this={popupElement}
 					id={popupId}
 					role="dialog"
@@ -808,7 +808,7 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 	}
 
 	.time-option:not(:disabled):hover {
-		background: var(--neutral-fill-secondary-hover);
+		background: var(--neutral-fill-stealth-hover);
 	}
 
 	.time-option.selected {
