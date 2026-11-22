@@ -168,7 +168,7 @@ export type {
 } from "./i18n/labels.js"
 
 // Actions
-export {portal} from "./actions/portal.js"
+export {portal, portalHost} from "./actions/portal.js"
 export type {PortalTarget} from "./actions/portal.js"
 
 // Side-effect: register window.components['svelte-fluentui']
