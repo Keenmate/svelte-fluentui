@@ -109,3 +109,14 @@ for (const host of hosts) {
 		})
 	})
 }
+
+test("a row of inline chips doesn't make the field taller than an empty one (32px)", async ({page}) => {
+	await page.goto("/test/chips-keyboard")
+	for (const id of ["ac-input", "cb"]) {
+		const control = page.locator(`.fluent-field-control:has(#${id})`)
+		await expect(control.locator(".fluent-chip")).toHaveCount(3)
+		const chips = await control.locator(".fluent-chip").evaluateAll((els) => new Set(els.map((el) => Math.round(el.getBoundingClientRect().top))).size)
+		expect(chips, `${id}: chips on one row`).toBe(1)
+		expect((await control.boundingBox())!.height, id).toBeCloseTo(32, 0)
+	}
+})

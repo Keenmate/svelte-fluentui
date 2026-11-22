@@ -1102,7 +1102,9 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	 * so it stays single-line and skips this.) */
 	.combobox-control.multiple.tags-inline .combobox-main {
 		flex-wrap: wrap;
-		padding-block: calc(var(--design-unit, 4) * 1px);
+		/* One unit minus 1px: a row of chips (23.6px: 14px × 1.4 + 2 × 2px) must fit the
+	   32px control (− 2 × 1px border − 2 × 3px = 24px), or chips make the field taller than an empty one. */
+		padding-block: calc(var(--design-unit, 4) * 1px - 1px);
 	}
 
 	/* In multi mode the input is just a filter — let it shrink but keep a usable

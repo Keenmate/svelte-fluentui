@@ -997,8 +997,10 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		/* Vertical padding lives here (not on the container) so wrapped chip rows get
 		   breathing room off the top/bottom edges, while single-row height still lands
 		   on the control height — padding the container instead would clash with the
-		   fixed control-height end-slot square and grow the single-row control. */
-		padding-block: calc(var(--design-unit, 4) * 1px);
+		   fixed control-height end-slot square and grow the single-row control.
+		   One unit minus 1px: a row of chips (23.6px: 14px × 1.4 + 2 × 2px) must fit the
+	   32px control (− 2 × 1px border − 2 × 3px = 24px), or chips make the field taller than an empty one. */
+		padding-block: calc(var(--design-unit, 4) * 1px - 1px);
 	}
 
 	/* ===== Input Container: Inline Mode (mimics fluent-text-field) ===== */
