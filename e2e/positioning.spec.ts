@@ -98,7 +98,7 @@ test("DatePicker popup is capped to the viewport and scrolls", async ({page}) =>
 	expect(await popup.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true)
 })
 
-test("field dropdowns sit 8px (designUnit × 2) from the field; --fluent-popup-offset on an ancestor overrides it", async ({page}) => {
+test("field dropdowns sit 4px (one designUnit) from the field; --fluent-popup-offset on an ancestor overrides it", async ({page}) => {
 	const gap = async (id: string) => {
 		const {trigger, list} = await openSelect(page, id)
 		await expect.poll(async () => (await list.evaluate((el) => getComputedStyle(el).opacity))).toBe("1")
@@ -108,8 +108,8 @@ test("field dropdowns sit 8px (designUnit × 2) from the field; --fluent-popup-o
 		await expect(list).toHaveCount(0)
 		return l.y >= t.y ? l.y - (t.y + t.height) : t.y - (l.y + l.height)
 	}
-	expect(Math.abs((await gap("top-select")) - 8)).toBeLessThan(0.5)
-	expect(Math.abs((await gap("bottom-select")) - 8)).toBeLessThan(0.5)
+	expect(Math.abs((await gap("top-select")) - 4)).toBeLessThan(0.5)
+	expect(Math.abs((await gap("bottom-select")) - 4)).toBeLessThan(0.5)
 	await page.locator("#top-select").evaluate((el) => el.style.setProperty("--fluent-popup-offset", "2px"))
 	expect(Math.abs((await gap("top-select")) - 2)).toBeLessThan(0.5)
 })

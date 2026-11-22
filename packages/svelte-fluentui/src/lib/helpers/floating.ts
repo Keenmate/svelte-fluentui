@@ -72,9 +72,9 @@ const AVAILABLE_WIDTH = "--fluent-popup-available-width"
 const ANCHOR_WIDTH = "--fluent-popup-anchor-width"
 const OFFSET = "--fluent-popup-offset"
 
-/** Default gap below a form field (Select, Combobox, Autocomplete, DatePicker, TimePicker) — FluentUI's
- * `<fluent-select>` listbox sits `designUnit * 2` (8px) from its control. */
-export const FIELD_POPUP_OFFSET = "calc(var(--design-unit, 4) * 2px)"
+/** Default gap below a form field (Select, Combobox, Autocomplete, DatePicker, TimePicker): one design
+ * unit (4px), like MenuButton. (`<fluent-select>` uses `designUnit * 2`; 8px looked too loose.) */
+export const FIELD_POPUP_OFFSET = "calc(var(--design-unit, 4) * 1px)"
 
 // Registered so getComputedStyle resolves `calc(var(--design-unit) * 2px)` to px; `auto` = not set.
 if (typeof CSS !== "undefined" && "registerProperty" in CSS) {

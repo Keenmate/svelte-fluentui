@@ -79,7 +79,7 @@ opening, ignoring the first two frames (browser scrolling a focused field into v
   + 1px below the control (tooltip 12px; React v9 Combobox 2px from memory). Field popups now default to
   `FIELD_POPUP_OFFSET` = `calc(var(--design-unit, 4) * 2px)`; `--fluent-popup-offset` (registered
   `<length> | auto`, read from the *anchor* since popups are portalled) overrides every popup but Tooltip.
-  User is testing the 8px look.
+  User tried 8px, chose 4px: `FIELD_POPUP_OFFSET` = `calc(var(--design-unit, 4) * 1px)`.
 - 2026-11-22: all five phases done. Beyond the plan: ContextMenu and the InputFile popover moved to the
   floating layer + flyout shadow (Q5 had missed them), MenuButton / QuickGrid menus to the flyout shadow,
   InputFile hovers to the stealth fill. `opacity: 0` (not `visibility`) until placed so focus can move in
