@@ -174,6 +174,7 @@
 		{name: "autocomplete", type: "string", default: "undefined", description: "Browser autocomplete behavior"},
 		{name: "multiple", type: "boolean", default: "undefined", description: "Explicitly enable multi-select mode"},
 		{name: "maxSelectionCount", type: "number", default: "undefined", description: "Max selections allowed (1 = single-select)"},
+		{name: "minSelectionCount", type: "number", default: "undefined", description: "Multiple mode: fewest values a filled-in field accepts: 1 … min − 1 picked makes the form invalid ('Select at least N items.', labels.minSelectionRequired); none picked is valid unless required."},
 		{name: "maxResultCount", type: "number", default: "9", description: "Max options shown in dropdown"},
 		{name: "minSearchLength", type: "number", default: "undefined", description: "Minimum typed characters before search runs. Below the threshold, searchCallback is NOT called and the dropdown stays closed."},
 		{name: "searchBehavior", type: '"normalized" | "case-insensitive" | "exact"', default: '"normalized"', description: "How the local search compares text: normalized ignores case and diacritics (zurich finds Zürich), case-insensitive ignores case only, exact matches both. No effect on searchCallback."},

@@ -28,6 +28,8 @@ export const en = {
 	"svelteFluentUI.autocomplete.removeTooltip": "Remove {item}",
 	"svelteFluentUI.autocomplete.maxSelectionReached":
 		"{max, plural, one {Maximum # selection reached} other {Maximum # selections reached}}",
+	"svelteFluentUI.autocomplete.minSelectionRequired":
+		"{min, plural, one {Select at least # item.} other {Select at least # items.}}",
 
 	// BadgeGroup
 	"svelteFluentUI.badgeGroup.showMore": "+{count} more",
@@ -52,6 +54,8 @@ export const en = {
 	"svelteFluentUI.combobox.removeTooltip": "Remove {item}",
 	"svelteFluentUI.combobox.clearAriaLabel": "Clear selection",
 	"svelteFluentUI.combobox.clearTooltip": "Clear selection",
+	"svelteFluentUI.combobox.minSelectionRequired":
+		"{min, plural, one {Select at least # item.} other {Select at least # items.}}",
 
 	// CommandPalette
 	"svelteFluentUI.commandPalette.dialogAriaLabel": "Command palette",
@@ -194,6 +198,8 @@ export const en = {
 
 	// Select
 	"svelteFluentUI.select.clearTooltip": "Clear selection",
+	"svelteFluentUI.select.minSelectionRequired":
+		"{min, plural, one {Select at least # item.} other {Select at least # items.}}",
 
 	// SiteSettings
 	"svelteFluentUI.siteSettings.heading": "Site settings",

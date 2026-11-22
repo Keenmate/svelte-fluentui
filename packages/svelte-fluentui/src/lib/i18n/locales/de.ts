@@ -28,6 +28,8 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 	"svelteFluentUI.autocomplete.removeTooltip": "{item} entfernen",
 	"svelteFluentUI.autocomplete.maxSelectionReached":
 		"{max, plural, one {Maximal # Auswahl erreicht} other {Maximal # Auswahlen erreicht}}",
+	"svelteFluentUI.autocomplete.minSelectionRequired":
+		"{min, plural, one {Wählen Sie mindestens # Eintrag aus.} other {Wählen Sie mindestens # Einträge aus.}}",
 
 	// BadgeGroup
 	"svelteFluentUI.badgeGroup.showMore": "+{count} weitere",
@@ -52,6 +54,8 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 	"svelteFluentUI.combobox.removeTooltip": "{item} entfernen",
 	"svelteFluentUI.combobox.clearAriaLabel": "Auswahl löschen",
 	"svelteFluentUI.combobox.clearTooltip": "Auswahl löschen",
+	"svelteFluentUI.combobox.minSelectionRequired":
+		"{min, plural, one {Wählen Sie mindestens # Eintrag aus.} other {Wählen Sie mindestens # Einträge aus.}}",
 
 	// CommandPalette
 	"svelteFluentUI.commandPalette.dialogAriaLabel": "Befehlspalette",
@@ -194,6 +198,8 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 
 	// Select
 	"svelteFluentUI.select.clearTooltip": "Auswahl löschen",
+	"svelteFluentUI.select.minSelectionRequired":
+		"{min, plural, one {Wählen Sie mindestens # Eintrag aus.} other {Wählen Sie mindestens # Einträge aus.}}",
 
 	// SiteSettings
 	"svelteFluentUI.siteSettings.heading": "Website-Einstellungen",

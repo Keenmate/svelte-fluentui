@@ -57,6 +57,10 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		autocomplete?: string
 		/** Max number of selected values; `1` implies single-select unless `multiple` is set. */
 		maxSelectionCount?: number
+		/** Multiple mode: the fewest values a filled-in field accepts: with 1 … `minSelectionCount` − 1 picked the
+		 * field is invalid for form validation ("Select at least N items", `labels.minSelectionRequired`).
+		 * None picked is valid unless `required`. */
+		minSelectionCount?: number
 		/** Max options shown in the dropdown. Default: 9. */
 		maxResultCount?: number
 		/** Min characters typed before searching. */
@@ -161,6 +165,7 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 		appearance = undefined,
 		autocomplete = undefined,
 		maxSelectionCount = undefined,
+		minSelectionCount = undefined,
 		maxResultCount = 9,
 		minSearchLength = undefined,
 		showOverlayOnEmptyResults = true,
@@ -623,6 +628,16 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 	const activeOptionId = $derived(
 		isOpen && nav.index >= 0 && nav.index < filteredOptions.length ? optionId(nav.index) : null
 	)
+
+	// Form validation: 1 … minSelectionCount − 1 picked is invalid (none picked is `required`'s business).
+	const underMinSelection = $derived(
+		effectiveMultiple && !!minSelectionCount && selectedOptions.length > 0 && selectedOptions.length < minSelectionCount
+	)
+	$effect(() => {
+		inputElement?.setCustomValidity(
+			underMinSelection ? t("minSelectionRequired", {min: minSelectionCount as number}) : ""
+		)
+	})
 
 	// Check if max selections reached
 	let isMaxReached = $derived(maxSelectionCount !== undefined && selectedOptions.length >= maxSelectionCount)

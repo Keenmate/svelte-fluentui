@@ -130,6 +130,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		tagsPosition?: "inline" | "top" | "bottom"
 		/** Minimum typed characters before the dropdown opens / filters (and `onSearch` fires). Default: no minimum. */
 		minSearchLength?: number
+		/** `multiple`: the fewest values a filled-in field accepts: with 1 … `minSelectionCount` − 1 picked the
+		 * field is invalid for form validation ("Select at least N items", `labels.minSelectionRequired`).
+		 * None picked is valid unless `required`. */
+		minSelectionCount?: number
 		/** Text shown inside the dropdown when the filter matches no options. Default: `labels.noMatches` ("No results found"). */
 		emptyText?: string
 		/** Custom content shown when the filter matches no options; overrides `emptyText`. */
@@ -214,6 +218,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		closeOnSelect = undefined,
 		tagsPosition = "inline",
 		minSearchLength = undefined,
+		minSelectionCount = undefined,
 		emptyText = undefined,
 		empty = undefined,
 		onSearch = undefined,
@@ -321,6 +326,17 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	let searchPending = $state(false)
 
 	const t = useTranslations("combobox", () => labelsProp)
+
+	// Form validation: 1 … minSelectionCount − 1 picked is invalid (none picked is `required`'s business).
+	const underMinSelection = $derived(
+		multiple &&
+			!!minSelectionCount &&
+			selectionState.value.length > 0 &&
+			selectionState.value.length < minSelectionCount
+	)
+	$effect(() => {
+		inputEl?.setCustomValidity(underMinSelection ? t("minSelectionRequired", {min: minSelectionCount as number}) : "")
+	})
 
 	let inputEl: HTMLInputElement | undefined = $state()
 	let mainEl: HTMLElement | undefined = $state()
@@ -918,7 +934,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				placeholder={effectivePlaceholder}
 				{disabled}
 				{readonly}
-				required={multiple ? false : required}
+				required={required && (!multiple || selectionState.value.length === 0)}
 				{autofocus}
 				autocomplete="off"
 				oninput={handleInput}
@@ -1022,7 +1038,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 				<input type="hidden" {name} value={val} />
 			{/each}
 		{:else}
-			<input type="hidden" {name} {required} value={selectedSingle} />
+			<input type="hidden" {name} value={selectedSingle} />
 		{/if}
 	{/if}
 </div>

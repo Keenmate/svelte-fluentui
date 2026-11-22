@@ -83,8 +83,12 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		readonly?: boolean
 		/** Visual style of the trigger / listbox. Default: `outline`. */
 		appearance?: "outline" | "filled"
-		/** Adds `*` to the label and `required` to the hidden form input. Default: `false`. */
+		/** Adds `*` to the label; an empty field fails form validation. Default: `false`. */
 		required?: boolean
+		/** Multiple mode: the fewest values a filled-in field accepts: with 1 … `minSelectionCount` − 1 picked the
+		 * field is invalid for form validation ("Select at least N items", `labels.minSelectionRequired`).
+		 * None picked is valid unless `required`. */
+		minSelectionCount?: number
 		/** Single mode: focus the trigger on mount. Default: `false`. */
 		autofocus?: boolean
 		/** Single mode: renders a hidden `<input name>` so the value takes part in form submission. */
@@ -159,6 +163,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		readonly = false,
 		appearance = "outline",
 		required = false,
+		minSelectionCount = undefined,
 		autofocus = false,
 		name = undefined,
 		value = $bindable(),
@@ -367,6 +372,21 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	}
 
 	const t = useTranslations("select", () => labelsProp)
+
+	// Form validation. Neither the trigger (a `type="button"` button) nor the inline listbox take part in
+	// constraint validation, so an invisible input carries `required` and `minSelectionCount`
+	// (1 … min − 1 picked is invalid; none picked is `required`'s business).
+	let validityEl: HTMLInputElement | undefined = $state()
+	// "" is "nothing selected" (single mode writes it back to `value`), like a native required <select>.
+	const selectedCount = $derived(selectionState.value.filter((v) => v !== "").length)
+	const underMinSelection = $derived(
+		multiple && !!minSelectionCount && selectedCount > 0 && selectedCount < minSelectionCount
+	)
+	$effect(() => {
+		validityEl?.setCustomValidity(
+			underMinSelection ? t("minSelectionRequired", {min: minSelectionCount as number}) : ""
+		)
+	})
 
 	// `showClear`: the × (or Delete / Backspace on the trigger) empties the value.
 	const canClear = $derived(showClear && !disabled && !readonly && selectedSingle !== "")
@@ -747,9 +767,23 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 
 		<!-- Hidden input to participate in HTML form submission. -->
 		{#if name}
-			<input type="hidden" {name} {required} value={selectedSingle} />
+			<input type="hidden" {name} value={selectedSingle} />
 		{/if}
 	{/if}
+
+	<!-- Validation stand-in (see the script): out of the Tab order and invisible; when the browser
+	     focuses it to report the error, focus moves on to the real control. -->
+	<input
+		bind:this={validityEl}
+		class="select-validity"
+		tabindex="-1"
+		aria-hidden="true"
+		{disabled}
+		{readonly}
+		required={required && selectedCount === 0}
+		value={selectedCount ? String(selectedCount) : ""}
+		onfocus={() => (multiple ? inlineListEl : triggerEl)?.focus()}
+	/>
 </div>
 
 <style>
@@ -758,6 +792,19 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	 * inner elements directly. */
 	.select-root {
 		display: contents;
+	}
+
+	/* Out of flow at its static position (just after the control), so the browser's
+	 * validation bubble points at the field. */
+	.select-validity {
+		position: absolute;
+		inline-size: 1px;
+		block-size: 1px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		opacity: 0;
+		pointer-events: none;
 	}
 
 	/* ===== Trigger button (single mode) ===== */
