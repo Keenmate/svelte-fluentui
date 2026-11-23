@@ -350,10 +350,10 @@
 
 	@media (max-width: 768px) {
 		.fluent-toast-container {
-			inset-inline: $spacing-md !important;
-			margin-inline: 0 !important;
-			inline-size: auto !important;
-			transform: none !important;
+			inset-inline: $spacing-md;
+			margin-inline: 0;
+			inline-size: auto;
+			transform: none;
 
 			&--top-end,
 			&--top-start,

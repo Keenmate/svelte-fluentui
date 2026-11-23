@@ -2809,8 +2809,12 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 			width: 32px;
 			min-width: 32px;
 			max-width: 32px;
-			padding: 0 !important;
 			text-align: center;
+		}
+
+		/* ID-level specificity via :not(#_) instead of an important flag — wins over the class rules here, yet an app's own CSS can still override it */
+		.actions-column:not(#_) {
+			padding: 0;
 		}
 
 		/* Toolbar trigger button (for button mode) */
@@ -2856,13 +2860,15 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 		}
 
 		/* Validation error styles */
-		.validation-error {
-			background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12)) !important;
+		/* ID-level specificity via :not(#_) instead of an important flag — wins over the class rules here, yet an app's own CSS can still override it */
+		.validation-error:not(#_) {
+			background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
 		}
 
-		.validation-error::after {
-			border-color: var(--fluent-color-danger-foreground, #d13438) !important;
-			border-style: solid !important;
+		/* ID-level specificity via :not(#_) instead of an important flag — wins over the class rules here, yet an app's own CSS can still override it */
+		.validation-error:not(#_)::after {
+			border-color: var(--fluent-color-danger-foreground, #d13438);
+			border-style: solid;
 		}
 
 		.validation-error-message {
@@ -2931,9 +2937,13 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 
 		/* Editing cell - prominent background */
 		.quickgrid .editable-cell.editing {
-			background: var(--fluent-quickgrid-editing-bg, var(--neutral-layer-1, #ffffff)) !important;
 			outline: 2px solid var(--fluent-quickgrid-editing-stroke, var(--accent-fill-rest, #0078d4));
 			outline-offset: -2px;
+		}
+
+		/* ID-level specificity via :not(#_) instead of an important flag — wins over the class rules here, yet an app's own CSS can still override it */
+		.quickgrid .editable-cell.editing:not(#_) {
+			background: var(--fluent-quickgrid-editing-bg, var(--neutral-layer-1, #ffffff));
 		}
 
 		/* Editing cell styles - seamless input */

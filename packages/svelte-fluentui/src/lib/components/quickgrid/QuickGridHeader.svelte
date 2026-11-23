@@ -274,8 +274,12 @@
 			width: 32px;
 			min-width: 32px;
 			max-width: 32px;
-			padding: 0 !important;
 			text-align: center;
+		}
+
+		/* ID-level specificity via :not(#_) instead of an important flag — wins over the class rules here, yet an app's own CSS can still override it */
+		.actions-column:not(#_) {
+			padding: 0;
 		}
 
 		thead .actions-column {

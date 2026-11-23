@@ -254,10 +254,12 @@ tests skipped; both checks clean):
 10. Housekeeping: delete `C:\tmp_qg` (blocked for me), old `/tmp/gce*`, `/tmp/qg*`, repo-root
     `probe*.tmp.mjs` / `shot.tmp.mjs` (Nov 11, git-excluded); `.claude/commands/publish.md` got a
     release-notes gate (local only — `.claude` is gitignored); its Section 7 still says "no e2e harness".
+    → 2026-11-23: done (user deleted `C:\tmp_qg`; scratch files + their `.git/info/exclude` lines removed;
+    publish.md Section 7 now runs `npm run test:e2e`).
 11. Push (`prod` is 31+ ahead) and version bump to 2.0.0-rc01 via /publish when ready.
     → 2026-11-22: everything pushed (origin/prod = b2dc331). Version bump still pending (only when asked).
 
-**Status 2026-11-22:** questions 1–9 done (6 → 09-positioning-plan.md, all phases done). Next: **10 (housekeeping)**. Cascade layers done 2026-11-23 (whole library, see
+**Status 2026-11-22:** questions 1–10 done (6 → 09-positioning-plan.md, all phases done). Cascade layers + `!important` clean-up done 2026-11-23 (whole library, see
 `08-css-layers-reboot.md` Status). Also open: German translations want a
 native-speaker review. Full e2e: 435 passed / 2 skipped. Flaky (pre-existing, ~3 in 20 with
 `--repeat-each`): popup-tabs.spec.ts "active indicator sits under the active tab" (ltr / rtl).

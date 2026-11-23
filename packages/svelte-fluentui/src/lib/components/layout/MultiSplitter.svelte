@@ -382,8 +382,9 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 		:global(.fluent-multi-splitter-gutter:focus-visible) {
 			box-shadow: inset 0 0 0 2px var(--accent-fill-rest, #0078d4);
 		}
-		:global(.fluent-multi-splitter-gutter--active) {
-			background-color: var(--accent-fill-rest, #0078d4) !important;
+		/* ID-level specificity via :not(#_) instead of an important flag — wins over the class rules here, yet an app's own CSS can still override it */
+		:global(.fluent-multi-splitter-gutter--active:not(#_)) {
+			background-color: var(--accent-fill-rest, #0078d4);
 		}
 		:global(.fluent-multi-splitter-gutter--active::before) {
 			background-color: var(--neutral-foreground-on-accent-rest, #ffffff);

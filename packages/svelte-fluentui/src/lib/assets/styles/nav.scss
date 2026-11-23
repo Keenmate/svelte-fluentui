@@ -18,12 +18,12 @@
 	}
 
 	.fluent-nav-group.disabled {
-		color: var(--neutral-fill-secondary-rest) !important;
+		color: var(--neutral-fill-secondary-rest);
 		pointer-events: none;
 	}
 
 	.fluent-nav-group.disabled .fluent-nav-icon {
-		fill: var(--neutral-stroke-rest) !important;
+		fill: var(--neutral-stroke-rest);
 	}
 
 	// Group expand/collapse chevron
@@ -69,7 +69,7 @@
 	}
 
 	.fluent-nav-link.disabled:not(fluent-menu-item, a) {
-		color: var(--neutral-foreground-rest) !important;
+		color: var(--neutral-foreground-rest);
 		opacity: var(--disabled-opacity);
 		cursor: not-allowed;
 		pointer-events: none;
@@ -80,7 +80,7 @@
 	}
 
 	.fluent-nav-link.disabled .fluent-nav-icon {
-		fill: var(--neutral-foreground-rest) !important;
+		fill: var(--neutral-foreground-rest);
 		opacity: var(--disabled-opacity);
 	}
 
@@ -196,17 +196,17 @@
 	.fluent-nav-item {
 		// Override default FluentUI background and apply hover to positioning-region only
 		.positioning-region {
-			background: transparent !important;
+			background: transparent;
 			transition: background-color 0.2s ease;
 
 			&:hover:not(:has(.disabled)) {
 				cursor: pointer;
-				background: var(--neutral-fill-secondary-hover) !important;
+				background: var(--neutral-fill-secondary-hover);
 			}
 		}
 
 		&.active .positioning-region {
-			background: var(--neutral-fill-secondary-rest) !important;
+			background: var(--neutral-fill-secondary-rest);
 		}
 
 		&.disabled {

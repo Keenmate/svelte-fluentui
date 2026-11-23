@@ -142,9 +142,16 @@ For every substantive commit or uncommitted change, verify the WIP CHANGELOG sec
 
 ### 7. Run tests [per-repo]
 
-This repo has **no e2e or unit-test harness**. The only programmatic gate is `publint`, which runs inside `npm run package` (Section 8). There is no separate test step to run here.
+Playwright e2e suite in `e2e/` (fixtures under `docs/src/routes/test/`), run from the repo root:
 
-If you have substantive `src/` changes you want to hand-verify, do it in the `docs/` SvelteKit app — but that's an out-of-band check the user owns, not a step the publish flow blocks on.
+```bash
+npm run test:e2e        # = playwright test (chromium, ~4 min, ~440 tests)
+```
+
+It reuses the dev server on `localhost:19100` when one is running (`make dev`), otherwise starts `npm run dev` itself.
+Gate: everything passes except the known flaky `popup-tabs.spec.ts` "active indicator…" tests (fail a few times
+in 20 on unchanged code — re-run that file alone before treating a failure as real). Report the counts
+(passed / skipped / failed) in the release summary. `publint` still runs inside `npm run package` (Section 8).
 
 ### 8. Build the package [per-repo]
 

@@ -88,6 +88,11 @@ other side).
     (native range inputs 2px shorter without the border, demo buttons now `Button`) plus the known noisy
     pages; full e2e 432 passed / 2 skipped / 3 failed — all in popup-tabs indicator tests, which fail more
     often on the pre-layer code (8/30 vs 4/30). New `e2e/css-layers.spec.ts`.
-  - Left: 13 `!important` in `nav.scss` / `_toast.scss` / `theme.scss` (internal states: disabled nav,
-    mobile toast, theme-switch transitions) — inside a layer they beat an app's `!important`; replace
-    with specificity when someone needs to override them.
+  - `!important` (same day, follow-up): 19 in source, not 13 — the first count missed the components.
+    Removed: nav.scss (7) and _toast.scss (4) — they only fought earlier rules of the same file, order /
+    specificity already wins; QuickGrid (5), QuickGridHeader (1), MultiSplitter (1) → the declarations
+    moved into a separate `:not(#_)` rule (ID-level specificity, out-ranks the class rules like the flag
+    did; `#\#` breaks the Svelte CSS parser). Computed styles probed before / after in every state
+    (disabled nav, hover / active region, 6 toast positions at 600px, editing / invalid cell, actions
+    column, dragged gutter): identical. Kept: theme switch (2), reboot `[hidden]` + datalist indicator,
+    Option `[data-filtered-out]` — css-layers.spec.ts fails on any other `!important` in library CSS.
