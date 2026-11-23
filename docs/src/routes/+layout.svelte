@@ -411,10 +411,10 @@
 	<!-- Footer -->
 	<Footer>
 		{#snippet start()}
-			<span>© 2025–2026 KeenMate</span>
+			<span>© 2025–2026 <a href="https://keenmate.com" target="_blank" rel="noopener noreferrer">Keenmate s.r.o.</a></span>
 			<span class="docs-footer-sep" aria-hidden="true">·</span>
 			<a
-				href="https://github.com/KeenMate/svelte-fluentui/blob/master/LICENSE"
+				href="https://github.com/KeenMate/svelte-fluentui/blob/prod/LICENSE"
 				target="_blank"
 				rel="noopener noreferrer"
 			>MIT</a>

@@ -74,11 +74,22 @@ Wrapper for `<fluent-radio-group>`: holds the selected value of its `<Radio>` ch
 		...rest
 	}: Props = $props()
 
+	// A `<Radio checked>` during the first render seeds `value` (a given `value` wins; the first one
+	// does); later mounts are ignored.
+	// svelte-ignore state_referenced_locally
+	let preselecting = !value
+	$effect(() => {
+		preselecting = false
+	})
+
 	const ctx = $state({
 		get value() {
 			return value
 		},
-		setValue
+		setValue,
+		preselect(v: string) {
+			if (preselecting && !value && v) value = v
+		}
 	})
 
 	radioGroupContext.set(ctx)

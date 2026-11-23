@@ -54,6 +54,8 @@ export const en = {
 	"svelteFluentUI.combobox.removeTooltip": "Remove {item}",
 	"svelteFluentUI.combobox.clearAriaLabel": "Clear selection",
 	"svelteFluentUI.combobox.clearTooltip": "Clear selection",
+	"svelteFluentUI.combobox.maxSelectionReached":
+		"{max, plural, one {Maximum # selection reached} other {Maximum # selections reached}}",
 	"svelteFluentUI.combobox.minSelectionRequired":
 		"{min, plural, one {Select at least # item.} other {Select at least # items.}}",
 
@@ -198,6 +200,8 @@ export const en = {
 
 	// Select
 	"svelteFluentUI.select.clearTooltip": "Clear selection",
+	"svelteFluentUI.select.maxSelectionReached":
+		"{max, plural, one {Maximum # selection reached} other {Maximum # selections reached}}",
 	"svelteFluentUI.select.minSelectionRequired":
 		"{min, plural, one {Select at least # item.} other {Select at least # items.}}",
 

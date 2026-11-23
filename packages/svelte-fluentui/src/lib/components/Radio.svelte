@@ -39,7 +39,8 @@ Wrapper for `<fluent-radio>`. Inside a `RadioGroup` it reads and sets the group'
 		disabled?: boolean
 		/** Marks the radio as required (`required` attribute). */
 		required?: boolean
-		/** Force the checked state (`checked` attribute). Default: derived from the parent `RadioGroup` value. */
+		/** Initially checked: inside a `RadioGroup` it seeds the group's `value` on first render (a given
+		 * `value` wins), then the group decides. Standalone, the `checked` attribute. */
 		checked?: boolean
 		/** Focus the radio on mount (`autofocus` attribute). */
 		autofocus?: boolean
@@ -76,8 +77,11 @@ Wrapper for `<fluent-radio>`. Inside a `RadioGroup` it reads and sets the group'
 
 	const ctx = radioGroupContext.get()
 
-	// Determine if checked - explicit prop takes precedence over context
-	const isChecked = $derived(checked !== undefined ? checked : ctx?.value === value)
+	// svelte-ignore state_referenced_locally
+	if (checked) ctx?.preselect?.(value)
+
+	// Inside a RadioGroup its value decides; standalone, `checked`.
+	const isChecked = $derived(ctx ? ctx.value === value : !!checked)
 
 	function handleOnClick(ev: MouseEvent) {
 		onclick?.(ev)

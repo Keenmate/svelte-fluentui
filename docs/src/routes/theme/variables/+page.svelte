@@ -265,6 +265,60 @@
 		}
 	]
 
+	// Semantic palette (fluent-blazor-compat.scss). Each colour has -contrast / -emphasis / -tint;
+	// the four status colours also have -foreground.
+	const palette = [
+		{name: "primary", variants: "-contrast, -emphasis, -tint", description: "Theme accent (FluentUI --accent-fill-rest), follows the accent setting"},
+		{name: "secondary", variants: "-contrast, -emphasis, -tint", description: "Neutral secondary fill"},
+		{name: "success", variants: "-contrast, -emphasis, -tint, -foreground", description: "Positive status"},
+		{name: "warning", variants: "-contrast, -emphasis, -tint, -foreground", description: "Caution status"},
+		{name: "danger", variants: "-contrast, -emphasis, -tint, -foreground", description: "Error status: validation messages, required asterisks, invalid borders, danger menu items"},
+		{name: "info", variants: "-contrast, -emphasis, -tint, -foreground", description: "Informational status"},
+		{name: "severe", variants: "-contrast, -emphasis, -tint", description: "Between warning and danger"},
+		{name: "light", variants: "-contrast, -emphasis, -tint", description: "Light neutral"},
+		{name: "dark", variants: "-contrast, -emphasis, -tint", description: "Dark neutral"},
+		{name: "subtle", variants: "-contrast, -emphasis, -tint", description: "Low-key neutral"},
+		{name: "brand", variants: "-contrast, -emphasis, -tint", description: "Fluent badge name, reads primary unless overridden"},
+		{name: "important", variants: "-contrast, -emphasis, -tint", description: "Fluent badge name, reads dark unless overridden"},
+		{name: "informative", variants: "-contrast, -emphasis, -tint", description: "Fluent badge name, reads light unless overridden"}
+	].map((c) => ({...c, name: `--fluent-color-${c.name}`}))
+
+	const paletteColumns = [
+		{field: "name", title: "Colour", sortable: true, filterable: true},
+		{field: "variants", title: "Variants"},
+		{field: "description", title: "Use"}
+	]
+
+	const zIndex = [
+		{name: "--fluent-z-raised", value: "1", description: "Above neighbours inside a component (sticky option-group headers, AppBar count badges)"},
+		{name: "--fluent-z-sticky", value: "1000", description: "Not used by the library; for your sticky headers (pure-css content)"},
+		{name: "--fluent-z-fixed", value: "4000", description: "Not used by the library; for your fixed bars (pure-css navbar)"},
+		{name: "--fluent-z-modal-backdrop", value: "6000", description: "Dialog and Panel overlay"},
+		{name: "--fluent-z-modal", value: "7000", description: "Dialog, Panel, CommandPalette"},
+		{name: "--fluent-z-dropdown", value: "7500", description: "QuickGrid floating row toolbar"},
+		{name: "--fluent-z-popover", value: "7600", description: "Every anchored popup: Select / Combobox / Autocomplete listboxes, pickers, menus, popovers"},
+		{name: "--fluent-z-toast", value: "8000", description: "Toasts"},
+		{name: "--fluent-z-tooltip", value: "9000", description: "Tooltips"},
+		{name: "--fluent-z-panel-pinned", value: "var(--fluent-z-raised)", description: "A pinned (non-overlay) Panel"}
+	]
+
+	const zIndexColumns = [
+		{field: "name", title: "CSS Variable"},
+		{field: "value", title: "Default"},
+		{field: "description", title: "Layer"}
+	]
+
+	// Component pages with their own "CSS custom properties" table
+	const componentVariables = [
+		{href: "/components/chip", label: "Chip", prefix: "--fluent-chip-*", note: "also the selection chips in Combobox and Autocomplete"},
+		{href: "/components/forms/select", label: "Option (Select, Combobox listboxes)", prefix: "--fluent-option-*", note: "selected-row fill"},
+		{href: "/components/badge", label: "Badge, Label, CompositeBadge", prefix: "--fluent-color-*", note: "how each colour role is used"},
+		{href: "/components/quickgrid", label: "QuickGrid", prefix: "--fluent-quickgrid-*", note: ""},
+		{href: "/components/navigation-layout/appbar", label: "AppBar", prefix: "--fluent-appbar-*", note: ""},
+		{href: "/components/navigation-layout/multisplitter", label: "MultiSplitter", prefix: "--fluent-multi-splitter-*", note: ""},
+		{href: "/components/navigation-layout/grid", label: "Grid", prefix: "--fluent-grid-breakpoint-*", note: "container-query breakpoints"}
+	]
+
 	const columns = [
 		{field: "name", title: "CSS Variable", sortable: true, filterable: true},
 		{field: "category", title: "Category", sortable: true, filterable: true},
@@ -276,7 +330,7 @@
 <Stack orientation="vertical" gap="1rem">
 	<Meta
 		title="CSS Variables"
-		description="Complete reference of CSS custom properties for theming Svelte FluentUI — backgrounds, text, borders, accents, navbar, sidebar, header, and footer."
+		description="Reference of CSS custom properties for theming Svelte FluentUI — theme variables, the --fluent-color-* palette, the --fluent-z-* z-index scale, and links to component variables."
 		keywords="svelte, fluentui, css variables, theme, theming, design tokens, customization"
 	/>
 
@@ -284,7 +338,8 @@
 
 	<Card>
 		<p>
-			This page documents all CSS custom properties available in the Svelte FluentUI theme system.
+			This page documents the CSS custom properties of the Svelte FluentUI theme system: the site-wide theme
+			variables, the colour palette and the z-index scale, with links to the component-specific ones.
 			These variables can be overridden per theme using the <code>data-theme</code> attribute.
 		</p>
 		<p>
@@ -306,6 +361,50 @@
 			pageable
 			pageSize={20}
 		/>
+	</Card>
+
+	<Card>
+		<h2>Colour palette</h2>
+		<p>
+			Status and badge colours for every component: Badge, Label, CompositeBadge, Alert, Toast, validation,
+			danger menu items, icons. Each colour is <code>--fluent-color-&lt;name&gt;</code> (solid fill) plus
+			<code>-contrast</code> (text on the fill), <code>-emphasis</code> (readable text / border colour),
+			<code>-tint</code> (faint fill) and, for the four status colours, <code>-foreground</code> (text on the
+			page, re-declared for dark mode). Override any of them in <code>:root</code> or
+			<code>[data-theme="dark"]</code>; a new pair <code>--fluent-color-x</code> /
+			<code>--fluent-color-x-contrast</code> is enough for <code>&lt;Badge color="x"&gt;</code>.
+		</p>
+		<QuickGrid items={palette} columns={paletteColumns} sortMode="single" striped />
+	</Card>
+
+	<Card>
+		<h2>Z-index scale</h2>
+		<p>
+			Every overlay takes its layer from this scale, so raising one value moves that whole layer. The ranges
+			match the Keenmate suite (pure-css / pure-admin: navbar 4000, panels 4500–5000, settings 10000, command
+			palette 10500), so the libraries layer correctly together.
+		</p>
+		<QuickGrid items={zIndex} columns={zIndexColumns} striped />
+	</Card>
+
+	<Card>
+		<h2>Component variables</h2>
+		<p>
+			Component-specific properties are documented on the component's page (the
+			<em>CSS custom properties</em> table):
+		</p>
+		<ul>
+			{#each componentVariables as c}
+				<li>
+					<a href={c.href}>{c.label}</a>: <code>{c.prefix}</code>{c.note ? ` (${c.note})` : ""}
+				</li>
+			{/each}
+		</ul>
+		<p>
+			Library CSS sits in cascade layers (<code>reset, variables, component, overrides</code>), so any unlayered rule
+			in your app wins, whatever its specificity. See
+			<a href="/getting-started">Getting started</a>.
+		</p>
 	</Card>
 
 	<Card>

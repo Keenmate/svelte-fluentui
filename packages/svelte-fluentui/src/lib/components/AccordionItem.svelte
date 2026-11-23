@@ -22,7 +22,7 @@ A single collapsible panel inside an `<Accordion>` (also works standalone via `b
 
 <script lang="ts">
 	import {accordionContext} from "../contexts.js"
-	import type {Snippet} from "svelte"
+	import {untrack, type Snippet} from "svelte"
 	import type {RestProps} from "../types/index.js"
 
 	type OwnProps = {
@@ -30,9 +30,9 @@ A single collapsible panel inside an `<Accordion>` (also works standalone via `b
 		id: string
 		/** Heading level for the role="heading" wrapper (accessibility). Default: 2. */
 		headingLevel?: string | number
-		/** Explicitly control expanded state; falls back to the parent value when
-		 * left `undefined`. Bindable: once set to `true`/`false` (or when the item
-		 * has no parent `<Accordion>`), user toggles write the new state back. */
+		/** Expanded state. Inside an `<Accordion>` the Accordion's `value` decides: `expanded` on the first
+		 * render opens the item (a given `value` wins), `bind:expanded` mirrors the state, and assigning it
+		 * later opens / closes the item through the Accordion. Standalone, the item's own state (bindable). */
 		expanded?: boolean
 		/** Disable the item: not togglable and skipped in keyboard navigation. */
 		disabled?: boolean
@@ -71,19 +71,34 @@ A single collapsible panel inside an `<Accordion>` (also works standalone via `b
 
 	const ctx = accordionContext.get()
 
-	// Explicit `expanded` prop wins; otherwise follow the parent's value state.
-	const isExpanded = $derived(expanded !== undefined ? expanded : (ctx?.isExpanded(id) ?? false))
+	// svelte-ignore state_referenced_locally
+	if (ctx && expanded) ctx.preselect?.(id)
+
+	// Inside an Accordion its value decides; standalone, `expanded`.
+	const isExpanded = $derived(ctx ? ctx.isExpanded(id) : !!expanded)
+
+	// Inside an Accordion: mirror its state into `bind:expanded` …
+	$effect(() => {
+		const open = isExpanded
+		untrack(() => {
+			if (ctx && expanded !== undefined && expanded !== open) expanded = open
+		})
+	})
+	// … and route a later `expanded` assignment through it.
+	$effect(() => {
+		const want = expanded
+		untrack(() => {
+			if (ctx && want !== undefined && want !== ctx.isExpanded(id)) ctx.setExpanded?.(id, want)
+		})
+	})
 	const toggleStart = $derived(ctx?.togglePosition === "start")
 
 	function handleClick(ev: MouseEvent) {
 		if (disabled) return
 		const next = !isExpanded
-		// Controlled (explicit `expanded`) or standalone (no parent): write the
-		// new state back so `bind:expanded` and uncontrolled standalone items work.
-		// Parent-driven items leave `expanded` undefined so they keep following
-		// the Accordion value.
-		if (expanded !== undefined || !ctx) expanded = next
-		ctx?.toggle(id)
+		// Standalone: the item's own state. Inside an Accordion: its value (mirrored into `expanded`).
+		if (ctx) ctx.toggle(id)
+		else expanded = next
 		onExpandedChange?.({expanded: next, sourceEvent: ev})
 	}
 

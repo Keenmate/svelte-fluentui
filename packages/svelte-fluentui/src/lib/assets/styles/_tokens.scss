@@ -75,16 +75,19 @@ $shadow-lg:
 	0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132),
 	0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
 
-// Z-index scale
+// Z-index scale: the Keenmate suite ranges (pure-css variables/_system.scss), so svelte-fluentui
+// overlays interleave with a pure-admin shell: content 1000 · sidebar 1040/1050 · navbar 4000 ·
+// [pure-admin panels 4500/5000] · modal backdrop 6000 · modal 7000 · dropdown 7500 · popover 7600 ·
+// toast 8000 · tooltip 9000 · [pure-admin settings 10000 · command palette 10500].
 $z-index-raised: 1;
-$z-index-dropdown: 1000;
-$z-index-sticky: 1020;
-$z-index-fixed: 1030;
-$z-index-modal-backdrop: 1040;
-$z-index-modal: 1050;
-$z-index-popover: 1060;
-$z-index-tooltip: 1070;
-$z-index-toast: 1080;
+$z-index-sticky: 1000;
+$z-index-fixed: 4000;
+$z-index-modal-backdrop: 6000;
+$z-index-modal: 7000;
+$z-index-dropdown: 7500;
+$z-index-popover: 7600;
+$z-index-toast: 8000;
+$z-index-tooltip: 9000;
 
 // Transition durations
 $transition-fast: 0.1s;

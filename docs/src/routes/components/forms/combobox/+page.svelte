@@ -209,6 +209,7 @@
 		{name: "disabled", type: "boolean", default: "false", description: "Disable the combobox"},
 		{name: "readonly", type: "boolean", default: "false", description: "Non-editable: the value shows but can't be changed (no typing, dropdown won't open, chips can't be removed). Unlike disabled, it stays focusable and un-dimmed."},
 		{name: "required", type: "boolean", default: "false", description: "Shows a * marker; an empty field makes the form invalid (in multiple mode: no value picked)"},
+		{name: "maxSelectionCount", type: "number", default: "undefined", description: "multiple: the most values the user can pick. At the limit the dropdown closes; reopened, unselected options are dimmed and can't be picked (deselecting still works) and a status line says so (labels.maxSelectionReached). A longer value set from code is kept."},
 		{name: "minSelectionCount", type: "number", default: "undefined", description: "multiple: fewest values a filled-in field accepts: 1 … min − 1 picked makes the form invalid ('Select at least N items.', labels.minSelectionRequired); none picked is valid unless required."},
 		{name: "open", type: "boolean", default: "false", description: "Dropdown open state"},
 		{name: "autofocus", type: "boolean", default: "false", description: "Auto focus on mount"},
@@ -314,8 +315,10 @@
 			</GridItem>
 		</Grid>
 
-		<h3>Required &amp; minimum selection</h3>
+		<h3>Required, minimum &amp; maximum selection</h3>
 		<p>
+			<code>maxSelectionCount</code> caps how many values the user can pick: the dropdown closes at the
+			limit, and reopened, the other options are dimmed and refuse picks until a chip is removed.
 			<code>minSelectionCount</code> makes a filled-in field invalid until enough values are picked: with
 			1 … min − 1 chosen the browser blocks the submit with "Select at least N items." (translated,
 			<code>labels.minSelectionRequired</code>). An empty field stays valid unless it is also
@@ -326,8 +329,8 @@
 			<GridItem>
 				<form onsubmit={(e) => { e.preventDefault(); minSelectionSubmitted = minSelectionValue.join(", ") }}>
 					<Stack orientation="vertical" gap="0.5rem">
-						<strong>minSelectionCount={"{2}"}</strong>
-						<Combobox id="min-selection" bind:value={minSelectionValue} options={songs} multiple minSelectionCount={2} label="Pick at least two songs" placeholder="Filter songs…" />
+						<strong>minSelectionCount={"{2}"} maxSelectionCount={"{3}"}</strong>
+						<Combobox id="min-selection" bind:value={minSelectionValue} options={songs} multiple minSelectionCount={2} maxSelectionCount={3} label="Pick two or three songs" placeholder="Filter songs…" />
 						<Button type="submit" appearance="accent">Submit</Button>
 						<small>Submitted: {minSelectionSubmitted || "—"}</small>
 					</Stack>

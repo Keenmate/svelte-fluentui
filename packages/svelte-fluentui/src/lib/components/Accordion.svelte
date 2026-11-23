@@ -71,15 +71,33 @@ Stack of collapsible panels; owns which `<AccordionItem>`s are expanded.
 		return Array.isArray(v) ? v.slice() : [v]
 	}
 
-	function toggle(id: string) {
+	function setExpanded(id: string, open: boolean) {
+		const ids = normalizeToIds(value)
+		if (ids.includes(id) === open) return
 		if (multiple) {
-			const ids = normalizeToIds(value)
-			const next = ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]
+			const next = open ? [...ids, id] : ids.filter((x) => x !== id)
 			value = next.length ? next : null
 		} else {
-			value = value === id ? null : id
+			value = open ? id : null
 		}
+		ctx.expandedIds = normalizeToIds(value)
+	}
+
+	function toggle(id: string) {
+		setExpanded(id, !normalizeToIds(value).includes(id))
 		onChange?.({value})
+	}
+
+	// An item's `expanded` during the first render seeds `value` (a given `value` wins; single mode:
+	// the first one); later item mounts are ignored.
+	// svelte-ignore state_referenced_locally
+	let preselecting = normalizeToIds(value).length === 0
+	$effect(() => {
+		preselecting = false
+	})
+	function preselect(id: string) {
+		if (!preselecting || (!multiple && normalizeToIds(value).length)) return
+		setExpanded(id, true)
 	}
 
 	// Roving focus between item headers (ArrowUp/Down wrap, Home/End jump).
@@ -126,6 +144,8 @@ Stack of collapsible panels; owns which `<AccordionItem>`s are expanded.
 			return this.expandedIds.includes(id)
 		},
 		toggle,
+		preselect,
+		setExpanded,
 		onHeaderKeydown
 	})
 	accordionContext.set(ctx)

@@ -50,7 +50,7 @@
 		{name: "labelTemplate", type: "Snippet", default: "undefined", description: "Custom label content"},
 		{name: "ariaLabel", type: "string", default: "undefined", description: "Accessible label for screen readers"},
 		{name: "name", type: "string", default: "undefined", description: "Name attribute (usually inherited from group)"},
-		{name: "checked", type: "boolean", default: "undefined", description: "Whether this radio is checked"},
+		{name: "checked", type: "boolean", default: "undefined", description: "Initially checked: inside a RadioGroup it seeds the group's value on first render (a given value wins), then the group decides. Standalone, the checked attribute."},
 		{name: "readonly", type: "boolean", default: "undefined", description: "Read-only state"},
 		{name: "disabled", type: "boolean", default: "undefined", description: "Disabled state"},
 		{name: "required", type: "boolean", default: "undefined", description: "Whether this radio is required"},

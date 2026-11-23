@@ -54,6 +54,8 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 	"svelteFluentUI.combobox.removeTooltip": "{item} entfernen",
 	"svelteFluentUI.combobox.clearAriaLabel": "Auswahl löschen",
 	"svelteFluentUI.combobox.clearTooltip": "Auswahl löschen",
+	"svelteFluentUI.combobox.maxSelectionReached":
+		"{max, plural, one {Maximal # Auswahl erreicht} other {Maximal # Auswahlen erreicht}}",
 	"svelteFluentUI.combobox.minSelectionRequired":
 		"{min, plural, one {Wählen Sie mindestens # Eintrag aus.} other {Wählen Sie mindestens # Einträge aus.}}",
 
@@ -198,6 +200,8 @@ export const de: Record<SvelteFluentUITranslationKey, string> = {
 
 	// Select
 	"svelteFluentUI.select.clearTooltip": "Auswahl löschen",
+	"svelteFluentUI.select.maxSelectionReached":
+		"{max, plural, one {Maximal # Auswahl erreicht} other {Maximal # Auswahlen erreicht}}",
 	"svelteFluentUI.select.minSelectionRequired":
 		"{min, plural, one {Wählen Sie mindestens # Eintrag aus.} other {Wählen Sie mindestens # Einträge aus.}}",
 

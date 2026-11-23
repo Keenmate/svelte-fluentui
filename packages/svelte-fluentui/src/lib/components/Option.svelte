@@ -44,7 +44,9 @@ A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div 
 		style?: string
 		/** Native `click` on the row, called after the context selection toggled (not called when disabled). */
 		onclick?: (ev: MouseEvent) => void
-		/** Force the selected state; when unset it is derived from the parent's selection. */
+		/** Initially selected, like a native `<option selected>`: seeds the parent's selection on its first
+		 * render (ignored when the parent's `value` is set), then the selection decides and the row can be
+		 * deselected. Outside a Select / Combobox / Listbox it marks the row selected. */
 		selected?: boolean
 		/** Option can't be highlighted or selected. Default: `false`. */
 		disabled?: boolean
@@ -80,9 +82,11 @@ A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div 
 	const uid = $props.id()
 	const optionId = $derived((rest.id as string | undefined) || `fluent-option-${uid}`)
 
-	// Selection is either forced via the `selected` prop or derived from the
-	// shared context. Reading ctx.value here tracks the parent's selection state.
-	const isSelected = $derived(selected !== undefined ? selected : !!selectedValue?.value?.includes(value))
+	// svelte-ignore state_referenced_locally
+	if (selected) selectedValue?.preselect?.(value)
+
+	// Inside a parent the shared selection decides (reading ctx.value tracks it); standalone, `selected`.
+	const isSelected = $derived(selectedValue ? !!selectedValue.value?.includes(value) : !!selected)
 
 	function handleOnClick(ev: MouseEvent) {
 		if (disabled) {
@@ -152,14 +156,19 @@ A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div 
 			background: var(--neutral-fill-stealth-hover, #f0f0f0);
 		}
 
+		/* Accent tint, not a neutral fill: --neutral-fill-secondary-rest is a near-invisible step
+		   from the listbox background in dark mode */
 		.fluent-option[aria-selected="true"] {
-			background: var(--neutral-fill-secondary-rest, #f5f5f5);
+			background: var(--fluent-option-bg-selected, var(--fluent-color-primary-tint));
 			font-weight: 600;
 		}
 
 		.fluent-option[aria-selected="true"]:hover:not([disabled]),
 		.fluent-option[aria-selected="true"][data-highlighted]:not([disabled]) {
-			background: var(--neutral-fill-secondary-hover, #ebebeb);
+			background: var(
+				--fluent-option-bg-selected-hover,
+				color-mix(in srgb, var(--accent-fill-rest, #0078d4) 20%, transparent)
+			);
 		}
 
 		.fluent-option[disabled] {

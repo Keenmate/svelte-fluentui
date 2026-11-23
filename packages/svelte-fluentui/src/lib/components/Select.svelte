@@ -89,6 +89,10 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		 * field is invalid for form validation ("Select at least N items", `labels.minSelectionRequired`).
 		 * None picked is valid unless `required`. */
 		minSelectionCount?: number
+		/** Multiple mode: the most values the user can pick. At the limit the unselected options can't be
+		 * picked (deselecting still works) and a status line says so (`labels.maxSelectionReached`).
+		 * A longer `value` set from code is kept as it is. */
+		maxSelectionCount?: number
 		/** Single mode: focus the trigger on mount. Default: `false`. */
 		autofocus?: boolean
 		/** Single mode: renders a hidden `<input name>` so the value takes part in form submission. */
@@ -164,6 +168,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		appearance = "outline",
 		required = false,
 		minSelectionCount = undefined,
+		maxSelectionCount = undefined,
 		autofocus = false,
 		name = undefined,
 		value = $bindable(),
@@ -217,7 +222,8 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 			if (readonly) return // readonly: block user-driven selection (Option click path)
 			if (multiple) {
 				const cur = selectionState.value
-				selectionState.value = cur.includes(val) ? cur.filter((x) => x !== val) : [...cur, val]
+				if (cur.includes(val)) selectionState.value = cur.filter((x) => x !== val)
+				else if (!maxSelectionCount || cur.length < maxSelectionCount) selectionState.value = [...cur, val]
 			} else {
 				selectionState.value = [val]
 			}
@@ -225,6 +231,22 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	}
 
 	selectedOptionsContext.set(ctx)
+
+	// <Option selected> during the first render seeds the selection (a given `value` wins); later
+	// mounts, e.g. a reopened dropdown, are ignored. `value` is written too, so the prop → state
+	// effect doesn't reset it.
+	// svelte-ignore state_referenced_locally
+	let preselecting = normalize(value).length === 0
+	$effect(() => {
+		preselecting = false
+	})
+	ctx.preselect = (val: string) => {
+		if (!preselecting || val == null) return
+		const cur = selectionState.value
+		if (cur.includes(val)) return
+		selectionState.value = multiple ? [...cur, val] : [val]
+		value = multiple ? [...selectionState.value] : val
+	}
 
 	// prop value -> internal state
 	$effect(() => {
@@ -382,6 +404,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 	const underMinSelection = $derived(
 		multiple && !!minSelectionCount && selectedCount > 0 && selectedCount < minSelectionCount
 	)
+	const isMaxReached = $derived(multiple && !!maxSelectionCount && selectedCount >= maxSelectionCount)
 	$effect(() => {
 		validityEl?.setCustomValidity(
 			underMinSelection ? t("minSelectionRequired", {min: minSelectionCount as number}) : ""
@@ -657,6 +680,7 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 			class="select-listbox-inline {appearance} {className}"
 			class:disabled
 			class:readonly
+			class:max-reached={isMaxReached}
 			style={(multiListStyle() ? multiListStyle() + "; " : "") + style}
 			{title}
 			onclickcapture={snapshotSelection}
@@ -666,6 +690,11 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		>
 			{@render children?.()}
 		</div>
+		{#if isMaxReached}
+			<div class="select-max-message" role="status">
+				{t("maxSelectionReached", {max: maxSelectionCount as number})}
+			</div>
+		{/if}
 	{:else}
 		<!-- ===== Single mode: trigger + portalled dropdown ===== -->
 
@@ -918,7 +947,23 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 		}
 
 		.select-listbox-inline.readonly :global(.fluent-option[aria-selected="true"]:hover:not([disabled])) {
-			background: var(--neutral-fill-secondary-rest, #f5f5f5);
+			background: var(--fluent-option-bg-selected, var(--fluent-color-primary-tint));
+		}
+
+		/* maxSelectionCount reached: unselected rows can't be picked (blocked in ctx.toggle) */
+		.select-listbox-inline.max-reached :global(.fluent-option[aria-selected="false"]:not([disabled])) {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		.select-listbox-inline.max-reached :global(.fluent-option[aria-selected="false"]:hover:not([disabled])) {
+			background: transparent;
+		}
+
+		.select-max-message {
+			font-size: var(--type-ramp-minus-1-font-size, 12px);
+			color: var(--neutral-foreground-hint, #717171);
+			padding-block-start: calc(var(--design-unit, 4) * 1px);
 		}
 	}
 </style>

@@ -1,9 +1,9 @@
 {
 	"name": "svelte-fluentui",
-	"version": "1.6.0-rc07",
+	"version": "2.0.0-rc01",
 	"description": "A Svelte wrapper library for Microsoft FluentUI web components",
 	"license": "MIT",
-	"author": "KeenMate",
+	"author": "Keenmate s.r.o.",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/KeenMate/svelte-fluentui.git"

@@ -41,6 +41,8 @@ export type GridContext = {
 export type RadioGroupContext = {
 	readonly value: string | null | undefined
 	setValue: (value: string) => void
+	/** A `<Radio checked>` during the group's first render seeds `value` (ignored when `value` was given, and afterwards). */
+	preselect?: (value: string) => void
 }
 
 /** Accordion → AccordionItem */

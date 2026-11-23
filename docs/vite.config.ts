@@ -35,7 +35,7 @@ export default defineConfig({
 		}
 	},
 	// 19100 (dev) / 19101 (preview): outside the 12000–17999 block reserved for the
-	// KeenMate web components (../web-components README, "Ports"), so both run side by side.
+	// Keenmate web components (../web-components README, "Ports"), so both run side by side.
 	preview: {
 		port: 19101,
 		strictPort: true

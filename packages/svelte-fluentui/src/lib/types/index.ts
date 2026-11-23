@@ -47,6 +47,10 @@ export type AccordionSvelteContext = {
 	isExpanded(id: string): boolean
 	/** Toggle the given item, applying single/multiple expand rules. */
 	toggle(id: string): void
+	/** An item's `expanded` during the Accordion's first render seeds `value` (ignored when `value` was given, and afterwards). */
+	preselect?(id: string): void
+	/** Open / close an item from code (an item's `expanded` assigned later); no `onChange`. */
+	setExpanded?(id: string, open: boolean): void
 	/** Handle Arrow/Home/End roving focus between item headers. */
 	onHeaderKeydown(id: string, event: KeyboardEvent): void
 }

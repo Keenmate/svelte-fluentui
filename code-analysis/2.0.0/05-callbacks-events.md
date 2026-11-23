@@ -1,4 +1,4 @@
-# 2.0.0 revision — 05 Callbacks & events (KeenMate interaction model, Svelte adaptation)
+# 2.0.0 revision — 05 Callbacks & events (Keenmate interaction model, Svelte adaptation)
 
 Sources of truth (no runtime dependency on them — svelte-fluentui stays standalone):
 - `../web-components-core/docs/SPEC.md` §12.5 (callbacks & events), §12.12 (actions), §12.13 (menu)

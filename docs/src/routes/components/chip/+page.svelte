@@ -27,6 +27,7 @@
 
 	const cssVars: Property[] = [
 		{name: "--fluent-chip-bg", type: "color", default: "--neutral-fill-secondary-rest", description: "Chip background"},
+		{name: "--fluent-chip-border", type: "color", default: "--neutral-stroke-rest", description: "1px inset ring (the border of an external chip)"},
 		{name: "--fluent-chip-gap", type: "length", default: "0.25rem", description: "Gap between the text and the × button"},
 		{name: "--fluent-chip-padding-block / -inline", type: "length", default: "0.125rem / 0.5rem", description: "Chip padding"},
 		{name: "--fluent-chip-font-size", type: "length", default: "0.875rem", description: "Text size"},

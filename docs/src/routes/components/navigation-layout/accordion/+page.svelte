@@ -50,7 +50,7 @@
 	const accordionItemProperties: Property[] = [
 		{name: "id", type: "string", default: "Required", description: "Unique item identifier"},
 		{name: "headingLevel", type: "string | number", default: "2", description: "Heading level for accessibility (aria-level)"},
-		{name: "expanded", type: "boolean", default: "undefined", description: "Controls expanded state; undefined falls back to the parent Accordion's value. Bindable: when set (or standalone without an Accordion), user toggles write the new state back."},
+		{name: "expanded", type: "boolean", default: "undefined", description: "Inside an Accordion its value decides: expanded on the first render opens the item (a given value wins), bind:expanded mirrors the state, and assigning it later opens / closes the item through the Accordion. Standalone: the item's own state (bindable)."},
 		{name: "disabled", type: "boolean", default: "false", description: "Disable the item: not togglable and skipped in keyboard navigation"},
 		{name: "...rest", type: "HTMLAttributes", default: "-", description: "Other native attributes and DOM events (lowercase onclick, onkeydown, aria-*, data-*, …) are forwarded untouched to the root div (id stays the item id on the heading button)"}
 	]

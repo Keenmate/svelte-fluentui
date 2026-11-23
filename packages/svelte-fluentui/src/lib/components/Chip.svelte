@@ -110,13 +110,16 @@ Theme it with the `--fluent-chip-*` custom properties.
 			white-space: nowrap;
 			max-width: var(--fluent-chip-max-width, 9.375rem);
 			color: var(--neutral-foreground-rest, #242424);
+			/* Inset ring (no height change): the fill alone is a near-invisible step from the field in dark mode */
+			box-shadow: inset 0 0 0 1px var(--fluent-chip-border, var(--neutral-stroke-rest, #d1d1d1));
 			box-sizing: border-box;
 		}
 
 		/* Standalone (above/below): its own 1px border since it doesn't sit inside a
 	   field's border, and a little more room to breathe. */
 		.fluent-chip.external {
-			border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+			border: 1px solid var(--fluent-chip-border, var(--neutral-stroke-rest, #d1d1d1));
+			box-shadow: none;
 			max-width: var(--fluent-chip-external-max-width, 12.5rem);
 		}
 
@@ -125,7 +128,7 @@ Theme it with the `--fluent-chip-*` custom properties.
 	   without changing height. */
 		.fluent-chip.contrast {
 			background: var(--neutral-fill-input-rest, #ffffff);
-			box-shadow: inset 0 0 0 1px var(--neutral-stroke-rest, #d1d1d1);
+			box-shadow: inset 0 0 0 1px var(--fluent-chip-border, var(--neutral-stroke-rest, #d1d1d1));
 		}
 
 		.fluent-chip-text {

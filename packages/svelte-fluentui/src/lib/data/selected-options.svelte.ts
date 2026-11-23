@@ -16,6 +16,8 @@ export function createSelectedOptions(initialValue: ValueType, isMulti?: boolean
 	let ctx = $state({
 		value: toContextValue(initialValue),
 		toContextValue,
+		/** Set by the owning Listbox: `<Option selected>` seeding (see SelectedOptionSvelteContext). */
+		preselect: undefined as ((val: OptionItem["value"]) => void) | undefined,
 		set(val: ValueType) {
 			this.value = toContextValue(val)
 		},

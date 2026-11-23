@@ -143,6 +143,7 @@
 		{name: "open", type: "boolean", default: "undefined", description: "Controls dropdown open state"},
 		{name: "position", type: '"top" | "bottom"', default: "undefined", description: "Forces dropdown position"},
 		{name: "required", type: "boolean", default: "false", description: "Shows a * marker; an empty field makes the form invalid (an invisible stand-in input carries the validation and hands focus to the field)"},
+		{name: "maxSelectionCount", type: "number", default: "undefined", description: "Multiple mode: the most values the user can pick. At the limit unselected options are dimmed and can't be picked (deselecting still works), and a status line says so (labels.maxSelectionReached). A longer value set from code is kept."},
 		{name: "minSelectionCount", type: "number", default: "undefined", description: "Multiple mode: fewest values a filled-in field accepts: 1 … min − 1 picked makes the form invalid ('Select at least N items.', labels.minSelectionRequired); none picked is valid unless required."},
 		{name: "style", type: "string", default: '""', description: "Inline styles"},
 		{name: "title", type: "string", default: "undefined", description: "Tooltip text"},
@@ -156,8 +157,14 @@
 		{name: "data", type: "Record<string, unknown>", default: "undefined", description: "Arbitrary data, passed back as option.data in onChange"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disables the option"},
 		{name: "label", type: "string", default: "undefined", description: "Text used for type-ahead and the trigger display (default: the rendered text)"},
-		{name: "selected", type: "boolean", default: "undefined", description: "Pre-select this option"},
+		{name: "selected", type: "boolean", default: "undefined", description: "Initially selected, like a native <option selected>: seeds the parent's selection and bound value on first render (a given value wins), then it can be deselected"},
 		{name: "style", type: "string", default: "undefined", description: "Inline styles"}
+	];
+
+	// Option.svelte's selected-row fill (every listbox built on Option: Select, Combobox, QuickGrid editors)
+	const optionCssVars: Property[] = [
+		{name: "--fluent-option-bg-selected", type: "color", default: "--fluent-color-primary-tint", description: "Selected row background (accent tint)"},
+		{name: "--fluent-option-bg-selected-hover", type: "color", default: "accent at 20%", description: "Selected row background on hover / keyboard highlight"}
 	];
 
 	const callbacks: Property[] = [
@@ -229,7 +236,10 @@
 		</Select>
 
 		<h3>Multiple with selected/disabled</h3>
-		<p>Options can be pre-selected or disabled.</p>
+		<p>
+			Options can be pre-selected with <code>&lt;Option selected&gt;</code> (like a native
+			<code>&lt;option selected&gt;</code>: it seeds the bound value, and you can deselect it) or disabled.
+		</p>
 		<Select label="Items" multiple>
 			{#snippet children()}
 				<Option value="option1" selected>Selected 1</Option>
@@ -241,8 +251,10 @@
 			{/snippet}
 		</Select>
 
-		<h3>Required &amp; minimum selection</h3>
+		<h3>Required, minimum &amp; maximum selection</h3>
 		<p>
+			<code>maxSelectionCount</code> caps how many values the user can pick: at the limit the other
+			options are dimmed and refuse clicks and Space / Enter until one is deselected.
 			<code>minSelectionCount</code> makes a filled-in field invalid until enough values are picked: with
 			1 … min − 1 chosen the browser blocks the submit with "Select at least N items." (translated,
 			<code>labels.minSelectionRequired</code>). An empty field stays valid unless it is also
@@ -252,8 +264,8 @@
 			<GridItem>
 				<form onsubmit={(e) => { e.preventDefault(); minSelectionSubmitted = minSelectionValue.join(", ") }}>
 					<Stack orientation="vertical" gap="0.5rem">
-						<strong>multiple minSelectionCount={"{2}"}</strong>
-						<Select label="Pick at least two fruits" multiple minSelectionCount={2} bind:value={minSelectionValue}>
+						<strong>multiple minSelectionCount={"{2}"} maxSelectionCount={"{3}"}</strong>
+						<Select label="Pick two or three fruits" multiple minSelectionCount={2} maxSelectionCount={3} bind:value={minSelectionValue}>
 							<Option value="apple">Apple</Option>
 							<Option value="banana">Banana</Option>
 							<Option value="cherry">Cherry</Option>
@@ -732,5 +744,11 @@
 		<h2>Option Properties</h2>
 		<p>Props on the <code>&lt;Option&gt;</code> child component.</p>
 		<QuickGrid items={optionProperties} columns={propertyColumns} sortMode="single" filterable striped />
+	</Card>
+
+	<Card>
+		<h2>Option CSS custom properties</h2>
+		<p>Apply to every listbox built on <code>&lt;Option&gt;</code>: Select, Combobox and the QuickGrid select / combobox editors.</p>
+		<QuickGrid items={optionCssVars} columns={propertyColumns} sortMode="single" striped />
 	</Card>
 </Stack>

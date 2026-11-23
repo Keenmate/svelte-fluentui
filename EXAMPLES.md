@@ -339,15 +339,18 @@ console.log(VERSION)
 
 ## Z-Index Scale
 
-All overlays use a shared token scale so the layering stays consistent across the library. Variables are exposed at `:root` when you import the SCSS bundle; every `z-index: var(--fluent-z-*)` declaration in components also includes the numeric fallback so things still stack correctly even without our SCSS loaded.
+All overlays use a shared token scale so the layering stays consistent across the library. Variables are exposed at `:root` when you import the SCSS bundle; components use `z-index: var(--fluent-z-*)` without numeric fallbacks, so overriding a variable reaches every overlay on that layer.
 
 | Token | Value | Used for |
 |---|---|---|
-| `--fluent-z-dropdown` | 1000 | Simple dropdowns, grid overlays |
-| `--fluent-z-sticky` | 1020 | Sticky app bars / headers |
-| `--fluent-z-fixed` | 1030 | Fixed sidebars / mobile nav |
-| `--fluent-z-modal-backdrop` | 1040 | Dialog overlay |
-| `--fluent-z-modal` | 1050 | Dialog itself |
-| `--fluent-z-popover` | 1060 | Calendar / time / autocomplete popups (above modal) |
-| `--fluent-z-tooltip` | 1070 | Tooltip |
-| `--fluent-z-toast` | 1080 | Toast |
+| `--fluent-z-raised` | 1 | Above neighbours inside a component |
+| `--fluent-z-sticky` | 1000 | Sticky app headers (not used by the library) |
+| `--fluent-z-fixed` | 4000 | Fixed app bars / navbar (not used by the library) |
+| `--fluent-z-modal-backdrop` | 6000 | Dialog / Panel overlay |
+| `--fluent-z-modal` | 7000 | Dialog, Panel, CommandPalette |
+| `--fluent-z-dropdown` | 7500 | QuickGrid row toolbar |
+| `--fluent-z-popover` | 7600 | Every anchored popup (listboxes, pickers, menus) — above modals |
+| `--fluent-z-toast` | 8000 | Toast |
+| `--fluent-z-tooltip` | 9000 | Tooltip |
+
+The ranges match the Keenmate suite (pure-css / pure-admin: content 1000, sidebar 1040–1050, navbar 4000, panels 4500–5000, settings 10000, command palette 10500), so the libraries layer correctly together.

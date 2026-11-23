@@ -134,6 +134,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		 * field is invalid for form validation ("Select at least N items", `labels.minSelectionRequired`).
 		 * None picked is valid unless `required`. */
 		minSelectionCount?: number
+		/** `multiple`: the most values the user can pick. At the limit the dropdown closes, unselected
+		 * options can't be picked (deselecting still works) and the dropdown says so
+		 * (`labels.maxSelectionReached`). A longer `value` set from code is kept as it is. */
+		maxSelectionCount?: number
 		/** Text shown inside the dropdown when the filter matches no options. Default: `labels.noMatches` ("No results found"). */
 		emptyText?: string
 		/** Custom content shown when the filter matches no options; overrides `emptyText`. */
@@ -219,6 +223,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		tagsPosition = "inline",
 		minSearchLength = undefined,
 		minSelectionCount = undefined,
+		maxSelectionCount = undefined,
 		emptyText = undefined,
 		empty = undefined,
 		onSearch = undefined,
@@ -263,9 +268,12 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 			selectionState.value = Array.isArray(v) ? [...v] : v ? [v] : []
 		},
 		toggle(val: string) {
+			toggleBlocked = false
 			if (val == null) return
 			if (multiple) {
 				const cur = selectionState.value
+				toggleBlocked = !cur.includes(val) && !!maxSelectionCount && cur.length >= maxSelectionCount
+				if (toggleBlocked) return
 				selectionState.value = cur.includes(val) ? cur.filter((x) => x !== val) : [...cur, val]
 			} else {
 				selectionState.value = [val]
@@ -274,6 +282,22 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	}
 
 	selectedOptionsContext.set(ctx)
+
+	// <Option selected> during the first render seeds the selection (a given `value` wins); later
+	// mounts, e.g. a reopened dropdown, are ignored. `value` is written too, so the prop → state
+	// effect doesn't reset it.
+	// svelte-ignore state_referenced_locally
+	let preselecting = normalize(value).length === 0
+	$effect(() => {
+		preselecting = false
+	})
+	ctx.preselect = (val: string) => {
+		if (!preselecting || val == null) return
+		const cur = selectionState.value
+		if (cur.includes(val)) return
+		selectionState.value = multiple ? [...cur, val] : [val]
+		value = [...selectionState.value]
+	}
 
 	// prop value -> internal state
 	$effect(() => {
@@ -326,6 +350,13 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	let searchPending = $state(false)
 
 	const t = useTranslations("combobox", () => labelsProp)
+
+	// maxSelectionCount: ctx.toggle refuses a pick past the limit and flags it, so the click /
+	// Enter paths skip onChange and the post-pick side effects.
+	let toggleBlocked = false
+	const isMaxReached = $derived(
+		multiple && !!maxSelectionCount && selectionState.value.length >= maxSelectionCount
+	)
 
 	// Form validation: 1 … minSelectionCount − 1 picked is invalid (none picked is `required`'s business).
 	const underMinSelection = $derived(
@@ -580,7 +611,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		isFiltering = false
 		typed = ""
 		emitChange()
-		if (multiple && !closeOnSelect) {
+		if (multiple && !closeOnSelect && !isMaxReached) {
 			// Re-show the full list (filter cleared) and re-anchor the highlight on
 			// the just-toggled row; keep focus in the input for continued typing.
 			tick().then(() => {
@@ -597,6 +628,7 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 	function selectByValue(val: string) {
 		cacheLabel(val)
 		ctx.toggle(val)
+		if (toggleBlocked) return
 		afterSelect(val)
 	}
 
@@ -607,6 +639,10 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		if (!optEl) return
 		if (optEl.hasAttribute("disabled")) {
 			ev.preventDefault()
+			return
+		}
+		if (toggleBlocked) {
+			toggleBlocked = false
 			return
 		}
 		const val = optionValue(optEl)
@@ -1011,10 +1047,16 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 					aria-multiselectable={multiple ? "true" : null}
 					tabindex="-1"
 					class="combobox-options"
+					class:max-reached={isMaxReached}
 					onclick={handleListClick}
 				>
 					{@render optionList()}
 				</div>
+				{#if isMaxReached}
+					<div class="combobox-max-message" role="status">
+						{t("maxSelectionReached", {max: maxSelectionCount as number})}
+					</div>
+				{/if}
 				{#if displayedCount === 0}
 					<div class="combobox-no-data">
 						{#if loading || searchPending}
@@ -1206,6 +1248,22 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 		}
 
 		/* Empty-state message shown when the filter matches no options. */
+		/* maxSelectionCount reached: unselected rows can't be picked (blocked in ctx.toggle) */
+		.combobox-options.max-reached :global(.fluent-option[aria-selected="false"]:not([disabled])) {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		.combobox-options.max-reached :global(.fluent-option[aria-selected="false"]:hover:not([disabled])) {
+			background: transparent;
+		}
+
+		:global(.combobox-listbox) .combobox-max-message {
+			padding: calc(var(--design-unit, 4) * 1px) calc(var(--design-unit, 4) * 2px);
+			color: var(--neutral-foreground-hint, #717171);
+			font-size: var(--type-ramp-minus-1-font-size, 12px);
+		}
+
 		:global(.combobox-listbox) .combobox-no-data {
 			padding: 0.75rem 1rem;
 			text-align: center;

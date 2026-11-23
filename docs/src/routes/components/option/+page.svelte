@@ -15,7 +15,7 @@
 		{name: "value", type: "string", default: "required", description: "Option value"},
 		{name: "label", type: "string", default: "undefined", description: "Text used for filtering, type-ahead and the trigger display (default: the rendered text)"},
 		{name: "disabled", type: "boolean", default: "false", description: "Disable the option"},
-		{name: "selected", type: "boolean", default: "undefined", description: "Force selection"},
+		{name: "selected", type: "boolean", default: "undefined", description: "Initially selected, like a native <option selected>: seeds the parent's selection and bound value on first render (a given value wins), then it can be deselected"},
 		{name: "style", type: "string", default: "undefined", description: "Custom inline styles"},
 		{name: "class", type: "string", default: "undefined", description: "Extra CSS class on the option row"},
 		{name: "data", type: "Record<string, unknown>", default: "undefined", description: "Arbitrary context data, reported with the selection (Select onChange option.data)"}

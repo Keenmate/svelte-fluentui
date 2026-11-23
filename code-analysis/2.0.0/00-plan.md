@@ -1,6 +1,6 @@
 # 2.0.0 revision — consolidated plan
 
-Sources: [01-api-naming](01-api-naming.md) · [02-duplication](02-duplication.md) · [03-code-style](03-code-style.md) · [04-styling](04-styling.md) · [05-callbacks-events](05-callbacks-events.md) (KeenMate interaction model, Svelte adaptation — supersedes 01 §1). Audits 2026-11-10 at `aad5513`.
+Sources: [01-api-naming](01-api-naming.md) · [02-duplication](02-duplication.md) · [03-code-style](03-code-style.md) · [04-styling](04-styling.md) · [05-callbacks-events](05-callbacks-events.md) (Keenmate interaction model, Svelte adaptation — supersedes 01 §1). Audits 2026-11-10 at `aad5513`.
 Every breaking change gets a CHANGELOG bullet + before→after row in `release-notes/2.0.0-rc01.md` as it lands.
 **Remember:** `docs/` demo pages use these APIs — every rename must update the docs site in the same commit.
 

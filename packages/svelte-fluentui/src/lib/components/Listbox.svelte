@@ -96,6 +96,19 @@ Wrapper for `<fluent-listbox>`: an always-visible list of `<Option>` children wi
 	const selectedOptions = createSelectedOptions(value, multiple)
 	selectedOptionsContext.set(selectedOptions)
 
+	// <Option selected> during the first render seeds the selection (a given `value` wins); the
+	// context → value effect below then writes it to `value`.
+	// svelte-ignore state_referenced_locally
+	let preselecting = selectedOptions.value == null || selectedOptions.value.length === 0
+	$effect(() => {
+		preselecting = false
+	})
+	selectedOptions.preselect = (val: string) => {
+		if (!preselecting || !val) return
+		const cur = selectedOptions.value ?? []
+		if (!cur.includes(val)) selectedOptions.value = multiple ? [...cur, val] : [val]
+	}
+
 	// The context holds an array; the public `value` is a string in single mode.
 	function fromContext(current: SelectedValue): ValueType {
 		return multiple ? (current ?? []) : (current?.[0] ?? null)
