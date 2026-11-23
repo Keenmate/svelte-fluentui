@@ -6,192 +6,198 @@
 @use "tokens" as *;
 @use "variables" as *;
 
-// Generate CSS custom properties from SCSS variables
-:root,
-[data-theme="light"] {
-	color-scheme: light;
+@layer reset, variables, component, overrides;
 
-	// Background colors
-	--fluent-bg-primary: #{$bg-primary-light};
-	--fluent-bg-secondary: #{$bg-secondary-light};
-	--fluent-bg-tertiary: #{$bg-tertiary-light};
+@layer variables {
+	// Generate CSS custom properties from SCSS variables
+	:root,
+	[data-theme="light"] {
+		color-scheme: light;
 
-	// Text colors
-	--fluent-text-primary: #{$text-primary-light};
-	--fluent-text-secondary: #{$text-secondary-light};
-	--fluent-text-tertiary: #{$text-tertiary-light};
-	--fluent-text-inverse: #{$text-inverse-light};
+		// Background colors
+		--fluent-bg-primary: #{$bg-primary-light};
+		--fluent-bg-secondary: #{$bg-secondary-light};
+		--fluent-bg-tertiary: #{$bg-tertiary-light};
 
-	// Border colors
-	--fluent-border-primary: #{$border-primary-light};
-	--fluent-border-secondary: #{$border-secondary-light};
+		// Text colors
+		--fluent-text-primary: #{$text-primary-light};
+		--fluent-text-secondary: #{$text-secondary-light};
+		--fluent-text-tertiary: #{$text-tertiary-light};
+		--fluent-text-inverse: #{$text-inverse-light};
 
-	// Accent colors
-	--fluent-accent-primary: #{$accent-primary-light};
-	--fluent-accent-hover: #{$accent-hover-light};
-	--fluent-accent-active: #{$accent-active-light};
+		// Border colors
+		--fluent-border-primary: #{$border-primary-light};
+		--fluent-border-secondary: #{$border-secondary-light};
 
-	// Navbar
-	--fluent-navbar-bg: #{$navbar-bg-light};
-	--fluent-navbar-text: #{$navbar-text-light};
-	--fluent-navbar-border: #{$navbar-border-light};
+		// Accent colors
+		--fluent-accent-primary: #{$accent-primary-light};
+		--fluent-accent-hover: #{$accent-hover-light};
+		--fluent-accent-active: #{$accent-active-light};
 
-	// Sidebar
-	--fluent-sidebar-bg: #{$sidebar-bg-light};
-	--fluent-sidebar-text: #{$sidebar-text-light};
-	--fluent-sidebar-border: #{$sidebar-border-light};
-	--fluent-sidebar-link-bg-hover: #{$sidebar-hover-light};
-	--fluent-sidebar-link-bg-active: #{$sidebar-active-light};
+		// Navbar
+		--fluent-navbar-bg: #{$navbar-bg-light};
+		--fluent-navbar-text: #{$navbar-text-light};
+		--fluent-navbar-border: #{$navbar-border-light};
 
-	// Header
-	--fluent-header-bg: #{$header-bg-light};
-	--fluent-header-text: #{$header-text-light};
-	--fluent-header-border: #{$header-border-light};
+		// Sidebar
+		--fluent-sidebar-bg: #{$sidebar-bg-light};
+		--fluent-sidebar-text: #{$sidebar-text-light};
+		--fluent-sidebar-border: #{$sidebar-border-light};
+		--fluent-sidebar-link-bg-hover: #{$sidebar-hover-light};
+		--fluent-sidebar-link-bg-active: #{$sidebar-active-light};
 
-	// Footer
-	--fluent-footer-bg: #{$footer-bg-light};
-	--fluent-footer-text: #{$footer-text-light};
-	--fluent-footer-border: #{$footer-border-light};
+		// Header
+		--fluent-header-bg: #{$header-bg-light};
+		--fluent-header-text: #{$header-text-light};
+		--fluent-header-border: #{$header-border-light};
 
-	// QuickGrid
-	--fluent-quickgrid-header-bg: #{$quickgrid-header-bg-light};
-	--fluent-quickgrid-header-bg-hover: #{$quickgrid-header-hover-bg-light};
-	--fluent-quickgrid-header-bg-sorted: #{$quickgrid-header-sorted-bg-light};
-	--fluent-quickgrid-row-bg-stripe: #{$quickgrid-stripe-bg-light};
-	--fluent-quickgrid-row-bg-hover: #{$quickgrid-row-hover-bg-light};
-	--fluent-quickgrid-toolbar-shadow: #{$quickgrid-toolbar-shadow-light};
+		// Footer
+		--fluent-footer-bg: #{$footer-bg-light};
+		--fluent-footer-text: #{$footer-text-light};
+		--fluent-footer-border: #{$footer-border-light};
 
-	// Component spacing
-	--fluent-component-padding: #{$component-padding};
-	--fluent-component-margin: #{$component-margin};
-	--fluent-component-gap: #{$component-gap};
+		// QuickGrid
+		--fluent-quickgrid-header-bg: #{$quickgrid-header-bg-light};
+		--fluent-quickgrid-header-bg-hover: #{$quickgrid-header-hover-bg-light};
+		--fluent-quickgrid-header-bg-sorted: #{$quickgrid-header-sorted-bg-light};
+		--fluent-quickgrid-row-bg-stripe: #{$quickgrid-stripe-bg-light};
+		--fluent-quickgrid-row-bg-hover: #{$quickgrid-row-hover-bg-light};
+		--fluent-quickgrid-toolbar-shadow: #{$quickgrid-toolbar-shadow-light};
 
-	// Sidebar
-	--fluent-sidebar-link-padding: #{$sidebar-link-padding};
-	--fluent-sidebar-padding: #{$sidebar-padding};
-	--fluent-sidebar-icon-gap: #{$sidebar-icon-gap};
+		// Component spacing
+		--fluent-component-padding: #{$component-padding};
+		--fluent-component-margin: #{$component-margin};
+		--fluent-component-gap: #{$component-gap};
 
-	// Typography
-	--fluent-body-font-size: #{$body-font-size};
-	--fluent-body-font-weight: #{$body-font-weight};
-	--fluent-heading-font-weight: #{$heading-font-weight};
+		// Sidebar
+		--fluent-sidebar-link-padding: #{$sidebar-link-padding};
+		--fluent-sidebar-padding: #{$sidebar-padding};
+		--fluent-sidebar-icon-gap: #{$sidebar-icon-gap};
 
-	// Borders
-	// Component-default radius (alias for the md tier). Kept for back-compat.
-	--fluent-border-radius: #{$component-border-radius};
-	--fluent-border-width: #{$component-border-width};
+		// Typography
+		--fluent-body-font-size: #{$body-font-size};
+		--fluent-body-font-weight: #{$body-font-weight};
+		--fluent-heading-font-weight: #{$heading-font-weight};
 
-	// Border-radius scale (theme-independent — kept here so authors can use var() anywhere).
-	// Use sm for tight indicators (progress bars), md for default UI (buttons, fields),
-	// lg/xl for container surfaces (popovers, drop-zones, chips). Pill for fully rounded
-	// badges; circle for round dots/spinners.
-	--fluent-border-radius-sm: #{$border-radius-sm};
-	--fluent-border-radius-md: #{$border-radius-md};
-	--fluent-border-radius-lg: #{$border-radius-lg};
-	--fluent-border-radius-xl: #{$border-radius-xl};
-	--fluent-border-radius-pill: #{$border-radius-pill};
-	--fluent-border-radius-circle: #{$border-radius-circle};
+		// Borders
+		// Component-default radius (alias for the md tier). Kept for back-compat.
+		--fluent-border-radius: #{$component-border-radius};
+		--fluent-border-width: #{$component-border-width};
 
-	// Transitions
-	--fluent-transition: #{$component-transition};
+		// Border-radius scale (theme-independent — kept here so authors can use var() anywhere).
+		// Use sm for tight indicators (progress bars), md for default UI (buttons, fields),
+		// lg/xl for container surfaces (popovers, drop-zones, chips). Pill for fully rounded
+		// badges; circle for round dots/spinners.
+		--fluent-border-radius-sm: #{$border-radius-sm};
+		--fluent-border-radius-md: #{$border-radius-md};
+		--fluent-border-radius-lg: #{$border-radius-lg};
+		--fluent-border-radius-xl: #{$border-radius-xl};
+		--fluent-border-radius-pill: #{$border-radius-pill};
+		--fluent-border-radius-circle: #{$border-radius-circle};
 
-	// Z-index scale (theme-independent — kept here so authors can use var() in any component).
-	// Order matters: raised < dropdown < sticky < fixed < modal-backdrop < modal < popover < tooltip < toast.
-	// "raised" lifts an element above its in-flow siblings only (local stacking); a pinned
-	// Panel uses it too (it only needs its own stacking context, not to cover the page).
-	// "popover" is intentionally above modal so dropdowns/calendars opened from inside a modal
-	// render on top of the modal.
-	--fluent-z-raised: #{$z-index-raised};
-	--fluent-z-panel-pinned: var(--fluent-z-raised);
-	--fluent-z-dropdown: #{$z-index-dropdown};
-	--fluent-z-sticky: #{$z-index-sticky};
-	--fluent-z-fixed: #{$z-index-fixed};
-	--fluent-z-modal-backdrop: #{$z-index-modal-backdrop};
-	--fluent-z-modal: #{$z-index-modal};
-	--fluent-z-popover: #{$z-index-popover};
-	--fluent-z-tooltip: #{$z-index-tooltip};
-	--fluent-z-toast: #{$z-index-toast};
+		// Transitions
+		--fluent-transition: #{$component-transition};
+
+		// Z-index scale (theme-independent — kept here so authors can use var() in any component).
+		// Order matters: raised < dropdown < sticky < fixed < modal-backdrop < modal < popover < tooltip < toast.
+		// "raised" lifts an element above its in-flow siblings only (local stacking); a pinned
+		// Panel uses it too (it only needs its own stacking context, not to cover the page).
+		// "popover" is intentionally above modal so dropdowns/calendars opened from inside a modal
+		// render on top of the modal.
+		--fluent-z-raised: #{$z-index-raised};
+		--fluent-z-panel-pinned: var(--fluent-z-raised);
+		--fluent-z-dropdown: #{$z-index-dropdown};
+		--fluent-z-sticky: #{$z-index-sticky};
+		--fluent-z-fixed: #{$z-index-fixed};
+		--fluent-z-modal-backdrop: #{$z-index-modal-backdrop};
+		--fluent-z-modal: #{$z-index-modal};
+		--fluent-z-popover: #{$z-index-popover};
+		--fluent-z-tooltip: #{$z-index-tooltip};
+		--fluent-z-toast: #{$z-index-toast};
+	}
+
+	[data-theme="dark"] {
+		color-scheme: dark;
+
+		// Background colors
+		--fluent-bg-primary: #{$bg-primary-dark};
+		--fluent-bg-secondary: #{$bg-secondary-dark};
+		--fluent-bg-tertiary: #{$bg-tertiary-dark};
+
+		// Text colors
+		--fluent-text-primary: #{$text-primary-dark};
+		--fluent-text-secondary: #{$text-secondary-dark};
+		--fluent-text-tertiary: #{$text-tertiary-dark};
+		--fluent-text-inverse: #{$text-inverse-dark};
+
+		// Border colors
+		--fluent-border-primary: #{$border-primary-dark};
+		--fluent-border-secondary: #{$border-secondary-dark};
+
+		// Accent colors
+		--fluent-accent-primary: #{$accent-primary-dark};
+		--fluent-accent-hover: #{$accent-hover-dark};
+		--fluent-accent-active: #{$accent-active-dark};
+
+		// Navbar
+		--fluent-navbar-bg: #{$navbar-bg-dark};
+		--fluent-navbar-text: #{$navbar-text-dark};
+		--fluent-navbar-border: #{$navbar-border-dark};
+
+		// Sidebar
+		--fluent-sidebar-bg: #{$sidebar-bg-dark};
+		--fluent-sidebar-text: #{$sidebar-text-dark};
+		--fluent-sidebar-border: #{$sidebar-border-dark};
+		--fluent-sidebar-link-bg-hover: #{$sidebar-hover-dark};
+		--fluent-sidebar-link-bg-active: #{$sidebar-active-dark};
+
+		// Header
+		--fluent-header-bg: #{$header-bg-dark};
+		--fluent-header-text: #{$header-text-dark};
+		--fluent-header-border: #{$header-border-dark};
+
+		// Footer
+		--fluent-footer-bg: #{$footer-bg-dark};
+		--fluent-footer-text: #{$footer-text-dark};
+		--fluent-footer-border: #{$footer-border-dark};
+
+		// QuickGrid
+		--fluent-quickgrid-header-bg: #{$quickgrid-header-bg-dark};
+		--fluent-quickgrid-header-bg-hover: #{$quickgrid-header-hover-bg-dark};
+		--fluent-quickgrid-header-bg-sorted: #{$quickgrid-header-sorted-bg-dark};
+		--fluent-quickgrid-row-bg-stripe: #{$quickgrid-stripe-bg-dark};
+		--fluent-quickgrid-row-bg-hover: #{$quickgrid-row-hover-bg-dark};
+		--fluent-quickgrid-toolbar-shadow: #{$quickgrid-toolbar-shadow-dark};
+	}
 }
 
-[data-theme="dark"] {
-	color-scheme: dark;
+@layer component {
+	// Apply FluentUI design tokens to body for smooth transitions
+	body {
+		background-color: var(--neutral-layer-1);
+		color: var(--neutral-foreground-rest);
+		transition:
+			background-color 0.3s ease,
+			color 0.3s ease;
+	}
 
-	// Background colors
-	--fluent-bg-primary: #{$bg-primary-dark};
-	--fluent-bg-secondary: #{$bg-secondary-dark};
-	--fluent-bg-tertiary: #{$bg-tertiary-dark};
+	// While a theme swap is in flight the theme store adds `.fluent-theme-switching`
+	// to <html> for two frames (see stores/theme.ts). Interactive-feedback transitions
+	// on our custom controls (Combobox, Autocomplete, Select, InputFile,
+	// CommandPaletteTrigger, …) and the body itself otherwise animate their
+	// background/border from the old palette to the new one, producing a lagging colour
+	// fade that reads as a glitch. Kill every transition for that brief window so the
+	// palette flips instantly, in step with the rest of the page.
+	html.fluent-theme-switching,
+	html.fluent-theme-switching *,
+	html.fluent-theme-switching *::before,
+	html.fluent-theme-switching *::after {
+		transition: none !important;
+	}
 
-	// Text colors
-	--fluent-text-primary: #{$text-primary-dark};
-	--fluent-text-secondary: #{$text-secondary-dark};
-	--fluent-text-tertiary: #{$text-tertiary-dark};
-	--fluent-text-inverse: #{$text-inverse-dark};
-
-	// Border colors
-	--fluent-border-primary: #{$border-primary-dark};
-	--fluent-border-secondary: #{$border-secondary-dark};
-
-	// Accent colors
-	--fluent-accent-primary: #{$accent-primary-dark};
-	--fluent-accent-hover: #{$accent-hover-dark};
-	--fluent-accent-active: #{$accent-active-dark};
-
-	// Navbar
-	--fluent-navbar-bg: #{$navbar-bg-dark};
-	--fluent-navbar-text: #{$navbar-text-dark};
-	--fluent-navbar-border: #{$navbar-border-dark};
-
-	// Sidebar
-	--fluent-sidebar-bg: #{$sidebar-bg-dark};
-	--fluent-sidebar-text: #{$sidebar-text-dark};
-	--fluent-sidebar-border: #{$sidebar-border-dark};
-	--fluent-sidebar-link-bg-hover: #{$sidebar-hover-dark};
-	--fluent-sidebar-link-bg-active: #{$sidebar-active-dark};
-
-	// Header
-	--fluent-header-bg: #{$header-bg-dark};
-	--fluent-header-text: #{$header-text-dark};
-	--fluent-header-border: #{$header-border-dark};
-
-	// Footer
-	--fluent-footer-bg: #{$footer-bg-dark};
-	--fluent-footer-text: #{$footer-text-dark};
-	--fluent-footer-border: #{$footer-border-dark};
-
-	// QuickGrid
-	--fluent-quickgrid-header-bg: #{$quickgrid-header-bg-dark};
-	--fluent-quickgrid-header-bg-hover: #{$quickgrid-header-hover-bg-dark};
-	--fluent-quickgrid-header-bg-sorted: #{$quickgrid-header-sorted-bg-dark};
-	--fluent-quickgrid-row-bg-stripe: #{$quickgrid-stripe-bg-dark};
-	--fluent-quickgrid-row-bg-hover: #{$quickgrid-row-hover-bg-dark};
-	--fluent-quickgrid-toolbar-shadow: #{$quickgrid-toolbar-shadow-dark};
-}
-
-// Apply FluentUI design tokens to body for smooth transitions
-body {
-	background-color: var(--neutral-layer-1);
-	color: var(--neutral-foreground-rest);
-	transition:
-		background-color 0.3s ease,
-		color 0.3s ease;
-}
-
-// While a theme swap is in flight the theme store adds `.fluent-theme-switching`
-// to <html> for two frames (see stores/theme.ts). Interactive-feedback transitions
-// on our custom controls (Combobox, Autocomplete, Select, InputFile,
-// CommandPaletteTrigger, …) and the body itself otherwise animate their
-// background/border from the old palette to the new one, producing a lagging colour
-// fade that reads as a glitch. Kill every transition for that brief window so the
-// palette flips instantly, in step with the rest of the page.
-html.fluent-theme-switching,
-html.fluent-theme-switching *,
-html.fluent-theme-switching *::before,
-html.fluent-theme-switching *::after {
-	transition: none !important;
-}
-
-// The Fluent switch track is `transition: all 0.2s` inside its shadow DOM, out of
-// reach of the universal selector above — suppress it through its exposed part.
-html.fluent-theme-switching fluent-switch::part(switch) {
-	transition: none !important;
+	// The Fluent switch track is `transition: all 0.2s` inside its shadow DOM, out of
+	// reach of the universal selector above — suppress it through its exposed part.
+	html.fluent-theme-switching fluent-switch::part(switch) {
+		transition: none !important;
+	}
 }

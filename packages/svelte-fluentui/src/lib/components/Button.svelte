@@ -125,12 +125,16 @@ Wrapper for `<fluent-button>`.
 </fluent-button>
 
 <style>
-	.button-icon-slot {
-		display: flex;
-		align-items: center;
-	}
+	@layer reset, variables, component, overrides;
 
-	.button-icon-slot :global(svg) {
-		display: block;
+	@layer component {
+		.button-icon-slot {
+			display: flex;
+			align-items: center;
+		}
+
+		.button-icon-slot :global(svg) {
+			display: block;
+		}
 	}
 </style>

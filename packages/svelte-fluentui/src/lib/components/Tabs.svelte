@@ -656,122 +656,125 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 </div>
 
 <style>
-	/* Host container — horizontal puts strip on top, vertical puts strip on left. */
-	.fluent-tabs {
-		display: flex;
-		box-sizing: border-box;
-		min-width: 0;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-tabs-horizontal {
-		flex-direction: column;
-	}
+	@layer component {
+		/* Host container — horizontal puts strip on top, vertical puts strip on left. */
+		.fluent-tabs {
+			display: flex;
+			box-sizing: border-box;
+			min-width: 0;
+		}
 
-	.fluent-tabs-vertical {
-		flex-direction: row;
-	}
+		.fluent-tabs-horizontal {
+			flex-direction: column;
+		}
 
-	/* Strip = scroll arrow + tablist + scroll arrow. */
-	.fluent-tabs-strip {
-		display: flex;
-		position: relative;
-		flex: none;
-		min-width: 0;
-		min-height: 0;
-	}
+		.fluent-tabs-vertical {
+			flex-direction: row;
+		}
 
-	.fluent-tabs-horizontal .fluent-tabs-strip {
-		flex-direction: row;
-		align-items: stretch;
-		border-bottom: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
-	}
+		/* Strip = scroll arrow + tablist + scroll arrow. */
+		.fluent-tabs-strip {
+			display: flex;
+			position: relative;
+			flex: none;
+			min-width: 0;
+			min-height: 0;
+		}
 
-	.fluent-tabs-vertical .fluent-tabs-strip {
-		flex-direction: column;
-		align-items: stretch;
-		border-inline-end: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
-	}
+		.fluent-tabs-horizontal .fluent-tabs-strip {
+			flex-direction: row;
+			align-items: stretch;
+			border-bottom: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
+		}
 
-	/* Tablist — holds tab buttons and the active indicator. */
-	.fluent-tabs-tablist {
-		display: flex;
-		position: relative;
-		flex: 1 1 auto;
-		min-width: 0;
-		min-height: 0;
-	}
+		.fluent-tabs-vertical .fluent-tabs-strip {
+			flex-direction: column;
+			align-items: stretch;
+			border-inline-end: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
+		}
 
-	.fluent-tabs-horizontal .fluent-tabs-tablist {
-		flex-direction: row;
-	}
+		/* Tablist — holds tab buttons and the active indicator. */
+		.fluent-tabs-tablist {
+			display: flex;
+			position: relative;
+			flex: 1 1 auto;
+			min-width: 0;
+			min-height: 0;
+		}
 
-	.fluent-tabs-vertical .fluent-tabs-tablist {
-		flex-direction: column;
-	}
+		.fluent-tabs-horizontal .fluent-tabs-tablist {
+			flex-direction: row;
+		}
 
-	/* --- responsive modes --- */
+		.fluent-tabs-vertical .fluent-tabs-tablist {
+			flex-direction: column;
+		}
 
-	.fluent-tabs-horizontal[data-responsive="scroll"] .fluent-tabs-tablist {
-		overflow-x: auto;
-		overflow-y: hidden;
-		scrollbar-width: none;
-	}
-	.fluent-tabs-horizontal[data-responsive="scroll"] .fluent-tabs-tablist::-webkit-scrollbar {
-		display: none;
-	}
+		/* --- responsive modes --- */
 
-	.fluent-tabs-vertical[data-responsive="scroll"] .fluent-tabs-tablist {
-		overflow-y: auto;
-		overflow-x: hidden;
-		scrollbar-width: none;
-	}
-	.fluent-tabs-vertical[data-responsive="scroll"] .fluent-tabs-tablist::-webkit-scrollbar {
-		display: none;
-	}
+		.fluent-tabs-horizontal[data-responsive="scroll"] .fluent-tabs-tablist {
+			overflow-x: auto;
+			overflow-y: hidden;
+			scrollbar-width: none;
+		}
+		.fluent-tabs-horizontal[data-responsive="scroll"] .fluent-tabs-tablist::-webkit-scrollbar {
+			display: none;
+		}
 
-	.fluent-tabs[data-responsive="wrap"] .fluent-tabs-tablist {
-		flex-wrap: wrap;
-	}
+		.fluent-tabs-vertical[data-responsive="scroll"] .fluent-tabs-tablist {
+			overflow-y: auto;
+			overflow-x: hidden;
+			scrollbar-width: none;
+		}
+		.fluent-tabs-vertical[data-responsive="scroll"] .fluent-tabs-tablist::-webkit-scrollbar {
+			display: none;
+		}
 
-	/*
+		.fluent-tabs[data-responsive="wrap"] .fluent-tabs-tablist {
+			flex-wrap: wrap;
+		}
+
+		/*
 	 * menu mode: tablist clips any overflow (should never actually overflow
 	 * since visibleCount limits what we render, but belt-and-suspenders for
 	 * any fractional-pixel slack during measurement). The overflow button
 	 * is rendered INSIDE the tablist as a regular flex item so the active
 	 * indicator and keyboard focus flow past it correctly.
 	 */
-	.fluent-tabs[data-responsive="menu"] .fluent-tabs-tablist {
-		overflow: hidden;
-	}
+		.fluent-tabs[data-responsive="menu"] .fluent-tabs-tablist {
+			overflow: hidden;
+		}
 
-	/* Shadow tablist — off-screen copy used only for measurement. */
-	.fluent-tabs-shadow-tablist {
-		position: absolute;
-		top: -9999px;
-		inset-inline-start: -9999px;
-		visibility: hidden;
-		pointer-events: none;
-		display: flex;
-		flex-direction: row;
-		white-space: nowrap;
-	}
+		/* Shadow tablist — off-screen copy used only for measurement. */
+		.fluent-tabs-shadow-tablist {
+			position: absolute;
+			top: -9999px;
+			inset-inline-start: -9999px;
+			visibility: hidden;
+			pointer-events: none;
+			display: flex;
+			flex-direction: row;
+			white-space: nowrap;
+		}
 
-	.fluent-tabs-shadow-vertical {
-		flex-direction: column;
-	}
+		.fluent-tabs-shadow-vertical {
+			flex-direction: column;
+		}
 
-	/* Overflow `⋯` button — styled like a tab so the strip looks uniform. */
-	.fluent-tabs-more-btn {
-		flex: none;
-		padding: 0 calc((4 + (var(--design-unit, 4) * 2)) * 1px);
-		cursor: pointer;
-	}
+		/* Overflow `⋯` button — styled like a tab so the strip looks uniform. */
+		.fluent-tabs-more-btn {
+			flex: none;
+			padding: 0 calc((4 + (var(--design-unit, 4) * 2)) * 1px);
+			cursor: pointer;
+		}
 
-	.fluent-tabs-more-btn.active {
-		background-color: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.03));
-	}
+		.fluent-tabs-more-btn.active {
+			background-color: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.03));
+		}
 
-	/*
+		/*
 	 * Pin the real `⋯` button to the end of the strip via `auto` margin so
 	 * its position doesn't shift with the last-visible tab's width. This
 	 * works in flex because `margin-*-auto` absorbs free space; with the
@@ -779,32 +782,34 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	 * the button at the end. The shadow copy doesn't need the margin —
 	 * `:not(.fluent-tab-shadow)` scopes the rule to the real button.
 	 */
-	.fluent-tabs-horizontal[data-responsive="menu"] .fluent-tabs-tablist > .fluent-tabs-more-btn:not(.fluent-tab-shadow) {
-		margin-inline-start: auto;
-	}
+		.fluent-tabs-horizontal[data-responsive="menu"]
+			.fluent-tabs-tablist
+			> .fluent-tabs-more-btn:not(.fluent-tab-shadow) {
+			margin-inline-start: auto;
+		}
 
-	.fluent-tabs-vertical[data-responsive="menu"] .fluent-tabs-tablist > .fluent-tabs-more-btn:not(.fluent-tab-shadow) {
-		margin-top: auto;
-	}
+		.fluent-tabs-vertical[data-responsive="menu"] .fluent-tabs-tablist > .fluent-tabs-more-btn:not(.fluent-tab-shadow) {
+			margin-top: auto;
+		}
 
-	/*
+		/*
 	 * When the last visible tab has a `max-width` cap applied by the
 	 * measurement pass, let its label collapse with an ellipsis instead
 	 * of overflowing the tab box. Icon and close button stay intact.
 	 */
-	.fluent-tab.truncated {
-		overflow: hidden;
-	}
+		.fluent-tab.truncated {
+			overflow: hidden;
+		}
 
-	.fluent-tab.truncated .fluent-tab-label {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		min-width: 0;
-		flex: 0 1 auto;
-	}
+		.fluent-tab.truncated .fluent-tab-label {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			min-width: 0;
+			flex: 0 1 auto;
+		}
 
-	/*
+		/*
 	 * Vertical orientation: tabs stack, each takes the strip's cross-axis
 	 * width. Always apply label ellipsis so a long label doesn't inflate
 	 * the whole strip to match. `min-width: 0` + `flex: 0 1 auto` is what
@@ -812,121 +817,121 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	 * container. Icon and close button (outside `.fluent-tab-label`) keep
 	 * their natural widths.
 	 */
-	.fluent-tabs-vertical .fluent-tab {
-		overflow: hidden;
-	}
+		.fluent-tabs-vertical .fluent-tab {
+			overflow: hidden;
+		}
 
-	.fluent-tabs-vertical .fluent-tab-label {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		min-width: 0;
-		flex: 0 1 auto;
-	}
+		.fluent-tabs-vertical .fluent-tab-label {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			min-width: 0;
+			flex: 0 1 auto;
+		}
 
-	/* justify: stretch tabs to divide the row equally. */
-	.fluent-tabs-justify .fluent-tab {
-		flex: 1 1 0;
-		min-width: 0;
-	}
+		/* justify: stretch tabs to divide the row equally. */
+		.fluent-tabs-justify .fluent-tab {
+			flex: 1 1 0;
+			min-width: 0;
+		}
 
-	/* --- tab button --- */
-	.fluent-tab {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5rem;
-		padding: 0 calc((6 + (var(--design-unit, 4) * 2)) * 1px);
-		height: calc(
-			((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) + (var(--design-unit, 4) * 2)) *
-				1px
-		);
-		min-height: 36px;
-		box-sizing: border-box;
-		background: transparent;
-		border: 1px solid transparent;
-		border-radius: calc(var(--control-corner-radius, 4) * 1px) calc(var(--control-corner-radius, 4) * 1px) 0 0;
-		color: var(--neutral-foreground-rest);
-		font-family: var(--body-font);
-		font-size: var(--type-ramp-base-font-size, 14px);
-		line-height: var(--type-ramp-base-line-height, 20px);
-		font-weight: 400;
-		cursor: pointer;
-		white-space: nowrap;
-		flex-shrink: 0;
-		user-select: none;
-		position: relative;
-		transition:
-			color 0.15s ease,
-			background-color 0.15s ease;
-	}
+		/* --- tab button --- */
+		.fluent-tab {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.5rem;
+			padding: 0 calc((6 + (var(--design-unit, 4) * 2)) * 1px);
+			height: calc(
+				((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) + (var(--design-unit, 4) * 2)) *
+					1px
+			);
+			min-height: 36px;
+			box-sizing: border-box;
+			background: transparent;
+			border: 1px solid transparent;
+			border-radius: calc(var(--control-corner-radius, 4) * 1px) calc(var(--control-corner-radius, 4) * 1px) 0 0;
+			color: var(--neutral-foreground-rest);
+			font-family: var(--body-font);
+			font-size: var(--type-ramp-base-font-size, 14px);
+			line-height: var(--type-ramp-base-line-height, 20px);
+			font-weight: 400;
+			cursor: pointer;
+			white-space: nowrap;
+			flex-shrink: 0;
+			user-select: none;
+			position: relative;
+			transition:
+				color 0.15s ease,
+				background-color 0.15s ease;
+		}
 
-	.fluent-tabs-vertical .fluent-tab {
-		justify-content: flex-start;
-		border-radius: 0;
-		border-start-start-radius: calc(var(--control-corner-radius, 4) * 1px);
-		border-end-start-radius: calc(var(--control-corner-radius, 4) * 1px);
-	}
+		.fluent-tabs-vertical .fluent-tab {
+			justify-content: flex-start;
+			border-radius: 0;
+			border-start-start-radius: calc(var(--control-corner-radius, 4) * 1px);
+			border-end-start-radius: calc(var(--control-corner-radius, 4) * 1px);
+		}
 
-	.fluent-tab:hover:not(.disabled):not(:disabled) {
-		color: var(--neutral-foreground-rest);
-		background-color: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.03));
-	}
+		.fluent-tab:hover:not(.disabled):not(:disabled) {
+			color: var(--neutral-foreground-rest);
+			background-color: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.03));
+		}
 
-	.fluent-tab.active {
-		font-weight: 600;
-		color: var(--accent-fill-rest, var(--neutral-foreground-rest));
-	}
+		.fluent-tab.active {
+			font-weight: 600;
+			color: var(--accent-fill-rest, var(--neutral-foreground-rest));
+		}
 
-	.fluent-tab.disabled,
-	.fluent-tab:disabled {
-		cursor: not-allowed;
-		color: var(--neutral-foreground-hint);
-		opacity: 0.6;
-	}
+		.fluent-tab.disabled,
+		.fluent-tab:disabled {
+			cursor: not-allowed;
+			color: var(--neutral-foreground-hint);
+			opacity: 0.6;
+		}
 
-	/* Keyboard focus outline: `.fluent-focus-ring` (_primitives.scss). */
+		/* Keyboard focus outline: `.fluent-focus-ring` (_primitives.scss). */
 
-	.fluent-tab-label {
-		display: inline-block;
-	}
+		.fluent-tab-label {
+			display: inline-block;
+		}
 
-	.fluent-tab-icon {
-		display: inline-flex;
-		align-items: center;
-		flex-shrink: 0;
-		min-width: 18px;
-		max-width: 18px;
-		fill: var(--neutral-fill-strong-active);
-	}
+		.fluent-tab-icon {
+			display: inline-flex;
+			align-items: center;
+			flex-shrink: 0;
+			min-width: 18px;
+			max-width: 18px;
+			fill: var(--neutral-fill-strong-active);
+		}
 
-	.fluent-tab-close {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 12px;
-		height: 12px;
-		border-radius: var(--fluent-border-radius-md);
-		color: var(--neutral-foreground-hint);
-		cursor: pointer;
-		margin-inline-start: 4px;
-	}
+		.fluent-tab-close {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 12px;
+			height: 12px;
+			border-radius: var(--fluent-border-radius-md);
+			color: var(--neutral-foreground-hint);
+			cursor: pointer;
+			margin-inline-start: 4px;
+		}
 
-	.fluent-tab-close:hover {
-		color: var(--neutral-foreground-rest);
-		background-color: var(--neutral-fill-stealth-hover);
-	}
+		.fluent-tab-close:hover {
+			color: var(--neutral-foreground-rest);
+			background-color: var(--neutral-fill-stealth-hover);
+		}
 
-	.editable-label {
-		padding: 3px 5px;
-		border-radius: var(--fluent-border-radius-sm);
-	}
+		.editable-label {
+			padding: 3px 5px;
+			border-radius: var(--fluent-border-radius-sm);
+		}
 
-	.editable-label:focus {
-		outline: 1px solid var(--accent-fill-rest);
-	}
+		.editable-label:focus {
+			outline: 1px solid var(--accent-fill-rest);
+		}
 
-	/*
+		/*
 	 * Animated active indicator — full tab width (horizontal) / height (vertical).
 	 * Anchored to top: 0; left: 0 of the tablist; JS sets a `translate(x, y)`
 	 * so the indicator tracks both axes. Two-axis translation is required
@@ -937,44 +942,45 @@ Tabbed interface: a tab strip plus the active panel, built from `<Tab>` children
 	 * `left: 0` is deliberately physical (not inset-inline-start): the JS
 	 * offset is the button's physical `offsetLeft`, in both LTR and RTL.
 	 */
-	.fluent-tabs-active-indicator {
-		position: absolute;
-		top: 0;
-		left: 0;
-		background-color: var(--accent-fill-rest);
-		pointer-events: none;
-		transition:
-			transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-			width 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-			height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-			opacity 0.15s ease;
-		border-radius: var(--fluent-border-radius-sm) var(--fluent-border-radius-sm) 0 0;
-	}
-
-	.fluent-tabs-vertical .fluent-tabs-active-indicator {
-		border-radius: 0;
-		border-start-start-radius: var(--fluent-border-radius-sm);
-		border-end-start-radius: var(--fluent-border-radius-sm);
-	}
-
-	/* Panels */
-	.fluent-tabs-panels {
-		flex: 1 1 auto;
-		min-height: 0;
-		min-width: 0;
-	}
-
-	.fluent-tab-panel {
-		padding: 1rem 0;
-	}
-
-	.fluent-tabs-vertical .fluent-tab-panel {
-		padding: 0 1rem;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
 		.fluent-tabs-active-indicator {
-			transition: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			background-color: var(--accent-fill-rest);
+			pointer-events: none;
+			transition:
+				transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+				width 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+				height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+				opacity 0.15s ease;
+			border-radius: var(--fluent-border-radius-sm) var(--fluent-border-radius-sm) 0 0;
+		}
+
+		.fluent-tabs-vertical .fluent-tabs-active-indicator {
+			border-radius: 0;
+			border-start-start-radius: var(--fluent-border-radius-sm);
+			border-end-start-radius: var(--fluent-border-radius-sm);
+		}
+
+		/* Panels */
+		.fluent-tabs-panels {
+			flex: 1 1 auto;
+			min-height: 0;
+			min-width: 0;
+		}
+
+		.fluent-tab-panel {
+			padding: 1rem 0;
+		}
+
+		.fluent-tabs-vertical .fluent-tab-panel {
+			padding: 0 1rem;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.fluent-tabs-active-indicator {
+				transition: none;
+			}
 		}
 	}
 </style>

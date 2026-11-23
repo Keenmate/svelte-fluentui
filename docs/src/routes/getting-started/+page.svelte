@@ -71,6 +71,36 @@
 	</Card>
 
 	<Card>
+		<h2>Element reset and cascade layers</h2>
+		<p>
+			The element reset (margins, box-sizing, body font — Bootstrap-style "reboot") is opt-in. Import it next to the
+			styles if you want it:
+		</p>
+		<pre><code>import svelte-fluentui/reboot.css
+import svelte-fluentui/styles</code></pre>
+		<p>
+			All library CSS lives in <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@layer">cascade layers</a>, in
+			the same order as the other Keenmate libraries:
+		</p>
+		<pre><code>@layer reset, variables, component, overrides;</code></pre>
+		<ul>
+			<li><code>reset</code> — <code>reboot.css</code></li>
+			<li><code>variables</code> — design tokens and the colour palette (<code>--fluent-*</code>, FluentUI defaults)</li>
+			<li><code>component</code> — every component style, including each component's own <code>&lt;style&gt;</code></li>
+			<li><code>overrides</code> — empty; free for your theme</li>
+		</ul>
+		<p>
+			Any CSS of yours that is <strong>not</strong> in a layer beats all of it, whatever its specificity — no
+			<code>!important</code> needed. The flip side: an unlayered reset (normalize.css, Pure.css, a <code>* &#123; margin: 0 &#125;</code>
+			block) beats the components too. Put it in the <code>reset</code> layer:
+		</p>
+		<pre><code>&lt;style&gt;
+  @layer reset, variables, component, overrides;
+  @import url("https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css") layer(reset);
+&lt;/style&gt;</code></pre>
+	</Card>
+
+	<Card>
 		<h2>Customizing Styles with SCSS Variables</h2>
 		<p>If you need to override theme variables, import individual SCSS modules using Sass <code>@use</code> syntax with the <code>with</code> clause:</p>
 		<pre><code>// Create a custom-theme.scss file

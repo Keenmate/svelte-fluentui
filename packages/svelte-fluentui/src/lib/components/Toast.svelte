@@ -168,69 +168,73 @@ For queued, auto-dismissing toasts use `ToastContainer` with the toast service.
 </div>
 
 <style>
-	.fluent-toast-title {
-		flex-grow: 1;
-		font-weight: 600;
-		font-size: 14px;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-toast-action {
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		gap: 8px;
-		width: 48px;
-		min-width: 48px;
-		height: 20px;
-		font-weight: 400;
-	}
+	@layer component {
+		.fluent-toast-title {
+			flex-grow: 1;
+			font-weight: 600;
+			font-size: 14px;
+		}
 
-	.fluent-toast-action:has(.timestamp) {
-		cursor: initial;
-		width: auto;
-	}
+		.fluent-toast-action {
+			display: flex;
+			justify-content: flex-end;
+			align-items: center;
+			gap: 8px;
+			width: 48px;
+			min-width: 48px;
+			height: 20px;
+			font-weight: 400;
+		}
 
-	.fluent-toast-small {
-		font-size: 12px;
-		line-height: 16px;
-	}
+		.fluent-toast-action:has(.timestamp) {
+			cursor: initial;
+			width: auto;
+		}
 
-	.fluent-toast-actions {
-		display: flex;
-		align-items: flex-end;
-		gap: 16px;
-		height: 28px;
-		width: calc(100% - 12px);
-		justify-content: flex-start;
-		padding-inline-start: 24px;
-		margin-top: 0.5rem;
-	}
+		.fluent-toast-small {
+			font-size: 12px;
+			line-height: 16px;
+		}
 
-	.toast-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		width: 100%;
-	}
+		.fluent-toast-actions {
+			display: flex;
+			align-items: flex-end;
+			gap: 16px;
+			height: 28px;
+			width: calc(100% - 12px);
+			justify-content: flex-start;
+			padding-inline-start: 24px;
+			margin-top: 0.5rem;
+		}
 
-	.dismiss-button {
-		background: none;
-		border: none;
-		cursor: pointer;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-		color: var(--neutral-foreground-rest);
-	}
+		.toast-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.5rem;
+			width: 100%;
+		}
 
-	.toast-action-link {
-		font-size: 14px;
-		font-weight: 400;
-	}
+		.dismiss-button {
+			background: none;
+			border: none;
+			cursor: pointer;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0;
+			color: var(--neutral-foreground-rest);
+		}
 
-	.primary-action {
-		margin-inline-end: 1rem;
+		.toast-action-link {
+			font-size: 14px;
+			font-weight: 400;
+		}
+
+		.primary-action {
+			margin-inline-end: 1rem;
+		}
 	}
 </style>

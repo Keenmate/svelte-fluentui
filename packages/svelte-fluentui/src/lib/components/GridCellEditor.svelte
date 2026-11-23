@@ -594,86 +594,90 @@
 </div>
 
 <style>
-	.grid-cell-editor {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		position: relative;
-	}
+	@layer reset, variables, component, overrides;
 
-	.cell-input {
-		width: 100%;
-		height: 100%;
-		padding: 0;
-		margin: 0;
-		border: none;
-		border-radius: 0;
-		background: transparent;
-		color: var(--neutral-foreground-rest, #242424);
-		font: inherit;
-		line-height: inherit;
-		letter-spacing: inherit;
-		box-sizing: border-box;
-		outline: none;
-	}
+	@layer component {
+		.grid-cell-editor {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			position: relative;
+		}
 
-	.cell-input:focus {
-		outline: none;
-	}
+		.cell-input {
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			margin: 0;
+			border: none;
+			border-radius: 0;
+			background: transparent;
+			color: var(--neutral-foreground-rest, #242424);
+			font: inherit;
+			line-height: inherit;
+			letter-spacing: inherit;
+			box-sizing: border-box;
+			outline: none;
+		}
 
-	.cell-input::placeholder {
-		color: var(--neutral-foreground-hint, #707070);
-		opacity: 0.7;
-	}
+		.cell-input:focus {
+			outline: none;
+		}
 
-	.cell-checkbox {
-		width: 18px;
-		height: 18px;
-		cursor: pointer;
-		accent-color: var(--accent-fill-rest, #0078d4);
-	}
+		.cell-input::placeholder {
+			color: var(--neutral-foreground-hint, #707070);
+			opacity: 0.7;
+		}
 
-	/* Autocomplete: a search box, not a dropdown — no chevron (as before the Combobox reuse) */
-	.grid-cell-editor.autocomplete :global(.combobox-indicator) {
-		display: none;
-	}
+		.cell-checkbox {
+			width: 18px;
+			height: 18px;
+			cursor: pointer;
+			accent-color: var(--accent-fill-rest, #0078d4);
+		}
 
-	.cell-loading-indicator {
-		position: absolute;
-		inset-inline-end: 4px;
-		font-size: 10px;
-		color: var(--neutral-foreground-hint, #707070);
-		animation: fluent-pulse 1s infinite;
-	}
+		/* Autocomplete: a search box, not a dropdown — no chevron (as before the Combobox reuse) */
+		.grid-cell-editor.autocomplete :global(.combobox-indicator) {
+			display: none;
+		}
 
-	/* The dropdown list (Select / Combobox `dropdownClass`): portalled, so themed via
+		.cell-loading-indicator {
+			position: absolute;
+			inset-inline-end: 4px;
+			font-size: 10px;
+			color: var(--neutral-foreground-hint, #707070);
+			animation: fluent-pulse 1s infinite;
+		}
+
+		/* The dropdown list (Select / Combobox `dropdownClass`): portalled, so themed via
 	   variables set on :root or a theme selector. Fallbacks = the shared listbox look. */
-	:global(.select-listbox-popover.cell-dropdown),
-	:global(.combobox-listbox.cell-dropdown) {
-		background: var(--fluent-quickgrid-dropdown-bg, var(--neutral-layer-floating, #ffffff));
-		border-color: var(--fluent-quickgrid-dropdown-border, var(--neutral-stroke-rest, #d1d1d1));
-	}
+		:global(.select-listbox-popover.cell-dropdown),
+		:global(.combobox-listbox.cell-dropdown) {
+			background: var(--fluent-quickgrid-dropdown-bg, var(--neutral-layer-floating, #ffffff));
+			border-color: var(--fluent-quickgrid-dropdown-border, var(--neutral-stroke-rest, #d1d1d1));
+		}
 
-	:global(
-		.cell-dropdown:is(.select-listbox-popover, .combobox-listbox)
-			.fluent-option[role="option"]:is(:hover, [data-highlighted]):not([disabled])
-	) {
-		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-stealth-hover, #f0f0f0));
-	}
+		:global(
+			.cell-dropdown:is(.select-listbox-popover, .combobox-listbox)
+				.fluent-option[role="option"]:is(:hover, [data-highlighted]):not([disabled])
+		) {
+			background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-stealth-hover, #f0f0f0));
+		}
 
-	:global(
-		.cell-dropdown:is(.select-listbox-popover, .combobox-listbox)
-			.fluent-option[role="option"][aria-selected="true"]:is(:hover, [data-highlighted]):not([disabled])
-	) {
-		background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-secondary-hover, #ebebeb));
-	}
+		:global(
+			.cell-dropdown:is(.select-listbox-popover, .combobox-listbox)
+				.fluent-option[role="option"][aria-selected="true"]:is(:hover, [data-highlighted]):not([disabled])
+		) {
+			background: var(--fluent-quickgrid-dropdown-highlight-bg, var(--neutral-fill-secondary-hover, #ebebeb));
+		}
 
-	/* Status row of the select editor's list (no options / loading) */
-	.cell-dropdown-empty {
-		padding: 8px 12px;
-		color: var(--neutral-foreground-hint, #707070);
-		font-style: italic;
-		text-align: center;
+		/* Status row of the select editor's list (no options / loading) */
+		.cell-dropdown-empty {
+			padding: 8px 12px;
+			color: var(--neutral-foreground-hint, #707070);
+			font-style: italic;
+			text-align: center;
+		}
 	}
 </style>

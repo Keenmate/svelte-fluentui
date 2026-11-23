@@ -219,40 +219,44 @@ Wrapper for `<fluent-checkbox>` with a clickable value label, optional three-sta
 </span>
 
 <style>
-	:global(fluent-checkbox::part(label)) {
-		display: none;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-checkbox-wrapper {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
+	@layer component {
+		:global(fluent-checkbox::part(label)) {
+			display: none;
+		}
 
-	/* "top" position: label stacks above the checkbox. Label keeps its
+		.fluent-checkbox-wrapper {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		/* "top" position: label stacks above the checkbox. Label keeps its
 	   value-label styling — only the wrapper layout changes. */
-	.fluent-checkbox-wrapper[data-label-position="top"] {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.25rem;
-	}
+		.fluent-checkbox-wrapper[data-label-position="top"] {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.25rem;
+		}
 
-	/* Label appears AFTER the checkbox in the layout (checkbox on the left,
+		/* Label appears AFTER the checkbox in the layout (checkbox on the left,
 	   label on the right) without changing DOM order — accessible name remains
 	   first in the source so screen readers announce it correctly.
 
 	   We use the `order` property rather than `flex-direction: row-reverse`
 	   so the optional status message always trails the [checkbox, label] pair
 	   instead of jumping to the front (which row-reverse would do). */
-	.fluent-checkbox-wrapper[data-label-position="end"] :global(.fluent-value-label) {
-		order: 1;
-	}
-	.fluent-checkbox-wrapper[data-label-position="end"] .checkbox-message {
-		order: 2;
-	}
+		.fluent-checkbox-wrapper[data-label-position="end"] :global(.fluent-value-label) {
+			order: 1;
+		}
+		.fluent-checkbox-wrapper[data-label-position="end"] .checkbox-message {
+			order: 2;
+		}
 
-	.checkbox-message {
-		font-size: 0.875rem;
-		color: var(--neutral-foreground-hint);
+		.checkbox-message {
+			font-size: 0.875rem;
+			color: var(--neutral-foreground-hint);
+		}
 	}
 </style>

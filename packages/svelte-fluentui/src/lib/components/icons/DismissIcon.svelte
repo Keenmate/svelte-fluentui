@@ -32,8 +32,12 @@ Decorative dismiss (×) SVG icon in `currentColor`.
 </svg>
 
 <style>
-	.fluent-dismiss-icon {
-		display: block;
-		flex-shrink: 0;
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		.fluent-dismiss-icon {
+			display: block;
+			flex-shrink: 0;
+		}
 	}
 </style>

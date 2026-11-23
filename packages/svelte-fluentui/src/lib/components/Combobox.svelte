@@ -1044,174 +1044,178 @@ Options come from `options` or `<Option>` children; `value` is always an array.
 </div>
 
 <style>
-	.combobox-root {
-		display: contents;
-	}
+	@layer reset, variables, component, overrides;
 
-	/* ===== Control (bordered box wrapping input + indicator) =====
+	@layer component {
+		.combobox-root {
+			display: contents;
+		}
+
+		/* ===== Control (bordered box wrapping input + indicator) =====
 	 * Box, hover, focus underline (focus-within / open), filled, disabled,
 	 * readonly and embedded come from the shared `.fluent-field-control`
 	 * primitive (_primitives.scss). */
-	.combobox-control {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		cursor: text;
-		min-width: 200px;
-	}
+		.combobox-control {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			cursor: text;
+			min-width: 200px;
+		}
 
-	/* Embedded (e.g. a QuickGrid cell): the primitive drops the frame. */
-	.combobox-control.embedded {
-		min-width: 0;
-	}
+		/* Embedded (e.g. a QuickGrid cell): the primitive drops the frame. */
+		.combobox-control.embedded {
+			min-width: 0;
+		}
 
-	.combobox-control.embedded .combobox-input {
-		font: inherit;
-		color: inherit;
-	}
+		.combobox-control.embedded .combobox-input {
+			font: inherit;
+			color: inherit;
+		}
 
-	.combobox-control.embedded .combobox-indicator {
-		width: auto;
-		margin-inline-end: 0;
-		padding-inline-start: 4px;
-	}
+		.combobox-control.embedded .combobox-indicator {
+			width: auto;
+			margin-inline-end: 0;
+			padding-inline-start: 4px;
+		}
 
-	/* Wrapping main box: holds the chips + input and grows/wraps internally, while
+		/* Wrapping main box: holds the chips + input and grows/wraps internally, while
 	   the indicator stays a separate box at the control's end. This is what lets the
 	   indicator span the full control height when chips wrap (see .combobox-indicator).
 	   Single-line by default; wrapping + vertical padding are added only in inline-tags
 	   mode below. */
-	.combobox-main {
-		display: flex;
-		flex: 1 1 auto;
-		min-width: 0;
-		align-items: center;
-		gap: 4px;
-	}
+		.combobox-main {
+			display: flex;
+			flex: 1 1 auto;
+			min-width: 0;
+			align-items: center;
+			gap: 4px;
+		}
 
-	.combobox-input {
-		flex: 1;
-		min-width: 0;
-		border: none;
-		outline: none;
-		background: transparent;
-		font-family: inherit;
-		font-size: var(--type-ramp-base-font-size, 14px);
-		line-height: var(--type-ramp-base-line-height, 20px);
-		color: var(--neutral-foreground-rest, #242424);
-		padding: 0;
-	}
+		.combobox-input {
+			flex: 1;
+			min-width: 0;
+			border: none;
+			outline: none;
+			background: transparent;
+			font-family: inherit;
+			font-size: var(--type-ramp-base-font-size, 14px);
+			line-height: var(--type-ramp-base-line-height, 20px);
+			color: var(--neutral-foreground-rest, #242424);
+			padding: 0;
+		}
 
-	.combobox-input::placeholder {
-		color: var(--neutral-foreground-hint, #717171);
-	}
+		.combobox-input::placeholder {
+			color: var(--neutral-foreground-hint, #717171);
+		}
 
-	.combobox-input:disabled {
-		cursor: not-allowed;
-	}
+		.combobox-input:disabled {
+			cursor: not-allowed;
+		}
 
-	/* ===== Multi-select control + chips ===== */
-	/* Inline tags: let chips wrap onto multiple rows INSIDE the main box; a little
+		/* ===== Multi-select control + chips ===== */
+		/* Inline tags: let chips wrap onto multiple rows INSIDE the main box; a little
 	 * vertical padding keeps them off the border once it grows past one line. The
 	 * control itself stays nowrap (two boxes: wrapping main + indicator) so the
 	 * indicator can span the full height. (External tags render outside the control,
 	 * so it stays single-line and skips this.) */
-	.combobox-control.multiple.tags-inline .combobox-main {
-		flex-wrap: wrap;
-		/* One unit minus 1px: a row of chips (23.6px: 14px × 1.4 + 2 × 2px) must fit the
+		.combobox-control.multiple.tags-inline .combobox-main {
+			flex-wrap: wrap;
+			/* One unit minus 1px: a row of chips (23.6px: 14px × 1.4 + 2 × 2px) must fit the
 	   32px control (− 2 × 1px border − 2 × 3px = 24px), or chips make the field taller than an empty one. */
-		padding-block: calc(var(--design-unit, 4) * 1px - 1px);
-	}
+			padding-block: calc(var(--design-unit, 4) * 1px - 1px);
+		}
 
-	/* In multi mode the input is just a filter — let it shrink but keep a usable
+		/* In multi mode the input is just a filter — let it shrink but keep a usable
 	 * typing width so it doesn't collapse to nothing between chips. */
-	.combobox-control.multiple .combobox-input {
-		flex: 1 1 60px;
-		min-width: 60px;
-	}
+		.combobox-control.multiple .combobox-input {
+			flex: 1 1 60px;
+			min-width: 60px;
+		}
 
-	/* Selection chips (inline + above/below) are rendered by the shared Chip
+		/* Selection chips (inline + above/below) are rendered by the shared Chip
 	   component (Chip.svelte); their styling and `--fluent-chip-*` tokens live
 	   there. Inline chips pass contrast={readonly || filled} so they stay visible
 	   when the control background matches the chip fill. */
 
-	/* ===== External chips row (tagsPosition top/bottom) ===== */
-	/* A wrapping row that sits outside the control; the chips themselves are the
+		/* ===== External chips row (tagsPosition top/bottom) ===== */
+		/* A wrapping row that sits outside the control; the chips themselves are the
 	   shared Chip component with variant="external" (self-bordered). */
-	.combobox-external-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--fluent-chip-gap, 0.25rem);
-		padding-block: calc(var(--design-unit, 4) * 1px);
-	}
+		.combobox-external-chips {
+			display: flex;
+			flex-wrap: wrap;
+			gap: var(--fluent-chip-gap, 0.25rem);
+			padding-block: calc(var(--design-unit, 4) * 1px);
+		}
 
-	/* Full-height hitbox (Blazor-style) rather than a bare glyph, so the whole toggle
+		/* Full-height hitbox (Blazor-style) rather than a bare glyph, so the whole toggle
 	 * area is clickable, not just the 12px chevron. `align-self: stretch` on the
 	 * nowrap control makes it span the ENTIRE control height, including when the main
 	 * box has grown to multiple wrapped chip rows — matching Autocomplete's toggle.
 	 * The glyph stays centered via the flex centering. A negative inline-end margin
 	 * pulls it flush to the control's end edge, reclaiming the control's end padding.
 	 * No hover background — Microsoft's control doesn't have one. */
-	.combobox-indicator {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		align-self: stretch;
-		width: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		margin-inline-end: calc(var(--design-unit, 4) * -2 * 1px);
-		background: transparent;
-		border: none;
-		padding: 0;
-		cursor: pointer;
-		color: var(--neutral-foreground-hint, #717171);
-		flex-shrink: 0;
-	}
+		.combobox-indicator {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			align-self: stretch;
+			width: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+			margin-inline-end: calc(var(--design-unit, 4) * -2 * 1px);
+			background: transparent;
+			border: none;
+			padding: 0;
+			cursor: pointer;
+			color: var(--neutral-foreground-hint, #717171);
+			flex-shrink: 0;
+		}
 
-	.combobox-indicator:disabled {
-		cursor: not-allowed;
-	}
+		.combobox-indicator:disabled {
+			cursor: not-allowed;
+		}
 
-	/* ===== Dropdown (portalled) =====
+		/* ===== Dropdown (portalled) =====
 	 * `.combobox-listbox` is the popup: surface (background, border, radius,
 	 * shadow) from `.fluent-popup-surface`, padding, height cap and scrolling.
 	 * The `role="listbox"` (`.combobox-options`) and the empty message sit in it. */
-	:global(.combobox-listbox) {
-		display: flex;
-		flex-direction: column;
-		padding: calc(var(--design-unit, 4) * 1px);
-		/* `maxDropdownHeight` (default 300px) or the room PositioningRegion measured, whichever is smaller. */
-		max-height: min(var(--fluent-combobox-dropdown-max-height, 300px), var(--fluent-popup-available-height, 100vh));
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		box-sizing: border-box;
-	}
+		:global(.combobox-listbox) {
+			display: flex;
+			flex-direction: column;
+			padding: calc(var(--design-unit, 4) * 1px);
+			/* `maxDropdownHeight` (default 300px) or the room PositioningRegion measured, whichever is smaller. */
+			max-height: min(var(--fluent-combobox-dropdown-max-height, 300px), var(--fluent-popup-available-height, 100vh));
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			box-sizing: border-box;
+		}
 
-	.combobox-options {
-		display: flex;
-		flex-direction: column;
-	}
+		.combobox-options {
+			display: flex;
+			flex-direction: column;
+		}
 
-	/* Option row layout, hover, highlight, selected, disabled and the
+		/* Option row layout, hover, highlight, selected, disabled and the
 	 * data-filtered-out hide rule now live in Option.svelte (scoped to the
 	 * option element, so they apply wherever it renders). */
 
-	/* Hide a whole group (its header included) once all of its options have
+		/* Hide a whole group (its header included) once all of its options have
 	 * filtered out, so no orphan headers remain. :has() is live, so this
 	 * re-evaluates as data-filtered-out toggles. */
-	:global(.combobox-listbox .option-group:not(:has(.fluent-option:not([data-filtered-out])))) {
-		display: none;
-	}
+		:global(.combobox-listbox .option-group:not(:has(.fluent-option:not([data-filtered-out])))) {
+			display: none;
+		}
 
-	/* Empty-state message shown when the filter matches no options. */
-	:global(.combobox-listbox) .combobox-no-data {
-		padding: 0.75rem 1rem;
-		text-align: center;
-		color: var(--neutral-foreground-hint, #717171);
-		font-size: var(--type-ramp-base-font-size, 14px);
-	}
+		/* Empty-state message shown when the filter matches no options. */
+		:global(.combobox-listbox) .combobox-no-data {
+			padding: 0.75rem 1rem;
+			text-align: center;
+			color: var(--neutral-foreground-hint, #717171);
+			font-size: var(--type-ramp-base-font-size, 14px);
+		}
 
-	/* Hidden options mirror — text lookup only, never displayed. */
-	.combobox-options-source {
-		display: none;
+		/* Hidden options mirror — text lookup only, never displayed. */
+		.combobox-options-source {
+			display: none;
+		}
 	}
 </style>

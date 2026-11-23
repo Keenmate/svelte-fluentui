@@ -973,309 +973,317 @@ Searchable multi- (or single-) select with removable chips, local or async (`sea
 </div>
 
 <style>
-	.fluent-autocomplete {
-		display: flex;
-		flex-direction: column;
-	}
+	@layer reset, variables, component, overrides;
 
-	.autocomplete-container {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		position: relative;
-	}
+	@layer component {
+		.fluent-autocomplete {
+			display: flex;
+			flex-direction: column;
+		}
 
-	/* ===== Input Container (base styles) ===== */
-	.autocomplete-input-container {
-		display: flex;
-		align-items: center;
-		position: relative;
-		box-sizing: border-box;
-		min-height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-	}
+		.autocomplete-container {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			position: relative;
+		}
 
-	/* Main box (start icon + chips + input). Non-inline: transparent, so the
+		/* ===== Input Container (base styles) ===== */
+		.autocomplete-input-container {
+			display: flex;
+			align-items: center;
+			position: relative;
+			box-sizing: border-box;
+			min-height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+		}
+
+		/* Main box (start icon + chips + input). Non-inline: transparent, so the
 	   single-line input keeps its full-width layout and the absolutely-placed
 	   start/end icons are unaffected. Inline: a flex:1 box whose chips + input
 	   wrap internally, sitting beside the separate end-slot box. */
-	.autocomplete-input-main {
-		display: contents;
-	}
+		.autocomplete-input-main {
+			display: contents;
+		}
 
-	.autocomplete-input-container.inline-mode .autocomplete-input-main {
-		flex: 1 1 auto;
-		min-width: 0;
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 4px;
-		/* Vertical padding lives here (not on the container) so wrapped chip rows get
+		.autocomplete-input-container.inline-mode .autocomplete-input-main {
+			flex: 1 1 auto;
+			min-width: 0;
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 4px;
+			/* Vertical padding lives here (not on the container) so wrapped chip rows get
 		   breathing room off the top/bottom edges, while single-row height still lands
 		   on the control height — padding the container instead would clash with the
 		   fixed control-height end-slot square and grow the single-row control.
 		   One unit minus 1px: a row of chips (23.6px: 14px × 1.4 + 2 × 2px) must fit the
 	   32px control (− 2 × 1px border − 2 × 3px = 24px), or chips make the field taller than an empty one. */
-		padding-block: calc(var(--design-unit, 4) * 1px - 1px);
-	}
+			padding-block: calc(var(--design-unit, 4) * 1px - 1px);
+		}
 
-	/* ===== Input Container: Inline Mode (mimics fluent-text-field) ===== */
-	/* Two side-by-side flex boxes: the wrapping main box (chips + input) and the
+		/* ===== Input Container: Inline Mode (mimics fluent-text-field) ===== */
+		/* Two side-by-side flex boxes: the wrapping main box (chips + input) and the
 	   end slot (magnifier/clear/loading). nowrap here so the end slot stays a
 	   separate box always at the end; the chips wrap inside the main box instead.
 	   The box itself (border, hover, focus underline, filled, disabled, readonly)
 	   is the shared `.fluent-field-control` primitive (_primitives.scss). */
-	.autocomplete-input-container.inline-mode {
-		display: flex;
-		flex-wrap: nowrap;
-		align-items: center;
-		gap: 4px;
-	}
+		.autocomplete-input-container.inline-mode {
+			display: flex;
+			flex-wrap: nowrap;
+			align-items: center;
+			gap: 4px;
+		}
 
-	/* Single class so the primitive's disabled / readonly cursor wins. */
-	.inline-mode {
-		cursor: text;
-	}
+		/* Single class so the primitive's disabled / readonly cursor wins. */
+		.inline-mode {
+			cursor: text;
+		}
 
-	/* Selection chips (inline + above/below) are rendered by the shared Chip
+		/* Selection chips (inline + above/below) are rendered by the shared Chip
 	   component (Chip.svelte); their styling and `--fluent-chip-*` tokens live
 	   there. Inline chips pass contrast={readonly || filled} so they stay visible
 	   when the field background matches the chip fill. */
 
-	/* ===== Native Input ===== */
-	.autocomplete-native-input {
-		flex: 1;
-		min-width: 60px;
-		outline: none;
-		font-family: inherit;
-		font-size: 14px;
-		line-height: 20px;
-		color: var(--neutral-foreground-rest, #242424);
-	}
+		/* ===== Native Input ===== */
+		.autocomplete-native-input {
+			flex: 1;
+			min-width: 60px;
+			outline: none;
+			font-family: inherit;
+			font-size: 14px;
+			line-height: 20px;
+			color: var(--neutral-foreground-rest, #242424);
+		}
 
-	/* Inline mode: a bare input inside the control box. */
-	.autocomplete-input-container.inline-mode .autocomplete-native-input {
-		align-self: stretch;
-		border: none;
-		background: transparent;
-		padding: 0;
-	}
+		/* Inline mode: a bare input inside the control box. */
+		.autocomplete-input-container.inline-mode .autocomplete-native-input {
+			align-self: stretch;
+			border: none;
+			background: transparent;
+			padding: 0;
+		}
 
-	.autocomplete-native-input::placeholder {
-		color: var(--neutral-foreground-hint, #717171);
-	}
+		.autocomplete-native-input::placeholder {
+			color: var(--neutral-foreground-hint, #717171);
+		}
 
-	.autocomplete-native-input:disabled {
-		cursor: not-allowed;
-	}
+		.autocomplete-native-input:disabled {
+			cursor: not-allowed;
+		}
 
-	/* Non-inline mode: the input itself is the control box (`.fluent-field-control`),
+		/* Non-inline mode: the input itself is the control box (`.fluent-field-control`),
 	   full width at the control height. */
-	.autocomplete-input-container:not(.inline-mode) .autocomplete-native-input {
-		padding: 4px 8px;
-		height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		width: 100%;
-	}
+		.autocomplete-input-container:not(.inline-mode) .autocomplete-native-input {
+			padding: 4px 8px;
+			height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+			width: 100%;
+		}
 
-	/* ===== Input Start Slot ===== */
-	.input-start {
-		flex-shrink: 0;
-		display: flex;
-		align-items: center;
-		padding-inline-end: 4px;
-		color: var(--neutral-foreground-hint, #707070);
-	}
+		/* ===== Input Start Slot ===== */
+		.input-start {
+			flex-shrink: 0;
+			display: flex;
+			align-items: center;
+			padding-inline-end: 4px;
+			color: var(--neutral-foreground-hint, #707070);
+		}
 
-	/* ===== Input End Slot ===== */
-	/* A fixed control-height square that centers whatever it holds. The clear
+		/* ===== Input End Slot ===== */
+		/* A fixed control-height square that centers whatever it holds. The clear
 	   button, loading spinner, custom end and the search magnifier are all
 	   different sizes, so without a fixed centering box the glyph would land at a
 	   slightly different spot for each — swapping between them (e.g. loading →
 	   magnifier) then looks like the icon jumps. Centering inside a constant square
 	   pins every variant to the same point. */
-	.input-end {
-		flex-shrink: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		box-sizing: border-box;
-		inline-size: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		block-size: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		color: var(--neutral-foreground-hint, #707070);
-	}
+		.input-end {
+			flex-shrink: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			box-sizing: border-box;
+			inline-size: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+			block-size: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+			color: var(--neutral-foreground-hint, #707070);
+		}
 
-	/* Inline (chips) mode: the end slot — and the toggle button inside it — stretch
+		/* Inline (chips) mode: the end slot — and the toggle button inside it — stretch
 	   to the full control height, so the toggle hitbox spans the whole input even
 	   when it has grown taller from multiple wrapped chip rows. The glyph stays
 	   centered via the flex centering below, but the clickable area is now full
 	   height instead of a small centered square. */
-	.autocomplete-input-container.inline-mode .input-end {
-		align-self: stretch;
-		block-size: auto;
-		/* Reclaim the container's inline-end padding so the icon sits flush to the
+		.autocomplete-input-container.inline-mode .input-end {
+			align-self: stretch;
+			block-size: auto;
+			/* Reclaim the container's inline-end padding so the icon sits flush to the
 		   control edge, matching Combobox's toggle (which uses the same negative
 		   margin). Without this the icon is one padding-step (8px) farther in. */
-		margin-inline-end: calc(var(--design-unit, 4) * -2 * 1px);
-	}
+			margin-inline-end: calc(var(--design-unit, 4) * -2 * 1px);
+		}
 
-	.autocomplete-input-container.inline-mode .search-button {
-		height: 100%;
-	}
+		.autocomplete-input-container.inline-mode .search-button {
+			height: 100%;
+		}
 
-	/* Non-inline mode: position end slot inside input, flush to the trailing edge so
+		/* Non-inline mode: position end slot inside input, flush to the trailing edge so
 	   the icon sits the same distance from the edge as Combobox's toggle (the icon is
 	   centered in a control-height box, so flush ≈ 16px glyph inset). */
-	.autocomplete-input-container:not(.inline-mode) .input-end {
-		position: absolute;
-		inset-inline-end: 0;
-		top: 50%;
-		transform: translateY(-50%);
-	}
+		.autocomplete-input-container:not(.inline-mode) .input-end {
+			position: absolute;
+			inset-inline-end: 0;
+			top: 50%;
+			transform: translateY(-50%);
+		}
 
-	.autocomplete-input-container:not(.inline-mode) .input-start {
-		position: absolute;
-		inset-inline-start: 8px;
-		top: 50%;
-		transform: translateY(-50%);
-	}
+		.autocomplete-input-container:not(.inline-mode) .input-start {
+			position: absolute;
+			inset-inline-start: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+		}
 
-	/* Non-inline mode: pad the input so its text doesn't sit underneath the icons */
-	.autocomplete-input-container:not(.inline-mode):has(.input-start) .autocomplete-native-input {
-		padding-inline-start: 32px;
-	}
+		/* Non-inline mode: pad the input so its text doesn't sit underneath the icons */
+		.autocomplete-input-container:not(.inline-mode):has(.input-start) .autocomplete-native-input {
+			padding-inline-start: 32px;
+		}
 
-	/* The end slot is a control-height square pinned to the inline-end; reserve
+		/* The end slot is a control-height square pinned to the inline-end; reserve
 	   enough room that the text never runs under it (same clearance for every
 	   icon variant, since they now share one box). */
-	.autocomplete-input-container:not(.inline-mode):has(.input-end) .autocomplete-native-input {
-		padding-inline-end: 44px;
-	}
+		.autocomplete-input-container:not(.inline-mode):has(.input-end) .autocomplete-native-input {
+			padding-inline-end: 44px;
+		}
 
-	/* The `showClear` ×. Inline mode: a flex item before the end slot. Non-inline:
+		/* The `showClear` ×. Inline mode: a flex item before the end slot. Non-inline:
 	   placed just before the control-height end slot (or at the edge without one),
 	   with the input padded so text doesn't run under it. */
-	.autocomplete-input-container:not(.inline-mode) .autocomplete-clear {
-		position: absolute;
-		inset-inline-end: 4px;
-		top: 50%;
-		transform: translateY(-50%);
-	}
+		.autocomplete-input-container:not(.inline-mode) .autocomplete-clear {
+			position: absolute;
+			inset-inline-end: 4px;
+			top: 50%;
+			transform: translateY(-50%);
+		}
 
-	.autocomplete-input-container:not(.inline-mode):has(.input-end) .autocomplete-clear {
-		inset-inline-end: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-	}
+		.autocomplete-input-container:not(.inline-mode):has(.input-end) .autocomplete-clear {
+			inset-inline-end: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+		}
 
-	.autocomplete-input-container:not(.inline-mode):has(.autocomplete-clear) .autocomplete-native-input {
-		padding-inline-end: 32px;
-	}
+		.autocomplete-input-container:not(.inline-mode):has(.autocomplete-clear) .autocomplete-native-input {
+			padding-inline-end: 32px;
+		}
 
-	.autocomplete-input-container:not(.inline-mode):has(.autocomplete-clear):has(.input-end) .autocomplete-native-input {
-		padding-inline-end: 64px;
-	}
+		.autocomplete-input-container:not(.inline-mode):has(.autocomplete-clear):has(.input-end)
+			.autocomplete-native-input {
+			padding-inline-end: 64px;
+		}
 
-	/* ===== Selected Options Container (above/below modes) ===== */
-	.selected-options {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		padding: 0.25rem 0;
-		max-height: 120px;
-		overflow-y: auto;
-	}
+		/* ===== Selected Options Container (above/below modes) ===== */
+		.selected-options {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+			padding: 0.25rem 0;
+			max-height: 120px;
+			overflow-y: auto;
+		}
 
-	/* ===== Built-in Search Icon (toggles the dropdown) =====
+		/* ===== Built-in Search Icon (toggles the dropdown) =====
 	   Full-height square hitbox so the whole toggle area is clickable, not just
 	   the 16px glyph (matching the Combobox toggle). No hover — like Microsoft. */
-	.search-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		background: transparent;
-		border: none;
-		padding: 0;
-		cursor: pointer;
-		color: var(--accent-fill-rest, #0078d4);
-	}
+		.search-button {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+			height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+			background: transparent;
+			border: none;
+			padding: 0;
+			cursor: pointer;
+			color: var(--accent-fill-rest, #0078d4);
+		}
 
-	.search-button:disabled {
-		cursor: not-allowed;
-	}
+		.search-button:disabled {
+			cursor: not-allowed;
+		}
 
-	/* ===== Loading Indicator ===== */
-	.loading-indicator {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 4px;
-	}
+		/* ===== Loading Indicator ===== */
+		.loading-indicator {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 4px;
+		}
 
-	.spinner {
-		animation: fluent-spin 1s linear infinite;
-	}
+		.spinner {
+			animation: fluent-spin 1s linear infinite;
+		}
 
-	/* ===== Dropdown Options ===== */
-	/* The popup: surface from `.fluent-popup-surface`; capped to the space
+		/* ===== Dropdown Options ===== */
+		/* The popup: surface from `.fluent-popup-surface`; capped to the space
 	   PositioningRegion measured (and the `maxDropdownHeight` prop), scrolls. */
-	.options-list {
-		display: flex;
-		flex-direction: column;
-		box-sizing: border-box;
-		padding: 0.25rem;
-		min-width: 200px;
-		max-height: min(var(--fluent-autocomplete-dropdown-max-height, 300px), var(--fluent-popup-available-height, 100vh));
-		overflow-y: auto;
-		overscroll-behavior: contain;
-	}
+		.options-list {
+			display: flex;
+			flex-direction: column;
+			box-sizing: border-box;
+			padding: 0.25rem;
+			min-width: 200px;
+			max-height: min(
+				var(--fluent-autocomplete-dropdown-max-height, 300px),
+				var(--fluent-popup-available-height, 100vh)
+			);
+			overflow-y: auto;
+			overscroll-behavior: contain;
+		}
 
-	.options-listbox {
-		display: flex;
-		flex-direction: column;
-	}
+		.options-listbox {
+			display: flex;
+			flex-direction: column;
+		}
 
-	.options-header {
-		padding: 0.5rem 0.75rem;
-		border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		margin-bottom: 0.25rem;
-	}
+		.options-header {
+			padding: 0.5rem 0.75rem;
+			border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+			margin-bottom: 0.25rem;
+		}
 
-	.options-footer {
-		padding: 0.5rem 0.75rem;
-		border-top: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		margin-top: 0.25rem;
-	}
+		.options-footer {
+			padding: 0.5rem 0.75rem;
+			border-top: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+			margin-top: 0.25rem;
+		}
 
-	.option-item {
-		background: transparent;
-		border: none;
-		padding: 0.5rem 0.75rem;
-		text-align: start;
-		cursor: pointer;
-		border-radius: var(--fluent-border-radius-md);
-		color: var(--neutral-foreground-rest, #242424);
-		font-size: 0.875rem;
-	}
+		.option-item {
+			background: transparent;
+			border: none;
+			padding: 0.5rem 0.75rem;
+			text-align: start;
+			cursor: pointer;
+			border-radius: var(--fluent-border-radius-md);
+			color: var(--neutral-foreground-rest, #242424);
+			font-size: 0.875rem;
+		}
 
-	.option-item:hover:not(.disabled),
-	.option-item.highlighted {
-		background: var(--neutral-fill-stealth-hover, #f0f0f0);
-	}
+		.option-item:hover:not(.disabled),
+		.option-item.highlighted {
+			background: var(--neutral-fill-stealth-hover, #f0f0f0);
+		}
 
-	.option-item.disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
+		.option-item.disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
 
-	.no-results {
-		padding: 1rem;
-		text-align: center;
-		color: var(--neutral-foreground-hint, #717171);
-		font-size: 0.875rem;
-	}
+		.no-results {
+			padding: 1rem;
+			text-align: center;
+			color: var(--neutral-foreground-hint, #717171);
+			font-size: 0.875rem;
+		}
 
-	.max-message {
-		font-size: 0.875rem;
-		color: var(--neutral-foreground-hint, #717171);
-		padding: 0.25rem 0.5rem;
+		.max-message {
+			font-size: 0.875rem;
+			color: var(--neutral-foreground-hint, #717171);
+			padding: 0.25rem 0.5rem;
+		}
 	}
 </style>

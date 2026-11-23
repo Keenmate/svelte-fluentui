@@ -141,7 +141,10 @@ The region publishes `--fluent-popup-available-height` (room left on the side it
 {/if}
 
 <style>
-	/* Floating variant lifts above page content. The static wrapper mode is
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* Floating variant lifts above page content. The static wrapper mode is
 	 * used inside NavLink etc. — applying z-index there would lift every nav
 	 * item above modals.
 	 *
@@ -150,18 +153,19 @@ The region publishes `--fluent-popup-available-height` (room left on the side it
 	 * The remaining rules undo the UA `[popover]` defaults (border, padding,
 	 * margin, centered `inset`, opaque background) so our Floating-UI `left`/`top`
 	 * drive the position and the wrapper stays visually transparent. */
-	.positioning-region-floating {
-		z-index: var(--fluent-z-popover);
-		inset: auto;
-		margin: 0;
-		border: 0;
-		padding: 0;
-		width: auto;
-		height: auto;
-		max-width: none;
-		max-height: none;
-		overflow: visible;
-		background: transparent;
-		color: inherit;
+		.positioning-region-floating {
+			z-index: var(--fluent-z-popover);
+			inset: auto;
+			margin: 0;
+			border: 0;
+			padding: 0;
+			width: auto;
+			height: auto;
+			max-width: none;
+			max-height: none;
+			overflow: visible;
+			background: transparent;
+			color: inherit;
+		}
 	}
 </style>

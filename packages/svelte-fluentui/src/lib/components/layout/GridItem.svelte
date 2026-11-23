@@ -216,593 +216,597 @@ A cell of a `Grid`: spans 1–12 columns per breakpoint (`xs`…`xxl`, mobile-fi
 {/if}
 
 <style>
-	div {
-		box-sizing: border-box;
-	}
+	@layer reset, variables, component, overrides;
 
-	/* Grid column sizing */
-	div[data-xs="0"] {
-		flex-basis: auto;
-		flex-grow: 1;
-		max-width: 100%;
-	}
+	@layer component {
+		div {
+			box-sizing: border-box;
+		}
 
-	div[data-xs="1"] {
-		flex-basis: 8.333333%;
-		max-width: 8.333333%;
-	}
-	div[data-xs="2"] {
-		flex-basis: 16.666667%;
-		max-width: 16.666667%;
-	}
-	div[data-xs="3"] {
-		flex-basis: 25%;
-		max-width: 25%;
-	}
-	div[data-xs="4"] {
-		flex-basis: 33.333333%;
-		max-width: 33.333333%;
-	}
-	div[data-xs="5"] {
-		flex-basis: 41.666667%;
-		max-width: 41.666667%;
-	}
-	div[data-xs="6"] {
-		flex-basis: 50%;
-		max-width: 50%;
-	}
-	div[data-xs="7"] {
-		flex-basis: 58.333333%;
-		max-width: 58.333333%;
-	}
-	div[data-xs="8"] {
-		flex-basis: 66.666667%;
-		max-width: 66.666667%;
-	}
-	div[data-xs="9"] {
-		flex-basis: 75%;
-		max-width: 75%;
-	}
-	div[data-xs="10"] {
-		flex-basis: 83.333333%;
-		max-width: 83.333333%;
-	}
-	div[data-xs="11"] {
-		flex-basis: 91.666667%;
-		max-width: 91.666667%;
-	}
-	div[data-xs="12"] {
-		flex-basis: 100%;
-		max-width: 100%;
-	}
+		/* Grid column sizing */
+		div[data-xs="0"] {
+			flex-basis: auto;
+			flex-grow: 1;
+			max-width: 100%;
+		}
 
-	/* Responsive breakpoints */
-	@media (min-width: 600px) {
-		div[data-sm="1"] {
+		div[data-xs="1"] {
 			flex-basis: 8.333333%;
 			max-width: 8.333333%;
 		}
-		div[data-sm="2"] {
+		div[data-xs="2"] {
 			flex-basis: 16.666667%;
 			max-width: 16.666667%;
 		}
-		div[data-sm="3"] {
+		div[data-xs="3"] {
 			flex-basis: 25%;
 			max-width: 25%;
 		}
-		div[data-sm="4"] {
+		div[data-xs="4"] {
 			flex-basis: 33.333333%;
 			max-width: 33.333333%;
 		}
-		div[data-sm="5"] {
+		div[data-xs="5"] {
 			flex-basis: 41.666667%;
 			max-width: 41.666667%;
 		}
-		div[data-sm="6"] {
+		div[data-xs="6"] {
 			flex-basis: 50%;
 			max-width: 50%;
 		}
-		div[data-sm="7"] {
+		div[data-xs="7"] {
 			flex-basis: 58.333333%;
 			max-width: 58.333333%;
 		}
-		div[data-sm="8"] {
+		div[data-xs="8"] {
 			flex-basis: 66.666667%;
 			max-width: 66.666667%;
 		}
-		div[data-sm="9"] {
+		div[data-xs="9"] {
 			flex-basis: 75%;
 			max-width: 75%;
 		}
-		div[data-sm="10"] {
+		div[data-xs="10"] {
 			flex-basis: 83.333333%;
 			max-width: 83.333333%;
 		}
-		div[data-sm="11"] {
+		div[data-xs="11"] {
 			flex-basis: 91.666667%;
 			max-width: 91.666667%;
 		}
-		div[data-sm="12"] {
+		div[data-xs="12"] {
 			flex-basis: 100%;
 			max-width: 100%;
 		}
-	}
 
-	@media (min-width: 960px) {
-		div[data-md="1"] {
-			flex-basis: 8.333333%;
-			max-width: 8.333333%;
+		/* Responsive breakpoints */
+		@media (min-width: 600px) {
+			div[data-sm="1"] {
+				flex-basis: 8.333333%;
+				max-width: 8.333333%;
+			}
+			div[data-sm="2"] {
+				flex-basis: 16.666667%;
+				max-width: 16.666667%;
+			}
+			div[data-sm="3"] {
+				flex-basis: 25%;
+				max-width: 25%;
+			}
+			div[data-sm="4"] {
+				flex-basis: 33.333333%;
+				max-width: 33.333333%;
+			}
+			div[data-sm="5"] {
+				flex-basis: 41.666667%;
+				max-width: 41.666667%;
+			}
+			div[data-sm="6"] {
+				flex-basis: 50%;
+				max-width: 50%;
+			}
+			div[data-sm="7"] {
+				flex-basis: 58.333333%;
+				max-width: 58.333333%;
+			}
+			div[data-sm="8"] {
+				flex-basis: 66.666667%;
+				max-width: 66.666667%;
+			}
+			div[data-sm="9"] {
+				flex-basis: 75%;
+				max-width: 75%;
+			}
+			div[data-sm="10"] {
+				flex-basis: 83.333333%;
+				max-width: 83.333333%;
+			}
+			div[data-sm="11"] {
+				flex-basis: 91.666667%;
+				max-width: 91.666667%;
+			}
+			div[data-sm="12"] {
+				flex-basis: 100%;
+				max-width: 100%;
+			}
 		}
-		div[data-md="2"] {
-			flex-basis: 16.666667%;
-			max-width: 16.666667%;
-		}
-		div[data-md="3"] {
-			flex-basis: 25%;
-			max-width: 25%;
-		}
-		div[data-md="4"] {
-			flex-basis: 33.333333%;
-			max-width: 33.333333%;
-		}
-		div[data-md="5"] {
-			flex-basis: 41.666667%;
-			max-width: 41.666667%;
-		}
-		div[data-md="6"] {
-			flex-basis: 50%;
-			max-width: 50%;
-		}
-		div[data-md="7"] {
-			flex-basis: 58.333333%;
-			max-width: 58.333333%;
-		}
-		div[data-md="8"] {
-			flex-basis: 66.666667%;
-			max-width: 66.666667%;
-		}
-		div[data-md="9"] {
-			flex-basis: 75%;
-			max-width: 75%;
-		}
-		div[data-md="10"] {
-			flex-basis: 83.333333%;
-			max-width: 83.333333%;
-		}
-		div[data-md="11"] {
-			flex-basis: 91.666667%;
-			max-width: 91.666667%;
-		}
-		div[data-md="12"] {
-			flex-basis: 100%;
-			max-width: 100%;
-		}
-	}
 
-	@media (min-width: 1280px) {
-		div[data-lg="1"] {
-			flex-basis: 8.333333%;
-			max-width: 8.333333%;
+		@media (min-width: 960px) {
+			div[data-md="1"] {
+				flex-basis: 8.333333%;
+				max-width: 8.333333%;
+			}
+			div[data-md="2"] {
+				flex-basis: 16.666667%;
+				max-width: 16.666667%;
+			}
+			div[data-md="3"] {
+				flex-basis: 25%;
+				max-width: 25%;
+			}
+			div[data-md="4"] {
+				flex-basis: 33.333333%;
+				max-width: 33.333333%;
+			}
+			div[data-md="5"] {
+				flex-basis: 41.666667%;
+				max-width: 41.666667%;
+			}
+			div[data-md="6"] {
+				flex-basis: 50%;
+				max-width: 50%;
+			}
+			div[data-md="7"] {
+				flex-basis: 58.333333%;
+				max-width: 58.333333%;
+			}
+			div[data-md="8"] {
+				flex-basis: 66.666667%;
+				max-width: 66.666667%;
+			}
+			div[data-md="9"] {
+				flex-basis: 75%;
+				max-width: 75%;
+			}
+			div[data-md="10"] {
+				flex-basis: 83.333333%;
+				max-width: 83.333333%;
+			}
+			div[data-md="11"] {
+				flex-basis: 91.666667%;
+				max-width: 91.666667%;
+			}
+			div[data-md="12"] {
+				flex-basis: 100%;
+				max-width: 100%;
+			}
 		}
-		div[data-lg="2"] {
-			flex-basis: 16.666667%;
-			max-width: 16.666667%;
-		}
-		div[data-lg="3"] {
-			flex-basis: 25%;
-			max-width: 25%;
-		}
-		div[data-lg="4"] {
-			flex-basis: 33.333333%;
-			max-width: 33.333333%;
-		}
-		div[data-lg="5"] {
-			flex-basis: 41.666667%;
-			max-width: 41.666667%;
-		}
-		div[data-lg="6"] {
-			flex-basis: 50%;
-			max-width: 50%;
-		}
-		div[data-lg="7"] {
-			flex-basis: 58.333333%;
-			max-width: 58.333333%;
-		}
-		div[data-lg="8"] {
-			flex-basis: 66.666667%;
-			max-width: 66.666667%;
-		}
-		div[data-lg="9"] {
-			flex-basis: 75%;
-			max-width: 75%;
-		}
-		div[data-lg="10"] {
-			flex-basis: 83.333333%;
-			max-width: 83.333333%;
-		}
-		div[data-lg="11"] {
-			flex-basis: 91.666667%;
-			max-width: 91.666667%;
-		}
-		div[data-lg="12"] {
-			flex-basis: 100%;
-			max-width: 100%;
-		}
-	}
 
-	@media (min-width: 1920px) {
-		div[data-xl="1"] {
-			flex-basis: 8.333333%;
-			max-width: 8.333333%;
+		@media (min-width: 1280px) {
+			div[data-lg="1"] {
+				flex-basis: 8.333333%;
+				max-width: 8.333333%;
+			}
+			div[data-lg="2"] {
+				flex-basis: 16.666667%;
+				max-width: 16.666667%;
+			}
+			div[data-lg="3"] {
+				flex-basis: 25%;
+				max-width: 25%;
+			}
+			div[data-lg="4"] {
+				flex-basis: 33.333333%;
+				max-width: 33.333333%;
+			}
+			div[data-lg="5"] {
+				flex-basis: 41.666667%;
+				max-width: 41.666667%;
+			}
+			div[data-lg="6"] {
+				flex-basis: 50%;
+				max-width: 50%;
+			}
+			div[data-lg="7"] {
+				flex-basis: 58.333333%;
+				max-width: 58.333333%;
+			}
+			div[data-lg="8"] {
+				flex-basis: 66.666667%;
+				max-width: 66.666667%;
+			}
+			div[data-lg="9"] {
+				flex-basis: 75%;
+				max-width: 75%;
+			}
+			div[data-lg="10"] {
+				flex-basis: 83.333333%;
+				max-width: 83.333333%;
+			}
+			div[data-lg="11"] {
+				flex-basis: 91.666667%;
+				max-width: 91.666667%;
+			}
+			div[data-lg="12"] {
+				flex-basis: 100%;
+				max-width: 100%;
+			}
 		}
-		div[data-xl="2"] {
-			flex-basis: 16.666667%;
-			max-width: 16.666667%;
-		}
-		div[data-xl="3"] {
-			flex-basis: 25%;
-			max-width: 25%;
-		}
-		div[data-xl="4"] {
-			flex-basis: 33.333333%;
-			max-width: 33.333333%;
-		}
-		div[data-xl="5"] {
-			flex-basis: 41.666667%;
-			max-width: 41.666667%;
-		}
-		div[data-xl="6"] {
-			flex-basis: 50%;
-			max-width: 50%;
-		}
-		div[data-xl="7"] {
-			flex-basis: 58.333333%;
-			max-width: 58.333333%;
-		}
-		div[data-xl="8"] {
-			flex-basis: 66.666667%;
-			max-width: 66.666667%;
-		}
-		div[data-xl="9"] {
-			flex-basis: 75%;
-			max-width: 75%;
-		}
-		div[data-xl="10"] {
-			flex-basis: 83.333333%;
-			max-width: 83.333333%;
-		}
-		div[data-xl="11"] {
-			flex-basis: 91.666667%;
-			max-width: 91.666667%;
-		}
-		div[data-xl="12"] {
-			flex-basis: 100%;
-			max-width: 100%;
-		}
-	}
 
-	@media (min-width: 2560px) {
-		div[data-xxl="1"] {
-			flex-basis: 8.333333%;
-			max-width: 8.333333%;
+		@media (min-width: 1920px) {
+			div[data-xl="1"] {
+				flex-basis: 8.333333%;
+				max-width: 8.333333%;
+			}
+			div[data-xl="2"] {
+				flex-basis: 16.666667%;
+				max-width: 16.666667%;
+			}
+			div[data-xl="3"] {
+				flex-basis: 25%;
+				max-width: 25%;
+			}
+			div[data-xl="4"] {
+				flex-basis: 33.333333%;
+				max-width: 33.333333%;
+			}
+			div[data-xl="5"] {
+				flex-basis: 41.666667%;
+				max-width: 41.666667%;
+			}
+			div[data-xl="6"] {
+				flex-basis: 50%;
+				max-width: 50%;
+			}
+			div[data-xl="7"] {
+				flex-basis: 58.333333%;
+				max-width: 58.333333%;
+			}
+			div[data-xl="8"] {
+				flex-basis: 66.666667%;
+				max-width: 66.666667%;
+			}
+			div[data-xl="9"] {
+				flex-basis: 75%;
+				max-width: 75%;
+			}
+			div[data-xl="10"] {
+				flex-basis: 83.333333%;
+				max-width: 83.333333%;
+			}
+			div[data-xl="11"] {
+				flex-basis: 91.666667%;
+				max-width: 91.666667%;
+			}
+			div[data-xl="12"] {
+				flex-basis: 100%;
+				max-width: 100%;
+			}
 		}
-		div[data-xxl="2"] {
-			flex-basis: 16.666667%;
-			max-width: 16.666667%;
-		}
-		div[data-xxl="3"] {
-			flex-basis: 25%;
-			max-width: 25%;
-		}
-		div[data-xxl="4"] {
-			flex-basis: 33.333333%;
-			max-width: 33.333333%;
-		}
-		div[data-xxl="5"] {
-			flex-basis: 41.666667%;
-			max-width: 41.666667%;
-		}
-		div[data-xxl="6"] {
-			flex-basis: 50%;
-			max-width: 50%;
-		}
-		div[data-xxl="7"] {
-			flex-basis: 58.333333%;
-			max-width: 58.333333%;
-		}
-		div[data-xxl="8"] {
-			flex-basis: 66.666667%;
-			max-width: 66.666667%;
-		}
-		div[data-xxl="9"] {
-			flex-basis: 75%;
-			max-width: 75%;
-		}
-		div[data-xxl="10"] {
-			flex-basis: 83.333333%;
-			max-width: 83.333333%;
-		}
-		div[data-xxl="11"] {
-			flex-basis: 91.666667%;
-			max-width: 91.666667%;
-		}
-		div[data-xxl="12"] {
-			flex-basis: 100%;
-			max-width: 100%;
-		}
-	}
 
-	/* ===== Container-query mode (opt-in via <Grid container>) ===== */
-	/* Column values stay on data-* attributes (CSP-clean: no inline styles).
+		@media (min-width: 2560px) {
+			div[data-xxl="1"] {
+				flex-basis: 8.333333%;
+				max-width: 8.333333%;
+			}
+			div[data-xxl="2"] {
+				flex-basis: 16.666667%;
+				max-width: 16.666667%;
+			}
+			div[data-xxl="3"] {
+				flex-basis: 25%;
+				max-width: 25%;
+			}
+			div[data-xxl="4"] {
+				flex-basis: 33.333333%;
+				max-width: 33.333333%;
+			}
+			div[data-xxl="5"] {
+				flex-basis: 41.666667%;
+				max-width: 41.666667%;
+			}
+			div[data-xxl="6"] {
+				flex-basis: 50%;
+				max-width: 50%;
+			}
+			div[data-xxl="7"] {
+				flex-basis: 58.333333%;
+				max-width: 58.333333%;
+			}
+			div[data-xxl="8"] {
+				flex-basis: 66.666667%;
+				max-width: 66.666667%;
+			}
+			div[data-xxl="9"] {
+				flex-basis: 75%;
+				max-width: 75%;
+			}
+			div[data-xxl="10"] {
+				flex-basis: 83.333333%;
+				max-width: 83.333333%;
+			}
+			div[data-xxl="11"] {
+				flex-basis: 91.666667%;
+				max-width: 91.666667%;
+			}
+			div[data-xxl="12"] {
+				flex-basis: 100%;
+				max-width: 100%;
+			}
+		}
+
+		/* ===== Container-query mode (opt-in via <Grid container>) ===== */
+		/* Column values stay on data-* attributes (CSP-clean: no inline styles).
 	   These map each data-* value to a CSS var, gated by [data-cq] so viewport
 	   items are untouched. The base rule below sizes from --_col; the @container
 	   activations only reassign --_col, so a named container needs just ~5 rules. */
-	div[data-cq][data-xs="1"] {
-		--_xs: 1;
-	}
-	div[data-cq][data-xs="2"] {
-		--_xs: 2;
-	}
-	div[data-cq][data-xs="3"] {
-		--_xs: 3;
-	}
-	div[data-cq][data-xs="4"] {
-		--_xs: 4;
-	}
-	div[data-cq][data-xs="5"] {
-		--_xs: 5;
-	}
-	div[data-cq][data-xs="6"] {
-		--_xs: 6;
-	}
-	div[data-cq][data-xs="7"] {
-		--_xs: 7;
-	}
-	div[data-cq][data-xs="8"] {
-		--_xs: 8;
-	}
-	div[data-cq][data-xs="9"] {
-		--_xs: 9;
-	}
-	div[data-cq][data-xs="10"] {
-		--_xs: 10;
-	}
-	div[data-cq][data-xs="11"] {
-		--_xs: 11;
-	}
-	div[data-cq][data-xs="12"] {
-		--_xs: 12;
-	}
-	div[data-cq][data-sm="1"] {
-		--_sm: 1;
-	}
-	div[data-cq][data-sm="2"] {
-		--_sm: 2;
-	}
-	div[data-cq][data-sm="3"] {
-		--_sm: 3;
-	}
-	div[data-cq][data-sm="4"] {
-		--_sm: 4;
-	}
-	div[data-cq][data-sm="5"] {
-		--_sm: 5;
-	}
-	div[data-cq][data-sm="6"] {
-		--_sm: 6;
-	}
-	div[data-cq][data-sm="7"] {
-		--_sm: 7;
-	}
-	div[data-cq][data-sm="8"] {
-		--_sm: 8;
-	}
-	div[data-cq][data-sm="9"] {
-		--_sm: 9;
-	}
-	div[data-cq][data-sm="10"] {
-		--_sm: 10;
-	}
-	div[data-cq][data-sm="11"] {
-		--_sm: 11;
-	}
-	div[data-cq][data-sm="12"] {
-		--_sm: 12;
-	}
-	div[data-cq][data-md="1"] {
-		--_md: 1;
-	}
-	div[data-cq][data-md="2"] {
-		--_md: 2;
-	}
-	div[data-cq][data-md="3"] {
-		--_md: 3;
-	}
-	div[data-cq][data-md="4"] {
-		--_md: 4;
-	}
-	div[data-cq][data-md="5"] {
-		--_md: 5;
-	}
-	div[data-cq][data-md="6"] {
-		--_md: 6;
-	}
-	div[data-cq][data-md="7"] {
-		--_md: 7;
-	}
-	div[data-cq][data-md="8"] {
-		--_md: 8;
-	}
-	div[data-cq][data-md="9"] {
-		--_md: 9;
-	}
-	div[data-cq][data-md="10"] {
-		--_md: 10;
-	}
-	div[data-cq][data-md="11"] {
-		--_md: 11;
-	}
-	div[data-cq][data-md="12"] {
-		--_md: 12;
-	}
-	div[data-cq][data-lg="1"] {
-		--_lg: 1;
-	}
-	div[data-cq][data-lg="2"] {
-		--_lg: 2;
-	}
-	div[data-cq][data-lg="3"] {
-		--_lg: 3;
-	}
-	div[data-cq][data-lg="4"] {
-		--_lg: 4;
-	}
-	div[data-cq][data-lg="5"] {
-		--_lg: 5;
-	}
-	div[data-cq][data-lg="6"] {
-		--_lg: 6;
-	}
-	div[data-cq][data-lg="7"] {
-		--_lg: 7;
-	}
-	div[data-cq][data-lg="8"] {
-		--_lg: 8;
-	}
-	div[data-cq][data-lg="9"] {
-		--_lg: 9;
-	}
-	div[data-cq][data-lg="10"] {
-		--_lg: 10;
-	}
-	div[data-cq][data-lg="11"] {
-		--_lg: 11;
-	}
-	div[data-cq][data-lg="12"] {
-		--_lg: 12;
-	}
-	div[data-cq][data-xl="1"] {
-		--_xl: 1;
-	}
-	div[data-cq][data-xl="2"] {
-		--_xl: 2;
-	}
-	div[data-cq][data-xl="3"] {
-		--_xl: 3;
-	}
-	div[data-cq][data-xl="4"] {
-		--_xl: 4;
-	}
-	div[data-cq][data-xl="5"] {
-		--_xl: 5;
-	}
-	div[data-cq][data-xl="6"] {
-		--_xl: 6;
-	}
-	div[data-cq][data-xl="7"] {
-		--_xl: 7;
-	}
-	div[data-cq][data-xl="8"] {
-		--_xl: 8;
-	}
-	div[data-cq][data-xl="9"] {
-		--_xl: 9;
-	}
-	div[data-cq][data-xl="10"] {
-		--_xl: 10;
-	}
-	div[data-cq][data-xl="11"] {
-		--_xl: 11;
-	}
-	div[data-cq][data-xl="12"] {
-		--_xl: 12;
-	}
-	div[data-cq][data-xxl="1"] {
-		--_xxl: 1;
-	}
-	div[data-cq][data-xxl="2"] {
-		--_xxl: 2;
-	}
-	div[data-cq][data-xxl="3"] {
-		--_xxl: 3;
-	}
-	div[data-cq][data-xxl="4"] {
-		--_xxl: 4;
-	}
-	div[data-cq][data-xxl="5"] {
-		--_xxl: 5;
-	}
-	div[data-cq][data-xxl="6"] {
-		--_xxl: 6;
-	}
-	div[data-cq][data-xxl="7"] {
-		--_xxl: 7;
-	}
-	div[data-cq][data-xxl="8"] {
-		--_xxl: 8;
-	}
-	div[data-cq][data-xxl="9"] {
-		--_xxl: 9;
-	}
-	div[data-cq][data-xxl="10"] {
-		--_xxl: 10;
-	}
-	div[data-cq][data-xxl="11"] {
-		--_xxl: 11;
-	}
-	div[data-cq][data-xxl="12"] {
-		--_xxl: 12;
-	}
+		div[data-cq][data-xs="1"] {
+			--_xs: 1;
+		}
+		div[data-cq][data-xs="2"] {
+			--_xs: 2;
+		}
+		div[data-cq][data-xs="3"] {
+			--_xs: 3;
+		}
+		div[data-cq][data-xs="4"] {
+			--_xs: 4;
+		}
+		div[data-cq][data-xs="5"] {
+			--_xs: 5;
+		}
+		div[data-cq][data-xs="6"] {
+			--_xs: 6;
+		}
+		div[data-cq][data-xs="7"] {
+			--_xs: 7;
+		}
+		div[data-cq][data-xs="8"] {
+			--_xs: 8;
+		}
+		div[data-cq][data-xs="9"] {
+			--_xs: 9;
+		}
+		div[data-cq][data-xs="10"] {
+			--_xs: 10;
+		}
+		div[data-cq][data-xs="11"] {
+			--_xs: 11;
+		}
+		div[data-cq][data-xs="12"] {
+			--_xs: 12;
+		}
+		div[data-cq][data-sm="1"] {
+			--_sm: 1;
+		}
+		div[data-cq][data-sm="2"] {
+			--_sm: 2;
+		}
+		div[data-cq][data-sm="3"] {
+			--_sm: 3;
+		}
+		div[data-cq][data-sm="4"] {
+			--_sm: 4;
+		}
+		div[data-cq][data-sm="5"] {
+			--_sm: 5;
+		}
+		div[data-cq][data-sm="6"] {
+			--_sm: 6;
+		}
+		div[data-cq][data-sm="7"] {
+			--_sm: 7;
+		}
+		div[data-cq][data-sm="8"] {
+			--_sm: 8;
+		}
+		div[data-cq][data-sm="9"] {
+			--_sm: 9;
+		}
+		div[data-cq][data-sm="10"] {
+			--_sm: 10;
+		}
+		div[data-cq][data-sm="11"] {
+			--_sm: 11;
+		}
+		div[data-cq][data-sm="12"] {
+			--_sm: 12;
+		}
+		div[data-cq][data-md="1"] {
+			--_md: 1;
+		}
+		div[data-cq][data-md="2"] {
+			--_md: 2;
+		}
+		div[data-cq][data-md="3"] {
+			--_md: 3;
+		}
+		div[data-cq][data-md="4"] {
+			--_md: 4;
+		}
+		div[data-cq][data-md="5"] {
+			--_md: 5;
+		}
+		div[data-cq][data-md="6"] {
+			--_md: 6;
+		}
+		div[data-cq][data-md="7"] {
+			--_md: 7;
+		}
+		div[data-cq][data-md="8"] {
+			--_md: 8;
+		}
+		div[data-cq][data-md="9"] {
+			--_md: 9;
+		}
+		div[data-cq][data-md="10"] {
+			--_md: 10;
+		}
+		div[data-cq][data-md="11"] {
+			--_md: 11;
+		}
+		div[data-cq][data-md="12"] {
+			--_md: 12;
+		}
+		div[data-cq][data-lg="1"] {
+			--_lg: 1;
+		}
+		div[data-cq][data-lg="2"] {
+			--_lg: 2;
+		}
+		div[data-cq][data-lg="3"] {
+			--_lg: 3;
+		}
+		div[data-cq][data-lg="4"] {
+			--_lg: 4;
+		}
+		div[data-cq][data-lg="5"] {
+			--_lg: 5;
+		}
+		div[data-cq][data-lg="6"] {
+			--_lg: 6;
+		}
+		div[data-cq][data-lg="7"] {
+			--_lg: 7;
+		}
+		div[data-cq][data-lg="8"] {
+			--_lg: 8;
+		}
+		div[data-cq][data-lg="9"] {
+			--_lg: 9;
+		}
+		div[data-cq][data-lg="10"] {
+			--_lg: 10;
+		}
+		div[data-cq][data-lg="11"] {
+			--_lg: 11;
+		}
+		div[data-cq][data-lg="12"] {
+			--_lg: 12;
+		}
+		div[data-cq][data-xl="1"] {
+			--_xl: 1;
+		}
+		div[data-cq][data-xl="2"] {
+			--_xl: 2;
+		}
+		div[data-cq][data-xl="3"] {
+			--_xl: 3;
+		}
+		div[data-cq][data-xl="4"] {
+			--_xl: 4;
+		}
+		div[data-cq][data-xl="5"] {
+			--_xl: 5;
+		}
+		div[data-cq][data-xl="6"] {
+			--_xl: 6;
+		}
+		div[data-cq][data-xl="7"] {
+			--_xl: 7;
+		}
+		div[data-cq][data-xl="8"] {
+			--_xl: 8;
+		}
+		div[data-cq][data-xl="9"] {
+			--_xl: 9;
+		}
+		div[data-cq][data-xl="10"] {
+			--_xl: 10;
+		}
+		div[data-cq][data-xl="11"] {
+			--_xl: 11;
+		}
+		div[data-cq][data-xl="12"] {
+			--_xl: 12;
+		}
+		div[data-cq][data-xxl="1"] {
+			--_xxl: 1;
+		}
+		div[data-cq][data-xxl="2"] {
+			--_xxl: 2;
+		}
+		div[data-cq][data-xxl="3"] {
+			--_xxl: 3;
+		}
+		div[data-cq][data-xxl="4"] {
+			--_xxl: 4;
+		}
+		div[data-cq][data-xxl="5"] {
+			--_xxl: 5;
+		}
+		div[data-cq][data-xxl="6"] {
+			--_xxl: 6;
+		}
+		div[data-cq][data-xxl="7"] {
+			--_xxl: 7;
+		}
+		div[data-cq][data-xxl="8"] {
+			--_xxl: 8;
+		}
+		div[data-cq][data-xxl="9"] {
+			--_xxl: 9;
+		}
+		div[data-cq][data-xxl="10"] {
+			--_xxl: 10;
+		}
+		div[data-cq][data-xxl="11"] {
+			--_xxl: 11;
+		}
+		div[data-cq][data-xxl="12"] {
+			--_xxl: 12;
+		}
 
-	/* Register --_col as a number that falls back to 12 (full width) if a value
+		/* Register --_col as a number that falls back to 12 (full width) if a value
 	   ever becomes invalid at computed-value time, instead of collapsing to the
 	   guaranteed-invalid empty value (which turns flex-basis into `auto` and
 	   shrinks items to content width). Belt-and-suspenders now that the fallback
 	   chains no longer self-reference --_col. */
-	@property --_col {
-		syntax: "<number>";
-		inherits: false;
-		initial-value: 12;
-	}
+		@property --_col {
+			syntax: "<number>";
+			inherits: false;
+			initial-value: 12;
+		}
 
-	/* Base: mobile-first, sized from --_col (defaults to --_xs, else 12 = full).
+		/* Base: mobile-first, sized from --_col (defaults to --_xs, else 12 = full).
 	   Two attributes ([data-cq][data-xs]) outspecify the 1-attr viewport rules,
 	   so container items never pick up viewport flex-basis regardless of order. */
-	div[data-cq][data-xs] {
-		--_col: var(--_xs, 12);
-		flex-basis: calc(var(--_col) / 12 * 100%);
-		max-width: calc(var(--_col) / 12 * 100%);
-	}
+		div[data-cq][data-xs] {
+			--_col: var(--_xs, 12);
+			flex-basis: calc(var(--_col) / 12 * 100%);
+			max-width: calc(var(--_col) / 12 * 100%);
+		}
 
-	/* Default (unnamed) container: queries the nearest container = the Grid itself.
+		/* Default (unnamed) container: queries the nearest container = the Grid itself.
 	   Named containers inject their own @container rules at runtime via
 	   containerQueries.ts. Keep these min-widths in sync with DEFAULT_GRID_BREAKPOINTS.
 	   The `:not(.fluent-grid-custom-bp)` gate lets an app-wide breakpoint config
 	   (configureGridBreakpoints / --fluent-grid-breakpoint-* vars) disable these
 	   defaults and replace them with generated rules — no threshold overlap. */
-	@container (min-width: 480px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
-			--_col: var(--_sm, var(--_xs, 12));
+		@container (min-width: 480px) {
+			:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
+				--_col: var(--_sm, var(--_xs, 12));
+			}
 		}
-	}
-	@container (min-width: 640px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
-			--_col: var(--_md, var(--_sm, var(--_xs, 12)));
+		@container (min-width: 640px) {
+			:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
+				--_col: var(--_md, var(--_sm, var(--_xs, 12)));
+			}
 		}
-	}
-	@container (min-width: 900px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
-			--_col: var(--_lg, var(--_md, var(--_sm, var(--_xs, 12))));
+		@container (min-width: 900px) {
+			:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
+				--_col: var(--_lg, var(--_md, var(--_sm, var(--_xs, 12))));
+			}
 		}
-	}
-	@container (min-width: 1200px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
-			--_col: var(--_xl, var(--_lg, var(--_md, var(--_sm, var(--_xs, 12)))));
+		@container (min-width: 1200px) {
+			:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
+				--_col: var(--_xl, var(--_lg, var(--_md, var(--_sm, var(--_xs, 12)))));
+			}
 		}
-	}
-	@container (min-width: 1600px) {
-		:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
-			--_col: var(--_xxl, var(--_xl, var(--_lg, var(--_md, var(--_sm, var(--_xs, 12))))));
+		@container (min-width: 1600px) {
+			:global(html:not(.fluent-grid-custom-bp)) div[data-cq=""][data-xs] {
+				--_col: var(--_xxl, var(--_xl, var(--_lg, var(--_md, var(--_sm, var(--_xs, 12))))));
+			}
 		}
 	}
 </style>

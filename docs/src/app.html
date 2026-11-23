@@ -9,16 +9,13 @@
 		content="A FluentUI web components wrapped in Svelte"
 	/>
 	<title>Svelte FluentUI · KEENMATE</title>
-	<link
-		rel="stylesheet"
-		href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
-		integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls"
-		crossorigin="anonymous"
-	/>
-	<link
-		rel="stylesheet"
-		href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css"
-	/>
+	<!-- Pure.css (normalize) goes in the lowest cascade layer, like svelte-fluentui's reboot:
+	     unlayered it would beat every layered library style. -->
+	<style>
+		@layer reset, variables, component, overrides;
+		@import url("https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css") layer(reset);
+		@import url("https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css") layer(reset);
+	</style>
 
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

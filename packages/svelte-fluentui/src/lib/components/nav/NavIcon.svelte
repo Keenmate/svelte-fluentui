@@ -22,7 +22,11 @@ Fixed-width icon slot inside a nav link.
 </span>
 
 <style>
-	.fluent-nav-icon {
-		min-width: 20px;
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		.fluent-nav-icon {
+			min-width: 20px;
+		}
 	}
 </style>

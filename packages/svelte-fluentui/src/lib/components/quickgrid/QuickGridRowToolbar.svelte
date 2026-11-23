@@ -237,102 +237,106 @@
 {/if}
 
 <style>
-	.row-toolbar {
-		outline: none;
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-		padding: 0;
-		background: var(--fluent-quickgrid-toolbar-bg, var(--neutral-layer-floating, #ffffff));
-		border: 1px solid var(--fluent-quickgrid-toolbar-border, var(--neutral-stroke-rest, #d1d1d1));
-		border-radius: var(--control-corner-radius, 4px);
-		box-shadow: var(--fluent-quickgrid-toolbar-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
-	}
+	@layer reset, variables, component, overrides;
 
-	.row-toolbar-row {
-		display: flex;
-		gap: 2px;
-		align-items: center;
-		/* Match grid row height: vertical padding (design-unit * 2 * 2) + line-height (~21px) */
-		height: calc(var(--design-unit, 4) * 4px + 21px);
-		padding: 0 4px;
-	}
+	@layer component {
+		.row-toolbar {
+			outline: none;
+			display: flex;
+			flex-direction: column;
+			gap: 0;
+			padding: 0;
+			background: var(--fluent-quickgrid-toolbar-bg, var(--neutral-layer-floating, #ffffff));
+			border: 1px solid var(--fluent-quickgrid-toolbar-border, var(--neutral-stroke-rest, #d1d1d1));
+			border-radius: var(--control-corner-radius, 4px);
+			box-shadow: var(--fluent-quickgrid-toolbar-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
+		}
 
-	.row-toolbar-divider {
-		width: 1px;
-		height: 16px;
-		background: var(--fluent-quickgrid-toolbar-border, var(--neutral-stroke-rest, #d1d1d1));
-		margin: 0 2px;
-	}
+		.row-toolbar-row {
+			display: flex;
+			gap: 2px;
+			align-items: center;
+			/* Match grid row height: vertical padding (design-unit * 2 * 2) + line-height (~21px) */
+			height: calc(var(--design-unit, 4) * 4px + 21px);
+			padding: 0 4px;
+		}
 
-	.row-toolbar-btn {
-		min-width: 24px;
-		height: 100%;
-		border: none;
-		border-radius: var(--control-corner-radius, 4px);
-		background: transparent;
-		color: var(--fluent-quickgrid-toolbar-text, var(--neutral-foreground-rest, #242424));
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 4px;
-		font-size: 14px;
-		font-weight: 500;
-		transition: background 0.1s ease;
-		padding: 0 4px;
-	}
+		.row-toolbar-divider {
+			width: 1px;
+			height: 16px;
+			background: var(--fluent-quickgrid-toolbar-border, var(--neutral-stroke-rest, #d1d1d1));
+			margin: 0 2px;
+		}
 
-	.row-toolbar-btn:hover {
-		background: var(--fluent-quickgrid-toolbar-bg-hover, var(--neutral-fill-secondary-hover, #f0f0f0));
-	}
+		.row-toolbar-btn {
+			min-width: 24px;
+			height: 100%;
+			border: none;
+			border-radius: var(--control-corner-radius, 4px);
+			background: transparent;
+			color: var(--fluent-quickgrid-toolbar-text, var(--neutral-foreground-rest, #242424));
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 4px;
+			font-size: 14px;
+			font-weight: 500;
+			transition: background 0.1s ease;
+			padding: 0 4px;
+		}
 
-	.row-toolbar-btn:active {
-		background: var(--neutral-fill-secondary-active, #e0e0e0);
-	}
+		.row-toolbar-btn:hover {
+			background: var(--fluent-quickgrid-toolbar-bg-hover, var(--neutral-fill-secondary-hover, #f0f0f0));
+		}
 
-	.row-toolbar-btn:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
+		.row-toolbar-btn:active {
+			background: var(--neutral-fill-secondary-active, #e0e0e0);
+		}
 
-	.row-toolbar-btn:disabled:hover {
-		background: transparent;
-	}
+		.row-toolbar-btn:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
 
-	.row-toolbar-btn.danger:hover {
-		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
-		color: var(--fluent-color-danger-foreground, #d13438);
-	}
+		.row-toolbar-btn:disabled:hover {
+			background: transparent;
+		}
 
-	.row-toolbar-btn:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid
-			var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
-		outline-offset: 1px;
-	}
+		.row-toolbar-btn.danger:hover {
+			background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
+			color: var(--fluent-color-danger-foreground, #d13438);
+		}
 
-	.row-toolbar-label {
-		font-size: 12px;
-		white-space: nowrap;
-	}
+		.row-toolbar-btn:focus-visible {
+			outline: calc(var(--focus-stroke-width, 2) * 1px) solid
+				var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
+			outline-offset: 1px;
+		}
 
-	/* Viewport overlay; the path is in viewport coordinates */
-	.row-connector {
-		position: fixed;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		pointer-events: none;
-		z-index: var(--fluent-z-dropdown);
-	}
+		.row-toolbar-label {
+			font-size: 12px;
+			white-space: nowrap;
+		}
 
-	.row-connector path {
-		fill: none;
-		stroke: var(--fluent-quickgrid-connector-stroke, var(--accent-fill-rest, var(--fluent-accent-primary)));
-		stroke-width: 2;
-	}
+		/* Viewport overlay; the path is in viewport coordinates */
+		.row-connector {
+			position: fixed;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+			z-index: var(--fluent-z-dropdown);
+		}
 
-	.row-connector polygon {
-		fill: var(--fluent-quickgrid-connector-stroke, var(--accent-fill-rest, var(--fluent-accent-primary)));
+		.row-connector path {
+			fill: none;
+			stroke: var(--fluent-quickgrid-connector-stroke, var(--accent-fill-rest, var(--fluent-accent-primary)));
+			stroke-width: 2;
+		}
+
+		.row-connector polygon {
+			fill: var(--fluent-quickgrid-connector-stroke, var(--accent-fill-rest, var(--fluent-accent-primary)));
+		}
 	}
 </style>

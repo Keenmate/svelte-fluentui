@@ -787,134 +787,138 @@ Custom single / multi select. Single mode: a trigger button with a portalled dro
 </div>
 
 <style>
-	/* Transparent to layout — wraps label + trigger + mirror + portal anchor
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* Transparent to layout — wraps label + trigger + mirror + portal anchor
 	 * so consumers only see one root, but parent flex/grid still lays out the
 	 * inner elements directly. */
-	.select-root {
-		display: contents;
-	}
+		.select-root {
+			display: contents;
+		}
 
-	/* Out of flow at its static position (just after the control), so the browser's
+		/* Out of flow at its static position (just after the control), so the browser's
 	 * validation bubble points at the field. */
-	.select-validity {
-		position: absolute;
-		inline-size: 1px;
-		block-size: 1px;
-		margin: 0;
-		padding: 0;
-		border: 0;
-		opacity: 0;
-		pointer-events: none;
-	}
+		.select-validity {
+			position: absolute;
+			inline-size: 1px;
+			block-size: 1px;
+			margin: 0;
+			padding: 0;
+			border: 0;
+			opacity: 0;
+			pointer-events: none;
+		}
 
-	/* ===== Trigger button (single mode) ===== */
-	.select-trigger {
-		display: inline-flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
-		font-family: inherit;
-		font-size: var(--type-ramp-base-font-size, 14px);
-		line-height: var(--type-ramp-base-line-height, 20px);
-		color: var(--neutral-foreground-rest, #242424);
-		cursor: pointer;
-		text-align: start;
-		min-width: 200px;
-	}
+		/* ===== Trigger button (single mode) ===== */
+		.select-trigger {
+			display: inline-flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+			font-family: inherit;
+			font-size: var(--type-ramp-base-font-size, 14px);
+			line-height: var(--type-ramp-base-line-height, 20px);
+			color: var(--neutral-foreground-rest, #242424);
+			cursor: pointer;
+			text-align: start;
+			min-width: 200px;
+		}
 
-	/* Box, hover, focus underline, filled, disabled, readonly and embedded come
+		/* Box, hover, focus underline, filled, disabled, readonly and embedded come
 	 * from the shared `.fluent-field-control` primitive (_primitives.scss). */
-	.select-trigger:focus-visible {
-		outline: none;
-	}
+		.select-trigger:focus-visible {
+			outline: none;
+		}
 
-	/* Embedded (e.g. a QuickGrid cell): the primitive drops the frame; the
+		/* Embedded (e.g. a QuickGrid cell): the primitive drops the frame; the
 	 * trigger also inherits the host's text and tightens its gap. */
-	.select-trigger.embedded {
-		min-width: 0;
-		gap: 4px;
-		font: inherit;
-		color: inherit;
-	}
+		.select-trigger.embedded {
+			min-width: 0;
+			gap: 4px;
+			font: inherit;
+			color: inherit;
+		}
 
-	.select-trigger-value {
-		flex: 1;
-		overflow: hidden;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-	}
+		.select-trigger-value {
+			flex: 1;
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
 
-	.select-trigger-value.placeholder {
-		color: var(--neutral-foreground-hint, #717171);
-	}
+		.select-trigger-value.placeholder {
+			color: var(--neutral-foreground-hint, #717171);
+		}
 
-	.select-trigger-indicator {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		color: var(--neutral-foreground-hint, #717171);
-		flex-shrink: 0;
-	}
+		.select-trigger-indicator {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			color: var(--neutral-foreground-hint, #717171);
+			flex-shrink: 0;
+		}
 
-	/* Hidden mirror of options for trigger-text lookup (single mode). */
-	.select-options-source {
-		display: none;
-	}
+		/* Hidden mirror of options for trigger-text lookup (single mode). */
+		.select-options-source {
+			display: none;
+		}
 
-	/* ===== Dropdown listbox (single mode, portalled) ===== */
-	:global(.select-listbox-popover) {
-		display: flex;
-		flex-direction: column;
-		/* Surface (background, border, radius, shadow) = `.fluent-popup-surface`. */
-		padding: calc(var(--design-unit, 4) * 1px);
-		/* `maxDropdownHeight` (default 300px) or the room PositioningRegion measured, whichever is smaller. */
-		max-height: min(var(--fluent-select-dropdown-max-height, 300px), var(--fluent-popup-available-height, 100vh));
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		box-sizing: border-box;
-	}
+		/* ===== Dropdown listbox (single mode, portalled) ===== */
+		:global(.select-listbox-popover) {
+			display: flex;
+			flex-direction: column;
+			/* Surface (background, border, radius, shadow) = `.fluent-popup-surface`. */
+			padding: calc(var(--design-unit, 4) * 1px);
+			/* `maxDropdownHeight` (default 300px) or the room PositioningRegion measured, whichever is smaller. */
+			max-height: min(var(--fluent-select-dropdown-max-height, 300px), var(--fluent-popup-available-height, 100vh));
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			box-sizing: border-box;
+		}
 
-	/* Option row layout, hover, keyboard highlight (data-highlighted), selected
+		/* Option row layout, hover, keyboard highlight (data-highlighted), selected
 	 * and disabled styling now live in Option.svelte, scoped to the option
 	 * element so they apply in both the portalled popover and the inline list. */
 
-	/* ===== Inline listbox (multi mode) ===== */
-	.select-listbox-inline {
-		display: flex;
-		flex-direction: column;
-		background: var(--neutral-fill-input-rest, #ffffff);
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		padding: calc(var(--design-unit, 4) * 1px);
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		box-sizing: border-box;
-	}
+		/* ===== Inline listbox (multi mode) ===== */
+		.select-listbox-inline {
+			display: flex;
+			flex-direction: column;
+			background: var(--neutral-fill-input-rest, #ffffff);
+			border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+			border-radius: calc(var(--control-corner-radius, 4) * 1px);
+			padding: calc(var(--design-unit, 4) * 1px);
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			box-sizing: border-box;
+		}
 
-	.select-listbox-inline.filled {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
-		border: none;
-		border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px) calc(var(--control-corner-radius, 4) * 1px) 0 0;
-	}
+		.select-listbox-inline.filled {
+			background: var(--neutral-fill-secondary-rest, #f5f5f5);
+			border: none;
+			border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+			border-radius: calc(var(--control-corner-radius, 4) * 1px) calc(var(--control-corner-radius, 4) * 1px) 0 0;
+		}
 
-	.select-listbox-inline.disabled {
-		opacity: 0.4;
-		pointer-events: none;
-	}
+		.select-listbox-inline.disabled {
+			opacity: 0.4;
+			pointer-events: none;
+		}
 
-	/* Readonly multi-select: value shows but options can't be toggled (blocked in
+		/* Readonly multi-select: value shows but options can't be toggled (blocked in
 	   ctx.toggle). Keep it non-dimmed and scrollable, but make the rows read as
 	   inert — no pointer cursor, no hover highlight. */
-	.select-listbox-inline.readonly :global(.fluent-option) {
-		cursor: default;
-	}
+		.select-listbox-inline.readonly :global(.fluent-option) {
+			cursor: default;
+		}
 
-	.select-listbox-inline.readonly :global(.fluent-option:hover:not([disabled])) {
-		background: transparent;
-	}
+		.select-listbox-inline.readonly :global(.fluent-option:hover:not([disabled])) {
+			background: transparent;
+		}
 
-	.select-listbox-inline.readonly :global(.fluent-option[aria-selected="true"]:hover:not([disabled])) {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
+		.select-listbox-inline.readonly :global(.fluent-option[aria-selected="true"]:hover:not([disabled])) {
+			background: var(--neutral-fill-secondary-rest, #f5f5f5);
+		}
 	}
 </style>

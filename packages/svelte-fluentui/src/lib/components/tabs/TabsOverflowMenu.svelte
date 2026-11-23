@@ -43,16 +43,20 @@
 </PositioningRegion>
 
 <style>
-	/* Overflow menu — `<fluent-menu>` paints the surface; the wrapper adds the
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* Overflow menu — `<fluent-menu>` paints the surface; the wrapper adds the
 	 * popup elevation (`.fluent-popup-elevation`: z-index + flyout shadow,
 	 * since fluent-menu's own shadow is too subtle on dark themes). Transparent, with
 	 * the menu's border-radius so its rounded corners aren't framed by gray pixels. */
-	.fluent-tabs-overflow-menu {
-		background: transparent;
-		border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
-	}
+		.fluent-tabs-overflow-menu {
+			background: transparent;
+			border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
+		}
 
-	.fluent-tabs-overflow-menu fluent-menu {
-		min-width: 160px;
+		.fluent-tabs-overflow-menu fluent-menu {
+			min-width: 160px;
+		}
 	}
 </style>

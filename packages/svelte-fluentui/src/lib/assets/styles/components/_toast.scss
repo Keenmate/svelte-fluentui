@@ -6,369 +6,370 @@
 
 @use "../tokens" as *;
 @use "primitives";
+@layer component {
+	// ===== TOAST CONTAINER =====
 
-// ===== TOAST CONTAINER =====
-
-// Fixed container for toast notifications
-.fluent-toast-container {
-	position: fixed;
-	z-index: var(--fluent-z-toast);
-	pointer-events: none;
-	display: flex;
-	flex-direction: column;
-	gap: $spacing-md;
-
-	// The container is promoted into the browser top layer via the Popover API
-	// (see ToastContainer.svelte) so it paints above other top-layer popovers such
-	// as QuickGrid's context menu / column filters. Undo the UA `[popover]` defaults
-	// (centered `inset`, `margin: auto`, border, padding, opaque background, sizing
-	// caps) so our fixed position offsets below still drive placement. z-index stays
-	// as the fallback for browsers without the Popover API.
-	inset: auto;
-	margin: 0;
-	border: 0;
-	padding: 0;
-	width: auto;
-	height: auto;
-	max-width: none;
-	max-height: none;
-	overflow: visible;
-	background: transparent;
-
-	// Position variations (logical: start/end follow the writing direction)
-	&--top-end {
-		inset-block-start: $spacing-lg;
-		inset-inline-end: $spacing-lg;
-	}
-
-	&--top-start {
-		inset-block-start: $spacing-lg;
-		inset-inline-start: $spacing-lg;
-	}
-
-	&--bottom-end {
-		inset-block-end: $spacing-lg;
-		inset-inline-end: $spacing-lg;
-	}
-
-	&--bottom-start {
-		inset-block-end: $spacing-lg;
-		inset-inline-start: $spacing-lg;
-	}
-
-	// Centered horizontally without a physical translate, so it is
-	// direction-agnostic.
-	&--top-center,
-	&--bottom-center {
-		inset-inline: 0;
-		margin-inline: auto;
-		inline-size: fit-content;
-	}
-
-	&--top-center {
-		inset-block-start: $spacing-lg;
-	}
-
-	&--bottom-center {
-		inset-block-end: $spacing-lg;
-	}
-}
-
-// ===== TOAST ITEM =====
-
-// Base surface shared by the inline <Toast> and the service toasts rendered by
-// <ToastContainer> (moved from the Blazor dump fluent-components.scss in 2.0;
-// the `.fluent-toast` rule below refines it for the service toasts).
-.fluent-toast {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	flex-grow: initial;
-	margin-bottom: 10px;
-	padding: 12px;
-	position: relative;
-	min-width: 292px;
-	max-width: 500px;
-	min-height: 44px;
-	font-family: var(--body-font);
-	background-color: var(--neutral-layer-floating);
-	box-shadow: var(--elevation-shadow-tooltip);
-	border-radius: calc(var(--control-corner-radius) * 1px);
-	color: var(--neutral-foreground-rest);
-	overflow-wrap: break-word;
-	word-break: break-word;
-	hyphens: auto;
-	user-select: none;
-	overflow: hidden;
-	pointer-events: auto;
-	animation-name: fluent-toast-fadein;
-	animation-duration: 0.5s;
-	animation-delay: 0s;
-}
-
-@keyframes fluent-toast-fadein {
-	from {
-		opacity: 0;
-	}
-
-	to {
-		opacity: 1;
-	}
-}
-
-.fluent-toast {
-	background-color: var(--neutral-layer-1);
-	border: 1px solid var(--neutral-stroke-rest);
-	border-radius: $border-radius-md;
-	box-shadow: $shadow-lg;
-	min-width: 300px;
-	max-width: 400px;
-	padding: $spacing-md $spacing-lg;
-	pointer-events: auto;
-	display: flex;
-	align-items: flex-start;
-	gap: $spacing-md;
-	position: relative;
-	overflow: hidden;
-	cursor: pointer;
-
-	// Animation states. Toasts slide in from the inline edge their container is
-	// pinned to. translateX is physical, so flip its sign in RTL:
-	// --_fluent-toast-inline-sign is 1 in LTR, -1 in RTL.
-	--_fluent-toast-inline-sign: 1;
-
-	&:dir(rtl) {
-		--_fluent-toast-inline-sign: -1;
-	}
-
-	opacity: 0;
-	transform: translateX(calc(100% * var(--_fluent-toast-inline-sign)));
-	transition:
-		opacity $transition-normal ease,
-		transform $transition-normal ease;
-
-	&.fluent-toast--show {
-		opacity: 1;
-		transform: translateX(0);
-	}
-
-	&.fluent-toast--hide {
-		opacity: 0;
-		transform: translateX(calc(100% * var(--_fluent-toast-inline-sign)));
-	}
-
-	// Start position animations (slide in from the inline-start edge)
-	.fluent-toast-container--top-start &,
-	.fluent-toast-container--bottom-start & {
-		transform: translateX(calc(-100% * var(--_fluent-toast-inline-sign)));
-
-		&.fluent-toast--show {
-			transform: translateX(0);
-		}
-
-		&.fluent-toast--hide {
-			transform: translateX(calc(-100% * var(--_fluent-toast-inline-sign)));
-		}
-	}
-
-	// Center position animations
-	.fluent-toast-container--top-center &,
-	.fluent-toast-container--bottom-center & {
-		transform: translateY(-100%);
-
-		&.fluent-toast--show {
-			transform: translateY(0);
-		}
-
-		&.fluent-toast--hide {
-			transform: translateY(-100%);
-		}
-	}
-}
-
-// Toast icon
-.fluent-toast__icon {
-	flex-shrink: 0;
-	width: 24px;
-	height: 24px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: $font-size-lg;
-	border-radius: $border-radius-md;
-}
-
-// Toast content
-.fluent-toast__content {
-	flex: 1;
-	min-width: 0;
-	padding-inline-end: $spacing-xl;
-}
-
-.fluent-toast__title {
-	font-weight: $font-weight-semibold;
-	margin: 0 0 $spacing-xs 0;
-	color: var(--neutral-foreground-rest);
-	font-size: $font-size-md;
-}
-
-.fluent-toast__message {
-	margin: 0;
-	color: var(--neutral-foreground-rest);
-	font-size: $font-size-sm;
-	line-height: 1.5;
-	word-wrap: break-word;
-}
-
-// Toast close button
-.fluent-toast__close {
-	position: absolute;
-	inset-block-start: $spacing-md;
-	inset-inline-end: $spacing-md;
-	background: none;
-	border: none;
-	color: var(--neutral-foreground-rest);
-	cursor: pointer;
-	padding: 0;
-	width: 24px;
-	height: 24px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: $border-radius-md;
-	transition:
-		background-color $transition-fast ease,
-		color $transition-fast ease;
-
-	&:hover {
-		background-color: var(--neutral-fill-secondary-hover);
-		color: var(--neutral-foreground-rest);
-	}
-
-	&:focus-visible {
-		@include primitives.focus-ring(2px);
-	}
-}
-
-// Toast progress bar
-.fluent-toast__progress {
-	position: absolute;
-	inset-block-end: 0;
-	inset-inline-start: 0;
-	height: 3px;
-	width: 100%;
-	background-color: currentColor;
-	opacity: 0.3;
-	animation: toast-progress linear forwards;
-}
-
-@keyframes toast-progress {
-	from {
-		width: 100%;
-	}
-	to {
-		width: 0%;
-	}
-}
-
-// ===== TOAST VARIANTS =====
-
-// Success toast
-.fluent-toast--success {
-	border-inline-start: 4px solid var(--fluent-color-success-foreground);
-
-	.fluent-toast__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-success-foreground) 10%, transparent);
-		color: var(--fluent-color-success-foreground);
-	}
-
-	.fluent-toast__progress {
-		color: var(--fluent-color-success-foreground);
-	}
-}
-
-// Error toast
-.fluent-toast--error {
-	border-inline-start: 4px solid var(--fluent-color-danger-foreground);
-
-	.fluent-toast__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-danger-foreground) 10%, transparent);
-		color: var(--fluent-color-danger-foreground);
-	}
-
-	.fluent-toast__progress {
-		color: var(--fluent-color-danger-foreground);
-	}
-}
-
-// Warning toast
-.fluent-toast--warning {
-	border-inline-start: 4px solid var(--fluent-color-warning-foreground);
-
-	.fluent-toast__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-warning-foreground) 10%, transparent);
-		color: var(--fluent-color-warning-foreground);
-	}
-
-	.fluent-toast__progress {
-		color: var(--fluent-color-warning-foreground);
-	}
-}
-
-// Info toast
-.fluent-toast--info {
-	border-inline-start: 4px solid var(--fluent-color-info-foreground);
-
-	.fluent-toast__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-info-foreground) 10%, transparent);
-		color: var(--fluent-color-info-foreground);
-	}
-
-	.fluent-toast__progress {
-		color: var(--fluent-color-info-foreground);
-	}
-}
-
-// ===== REDUCED MOTION =====
-
-// No fade / slide: toasts appear and leave in place. The countdown bar keeps
-// running — it conveys the remaining time, not decoration.
-@media (prefers-reduced-motion: reduce) {
-	.fluent-toast,
-	.fluent-toast-container .fluent-toast {
-		animation: none;
-		transition: none;
-		transform: none;
-	}
-
-	.fluent-toast.fluent-toast--hide {
-		transform: none;
-	}
-}
-
-// ===== RESPONSIVE =====
-
-@media (max-width: 768px) {
+	// Fixed container for toast notifications
 	.fluent-toast-container {
-		inset-inline: $spacing-md !important;
-		margin-inline: 0 !important;
-		inline-size: auto !important;
-		transform: none !important;
+		position: fixed;
+		z-index: var(--fluent-z-toast);
+		pointer-events: none;
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-md;
 
-		&--top-end,
-		&--top-start,
-		&--top-center {
-			inset-block-start: $spacing-md;
+		// The container is promoted into the browser top layer via the Popover API
+		// (see ToastContainer.svelte) so it paints above other top-layer popovers such
+		// as QuickGrid's context menu / column filters. Undo the UA `[popover]` defaults
+		// (centered `inset`, `margin: auto`, border, padding, opaque background, sizing
+		// caps) so our fixed position offsets below still drive placement. z-index stays
+		// as the fallback for browsers without the Popover API.
+		inset: auto;
+		margin: 0;
+		border: 0;
+		padding: 0;
+		width: auto;
+		height: auto;
+		max-width: none;
+		max-height: none;
+		overflow: visible;
+		background: transparent;
+
+		// Position variations (logical: start/end follow the writing direction)
+		&--top-end {
+			inset-block-start: $spacing-lg;
+			inset-inline-end: $spacing-lg;
 		}
 
-		&--bottom-end,
-		&--bottom-start,
+		&--top-start {
+			inset-block-start: $spacing-lg;
+			inset-inline-start: $spacing-lg;
+		}
+
+		&--bottom-end {
+			inset-block-end: $spacing-lg;
+			inset-inline-end: $spacing-lg;
+		}
+
+		&--bottom-start {
+			inset-block-end: $spacing-lg;
+			inset-inline-start: $spacing-lg;
+		}
+
+		// Centered horizontally without a physical translate, so it is
+		// direction-agnostic.
+		&--top-center,
 		&--bottom-center {
-			inset-block-end: $spacing-md;
+			inset-inline: 0;
+			margin-inline: auto;
+			inline-size: fit-content;
+		}
+
+		&--top-center {
+			inset-block-start: $spacing-lg;
+		}
+
+		&--bottom-center {
+			inset-block-end: $spacing-lg;
+		}
+	}
+
+	// ===== TOAST ITEM =====
+
+	// Base surface shared by the inline <Toast> and the service toasts rendered by
+	// <ToastContainer> (moved from the Blazor dump fluent-components.scss in 2.0;
+	// the `.fluent-toast` rule below refines it for the service toasts).
+	.fluent-toast {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		flex-grow: initial;
+		margin-bottom: 10px;
+		padding: 12px;
+		position: relative;
+		min-width: 292px;
+		max-width: 500px;
+		min-height: 44px;
+		font-family: var(--body-font);
+		background-color: var(--neutral-layer-floating);
+		box-shadow: var(--elevation-shadow-tooltip);
+		border-radius: calc(var(--control-corner-radius) * 1px);
+		color: var(--neutral-foreground-rest);
+		overflow-wrap: break-word;
+		word-break: break-word;
+		hyphens: auto;
+		user-select: none;
+		overflow: hidden;
+		pointer-events: auto;
+		animation-name: fluent-toast-fadein;
+		animation-duration: 0.5s;
+		animation-delay: 0s;
+	}
+
+	@keyframes fluent-toast-fadein {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
 		}
 	}
 
 	.fluent-toast {
-		max-inline-size: 100%;
+		background-color: var(--neutral-layer-1);
+		border: 1px solid var(--neutral-stroke-rest);
+		border-radius: $border-radius-md;
+		box-shadow: $shadow-lg;
+		min-width: 300px;
+		max-width: 400px;
+		padding: $spacing-md $spacing-lg;
+		pointer-events: auto;
+		display: flex;
+		align-items: flex-start;
+		gap: $spacing-md;
+		position: relative;
+		overflow: hidden;
+		cursor: pointer;
+
+		// Animation states. Toasts slide in from the inline edge their container is
+		// pinned to. translateX is physical, so flip its sign in RTL:
+		// --_fluent-toast-inline-sign is 1 in LTR, -1 in RTL.
+		--_fluent-toast-inline-sign: 1;
+
+		&:dir(rtl) {
+			--_fluent-toast-inline-sign: -1;
+		}
+
+		opacity: 0;
+		transform: translateX(calc(100% * var(--_fluent-toast-inline-sign)));
+		transition:
+			opacity $transition-normal ease,
+			transform $transition-normal ease;
+
+		&.fluent-toast--show {
+			opacity: 1;
+			transform: translateX(0);
+		}
+
+		&.fluent-toast--hide {
+			opacity: 0;
+			transform: translateX(calc(100% * var(--_fluent-toast-inline-sign)));
+		}
+
+		// Start position animations (slide in from the inline-start edge)
+		.fluent-toast-container--top-start &,
+		.fluent-toast-container--bottom-start & {
+			transform: translateX(calc(-100% * var(--_fluent-toast-inline-sign)));
+
+			&.fluent-toast--show {
+				transform: translateX(0);
+			}
+
+			&.fluent-toast--hide {
+				transform: translateX(calc(-100% * var(--_fluent-toast-inline-sign)));
+			}
+		}
+
+		// Center position animations
+		.fluent-toast-container--top-center &,
+		.fluent-toast-container--bottom-center & {
+			transform: translateY(-100%);
+
+			&.fluent-toast--show {
+				transform: translateY(0);
+			}
+
+			&.fluent-toast--hide {
+				transform: translateY(-100%);
+			}
+		}
+	}
+
+	// Toast icon
+	.fluent-toast__icon {
+		flex-shrink: 0;
+		width: 24px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: $font-size-lg;
+		border-radius: $border-radius-md;
+	}
+
+	// Toast content
+	.fluent-toast__content {
+		flex: 1;
+		min-width: 0;
+		padding-inline-end: $spacing-xl;
+	}
+
+	.fluent-toast__title {
+		font-weight: $font-weight-semibold;
+		margin: 0 0 $spacing-xs 0;
+		color: var(--neutral-foreground-rest);
+		font-size: $font-size-md;
+	}
+
+	.fluent-toast__message {
+		margin: 0;
+		color: var(--neutral-foreground-rest);
+		font-size: $font-size-sm;
+		line-height: 1.5;
+		word-wrap: break-word;
+	}
+
+	// Toast close button
+	.fluent-toast__close {
+		position: absolute;
+		inset-block-start: $spacing-md;
+		inset-inline-end: $spacing-md;
+		background: none;
+		border: none;
+		color: var(--neutral-foreground-rest);
+		cursor: pointer;
+		padding: 0;
+		width: 24px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: $border-radius-md;
+		transition:
+			background-color $transition-fast ease,
+			color $transition-fast ease;
+
+		&:hover {
+			background-color: var(--neutral-fill-secondary-hover);
+			color: var(--neutral-foreground-rest);
+		}
+
+		&:focus-visible {
+			@include primitives.focus-ring(2px);
+		}
+	}
+
+	// Toast progress bar
+	.fluent-toast__progress {
+		position: absolute;
+		inset-block-end: 0;
+		inset-inline-start: 0;
+		height: 3px;
+		width: 100%;
+		background-color: currentColor;
+		opacity: 0.3;
+		animation: toast-progress linear forwards;
+	}
+
+	@keyframes toast-progress {
+		from {
+			width: 100%;
+		}
+		to {
+			width: 0%;
+		}
+	}
+
+	// ===== TOAST VARIANTS =====
+
+	// Success toast
+	.fluent-toast--success {
+		border-inline-start: 4px solid var(--fluent-color-success-foreground);
+
+		.fluent-toast__icon {
+			background-color: color-mix(in srgb, var(--fluent-color-success-foreground) 10%, transparent);
+			color: var(--fluent-color-success-foreground);
+		}
+
+		.fluent-toast__progress {
+			color: var(--fluent-color-success-foreground);
+		}
+	}
+
+	// Error toast
+	.fluent-toast--error {
+		border-inline-start: 4px solid var(--fluent-color-danger-foreground);
+
+		.fluent-toast__icon {
+			background-color: color-mix(in srgb, var(--fluent-color-danger-foreground) 10%, transparent);
+			color: var(--fluent-color-danger-foreground);
+		}
+
+		.fluent-toast__progress {
+			color: var(--fluent-color-danger-foreground);
+		}
+	}
+
+	// Warning toast
+	.fluent-toast--warning {
+		border-inline-start: 4px solid var(--fluent-color-warning-foreground);
+
+		.fluent-toast__icon {
+			background-color: color-mix(in srgb, var(--fluent-color-warning-foreground) 10%, transparent);
+			color: var(--fluent-color-warning-foreground);
+		}
+
+		.fluent-toast__progress {
+			color: var(--fluent-color-warning-foreground);
+		}
+	}
+
+	// Info toast
+	.fluent-toast--info {
+		border-inline-start: 4px solid var(--fluent-color-info-foreground);
+
+		.fluent-toast__icon {
+			background-color: color-mix(in srgb, var(--fluent-color-info-foreground) 10%, transparent);
+			color: var(--fluent-color-info-foreground);
+		}
+
+		.fluent-toast__progress {
+			color: var(--fluent-color-info-foreground);
+		}
+	}
+
+	// ===== REDUCED MOTION =====
+
+	// No fade / slide: toasts appear and leave in place. The countdown bar keeps
+	// running — it conveys the remaining time, not decoration.
+	@media (prefers-reduced-motion: reduce) {
+		.fluent-toast,
+		.fluent-toast-container .fluent-toast {
+			animation: none;
+			transition: none;
+			transform: none;
+		}
+
+		.fluent-toast.fluent-toast--hide {
+			transform: none;
+		}
+	}
+
+	// ===== RESPONSIVE =====
+
+	@media (max-width: 768px) {
+		.fluent-toast-container {
+			inset-inline: $spacing-md !important;
+			margin-inline: 0 !important;
+			inline-size: auto !important;
+			transform: none !important;
+
+			&--top-end,
+			&--top-start,
+			&--top-center {
+				inset-block-start: $spacing-md;
+			}
+
+			&--bottom-end,
+			&--bottom-start,
+			&--bottom-center {
+				inset-block-end: $spacing-md;
+			}
+		}
+
+		.fluent-toast {
+			max-inline-size: 100%;
+		}
 	}
 }

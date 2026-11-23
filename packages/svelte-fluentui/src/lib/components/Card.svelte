@@ -61,31 +61,35 @@ Content container with FluentUI layer background, border and shadow.
 </div>
 
 <style>
-	.card {
-		padding: calc(var(--design-unit) * 5px);
-		background: var(--neutral-layer-1, #ffffff);
-		border-radius: var(--control-corner-radius, 4px);
-		border: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-		overflow: visible;
-		transition: box-shadow 0.2s ease;
-	}
+	@layer reset, variables, component, overrides;
 
-	.card:hover {
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-	}
+	@layer component {
+		.card {
+			padding: calc(var(--design-unit) * 5px);
+			background: var(--neutral-layer-1, #ffffff);
+			border-radius: var(--control-corner-radius, 4px);
+			border: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+			overflow: visible;
+			transition: box-shadow 0.2s ease;
+		}
 
-	.card.minimal {
-		border: none;
-		box-shadow: none;
-		background: transparent;
-	}
+		.card:hover {
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+		}
 
-	.card.minimal:hover {
-		box-shadow: none;
-	}
+		.card.minimal {
+			border: none;
+			box-shadow: none;
+			background: transparent;
+		}
 
-	.card.area-restricted {
-		overflow: auto;
+		.card.minimal:hover {
+			box-shadow: none;
+		}
+
+		.card.area-restricted {
+			overflow: auto;
+		}
 	}
 </style>

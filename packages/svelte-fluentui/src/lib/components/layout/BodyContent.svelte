@@ -26,16 +26,20 @@ Scrollable main content area of a page layout; fills its parent and scrolls vert
 </div>
 
 <style lang="scss">
-	.body-content {
-		margin: 0;
-		overflow-y: auto;
-		overflow-x: hidden;
-		align-items: flex-start;
-		height: 100%;
-		width: 100%;
-		font-family: var(--body-font);
-		font-weight: normal;
-		font-size: var(--type-ramp-base-font-size);
-		line-height: var(--type-ramp-base-line-height);
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		.body-content {
+			margin: 0;
+			overflow-y: auto;
+			overflow-x: hidden;
+			align-items: flex-start;
+			height: 100%;
+			width: 100%;
+			font-family: var(--body-font);
+			font-weight: normal;
+			font-size: var(--type-ramp-base-font-size);
+			line-height: var(--type-ramp-base-line-height);
+		}
 	}
 </style>

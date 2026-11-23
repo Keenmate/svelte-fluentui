@@ -715,125 +715,129 @@ Time input with a popup of hour / minute (/ second, AM/PM) columns. `bind:value`
 </div>
 
 <style>
-	.fluent-timepicker {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		/* Keep the time input usable when squeezed by a flex/grid parent
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		.fluent-timepicker {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			/* Keep the time input usable when squeezed by a flex/grid parent
 		   (was a Blazor-dump rule before 2.0). */
-		min-width: 110px;
-	}
+			min-width: 110px;
+		}
 
-	.timepicker-wrapper {
-		position: relative;
-	}
+		.timepicker-wrapper {
+			position: relative;
+		}
 
-	.end-buttons {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
-	}
+		.end-buttons {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.25rem;
+		}
 
-	.clock-button {
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.25rem;
-		color: var(--neutral-foreground-rest);
-		border-radius: var(--fluent-border-radius-md);
-	}
+		.clock-button {
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.25rem;
+			color: var(--neutral-foreground-rest);
+			border-radius: var(--fluent-border-radius-md);
+		}
 
-	.clock-button:hover:not(:disabled) {
-		background: var(--neutral-fill-secondary-hover);
-	}
+		.clock-button:hover:not(:disabled) {
+			background: var(--neutral-fill-secondary-hover);
+		}
 
-	.clock-button:disabled {
-		cursor: not-allowed;
-		opacity: 0.5;
-	}
+		.clock-button:disabled {
+			cursor: not-allowed;
+			opacity: 0.5;
+		}
 
-	/* Surface (`.fluent-popup-surface`) + padding live here, not on the region, so a
+		/* Surface (`.fluent-popup-surface`) + padding live here, not on the region, so a
 	   press anywhere on the popup is "inside". */
-	.time-picker-panel {
-		/* Offset parent for the column scroll maths (offsetTop), measured inside
+		.time-picker-panel {
+			/* Offset parent for the column scroll maths (offsetTop), measured inside
 		   the surface border as when the border sat on the region. */
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		padding: 1rem;
-	}
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+			padding: 1rem;
+		}
 
-	.time-selectors {
-		display: flex;
-		gap: 0.5rem;
-	}
+		.time-selectors {
+			display: flex;
+			gap: 0.5rem;
+		}
 
-	.time-column {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
+		.time-column {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
 
-	.period-column {
-		flex: 0.7;
-	}
+		.period-column {
+			flex: 0.7;
+		}
 
-	.column-label {
-		font-size: 0.75rem;
-		font-weight: 600;
-		color: var(--neutral-foreground-rest);
-		text-align: center;
-		padding: 0.25rem;
-	}
+		.column-label {
+			font-size: 0.75rem;
+			font-weight: 600;
+			color: var(--neutral-foreground-rest);
+			text-align: center;
+			padding: 0.25rem;
+		}
 
-	.time-list {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		max-height: 200px;
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		border: 1px solid var(--neutral-stroke-rest);
-		border-radius: var(--fluent-border-radius-md);
-		padding: 0.25rem;
-	}
+		.time-list {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+			max-height: 200px;
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			border: 1px solid var(--neutral-stroke-rest);
+			border-radius: var(--fluent-border-radius-md);
+			padding: 0.25rem;
+		}
 
-	.time-option {
-		background: transparent;
-		border: none;
-		padding: 0.5rem;
-		cursor: pointer;
-		border-radius: var(--fluent-border-radius-md);
-		font-size: 0.875rem;
-		color: var(--neutral-foreground-rest);
-		text-align: center;
-	}
+		.time-option {
+			background: transparent;
+			border: none;
+			padding: 0.5rem;
+			cursor: pointer;
+			border-radius: var(--fluent-border-radius-md);
+			font-size: 0.875rem;
+			color: var(--neutral-foreground-rest);
+			text-align: center;
+		}
 
-	.time-option:not(:disabled):hover {
-		background: var(--neutral-fill-stealth-hover);
-	}
+		.time-option:not(:disabled):hover {
+			background: var(--neutral-fill-stealth-hover);
+		}
 
-	.time-option.selected {
-		background: var(--accent-fill-rest);
-		color: var(--neutral-foreground-on-accent);
-		font-weight: 600;
-	}
+		.time-option.selected {
+			background: var(--accent-fill-rest);
+			color: var(--neutral-foreground-on-accent);
+			font-weight: 600;
+		}
 
-	.time-option:disabled {
-		color: var(--neutral-stroke-focus);
-		cursor: default;
-		text-decoration: line-through;
-		opacity: 0.6;
-	}
+		.time-option:disabled {
+			color: var(--neutral-stroke-focus);
+			cursor: default;
+			text-decoration: line-through;
+			opacity: 0.6;
+		}
 
-	.time-actions {
-		display: flex;
-		gap: 0.5rem;
-		justify-content: flex-end;
+		.time-actions {
+			display: flex;
+			gap: 0.5rem;
+			justify-content: flex-end;
+		}
 	}
 </style>

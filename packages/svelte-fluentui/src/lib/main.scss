@@ -13,6 +13,12 @@
  *   $navbar-bg-light: #FFCC00,
  *   $sidebar-bg-light: #000000
  * );
+ *
+ * Cascade layers (order declared by the first module, fluent-ui/constructed-stylesheet):
+ *   @layer reset, variables, component, overrides;
+ * reset = reboot.css, variables = design tokens / palette, component = every rule incl. the
+ * Svelte components' own <style> blocks, overrides = free for themes. Any unlayered rule of
+ * the app beats all of it.
  */
 
 // Use FluentUI web components styles

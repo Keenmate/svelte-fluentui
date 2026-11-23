@@ -204,97 +204,101 @@ FluentUI system icon rendered as inline SVG (resolved at build time by the `svel
 {/if}
 
 <style>
-	.fluent-icon {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: var(--fluent-icon-size, 24px);
-		height: var(--fluent-icon-size, 24px);
-		color: var(--fluent-icon-fill, currentColor);
-		line-height: 1;
-		vertical-align: middle;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-icon :global(svg) {
-		width: 100%;
-		height: 100%;
-		fill: var(--fluent-icon-fill, currentColor);
-		display: block;
-	}
+	@layer component {
+		.fluent-icon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: var(--fluent-icon-size, 24px);
+			height: var(--fluent-icon-size, 24px);
+			color: var(--fluent-icon-fill, currentColor);
+			line-height: 1;
+			vertical-align: middle;
+		}
 
-	/* Hover effect styles */
-	.fluent-icon-hoverable {
-		position: relative;
-	}
+		.fluent-icon :global(svg) {
+			width: 100%;
+			height: 100%;
+			fill: var(--fluent-icon-fill, currentColor);
+			display: block;
+		}
 
-	.fluent-icon-hoverable .icon-regular,
-	.fluent-icon-hoverable .icon-filled {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		height: 100%;
-	}
+		/* Hover effect styles */
+		.fluent-icon-hoverable {
+			position: relative;
+		}
 
-	/* Default: show regular, hide filled */
-	.fluent-icon-hoverable .icon-regular {
-		display: inline-flex;
-	}
-	.fluent-icon-hoverable .icon-filled {
-		display: none;
-	}
+		.fluent-icon-hoverable .icon-regular,
+		.fluent-icon-hoverable .icon-filled {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 100%;
+			height: 100%;
+		}
 
-	/* On hover/active: show filled, hide regular */
-	.fluent-icon-hoverable:hover .icon-regular,
-	.fluent-icon-hoverable:active .icon-regular {
-		display: none;
-	}
-	.fluent-icon-hoverable:hover .icon-filled,
-	.fluent-icon-hoverable:active .icon-filled {
-		display: inline-flex;
-	}
+		/* Default: show regular, hide filled */
+		.fluent-icon-hoverable .icon-regular {
+			display: inline-flex;
+		}
+		.fluent-icon-hoverable .icon-filled {
+			display: none;
+		}
 
-	/* Trigger icon change when parent button/link is hovered */
-	:global(fluent-button:hover) .fluent-icon-hoverable .icon-regular,
-	:global(button:hover) .fluent-icon-hoverable .icon-regular,
-	:global(a:hover) .fluent-icon-hoverable .icon-regular,
-	:global(.fluent-nav-link:hover) .fluent-icon-hoverable .icon-regular {
-		display: none;
-	}
+		/* On hover/active: show filled, hide regular */
+		.fluent-icon-hoverable:hover .icon-regular,
+		.fluent-icon-hoverable:active .icon-regular {
+			display: none;
+		}
+		.fluent-icon-hoverable:hover .icon-filled,
+		.fluent-icon-hoverable:active .icon-filled {
+			display: inline-flex;
+		}
 
-	:global(fluent-button:hover) .fluent-icon-hoverable .icon-filled,
-	:global(button:hover) .fluent-icon-hoverable .icon-filled,
-	:global(a:hover) .fluent-icon-hoverable .icon-filled,
-	:global(.fluent-nav-link:hover) .fluent-icon-hoverable .icon-filled {
-		display: inline-flex;
-	}
+		/* Trigger icon change when parent button/link is hovered */
+		:global(fluent-button:hover) .fluent-icon-hoverable .icon-regular,
+		:global(button:hover) .fluent-icon-hoverable .icon-regular,
+		:global(a:hover) .fluent-icon-hoverable .icon-regular,
+		:global(.fluent-nav-link:hover) .fluent-icon-hoverable .icon-regular {
+			display: none;
+		}
 
-	/* Also trigger on active state */
-	:global(fluent-button:active) .fluent-icon-hoverable .icon-regular,
-	:global(button:active) .fluent-icon-hoverable .icon-regular,
-	:global(a:active) .fluent-icon-hoverable .icon-regular,
-	:global(.fluent-nav-link:active) .fluent-icon-hoverable .icon-regular {
-		display: none;
-	}
+		:global(fluent-button:hover) .fluent-icon-hoverable .icon-filled,
+		:global(button:hover) .fluent-icon-hoverable .icon-filled,
+		:global(a:hover) .fluent-icon-hoverable .icon-filled,
+		:global(.fluent-nav-link:hover) .fluent-icon-hoverable .icon-filled {
+			display: inline-flex;
+		}
 
-	:global(fluent-button:active) .fluent-icon-hoverable .icon-filled,
-	:global(button:active) .fluent-icon-hoverable .icon-filled,
-	:global(a:active) .fluent-icon-hoverable .icon-filled,
-	:global(.fluent-nav-link:active) .fluent-icon-hoverable .icon-filled {
-		display: inline-flex;
-	}
+		/* Also trigger on active state */
+		:global(fluent-button:active) .fluent-icon-hoverable .icon-regular,
+		:global(button:active) .fluent-icon-hoverable .icon-regular,
+		:global(a:active) .fluent-icon-hoverable .icon-regular,
+		:global(.fluent-nav-link:active) .fluent-icon-hoverable .icon-regular {
+			display: none;
+		}
 
-	.fluent-icon-error,
-	.fluent-icon-loading {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: var(--fluent-icon-size, 24px);
-		height: var(--fluent-icon-size, 24px);
-		font-size: calc(var(--fluent-icon-size, 24px) * 0.75);
-	}
+		:global(fluent-button:active) .fluent-icon-hoverable .icon-filled,
+		:global(button:active) .fluent-icon-hoverable .icon-filled,
+		:global(a:active) .fluent-icon-hoverable .icon-filled,
+		:global(.fluent-nav-link:active) .fluent-icon-hoverable .icon-filled {
+			display: inline-flex;
+		}
 
-	.fluent-icon-loading {
-		opacity: 0.5;
+		.fluent-icon-error,
+		.fluent-icon-loading {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: var(--fluent-icon-size, 24px);
+			height: var(--fluent-icon-size, 24px);
+			font-size: calc(var(--fluent-icon-size, 24px) * 0.75);
+		}
+
+		.fluent-icon-loading {
+			opacity: 0.5;
+		}
 	}
 </style>

@@ -2580,390 +2580,394 @@ validation, a row toolbar, a context menu and an optional tree mode. Model types
 </div>
 
 <style>
-	/* Theme hooks: --fluent-quickgrid-* variables (docs: QuickGrid → CSS variables); each falls back
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* Theme hooks: --fluent-quickgrid-* variables (docs: QuickGrid → CSS variables); each falls back
 	   to the FluentUI design token, so light / dark follow `baseLayerLuminance` without overrides. */
-	.quickgrid-container {
-		position: relative;
-		width: 100%;
-		overflow-x: auto;
-	}
+		.quickgrid-container {
+			position: relative;
+			width: 100%;
+			overflow-x: auto;
+		}
 
-	/* virtualize: the container scrolls; the header stays on top; rows get the item size */
-	.quickgrid-container.virtualized {
-		overflow-y: auto;
-		max-block-size: var(--fluent-quickgrid-virtual-max-height, 480px);
-	}
+		/* virtualize: the container scrolls; the header stays on top; rows get the item size */
+		.quickgrid-container.virtualized {
+			overflow-y: auto;
+			max-block-size: var(--fluent-quickgrid-virtual-max-height, 480px);
+		}
 
-	.quickgrid-container.virtualized :global(thead) {
-		position: sticky;
-		inset-block-start: 0;
-		z-index: 1;
-		background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
-	}
+		.quickgrid-container.virtualized :global(thead) {
+			position: sticky;
+			inset-block-start: 0;
+			z-index: 1;
+			background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
+		}
 
-	.quickgrid-container.virtualized tbody tr[data-row-key] {
-		height: var(--quickgrid-item-size);
-	}
+		.quickgrid-container.virtualized tbody tr[data-row-key] {
+			height: var(--quickgrid-item-size);
+		}
 
-	/* Collapsed borders don't move with a sticky header (rows show through them in Chromium):
+		/* Collapsed borders don't move with a sticky header (rows show through them in Chromium):
 	   separate borders, the row line drawn by the cells. */
-	.quickgrid-container.virtualized .quickgrid {
-		border-collapse: separate;
-		border-spacing: 0;
-	}
+		.quickgrid-container.virtualized .quickgrid {
+			border-collapse: separate;
+			border-spacing: 0;
+		}
 
-	.quickgrid-container.virtualized tbody tr[data-row-key] > td {
-		border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
-	}
+		.quickgrid-container.virtualized tbody tr[data-row-key] > td {
+			border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+		}
 
-	tbody.virtual-spacer tr,
-	.quickgrid.hoverable tbody.virtual-spacer tr:hover {
-		border: 0;
-		background: transparent;
-	}
+		tbody.virtual-spacer tr,
+		.quickgrid.hoverable tbody.virtual-spacer tr:hover {
+			border: 0;
+			background: transparent;
+		}
 
-	tbody.virtual-spacer td {
-		padding: 0;
-		border: 0;
-	}
+		tbody.virtual-spacer td {
+			padding: 0;
+			border: 0;
+		}
 
-	.quickgrid {
-		width: 100%;
-		border-collapse: collapse;
-		border: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
-		background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
-		font-size: var(--type-ramp-base-font-size, 14px);
-		line-height: var(--type-ramp-base-line-height, 20px);
-	}
+		.quickgrid {
+			width: 100%;
+			border-collapse: collapse;
+			border: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+			background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
+			font-size: var(--type-ramp-base-font-size, 14px);
+			line-height: var(--type-ramp-base-line-height, 20px);
+		}
 
-	/* Filler column: an empty trailing cell whose sole job is to absorb any leftover
+		/* Filler column: an empty trailing cell whose sole job is to absorb any leftover
 	   horizontal space so preceding columns keep their defined / auto widths instead
 	   of stretching. `width: 100%` is the classic absorb-leftover trick in auto
 	   table-layout — other columns claim their content/defined widths first and the
 	   filler swallows whatever remains, instead of an arbitrary unspecified column
 	   ballooning to fill the table. (The header's copy is in QuickGridHeader.svelte.) */
-	.filler-column {
-		width: 100%;
-		padding: 0;
-		background: transparent;
-	}
+		.filler-column {
+			width: 100%;
+			padding: 0;
+			background: transparent;
+		}
 
-	/* Live region: read by screen readers, not shown */
-	.quickgrid-live-region {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		padding: 0;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
-		border: 0;
-	}
+		/* Live region: read by screen readers, not shown */
+		.quickgrid-live-region {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			margin: -1px;
+			padding: 0;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
+			border: 0;
+		}
 
-	tbody tr {
-		border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
-	}
+		tbody tr {
+			border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+		}
 
-	tbody td {
-		padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
-		color: var(--fluent-quickgrid-text, var(--neutral-foreground-rest, #242424));
-	}
+		tbody td {
+			padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
+			color: var(--fluent-quickgrid-text, var(--neutral-foreground-rest, #242424));
+		}
 
-	/* By view index, not :nth-child — virtualised windows start anywhere and pin rows outside them */
-	.quickgrid.striped tbody tr.stripe-alt {
-		background: var(--fluent-quickgrid-row-bg-stripe, var(--neutral-layer-2, #fafafa));
-	}
+		/* By view index, not :nth-child — virtualised windows start anywhere and pin rows outside them */
+		.quickgrid.striped tbody tr.stripe-alt {
+			background: var(--fluent-quickgrid-row-bg-stripe, var(--neutral-layer-2, #fafafa));
+		}
 
-	.quickgrid.hoverable tbody tr:hover {
-		background: var(--fluent-quickgrid-row-bg-hover, var(--neutral-layer-3, #f0f0f0));
-	}
+		.quickgrid.hoverable tbody tr:hover {
+			background: var(--fluent-quickgrid-row-bg-hover, var(--neutral-layer-3, #f0f0f0));
+		}
 
-	.empty-message {
-		text-align: center;
-		padding: calc(var(--design-unit) * 6px);
-		color: var(--neutral-foreground-hint, #707070);
-		font-style: italic;
-	}
+		.empty-message {
+			text-align: center;
+			padding: calc(var(--design-unit) * 6px);
+			color: var(--neutral-foreground-hint, #707070);
+			font-style: italic;
+		}
 
-	/* Tree column: indentation + expand/collapse chevron.
+		/* Tree column: indentation + expand/collapse chevron.
 	   Use inline-flex (not flex) and don't set flex:1 on the body — otherwise the wrapper
 	   signals "fill all available space" to the table's auto layout and steals width from
 	   sibling columns. */
-	.tree-cell {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-	}
+		.tree-cell {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+		}
 
-	.tree-cell-body {
-		min-width: 0;
-	}
+		.tree-cell-body {
+			min-width: 0;
+		}
 
-	.tree-chevron {
-		all: unset;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 16px;
-		height: 16px;
-		border-radius: var(--fluent-border-radius-sm);
-		font-size: 9px;
-		color: var(--neutral-foreground-hint, #707070);
-		cursor: pointer;
-		flex-shrink: 0;
-		transition:
-			transform 0.12s ease,
-			background 0.1s ease;
-	}
+		.tree-chevron {
+			all: unset;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 16px;
+			height: 16px;
+			border-radius: var(--fluent-border-radius-sm);
+			font-size: 9px;
+			color: var(--neutral-foreground-hint, #707070);
+			cursor: pointer;
+			flex-shrink: 0;
+			transition:
+				transform 0.12s ease,
+				background 0.1s ease;
+		}
 
-	.tree-chevron:hover {
-		background: var(--neutral-fill-secondary-hover, #f0f0f0);
-		color: var(--neutral-foreground-rest, #242424);
-	}
+		.tree-chevron:hover {
+			background: var(--neutral-fill-secondary-hover, #f0f0f0);
+			color: var(--neutral-foreground-rest, #242424);
+		}
 
-	.tree-chevron.expanded {
-		transform: rotate(90deg);
-	}
+		.tree-chevron.expanded {
+			transform: rotate(90deg);
+		}
 
-	tbody tr:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid
-			var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
-		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
-	}
+		tbody tr:focus-visible {
+			outline: calc(var(--focus-stroke-width, 2) * 1px) solid
+				var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
+			outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
+		}
 
-	.tree-chevron:focus-visible,
-	.toolbar-trigger-btn:focus-visible,
-	.cell-edit-btn:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid
-			var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
-		outline-offset: 1px;
-	}
+		.tree-chevron:focus-visible,
+		.toolbar-trigger-btn:focus-visible,
+		.cell-edit-btn:focus-visible {
+			outline: calc(var(--focus-stroke-width, 2) * 1px) solid
+				var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
+			outline-offset: 1px;
+		}
 
-	/* The edit button shows while focused, not only on hover */
-	.cell-edit-btn:focus-visible {
-		opacity: 1;
-	}
+		/* The edit button shows while focused, not only on hover */
+		.cell-edit-btn:focus-visible {
+			opacity: 1;
+		}
 
-	.tree-chevron > span {
-		display: inline-flex;
-	}
+		.tree-chevron > span {
+			display: inline-flex;
+		}
 
-	.tree-leaf-spacer {
-		display: inline-block;
-		width: 16px;
-		height: 16px;
-		flex-shrink: 0;
-	}
+		.tree-leaf-spacer {
+			display: inline-block;
+			width: 16px;
+			height: 16px;
+			flex-shrink: 0;
+		}
 
-	.tree-chevron:disabled {
-		cursor: default;
-		opacity: 0.5;
-	}
+		.tree-chevron:disabled {
+			cursor: default;
+			opacity: 0.5;
+		}
 
-	/* Editable cell styles */
-	.quickgrid.editable .editable-cell {
-		cursor: pointer;
-		position: relative;
-	}
+		/* Editable cell styles */
+		.quickgrid.editable .editable-cell {
+			cursor: pointer;
+			position: relative;
+		}
 
-	.quickgrid.editable .editable-cell:hover {
-		background: var(--fluent-quickgrid-editable-bg-hover, var(--neutral-fill-secondary-hover, #f0f0f0));
-	}
+		.quickgrid.editable .editable-cell:hover {
+			background: var(--fluent-quickgrid-editable-bg-hover, var(--neutral-fill-secondary-hover, #f0f0f0));
+		}
 
-	.quickgrid.editable .editable-cell:hover::after {
-		content: "";
-		position: absolute;
-		inset: 2px;
-		border: 1px dashed var(--fluent-quickgrid-editable-border-hover, var(--neutral-stroke-input-rest, #d1d1d1));
-		border-radius: var(--fluent-border-radius-sm);
-		pointer-events: none;
-	}
+		.quickgrid.editable .editable-cell:hover::after {
+			content: "";
+			position: absolute;
+			inset: 2px;
+			border: 1px dashed var(--fluent-quickgrid-editable-border-hover, var(--neutral-stroke-input-rest, #d1d1d1));
+			border-radius: var(--fluent-border-radius-sm);
+			pointer-events: none;
+		}
 
-	/* Cell content with edit button */
-	.cell-content {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 4px;
-	}
+		/* Cell content with edit button */
+		.cell-content {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 4px;
+		}
 
-	/* Nowrap column: ellipsis-truncate the text span when its column has a
+		/* Nowrap column: ellipsis-truncate the text span when its column has a
 	   max-width. The span needs `min-width: 0` to shrink below intrinsic
 	   content width as a flex item; `flex: 1 1 auto` lets it claim the
 	   horizontal space the edit button / error icon doesn't use. */
-	td.nowrap-cell .cell-text {
-		flex: 1 1 auto;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		display: block;
-	}
+		td.nowrap-cell .cell-text {
+			flex: 1 1 auto;
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			display: block;
+		}
 
-	/* Actions column (for button trigger mode; the header's copy is in QuickGridHeader.svelte) */
-	.actions-column {
-		width: 32px;
-		min-width: 32px;
-		max-width: 32px;
-		padding: 0 !important;
-		text-align: center;
-	}
+		/* Actions column (for button trigger mode; the header's copy is in QuickGridHeader.svelte) */
+		.actions-column {
+			width: 32px;
+			min-width: 32px;
+			max-width: 32px;
+			padding: 0 !important;
+			text-align: center;
+		}
 
-	/* Toolbar trigger button (for button mode) */
-	.toolbar-trigger-btn {
-		padding: 0 4px;
-		background: transparent;
-		border: none;
-		border-radius: var(--control-corner-radius, 4px);
-		cursor: pointer;
-		font-size: 16px;
-		line-height: 1;
-		color: var(--neutral-foreground-hint, #707070);
-		transition:
-			background 0.1s ease,
-			color 0.1s ease;
-	}
+		/* Toolbar trigger button (for button mode) */
+		.toolbar-trigger-btn {
+			padding: 0 4px;
+			background: transparent;
+			border: none;
+			border-radius: var(--control-corner-radius, 4px);
+			cursor: pointer;
+			font-size: 16px;
+			line-height: 1;
+			color: var(--neutral-foreground-hint, #707070);
+			transition:
+				background 0.1s ease,
+				color 0.1s ease;
+		}
 
-	.toolbar-trigger-btn:hover,
-	.toolbar-trigger-btn.active {
-		background: var(--neutral-fill-secondary-hover, #f0f0f0);
-		color: var(--neutral-foreground-rest, #242424);
-	}
+		.toolbar-trigger-btn:hover,
+		.toolbar-trigger-btn.active {
+			background: var(--neutral-fill-secondary-hover, #f0f0f0);
+			color: var(--neutral-foreground-rest, #242424);
+		}
 
-	.cell-edit-btn {
-		opacity: 0;
-		padding: 2px 6px;
-		background: var(--neutral-layer-2, #f5f5f5);
-		border: 1px solid var(--neutral-stroke-input-rest, #d1d1d1);
-		border-radius: var(--control-corner-radius, 4px);
-		cursor: pointer;
-		font-size: 12px;
-		line-height: 1;
-		transition: opacity 0.15s ease;
-	}
+		.cell-edit-btn {
+			opacity: 0;
+			padding: 2px 6px;
+			background: var(--neutral-layer-2, #f5f5f5);
+			border: 1px solid var(--neutral-stroke-input-rest, #d1d1d1);
+			border-radius: var(--control-corner-radius, 4px);
+			cursor: pointer;
+			font-size: 12px;
+			line-height: 1;
+			transition: opacity 0.15s ease;
+		}
 
-	.editable-cell:hover .cell-edit-btn {
-		opacity: 1;
-	}
+		.editable-cell:hover .cell-edit-btn {
+			opacity: 1;
+		}
 
-	.cell-edit-btn:hover {
-		background: var(--neutral-layer-3, #ebebeb);
-		border-color: var(--accent-fill-rest, #0078d4);
-	}
+		.cell-edit-btn:hover {
+			background: var(--neutral-layer-3, #ebebeb);
+			border-color: var(--accent-fill-rest, #0078d4);
+		}
 
-	/* Validation error styles */
-	.validation-error {
-		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12)) !important;
-	}
+		/* Validation error styles */
+		.validation-error {
+			background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12)) !important;
+		}
 
-	.validation-error::after {
-		border-color: var(--fluent-color-danger-foreground, #d13438) !important;
-		border-style: solid !important;
-	}
+		.validation-error::after {
+			border-color: var(--fluent-color-danger-foreground, #d13438) !important;
+			border-style: solid !important;
+		}
 
-	.validation-error-message {
-		font-size: 11px;
-		color: var(--fluent-color-danger-foreground, #d13438);
-		margin-block-start: 2px;
-	}
+		.validation-error-message {
+			font-size: 11px;
+			color: var(--fluent-color-danger-foreground, #d13438);
+			margin-block-start: 2px;
+		}
 
-	/* Cell error indicator (shows when cell is invalid but not editing) */
-	.cell-error-indicator {
-		color: var(--fluent-color-danger-foreground, #d13438);
-		font-size: 12px;
-		margin-inline-start: 4px;
-		cursor: help;
-	}
+		/* Cell error indicator (shows when cell is invalid but not editing) */
+		.cell-error-indicator {
+			color: var(--fluent-color-danger-foreground, #d13438);
+			font-size: 12px;
+			margin-inline-start: 4px;
+			cursor: help;
+		}
 
-	/* Editor wrapper and validating state */
-	.editor-wrapper {
-		position: relative;
-		display: flex;
-		align-items: center;
-		gap: 4px;
-	}
+		/* Editor wrapper and validating state */
+		.editor-wrapper {
+			position: relative;
+			display: flex;
+			align-items: center;
+			gap: 4px;
+		}
 
-	.editor-wrapper.validating {
-		opacity: 0.7;
-		pointer-events: none;
-	}
+		.editor-wrapper.validating {
+			opacity: 0.7;
+			pointer-events: none;
+		}
 
-	.validating-indicator,
-	.options-loading-indicator {
-		font-size: 10px;
-		color: var(--neutral-foreground-hint, #707070);
-		animation: fluent-pulse 1s infinite;
-	}
+		.validating-indicator,
+		.options-loading-indicator {
+			font-size: 10px;
+			color: var(--neutral-foreground-hint, #707070);
+			animation: fluent-pulse 1s infinite;
+		}
 
-	/* Custom editing indicator */
-	.custom-editing-indicator {
-		font-size: 12px;
-		color: var(--accent-foreground-rest, #0078d4);
-		font-style: italic;
-	}
+		/* Custom editing indicator */
+		.custom-editing-indicator {
+			font-size: 12px;
+			color: var(--accent-foreground-rest, #0078d4);
+			font-style: italic;
+		}
 
-	/* Navigate mode styles. All cells are focusable so the focus indicator applies to
+		/* Navigate mode styles. All cells are focusable so the focus indicator applies to
 	   any td.focused, not only `.editable-cell` — read-only cells still need the indicator
 	   so the user can see where their selection is when traversing the tree column or
 	   non-editable rows. `cursor: cell` stays scoped to editable cells (cursor signals
 	   editability, not focusability). */
-	.quickgrid.navigate-mode .editable-cell {
-		cursor: cell;
-	}
+		.quickgrid.navigate-mode .editable-cell {
+			cursor: cell;
+		}
 
-	.quickgrid.navigate-mode tbody td:focus {
-		outline: none;
-	}
+		.quickgrid.navigate-mode tbody td:focus {
+			outline: none;
+		}
 
-	.quickgrid.navigate-mode tbody td.focused {
-		outline: 2px solid var(--fluent-quickgrid-focused-cell-stroke, var(--accent-fill-rest, #0078d4));
-		outline-offset: -2px;
-		background: var(--fluent-quickgrid-focused-cell-bg, var(--neutral-fill-secondary-hover, #f0f0f0));
-	}
+		.quickgrid.navigate-mode tbody td.focused {
+			outline: 2px solid var(--fluent-quickgrid-focused-cell-stroke, var(--accent-fill-rest, #0078d4));
+			outline-offset: -2px;
+			background: var(--fluent-quickgrid-focused-cell-bg, var(--neutral-fill-secondary-hover, #f0f0f0));
+		}
 
-	.quickgrid.navigate-mode tbody td.focused::after {
-		display: none;
-	}
+		.quickgrid.navigate-mode tbody td.focused::after {
+			display: none;
+		}
 
-	/* Editing cell - prominent background */
-	.quickgrid .editable-cell.editing {
-		background: var(--fluent-quickgrid-editing-bg, var(--neutral-layer-1, #ffffff)) !important;
-		outline: 2px solid var(--fluent-quickgrid-editing-stroke, var(--accent-fill-rest, #0078d4));
-		outline-offset: -2px;
-	}
+		/* Editing cell - prominent background */
+		.quickgrid .editable-cell.editing {
+			background: var(--fluent-quickgrid-editing-bg, var(--neutral-layer-1, #ffffff)) !important;
+			outline: 2px solid var(--fluent-quickgrid-editing-stroke, var(--accent-fill-rest, #0078d4));
+			outline-offset: -2px;
+		}
 
-	/* Editing cell styles - seamless input */
-	.editable-cell .editor-wrapper {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
-		box-sizing: border-box;
-	}
+		/* Editing cell styles - seamless input */
+		.editable-cell .editor-wrapper {
+			position: absolute;
+			inset: 0;
+			display: flex;
+			align-items: center;
+			padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
+			box-sizing: border-box;
+		}
 
-	/* Make editable cells position relative for absolute editor */
-	tbody td.editable-cell {
-		position: relative;
-	}
+		/* Make editable cells position relative for absolute editor */
+		tbody td.editable-cell {
+			position: relative;
+		}
 
-	/* When a cell is being edited, show the accent border on the cell itself */
-	tbody td:has(.editor-wrapper) {
-		outline: 2px solid var(--fluent-quickgrid-editing-stroke, var(--accent-fill-rest, #0078d4));
-		outline-offset: -2px;
-		background: var(--fluent-quickgrid-editing-bg, var(--neutral-layer-1, #ffffff));
-	}
+		/* When a cell is being edited, show the accent border on the cell itself */
+		tbody td:has(.editor-wrapper) {
+			outline: 2px solid var(--fluent-quickgrid-editing-stroke, var(--accent-fill-rest, #0078d4));
+			outline-offset: -2px;
+			background: var(--fluent-quickgrid-editing-bg, var(--neutral-layer-1, #ffffff));
+		}
 
-	tbody td:has(.editor-wrapper)::after {
-		display: none;
-	}
+		tbody td:has(.editor-wrapper)::after {
+			display: none;
+		}
 
-	/* Checkbox display in navigate mode (read-only visual) */
-	.cell-checkbox-display {
-		width: 18px;
-		height: 18px;
-		pointer-events: none;
-		accent-color: var(--accent-fill-rest, #0078d4);
+		/* Checkbox display in navigate mode (read-only visual) */
+		.cell-checkbox-display {
+			width: 18px;
+			height: 18px;
+			pointer-events: none;
+			accent-color: var(--accent-fill-rest, #0078d4);
+		}
 	}
 </style>

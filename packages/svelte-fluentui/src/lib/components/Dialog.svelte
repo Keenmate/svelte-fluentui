@@ -499,83 +499,87 @@ Wrapper for `<fluent-dialog>` (portalled): header with title and ×, body, and a
 </fluent-dialog>
 
 <style>
-	.dialog-overlay {
-		position: fixed;
-		inset: 0;
-		background-color: rgba(0, 0, 0, 0.4);
-		z-index: var(--fluent-z-modal-backdrop);
-	}
+	@layer reset, variables, component, overrides;
 
-	.dialog-positioned {
-		position: fixed;
-		z-index: var(--fluent-z-modal);
-	}
+	@layer component {
+		.dialog-overlay {
+			position: fixed;
+			inset: 0;
+			background-color: rgba(0, 0, 0, 0.4);
+			z-index: var(--fluent-z-modal-backdrop);
+		}
 
-	fluent-dialog::part(control) {
-		padding: 1rem;
-	}
+		.dialog-positioned {
+			position: fixed;
+			z-index: var(--fluent-z-modal);
+		}
 
-	.dialog-container {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		gap: 1rem;
-		position: relative;
-	}
+		fluent-dialog::part(control) {
+			padding: 1rem;
+		}
 
-	.dialog-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		flex: none;
-	}
+		.dialog-container {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			gap: 1rem;
+			position: relative;
+		}
 
-	.dialog-title {
-		font-size: 1.25rem;
-		font-weight: 600;
-		color: var(--neutral-foreground-rest);
-		flex: 1;
-		min-width: 0;
-	}
+		.dialog-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.5rem;
+			flex: none;
+		}
 
-	/* Used when no title/header is provided — keeps legacy "X in the corner" look. */
-	.dialog-close-floating {
-		position: absolute;
-		top: 0;
-		inset-inline-end: 0;
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		padding: 0.5rem;
-		color: var(--neutral-foreground-rest);
-		border-radius: var(--fluent-border-radius-md);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
+		.dialog-title {
+			font-size: 1.25rem;
+			font-weight: 600;
+			color: var(--neutral-foreground-rest);
+			flex: 1;
+			min-width: 0;
+		}
 
-	.dialog-close-floating:hover {
-		background: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.05));
-	}
+		/* Used when no title/header is provided — keeps legacy "X in the corner" look. */
+		.dialog-close-floating {
+			position: absolute;
+			top: 0;
+			inset-inline-end: 0;
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			padding: 0.5rem;
+			color: var(--neutral-foreground-rest);
+			border-radius: var(--fluent-border-radius-md);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
 
-	.dialog-content {
-		flex: 1;
-		min-height: 0;
-	}
+		.dialog-close-floating:hover {
+			background: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.05));
+		}
 
-	.dialog-footer {
-		flex: none;
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
+		.dialog-content {
+			flex: 1;
+			min-height: 0;
+		}
 
-	.dialog-actions {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
+		.dialog-footer {
+			flex: none;
+			display: flex;
+			justify-content: flex-end;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+		}
+
+		.dialog-actions {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
 	}
 </style>

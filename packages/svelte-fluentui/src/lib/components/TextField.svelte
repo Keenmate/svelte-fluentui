@@ -208,5 +208,9 @@ Single-line text input wrapping `<fluent-text-field>`; `bind:value` is a string.
 </fluent-text-field>
 
 <style>
-	/* Optional: Add component-specific styles here */
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* Optional: Add component-specific styles here */
+	}
 </style>

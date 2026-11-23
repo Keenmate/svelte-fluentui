@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {Toast, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
+	import {Button, Toast, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 	let showToast = $state(false)
 	let toastId = "demo-toast"
@@ -80,9 +80,7 @@
 
 		<h3>Toast with timestamp</h3>
 		<Toast title="Auto-saved" timestamp={new Date()} topCTAType="timestamp" />
-		<button onclick={() => (showToast = true)} class="show-toast-button">
-			Show Toast
-		</button>
+		<Button onclick={() => (showToast = true)}>Show Toast</Button>
 
 		{#if showToast}
 			<div class="toast-container">
@@ -123,11 +121,6 @@
 </Stack>
 
 <style>
-	.show-toast-button {
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-	}
-
 	.toast-container {
 		position: fixed;
 		bottom: 1rem;

@@ -142,146 +142,150 @@
 </thead>
 
 <style>
-	/* Same as the body's filler cell (QuickGrid.svelte); before `.column-header` so the header's wins */
-	.filler-column {
-		width: 100%;
-		padding: 0;
-		background: transparent;
-	}
+	@layer reset, variables, component, overrides;
 
-	.column-header {
-		background: var(--fluent-quickgrid-header-bg, var(--neutral-layer-2, #f5f5f5));
-		color: var(--fluent-quickgrid-text, var(--neutral-foreground-rest, #242424));
-		font-weight: var(--font-weight-semibold, 600);
-		padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
-		border-block-end: 2px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
-		text-align: start;
-		user-select: none;
-		position: relative;
-	}
+	@layer component {
+		/* Same as the body's filler cell (QuickGrid.svelte); before `.column-header` so the header's wins */
+		.filler-column {
+			width: 100%;
+			padding: 0;
+			background: transparent;
+		}
 
-	.column-header.sortable {
-		cursor: pointer;
-		padding: 0;
-	}
+		.column-header {
+			background: var(--fluent-quickgrid-header-bg, var(--neutral-layer-2, #f5f5f5));
+			color: var(--fluent-quickgrid-text, var(--neutral-foreground-rest, #242424));
+			font-weight: var(--font-weight-semibold, 600);
+			padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
+			border-block-end: 2px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+			text-align: start;
+			user-select: none;
+			position: relative;
+		}
 
-	/* The sort button fills its header cell (the padding moves onto it) */
-	.column-sort-button {
-		all: unset;
-		box-sizing: border-box;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 4px;
-		width: 100%;
-		padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
-		cursor: pointer;
-		text-align: inherit;
-	}
+		.column-header.sortable {
+			cursor: pointer;
+			padding: 0;
+		}
 
-	.column-sort-button:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid
-			var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
-		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
-	}
+		/* The sort button fills its header cell (the padding moves onto it) */
+		.column-sort-button {
+			all: unset;
+			box-sizing: border-box;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 4px;
+			width: 100%;
+			padding: calc(var(--design-unit) * 2px) calc(var(--design-unit) * 3px);
+			cursor: pointer;
+			text-align: inherit;
+		}
 
-	.column-header.sortable:hover {
-		background: var(--fluent-quickgrid-header-bg-hover, var(--neutral-layer-3, #ebebeb));
-	}
+		.column-sort-button:focus-visible {
+			outline: calc(var(--focus-stroke-width, 2) * 1px) solid
+				var(--fluent-quickgrid-focus-stroke, var(--focus-stroke-outer, #0078d4));
+			outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
+		}
 
-	.column-header-content {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		justify-content: space-between;
-	}
+		.column-header.sortable:hover {
+			background: var(--fluent-quickgrid-header-bg-hover, var(--neutral-layer-3, #ebebeb));
+		}
 
-	.sort-indicator {
-		font-size: 10px;
-		opacity: 0.8;
-		min-width: 12px;
-		text-align: center;
-		color: var(--accent-fill-rest, currentColor);
-	}
+		.column-header-content {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			justify-content: space-between;
+		}
 
-	.sort-priority {
-		font-size: 9px;
-		margin-inline-start: 1px;
-		vertical-align: super;
-	}
+		.sort-indicator {
+			font-size: 10px;
+			opacity: 0.8;
+			min-width: 12px;
+			text-align: center;
+			color: var(--accent-fill-rest, currentColor);
+		}
 
-	.sort-placeholder {
-		color: var(--neutral-foreground-rest, currentColor);
-		opacity: 0.3;
-	}
+		.sort-priority {
+			font-size: 9px;
+			margin-inline-start: 1px;
+			vertical-align: super;
+		}
 
-	.header-info-icon {
-		font-size: 12px;
-		color: var(--accent-fill-rest, #0078d4);
-		cursor: help;
-		opacity: 0.7;
-		margin-inline-start: 2px;
-	}
+		.sort-placeholder {
+			color: var(--neutral-foreground-rest, currentColor);
+			opacity: 0.3;
+		}
 
-	.header-info-icon:hover {
-		opacity: 1;
-	}
+		.header-info-icon {
+			font-size: 12px;
+			color: var(--accent-fill-rest, #0078d4);
+			cursor: help;
+			opacity: 0.7;
+			margin-inline-start: 2px;
+		}
 
-	.column-header.sorted {
-		background: var(--fluent-quickgrid-header-bg-sorted, var(--neutral-layer-3, #ebebeb));
-	}
+		.header-info-icon:hover {
+			opacity: 1;
+		}
 
-	.filter-row th {
-		padding: calc(var(--design-unit) * 1px) calc(var(--design-unit) * 2px);
-		background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
-		border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
-	}
+		.column-header.sorted {
+			background: var(--fluent-quickgrid-header-bg-sorted, var(--neutral-layer-3, #ebebeb));
+		}
 
-	.filter-input {
-		width: 100%;
-		padding: 4px 8px;
-		border: 1px solid var(--neutral-stroke-input-rest, #d1d1d1);
-		border-radius: var(--control-corner-radius, 4px);
-		background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
-		color: var(--fluent-quickgrid-text, var(--neutral-foreground-rest, #242424));
-		font-size: 12px;
-		box-sizing: border-box;
-	}
+		.filter-row th {
+			padding: calc(var(--design-unit) * 1px) calc(var(--design-unit) * 2px);
+			background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
+			border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+		}
 
-	.filter-input:focus {
-		outline: none;
-		border-color: var(--accent-fill-rest, #0078d4);
-		box-shadow: 0 0 0 1px var(--accent-fill-rest, #0078d4);
-	}
+		.filter-input {
+			width: 100%;
+			padding: 4px 8px;
+			border: 1px solid var(--neutral-stroke-input-rest, #d1d1d1);
+			border-radius: var(--control-corner-radius, 4px);
+			background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
+			color: var(--fluent-quickgrid-text, var(--neutral-foreground-rest, #242424));
+			font-size: 12px;
+			box-sizing: border-box;
+		}
 
-	/* Invalid state — surfaced when a column's `filter` callback returned null on the
+		.filter-input:focus {
+			outline: none;
+			border-color: var(--accent-fill-rest, #0078d4);
+			box-shadow: 0 0 0 1px var(--accent-fill-rest, #0078d4);
+		}
+
+		/* Invalid state — surfaced when a column's `filter` callback returned null on the
 	   probe row (i.e. user typed something syntactically incomplete like `>`). Themes
 	   that override `--fluent-color-danger-foreground` get the right red (dark theme included). */
-	.filter-input.invalid {
-		border-color: var(--fluent-color-danger-foreground, #d13438);
-	}
+		.filter-input.invalid {
+			border-color: var(--fluent-color-danger-foreground, #d13438);
+		}
 
-	.filter-input.invalid:focus {
-		border-color: var(--fluent-color-danger-foreground, #d13438);
-		box-shadow: 0 0 0 1px var(--fluent-color-danger-foreground, #d13438);
-	}
+		.filter-input.invalid:focus {
+			border-color: var(--fluent-color-danger-foreground, #d13438);
+			box-shadow: 0 0 0 1px var(--fluent-color-danger-foreground, #d13438);
+		}
 
-	/* Same as the body's actions cell (QuickGrid.svelte) */
-	.actions-column {
-		width: 32px;
-		min-width: 32px;
-		max-width: 32px;
-		padding: 0 !important;
-		text-align: center;
-	}
+		/* Same as the body's actions cell (QuickGrid.svelte) */
+		.actions-column {
+			width: 32px;
+			min-width: 32px;
+			max-width: 32px;
+			padding: 0 !important;
+			text-align: center;
+		}
 
-	thead .actions-column {
-		background: var(--fluent-quickgrid-header-bg, var(--neutral-layer-2, #f5f5f5));
-		border-block-end: 2px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
-	}
+		thead .actions-column {
+			background: var(--fluent-quickgrid-header-bg, var(--neutral-layer-2, #f5f5f5));
+			border-block-end: 2px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+		}
 
-	.filter-row .actions-column {
-		background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
-		border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+		.filter-row .actions-column {
+			background: var(--fluent-quickgrid-bg, var(--neutral-layer-1, #ffffff));
+			border-block-end: 1px solid var(--fluent-quickgrid-border, var(--neutral-stroke-layer-rest, #e0e0e0));
+		}
 	}
 </style>

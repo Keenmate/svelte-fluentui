@@ -272,7 +272,11 @@ Wrapper for `<fluent-number-field>`: a numeric input with optional step buttons 
 </fluent-number-field>
 
 <style>
-	:global(fluent-number-field::part(label)) {
-		display: none;
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		:global(fluent-number-field::part(label)) {
+			display: none;
+		}
 	}
 </style>

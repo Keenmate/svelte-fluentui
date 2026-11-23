@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {MenuButton, Stack, Card, Grid, GridItem, QuickGrid, Icon} from "svelte-fluentui"
+	import {Button, MenuButton, Stack, Card, Grid, GridItem, QuickGrid, Icon} from "svelte-fluentui"
 	import type {MenuEntry} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
@@ -195,9 +195,9 @@
 			<MenuButton bind:open={controlledOpen} items={basicItems} appearance="accent">
 				Controlled
 			</MenuButton>
-			<button onclick={() => controlledOpen = !controlledOpen}>
+			<Button onclick={() => controlledOpen = !controlledOpen}>
 				Toggle from outside (currently {controlledOpen ? "open" : "closed"})
-			</button>
+			</Button>
 		</div>
 
 		<h3>Open upward</h3>

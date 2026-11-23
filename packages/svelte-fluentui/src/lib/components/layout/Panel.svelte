@@ -168,117 +168,121 @@ Slide-in side panel (drawer) portalled to `<body>`, with optional backdrop; or, 
 {/if}
 
 <style lang="scss">
-	.fluent-panel-root {
-		position: fixed;
-		inset-block: var(--fluent-panel-top, 0) 0;
-		inset-inline: 0;
-		z-index: var(--fluent-z-modal);
-		// Never block the page — only the overlay and the panel surface
-		// (re-enabled below) capture pointer events.
-		pointer-events: none;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-panel-overlay {
-		position: absolute;
-		inset: 0;
-		background-color: rgba(0, 0, 0, 0);
-		cursor: pointer;
-		pointer-events: none;
-		transition: background-color 0.25s ease;
-		z-index: var(--fluent-z-modal-backdrop);
-	}
+	@layer component {
+		.fluent-panel-root {
+			position: fixed;
+			inset-block: var(--fluent-panel-top, 0) 0;
+			inset-inline: 0;
+			z-index: var(--fluent-z-modal);
+			// Never block the page — only the overlay and the panel surface
+			// (re-enabled below) capture pointer events.
+			pointer-events: none;
+		}
 
-	.fluent-panel {
-		position: absolute;
-		top: 0;
-		height: 100%;
-		max-width: 90vw;
-		background-color: var(--neutral-layer-1, #ffffff);
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-		pointer-events: none;
-		transition:
-			transform 0.25s ease,
-			visibility 0.25s ease;
-		visibility: hidden;
-		z-index: calc(var(--fluent-z-modal) + 1);
-	}
-
-	// Closed-state per-side transforms — declared BEFORE the --open rule so
-	// the open rule wins on source order at equal specificity.
-
-	// Sides follow the writing direction (start = left in LTR, right in RTL);
-	// translateX and box-shadow offsets are physical, hence the --rtl overrides.
-	.fluent-panel-root--start .fluent-panel {
-		inset-inline-start: 0;
-		box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
-		transform: translateX(-100%);
-	}
-
-	.fluent-panel-root--start.fluent-panel-root--rtl .fluent-panel {
-		box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
-		transform: translateX(100%);
-	}
-
-	.fluent-panel-root--end .fluent-panel {
-		inset-inline-end: 0;
-		box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
-		transform: translateX(100%);
-	}
-
-	.fluent-panel-root--end.fluent-panel-root--rtl .fluent-panel {
-		box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
-		transform: translateX(-100%);
-	}
-
-	.fluent-panel-root--open .fluent-panel-overlay {
-		background-color: rgba(0, 0, 0, 0.3);
-		pointer-events: auto;
-	}
-
-	// Match the (0,3,0) specificity of the RTL side overrides so the open
-	// transform wins on source order (this rule is last).
-	.fluent-panel-root.fluent-panel-root--open .fluent-panel {
-		transform: translateX(0);
-		visibility: visible;
-		pointer-events: auto;
-	}
-
-	// Pinned: render in normal flow as a regular column. None of the
-	// floating-panel positioning, transforms, or visibility gymnastics apply
-	// — caller is responsible for placing the <aside> via parent layout.
-	//
-	// `z-index` is explicit (not auto) so pinned forms its own stacking
-	// context — keeps overlay drawers (z-index 1050+) and their backdrops
-	// (1040) reliably above any pinned drawer, regardless of paint order.
-	// Override via --fluent-z-panel-pinned on the consumer side if multiple
-	// pinned panels need to layer relative to each other.
-	.fluent-panel--pinned {
-		position: relative;
-		top: auto;
-		height: auto;
-		max-width: none;
-		transform: none;
-		visibility: visible;
-		pointer-events: auto;
-		transition: none;
-		flex-shrink: 0;
-		align-self: stretch;
-		box-shadow: none;
-		border-inline-end: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		z-index: var(--fluent-z-panel-pinned);
-	}
-
-	.fluent-panel--pinned-end {
-		border-inline-end: none;
-		border-inline-start: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.fluent-panel,
 		.fluent-panel-overlay {
+			position: absolute;
+			inset: 0;
+			background-color: rgba(0, 0, 0, 0);
+			cursor: pointer;
+			pointer-events: none;
+			transition: background-color 0.25s ease;
+			z-index: var(--fluent-z-modal-backdrop);
+		}
+
+		.fluent-panel {
+			position: absolute;
+			top: 0;
+			height: 100%;
+			max-width: 90vw;
+			background-color: var(--neutral-layer-1, #ffffff);
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			pointer-events: none;
+			transition:
+				transform 0.25s ease,
+				visibility 0.25s ease;
+			visibility: hidden;
+			z-index: calc(var(--fluent-z-modal) + 1);
+		}
+
+		// Closed-state per-side transforms — declared BEFORE the --open rule so
+		// the open rule wins on source order at equal specificity.
+
+		// Sides follow the writing direction (start = left in LTR, right in RTL);
+		// translateX and box-shadow offsets are physical, hence the --rtl overrides.
+		.fluent-panel-root--start .fluent-panel {
+			inset-inline-start: 0;
+			box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+			transform: translateX(-100%);
+		}
+
+		.fluent-panel-root--start.fluent-panel-root--rtl .fluent-panel {
+			box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
+			transform: translateX(100%);
+		}
+
+		.fluent-panel-root--end .fluent-panel {
+			inset-inline-end: 0;
+			box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
+			transform: translateX(100%);
+		}
+
+		.fluent-panel-root--end.fluent-panel-root--rtl .fluent-panel {
+			box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+			transform: translateX(-100%);
+		}
+
+		.fluent-panel-root--open .fluent-panel-overlay {
+			background-color: rgba(0, 0, 0, 0.3);
+			pointer-events: auto;
+		}
+
+		// Match the (0,3,0) specificity of the RTL side overrides so the open
+		// transform wins on source order (this rule is last).
+		.fluent-panel-root.fluent-panel-root--open .fluent-panel {
+			transform: translateX(0);
+			visibility: visible;
+			pointer-events: auto;
+		}
+
+		// Pinned: render in normal flow as a regular column. None of the
+		// floating-panel positioning, transforms, or visibility gymnastics apply
+		// — caller is responsible for placing the <aside> via parent layout.
+		//
+		// `z-index` is explicit (not auto) so pinned forms its own stacking
+		// context — keeps overlay drawers (z-index 1050+) and their backdrops
+		// (1040) reliably above any pinned drawer, regardless of paint order.
+		// Override via --fluent-z-panel-pinned on the consumer side if multiple
+		// pinned panels need to layer relative to each other.
+		.fluent-panel--pinned {
+			position: relative;
+			top: auto;
+			height: auto;
+			max-width: none;
+			transform: none;
+			visibility: visible;
+			pointer-events: auto;
 			transition: none;
+			flex-shrink: 0;
+			align-self: stretch;
+			box-shadow: none;
+			border-inline-end: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
+			z-index: var(--fluent-z-panel-pinned);
+		}
+
+		.fluent-panel--pinned-end {
+			border-inline-end: none;
+			border-inline-start: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.fluent-panel,
+			.fluent-panel-overlay {
+				transition: none;
+			}
 		}
 	}
 </style>

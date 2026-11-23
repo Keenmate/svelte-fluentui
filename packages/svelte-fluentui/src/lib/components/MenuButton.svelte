@@ -292,38 +292,41 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 {/if}
 
 <style>
-	.fluent-menu-button-anchor {
-		display: inline-flex;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-menu-button-icon-slot {
-		display: inline-flex;
-		align-items: center;
-	}
+	@layer component {
+		.fluent-menu-button-anchor {
+			display: inline-flex;
+		}
 
-	.fluent-menu-button-icon-slot :global(svg) {
-		display: block;
-	}
+		.fluent-menu-button-icon-slot {
+			display: inline-flex;
+			align-items: center;
+		}
 
-	.fluent-menu-button-item-icon {
-		display: inline-flex;
-		align-items: center;
-		margin-inline-end: 0.25rem;
-	}
+		.fluent-menu-button-icon-slot :global(svg) {
+			display: block;
+		}
 
-	.fluent-menu-button-shortcut {
-		color: var(--neutral-foreground-hint);
-		font-size: var(--type-ramp-minus-1-font-size);
-	}
+		.fluent-menu-button-item-icon {
+			display: inline-flex;
+			align-items: center;
+			margin-inline-end: 0.25rem;
+		}
 
-	.fluent-menu-button-group-label {
-		padding: 4px 12px;
-		color: var(--neutral-foreground-hint);
-		font-size: var(--type-ramp-minus-1-font-size);
-		font-weight: 600;
-	}
+		.fluent-menu-button-shortcut {
+			color: var(--neutral-foreground-hint);
+			font-size: var(--type-ramp-minus-1-font-size);
+		}
 
-	/*
+		.fluent-menu-button-group-label {
+			padding: 4px 12px;
+			color: var(--neutral-foreground-hint);
+			font-size: var(--type-ramp-minus-1-font-size);
+			font-weight: 600;
+		}
+
+		/*
 	 * Wrapper is the positioned element (`position: fixed`, top / left set by
 	 * helpers/floating.ts). It is capped to the room left to the viewport edge,
 	 * so it owns the `overflow-y: auto` scroll. The inner `<fluent-menu>` has rounded corners; without a
@@ -332,26 +335,27 @@ A `<fluent-button>` that opens a portalled `<fluent-menu>` of `items` (ActionIte
 	 * show as gray pixels. `background: transparent` is explicit so
 	 * nothing in a future theme/global rule can repaint it.
 	 */
-	.fluent-menu-button-menu {
-		position: fixed;
-		top: 0;
-		left: 0;
-		z-index: var(--fluent-z-popover);
-		max-height: var(--fluent-popup-available-height, none);
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		background: transparent;
-		border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
-		/* fluent-menu's built-in elevation is barely visible on dark themes —
+		.fluent-menu-button-menu {
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: var(--fluent-z-popover);
+			max-height: var(--fluent-popup-available-height, none);
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			background: transparent;
+			border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
+			/* fluent-menu's built-in elevation is barely visible on dark themes —
 		 * paint the popover shadow on the wrapper instead so the menu reads
 		 * as a distinct surface. Matches the elevation used by ContextMenu. */
-		box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
-	}
+			box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
+		}
 
-	.fluent-menu-button-menu :global(fluent-menu) {
-		min-width: 160px;
-	}
+		.fluent-menu-button-menu :global(fluent-menu) {
+			min-width: 160px;
+		}
 
-	/* Dark theme is handled by the palette tokens (re-declared under [data-theme="dark"]). */
-	/* danger items: _primitives.scss */
+		/* Dark theme is handled by the palette tokens (re-declared under [data-theme="dark"]). */
+		/* danger items: _primitives.scss */
+	}
 </style>

@@ -102,28 +102,32 @@
 </div>
 
 <style>
-	/* Wrapper is transparent + rounded so the inner `<fluent-menu>`'s rounded corners
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* Wrapper is transparent + rounded so the inner `<fluent-menu>`'s rounded corners
 	 * don't reveal gray pixels behind them (the wrapper would otherwise be a
 	 * rectangular surface). */
-	.context-menu {
-		z-index: var(--fluent-z-popover);
-		background: transparent;
-		border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
-		/* Popover elevation — paint shadow on the wrapper so the menu reads
+		.context-menu {
+			z-index: var(--fluent-z-popover);
+			background: transparent;
+			border-radius: calc(var(--layer-corner-radius, var(--control-corner-radius, 4)) * 1px);
+			/* Popover elevation — paint shadow on the wrapper so the menu reads
 		 * as a distinct surface on dark themes (fluent-menu's own shadow is
 		 * too subtle there). Matches ContextMenu's elevation. */
-		box-shadow: var(
-			--fluent-quickgrid-menu-shadow,
-			var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12))
-		);
-		max-height: var(--fluent-popup-available-height, none);
-		overflow-y: auto;
-		overscroll-behavior: contain;
-	}
+			box-shadow: var(
+				--fluent-quickgrid-menu-shadow,
+				var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12))
+			);
+			max-height: var(--fluent-popup-available-height, none);
+			overflow-y: auto;
+			overscroll-behavior: contain;
+		}
 
-	.context-menu fluent-menu {
-		min-width: 160px;
-	}
+		.context-menu fluent-menu {
+			min-width: 160px;
+		}
 
-	/* danger items: _primitives.scss */
+		/* danger items: _primitives.scss */
+	}
 </style>

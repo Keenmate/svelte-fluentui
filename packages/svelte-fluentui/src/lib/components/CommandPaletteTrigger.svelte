@@ -80,65 +80,69 @@ Search-field-styled button that opens a `CommandPalette`; shows a placeholder an
 </Button>
 
 <style>
-	/* Widen the control into a search-field pill (Fluent's host min-width is ~1 line height). */
-	:global(fluent-button.cp-trigger) {
-		min-width: 200px;
-	}
-	:global(fluent-button.cp-trigger--small) {
-		min-width: 160px;
-	}
-	:global(fluent-button.cp-trigger--large) {
-		min-width: 240px;
-	}
+	@layer reset, variables, component, overrides;
 
-	/* Left-align the row and let the placeholder grow so the shortcut sits at the end. */
-	:global(fluent-button.cp-trigger::part(control)) {
-		width: 100%;
-		justify-content: flex-start;
-		gap: 0.5rem;
-	}
-	:global(fluent-button.cp-trigger::part(content)) {
-		flex: 1 1 auto;
-		justify-content: flex-start;
-	}
-
-	/* Slotted content — muted "placeholder" look, matching a real search input. */
-	.cp-trigger-icon {
-		flex-shrink: 0;
-		color: var(--neutral-foreground-hint);
-	}
-
-	.cp-trigger-label {
-		color: var(--neutral-foreground-hint);
-		font-weight: 400;
-		text-align: start;
-	}
-
-	:global(fluent-button.cp-trigger--small) .cp-trigger-label {
-		font-size: 0.8125rem;
-	}
-	:global(fluent-button.cp-trigger--large) .cp-trigger-label {
-		font-size: 0.9375rem;
-	}
-
-	.cp-trigger-kbd {
-		flex-shrink: 0;
-		padding: 0.1rem 0.4rem;
-		border: 1px solid var(--neutral-stroke-layer-rest, #d0d0d0);
-		border-radius: 3px;
-		background: var(--neutral-layer-1, #ffffff);
-		font-size: 0.7rem;
-		font-weight: 500;
-		color: var(--neutral-foreground-hint);
-	}
-
-	@media (max-width: 768px) {
-		.cp-trigger-label,
-		.cp-trigger-kbd {
-			display: none;
-		}
+	@layer component {
+		/* Widen the control into a search-field pill (Fluent's host min-width is ~1 line height). */
 		:global(fluent-button.cp-trigger) {
-			min-width: auto;
+			min-width: 200px;
+		}
+		:global(fluent-button.cp-trigger--small) {
+			min-width: 160px;
+		}
+		:global(fluent-button.cp-trigger--large) {
+			min-width: 240px;
+		}
+
+		/* Left-align the row and let the placeholder grow so the shortcut sits at the end. */
+		:global(fluent-button.cp-trigger::part(control)) {
+			width: 100%;
+			justify-content: flex-start;
+			gap: 0.5rem;
+		}
+		:global(fluent-button.cp-trigger::part(content)) {
+			flex: 1 1 auto;
+			justify-content: flex-start;
+		}
+
+		/* Slotted content — muted "placeholder" look, matching a real search input. */
+		.cp-trigger-icon {
+			flex-shrink: 0;
+			color: var(--neutral-foreground-hint);
+		}
+
+		.cp-trigger-label {
+			color: var(--neutral-foreground-hint);
+			font-weight: 400;
+			text-align: start;
+		}
+
+		:global(fluent-button.cp-trigger--small) .cp-trigger-label {
+			font-size: 0.8125rem;
+		}
+		:global(fluent-button.cp-trigger--large) .cp-trigger-label {
+			font-size: 0.9375rem;
+		}
+
+		.cp-trigger-kbd {
+			flex-shrink: 0;
+			padding: 0.1rem 0.4rem;
+			border: 1px solid var(--neutral-stroke-layer-rest, #d0d0d0);
+			border-radius: 3px;
+			background: var(--neutral-layer-1, #ffffff);
+			font-size: 0.7rem;
+			font-weight: 500;
+			color: var(--neutral-foreground-hint);
+		}
+
+		@media (max-width: 768px) {
+			.cp-trigger-label,
+			.cp-trigger-kbd {
+				display: none;
+			}
+			:global(fluent-button.cp-trigger) {
+				min-width: auto;
+			}
 		}
 	}
 </style>

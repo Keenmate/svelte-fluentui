@@ -28,173 +28,177 @@
 // semantic hues (success/warning/danger/info/severe) are hardcoded since
 // FluentUI 2.6 ships no semantic palette.
 // =============================================================================
-:root {
-	// primary (brand)
-	--fluent-color-primary: var(--accent-fill-rest, #0078d4);
-	--fluent-color-primary-contrast: var(--foreground-on-accent-rest, #ffffff);
-	--fluent-color-primary-emphasis: var(--accent-foreground-rest, #0067b8);
-	--fluent-color-primary-tint: color-mix(in srgb, var(--accent-fill-rest, #0078d4) 12%, transparent);
+@layer variables {
+	:root {
+		// primary (brand)
+		--fluent-color-primary: var(--accent-fill-rest, #0078d4);
+		--fluent-color-primary-contrast: var(--foreground-on-accent-rest, #ffffff);
+		--fluent-color-primary-emphasis: var(--accent-foreground-rest, #0067b8);
+		--fluent-color-primary-tint: color-mix(in srgb, var(--accent-fill-rest, #0078d4) 12%, transparent);
 
-	// secondary (neutral grey)
-	--fluent-color-secondary: var(--neutral-fill-strong-rest, #616161);
-	--fluent-color-secondary-contrast: #ffffff;
-	--fluent-color-secondary-emphasis: var(--neutral-foreground-rest, #424242);
-	--fluent-color-secondary-tint: color-mix(in srgb, var(--neutral-fill-strong-rest, #616161) 12%, transparent);
+		// secondary (neutral grey)
+		--fluent-color-secondary: var(--neutral-fill-strong-rest, #616161);
+		--fluent-color-secondary-contrast: #ffffff;
+		--fluent-color-secondary-emphasis: var(--neutral-foreground-rest, #424242);
+		--fluent-color-secondary-tint: color-mix(in srgb, var(--neutral-fill-strong-rest, #616161) 12%, transparent);
 
-	// success (green)
-	--fluent-color-success: #107c10;
-	--fluent-color-success-contrast: #ffffff;
-	--fluent-color-success-emphasis: #0e700e;
-	--fluent-color-success-tint: color-mix(in srgb, #107c10 12%, transparent);
-	--fluent-color-success-foreground: #107c10;
+		// success (green)
+		--fluent-color-success: #107c10;
+		--fluent-color-success-contrast: #ffffff;
+		--fluent-color-success-emphasis: #0e700e;
+		--fluent-color-success-tint: color-mix(in srgb, #107c10 12%, transparent);
+		--fluent-color-success-foreground: #107c10;
 
-	// warning (yellow — solid needs dark text, line colour is dark amber)
-	--fluent-color-warning: #fde300;
-	--fluent-color-warning-contrast: #242424;
-	--fluent-color-warning-emphasis: #8a6d00;
-	--fluent-color-warning-tint: color-mix(in srgb, #fde300 22%, transparent);
-	--fluent-color-warning-foreground: #bc4b09; // Fluent 2 colorStatusWarningForeground1
+		// warning (yellow — solid needs dark text, line colour is dark amber)
+		--fluent-color-warning: #fde300;
+		--fluent-color-warning-contrast: #242424;
+		--fluent-color-warning-emphasis: #8a6d00;
+		--fluent-color-warning-tint: color-mix(in srgb, #fde300 22%, transparent);
+		--fluent-color-warning-foreground: #bc4b09; // Fluent 2 colorStatusWarningForeground1
 
-	// danger (red)
-	--fluent-color-danger: #c50f1f;
-	--fluent-color-danger-contrast: #ffffff;
-	--fluent-color-danger-emphasis: #b10e1e;
-	--fluent-color-danger-tint: color-mix(in srgb, #c50f1f 12%, transparent);
-	--fluent-color-danger-foreground: #d13438;
+		// danger (red)
+		--fluent-color-danger: #c50f1f;
+		--fluent-color-danger-contrast: #ffffff;
+		--fluent-color-danger-emphasis: #b10e1e;
+		--fluent-color-danger-tint: color-mix(in srgb, #c50f1f 12%, transparent);
+		--fluent-color-danger-foreground: #d13438;
 
-	// info (blue)
-	--fluent-color-info: #0a94d6;
-	--fluent-color-info-contrast: #ffffff;
-	--fluent-color-info-emphasis: #0a6a9a;
-	--fluent-color-info-tint: color-mix(in srgb, #0a94d6 12%, transparent);
-	--fluent-color-info-foreground: #0078d4;
+		// info (blue)
+		--fluent-color-info: #0a94d6;
+		--fluent-color-info-contrast: #ffffff;
+		--fluent-color-info-emphasis: #0a6a9a;
+		--fluent-color-info-tint: color-mix(in srgb, #0a94d6 12%, transparent);
+		--fluent-color-info-foreground: #0078d4;
 
-	// severe (orange — Fluent "severe" badge)
-	--fluent-color-severe: #da3b01;
-	--fluent-color-severe-contrast: #ffffff;
-	--fluent-color-severe-emphasis: #c43501;
-	--fluent-color-severe-tint: color-mix(in srgb, #da3b01 12%, transparent);
+		// severe (orange — Fluent "severe" badge)
+		--fluent-color-severe: #da3b01;
+		--fluent-color-severe-contrast: #ffffff;
+		--fluent-color-severe-emphasis: #c43501;
+		--fluent-color-severe-tint: color-mix(in srgb, #da3b01 12%, transparent);
 
-	// subtle (page layer — a quiet chip on coloured surfaces)
-	--fluent-color-subtle: var(--neutral-layer-1, #ffffff);
-	--fluent-color-subtle-contrast: var(--neutral-foreground-rest, #242424);
-	--fluent-color-subtle-emphasis: var(--neutral-foreground-rest, #242424);
-	--fluent-color-subtle-tint: var(--neutral-layer-1, #ffffff);
+		// subtle (page layer — a quiet chip on coloured surfaces)
+		--fluent-color-subtle: var(--neutral-layer-1, #ffffff);
+		--fluent-color-subtle-contrast: var(--neutral-foreground-rest, #242424);
+		--fluent-color-subtle-emphasis: var(--neutral-foreground-rest, #242424);
+		--fluent-color-subtle-tint: var(--neutral-layer-1, #ffffff);
 
-	// light
-	--fluent-color-light: var(--neutral-fill-secondary-rest, #f0f0f0);
-	--fluent-color-light-contrast: var(--neutral-foreground-rest, #242424);
-	--fluent-color-light-emphasis: var(--neutral-foreground-hint, #8a8a8a);
-	--fluent-color-light-tint: var(--neutral-fill-secondary-rest, #f5f5f5);
+		// light
+		--fluent-color-light: var(--neutral-fill-secondary-rest, #f0f0f0);
+		--fluent-color-light-contrast: var(--neutral-foreground-rest, #242424);
+		--fluent-color-light-emphasis: var(--neutral-foreground-hint, #8a8a8a);
+		--fluent-color-light-tint: var(--neutral-fill-secondary-rest, #f5f5f5);
 
-	// dark
-	--fluent-color-dark: var(--neutral-foreground-rest, #242424);
-	--fluent-color-dark-contrast: var(--neutral-layer-1, #ffffff);
-	--fluent-color-dark-emphasis: var(--neutral-foreground-rest, #242424);
-	--fluent-color-dark-tint: color-mix(in srgb, var(--neutral-foreground-rest, #242424) 10%, transparent);
+		// dark
+		--fluent-color-dark: var(--neutral-foreground-rest, #242424);
+		--fluent-color-dark-contrast: var(--neutral-layer-1, #ffffff);
+		--fluent-color-dark-emphasis: var(--neutral-foreground-rest, #242424);
+		--fluent-color-dark-tint: color-mix(in srgb, var(--neutral-foreground-rest, #242424) 10%, transparent);
 
-	// brand (Fluent badge name — the accent, like primary)
-	--fluent-color-brand: var(--fluent-color-primary);
-	--fluent-color-brand-contrast: var(--fluent-color-primary-contrast);
-	--fluent-color-brand-emphasis: var(--fluent-color-primary-emphasis);
-	--fluent-color-brand-tint: var(--fluent-color-primary-tint);
+		// brand (Fluent badge name — the accent, like primary)
+		--fluent-color-brand: var(--fluent-color-primary);
+		--fluent-color-brand-contrast: var(--fluent-color-primary-contrast);
+		--fluent-color-brand-emphasis: var(--fluent-color-primary-emphasis);
+		--fluent-color-brand-tint: var(--fluent-color-primary-tint);
 
-	// important (Fluent badge name — high-contrast neutral, like dark)
-	--fluent-color-important: var(--fluent-color-dark);
-	--fluent-color-important-contrast: var(--fluent-color-dark-contrast);
-	--fluent-color-important-emphasis: var(--fluent-color-dark-emphasis);
-	--fluent-color-important-tint: var(--fluent-color-dark-tint);
+		// important (Fluent badge name — high-contrast neutral, like dark)
+		--fluent-color-important: var(--fluent-color-dark);
+		--fluent-color-important-contrast: var(--fluent-color-dark-contrast);
+		--fluent-color-important-emphasis: var(--fluent-color-dark-emphasis);
+		--fluent-color-important-tint: var(--fluent-color-dark-tint);
 
-	// informative (Fluent badge name — quiet neutral, like light)
-	--fluent-color-informative: var(--fluent-color-light);
-	--fluent-color-informative-contrast: var(--fluent-color-light-contrast);
-	--fluent-color-informative-emphasis: var(--fluent-color-light-emphasis);
-	--fluent-color-informative-tint: var(--fluent-color-light-tint);
+		// informative (Fluent badge name — quiet neutral, like light)
+		--fluent-color-informative: var(--fluent-color-light);
+		--fluent-color-informative-contrast: var(--fluent-color-light-contrast);
+		--fluent-color-informative-emphasis: var(--fluent-color-light-emphasis);
+		--fluent-color-informative-tint: var(--fluent-color-light-tint);
+	}
+
+	// Dark-theme status foregrounds (the light values above are too dark to read
+	// on dark layers). Replaces the per-component `[data-theme="dark"]` error
+	// overrides that ContextMenu / MenuButton / QuickGrid used to carry.
+	[data-theme="dark"] {
+		--fluent-color-success-foreground: #54b054;
+		--fluent-color-warning-foreground: #faa06b; // Fluent 2 dark colorStatusWarningForeground1
+		--fluent-color-danger-foreground: #f87c86;
+		--fluent-color-info-foreground: #479ef5;
+	}
 }
 
-// Dark-theme status foregrounds (the light values above are too dark to read
-// on dark layers). Replaces the per-component `[data-theme="dark"]` error
-// overrides that ContextMenu / MenuButton / QuickGrid used to carry.
-[data-theme="dark"] {
-	--fluent-color-success-foreground: #54b054;
-	--fluent-color-warning-foreground: #faa06b; // Fluent 2 dark colorStatusWarningForeground1
-	--fluent-color-danger-foreground: #f87c86;
-	--fluent-color-info-foreground: #479ef5;
-}
+@layer component {
+	// =============================================================================
+	// Anchor (Hypertext appearance)
+	// =============================================================================
 
-// =============================================================================
-// Anchor (Hypertext appearance)
-// =============================================================================
+	fluent-anchor[appearance="hypertext"]::part(start),
+	fluent-anchor[appearance="hypertext"]::part(end) {
+		display: unset;
+		position: relative;
+		top: calc(var(--design-unit) * 1px);
+	}
 
-fluent-anchor[appearance="hypertext"]::part(start),
-fluent-anchor[appearance="hypertext"]::part(end) {
-	display: unset;
-	position: relative;
-	top: calc(var(--design-unit) * 1px);
-}
+	// =============================================================================
+	// DataGrid
+	// =============================================================================
 
-// =============================================================================
-// DataGrid
-// =============================================================================
+	// When a <DataGrid gridTemplateColumns="…"> is used, the wrapper also exposes the
+	// value as an inheriting custom property. FluentUI already applies the template
+	// to each row imperatively; this rule pins it on *every* row (header included)
+	// deterministically as a safety net, independent of FluentUI's per-row timing.
+	// The value inherits down the light-DOM tree, and FluentUI's inline style (same
+	// value) still wins where present, so this only fills any gap it leaves.
+	fluent-data-grid[grid-template-columns] > fluent-data-grid-row {
+		grid-template-columns: var(--fluent-data-grid-template-columns);
+	}
 
-// When a <DataGrid gridTemplateColumns="…"> is used, the wrapper also exposes the
-// value as an inheriting custom property. FluentUI already applies the template
-// to each row imperatively; this rule pins it on *every* row (header included)
-// deterministically as a safety net, independent of FluentUI's per-row timing.
-// The value inherits down the light-DOM tree, and FluentUI's inline style (same
-// value) still wins where present, so this only fills any gap it leaves.
-fluent-data-grid[grid-template-columns] > fluent-data-grid-row {
-	grid-template-columns: var(--fluent-data-grid-template-columns);
-}
+	// =============================================================================
+	// Dialog (the <fluent-dialog> host used by Dialog / SiteSettings)
+	// =============================================================================
 
-// =============================================================================
-// Dialog (the <fluent-dialog> host used by Dialog / SiteSettings)
-// =============================================================================
+	fluent-dialog {
+		z-index: var(--fluent-z-modal);
+	}
 
-fluent-dialog {
-	z-index: var(--fluent-z-modal);
-}
+	fluent-dialog::part(control) {
+		--fluent-dialog-padding: calc(var(--design-unit) * 6 * 1px);
+		position: relative;
+		padding: var(--fluent-dialog-padding);
+		width: calc(var(--dialog-width) - 2 * var(--fluent-dialog-padding));
+		height: calc(var(--dialog-height) - 2 * var(--fluent-dialog-padding));
+	}
 
-fluent-dialog::part(control) {
-	--fluent-dialog-padding: calc(var(--design-unit) * 6 * 1px);
-	position: relative;
-	padding: var(--fluent-dialog-padding);
-	width: calc(var(--dialog-width) - 2 * var(--fluent-dialog-padding));
-	height: calc(var(--dialog-height) - 2 * var(--fluent-dialog-padding));
-}
+	// =============================================================================
+	// Radio
+	// =============================================================================
 
-// =============================================================================
-// Radio
-// =============================================================================
+	fluent-radio {
+		margin: calc(var(--design-unit) * 1px) 0;
+	}
 
-fluent-radio {
-	margin: calc(var(--design-unit) * 1px) 0;
-}
+	// =============================================================================
+	// Input border consistency
+	// FluentUI's text inputs paint a faint "input recipe" underline
+	// (--neutral-stroke-input-*) whose light sides all but vanish on a dark
+	// background, while the custom controls (Autocomplete/Combobox/Select) draw a
+	// full 1px box from --neutral-stroke-rest. Paint the web components with the
+	// same full box so every field shares one border treatment in both themes.
+	// Focus and validation accents still come from the components' own ::after line
+	// and the state rules in _field.scss (which override border-bottom-color).
+	// =============================================================================
 
-// =============================================================================
-// Input border consistency
-// FluentUI's text inputs paint a faint "input recipe" underline
-// (--neutral-stroke-input-*) whose light sides all but vanish on a dark
-// background, while the custom controls (Autocomplete/Combobox/Select) draw a
-// full 1px box from --neutral-stroke-rest. Paint the web components with the
-// same full box so every field shares one border treatment in both themes.
-// Focus and validation accents still come from the components' own ::after line
-// and the state rules in _field.scss (which override border-bottom-color).
-// =============================================================================
+	fluent-text-field::part(root),
+	fluent-number-field::part(root),
+	fluent-search::part(root),
+	fluent-text-area::part(control) {
+		border: calc(var(--stroke-width) * 1px) solid var(--neutral-stroke-rest);
+		border-image: none;
+	}
 
-fluent-text-field::part(root),
-fluent-number-field::part(root),
-fluent-search::part(root),
-fluent-text-area::part(control) {
-	border: calc(var(--stroke-width) * 1px) solid var(--neutral-stroke-rest);
-	border-image: none;
-}
+	// =============================================================================
+	// Search
+	// =============================================================================
 
-// =============================================================================
-// Search
-// =============================================================================
-
-fluent-search[readonly]::part(clear-button),
-fluent-search[disabled]::part(clear-button) {
-	pointer-events: none;
+	fluent-search[readonly]::part(clear-button),
+	fluent-search[disabled]::part(clear-button) {
+		pointer-events: none;
+	}
 }

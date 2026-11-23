@@ -9,8 +9,12 @@ Decorative 20px hamburger (☰) SVG icon in the accent colour.
 </svg>
 
 <style>
-	.hamburger-icon {
-		width: 20px;
-		fill: var(--accent-fill-rest);
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		.hamburger-icon {
+			width: 20px;
+			fill: var(--accent-fill-rest);
+		}
 	}
 </style>

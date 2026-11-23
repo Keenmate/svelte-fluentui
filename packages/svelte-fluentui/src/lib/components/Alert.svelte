@@ -106,119 +106,123 @@ Inline message bar with an intent colour, default icon, optional title and dismi
 {/if}
 
 <style>
-	.fluent-alert {
-		display: flex;
-		align-items: flex-start;
-		gap: 12px;
-		padding: 12px 16px;
-		background-color: var(--neutral-layer-1, #ffffff);
-		border: 1px solid var(--neutral-stroke-1, #e0e0e0);
-		border-radius: var(--fluent-border-radius-md);
-		border-inline-start-width: 4px;
-		position: relative;
-	}
+	@layer reset, variables, component, overrides;
 
-	/* Intent variants */
-	.fluent-alert--info {
-		border-inline-start-color: var(--fluent-color-info-foreground, #0078d4);
-	}
+	@layer component {
+		.fluent-alert {
+			display: flex;
+			align-items: flex-start;
+			gap: 12px;
+			padding: 12px 16px;
+			background-color: var(--neutral-layer-1, #ffffff);
+			border: 1px solid var(--neutral-stroke-1, #e0e0e0);
+			border-radius: var(--fluent-border-radius-md);
+			border-inline-start-width: 4px;
+			position: relative;
+		}
 
-	.fluent-alert--info .fluent-alert__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-info-foreground, #0078d4) 10%, transparent);
-		color: var(--fluent-color-info-foreground, #0078d4);
-	}
+		/* Intent variants */
+		.fluent-alert--info {
+			border-inline-start-color: var(--fluent-color-info-foreground, #0078d4);
+		}
 
-	.fluent-alert--success {
-		border-inline-start-color: var(--fluent-color-success-foreground, #107c10);
-	}
+		.fluent-alert--info .fluent-alert__icon {
+			background-color: color-mix(in srgb, var(--fluent-color-info-foreground, #0078d4) 10%, transparent);
+			color: var(--fluent-color-info-foreground, #0078d4);
+		}
 
-	.fluent-alert--success .fluent-alert__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-success-foreground, #107c10) 10%, transparent);
-		color: var(--fluent-color-success-foreground, #107c10);
-	}
+		.fluent-alert--success {
+			border-inline-start-color: var(--fluent-color-success-foreground, #107c10);
+		}
 
-	.fluent-alert--warning {
-		border-inline-start-color: var(--fluent-color-warning-foreground, #bc4b09);
-	}
+		.fluent-alert--success .fluent-alert__icon {
+			background-color: color-mix(in srgb, var(--fluent-color-success-foreground, #107c10) 10%, transparent);
+			color: var(--fluent-color-success-foreground, #107c10);
+		}
 
-	.fluent-alert--warning .fluent-alert__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-warning-foreground, #bc4b09) 10%, transparent);
-		color: var(--fluent-color-warning-foreground, #bc4b09);
-	}
+		.fluent-alert--warning {
+			border-inline-start-color: var(--fluent-color-warning-foreground, #bc4b09);
+		}
 
-	.fluent-alert--error {
-		border-inline-start-color: var(--fluent-color-danger-foreground, #d13438);
-	}
+		.fluent-alert--warning .fluent-alert__icon {
+			background-color: color-mix(in srgb, var(--fluent-color-warning-foreground, #bc4b09) 10%, transparent);
+			color: var(--fluent-color-warning-foreground, #bc4b09);
+		}
 
-	.fluent-alert--error .fluent-alert__icon {
-		background-color: color-mix(in srgb, var(--fluent-color-danger-foreground, #d13438) 10%, transparent);
-		color: var(--fluent-color-danger-foreground, #d13438);
-	}
+		.fluent-alert--error {
+			border-inline-start-color: var(--fluent-color-danger-foreground, #d13438);
+		}
 
-	/* Icon */
-	.fluent-alert__icon {
-		flex-shrink: 0;
-		width: 24px;
-		height: 24px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: var(--fluent-border-radius-md);
-		font-size: 14px;
-	}
+		.fluent-alert--error .fluent-alert__icon {
+			background-color: color-mix(in srgb, var(--fluent-color-danger-foreground, #d13438) 10%, transparent);
+			color: var(--fluent-color-danger-foreground, #d13438);
+		}
 
-	.fluent-alert__icon-default {
-		font-weight: 600;
-	}
+		/* Icon */
+		.fluent-alert__icon {
+			flex-shrink: 0;
+			width: 24px;
+			height: 24px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: var(--fluent-border-radius-md);
+			font-size: 14px;
+		}
 
-	/* Content */
-	.fluent-alert__content {
-		flex: 1;
-		min-width: 0;
-	}
+		.fluent-alert__icon-default {
+			font-weight: 600;
+		}
 
-	.fluent-alert__title {
-		font-weight: 600;
-		font-size: 14px;
-		color: var(--neutral-foreground-rest, #323130);
-		margin-bottom: 4px;
-	}
+		/* Content */
+		.fluent-alert__content {
+			flex: 1;
+			min-width: 0;
+		}
 
-	.fluent-alert__title:last-child {
-		margin-bottom: 0;
-	}
+		.fluent-alert__title {
+			font-weight: 600;
+			font-size: 14px;
+			color: var(--neutral-foreground-rest, #323130);
+			margin-bottom: 4px;
+		}
 
-	.fluent-alert__body {
-		font-size: 14px;
-		color: var(--neutral-foreground-rest, #323130);
-		line-height: 1.5;
-	}
+		.fluent-alert__title:last-child {
+			margin-bottom: 0;
+		}
 
-	/* Dismiss button */
-	.fluent-alert__dismiss {
-		flex-shrink: 0;
-		background: none;
-		border: none;
-		color: var(--neutral-foreground-rest, #323130);
-		cursor: pointer;
-		padding: 0;
-		width: 24px;
-		height: 24px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: var(--fluent-border-radius-md);
-		transition:
-			background-color 0.1s ease,
-			color 0.1s ease;
-	}
+		.fluent-alert__body {
+			font-size: 14px;
+			color: var(--neutral-foreground-rest, #323130);
+			line-height: 1.5;
+		}
 
-	.fluent-alert__dismiss:hover {
-		background-color: var(--neutral-fill-secondary-hover, rgba(0, 0, 0, 0.05));
-	}
+		/* Dismiss button */
+		.fluent-alert__dismiss {
+			flex-shrink: 0;
+			background: none;
+			border: none;
+			color: var(--neutral-foreground-rest, #323130);
+			cursor: pointer;
+			padding: 0;
+			width: 24px;
+			height: 24px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: var(--fluent-border-radius-md);
+			transition:
+				background-color 0.1s ease,
+				color 0.1s ease;
+		}
 
-	.fluent-alert__dismiss:focus {
-		outline: 2px solid var(--accent-fill-rest, #0078d4);
-		outline-offset: 2px;
+		.fluent-alert__dismiss:hover {
+			background-color: var(--neutral-fill-secondary-hover, rgba(0, 0, 0, 0.05));
+		}
+
+		.fluent-alert__dismiss:focus {
+			outline: 2px solid var(--accent-fill-rest, #0078d4);
+			outline-offset: 2px;
+		}
 	}
 </style>

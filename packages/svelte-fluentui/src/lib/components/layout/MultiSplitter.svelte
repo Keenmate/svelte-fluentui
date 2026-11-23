@@ -158,7 +158,10 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 </div>
 
 <style>
-	/* ===== Root container =====
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* ===== Root container =====
 	 * Width fills the parent. Height is intentionally NOT 100% — the splitter
 	 * sizes to its tallest pane (via default flex `align-items: stretch`),
 	 * which means all panes end up equal height = tallest natural content
@@ -168,57 +171,57 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 	 * pa-splitter's original default was `height: 100%`, which forces every
 	 * consumer to give the splitter a sized parent. Content-driven is the
 	 * less surprising default for ad-hoc usage; fill-parent is one prop away. */
-	.fluent-multi-splitter {
-		display: flex;
-		width: 100%;
-		min-width: 0;
-		min-height: 0;
-		overflow: hidden;
-		box-sizing: border-box;
-	}
+		.fluent-multi-splitter {
+			display: flex;
+			width: 100%;
+			min-width: 0;
+			min-height: 0;
+			overflow: hidden;
+			box-sizing: border-box;
+		}
 
-	.fluent-multi-splitter--horizontal {
-		flex-direction: row;
-	}
+		.fluent-multi-splitter--horizontal {
+			flex-direction: row;
+		}
 
-	.fluent-multi-splitter--vertical {
-		flex-direction: column;
-	}
+		.fluent-multi-splitter--vertical {
+			flex-direction: column;
+		}
 
-	/* While dragging: kill text selection and pointer events on pane content
+		/* While dragging: kill text selection and pointer events on pane content
 	 * (so dragging over an iframe / canvas doesn't get hijacked). Sibling
 	 * gutters also stop hover-firing as cursor passes over them during drag. */
-	.fluent-multi-splitter--dragging {
-		user-select: none;
-	}
-	.fluent-multi-splitter--dragging :global(.fluent-multi-splitter-pane) {
-		pointer-events: none;
-	}
-	.fluent-multi-splitter--dragging :global(.fluent-multi-splitter-gutter:not(.fluent-multi-splitter-gutter--active)) {
-		pointer-events: none;
-	}
-	.fluent-multi-splitter--dragging
-		:global(.fluent-multi-splitter-gutter:not(.fluent-multi-splitter-gutter--active):focus-visible) {
-		box-shadow: none;
-	}
+		.fluent-multi-splitter--dragging {
+			user-select: none;
+		}
+		.fluent-multi-splitter--dragging :global(.fluent-multi-splitter-pane) {
+			pointer-events: none;
+		}
+		.fluent-multi-splitter--dragging :global(.fluent-multi-splitter-gutter:not(.fluent-multi-splitter-gutter--active)) {
+			pointer-events: none;
+		}
+		.fluent-multi-splitter--dragging
+			:global(.fluent-multi-splitter-gutter:not(.fluent-multi-splitter-gutter--active):focus-visible) {
+			box-shadow: none;
+		}
 
-	/* Programmatic reflow window — added for ~250 ms after applySizes runs
+		/* Programmatic reflow window — added for ~250 ms after applySizes runs
 	 * outside a drag. Suppresses the gutter-hover flash that fires when a
 	 * gutter slides under the resting cursor during reflow. */
-	.fluent-multi-splitter--reflowing {
-		user-select: none;
-	}
-	.fluent-multi-splitter--reflowing :global(.fluent-multi-splitter-gutter) {
-		transition: none;
-	}
-	.fluent-multi-splitter--reflowing :global(.fluent-multi-splitter-gutter:hover),
-	.fluent-multi-splitter--reflowing :global(.fluent-multi-splitter-gutter:focus-visible) {
-		background-color: transparent;
-		box-shadow: none;
-	}
+		.fluent-multi-splitter--reflowing {
+			user-select: none;
+		}
+		.fluent-multi-splitter--reflowing :global(.fluent-multi-splitter-gutter) {
+			transition: none;
+		}
+		.fluent-multi-splitter--reflowing :global(.fluent-multi-splitter-gutter:hover),
+		.fluent-multi-splitter--reflowing :global(.fluent-multi-splitter-gutter:focus-visible) {
+			background-color: transparent;
+			box-shadow: none;
+		}
 
-	/* ===== Pane ===== */
-	/* Make the pane a flex column so direct `.card` children can flex-grow
+		/* ===== Pane ===== */
+		/* Make the pane a flex column so direct `.card` children can flex-grow
 	 * to fill the pane height. Without this, the card sits at its natural
 	 * content height and leaves whitespace below in vertical splitters
 	 * (where the pane's height is driven by flex-basis from drag) and in
@@ -228,36 +231,36 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 	 * Note: `flex: 1 1 auto` (not `1 1 0`) keeps the card's natural content
 	 * height as the basis, so the splitter's content-driven sizing still
 	 * resolves correctly when no height prop is set. */
-	:global(.fluent-multi-splitter-pane) {
-		display: flex;
-		flex-direction: column;
-		overflow: auto;
-		min-width: 0;
-		min-height: 0;
-		box-sizing: border-box;
-	}
+		:global(.fluent-multi-splitter-pane) {
+			display: flex;
+			flex-direction: column;
+			overflow: auto;
+			min-width: 0;
+			min-height: 0;
+			box-sizing: border-box;
+		}
 
-	:global(.fluent-multi-splitter-pane:not(.fluent-multi-splitter-pane--minimized) > .card) {
-		flex: 1 1 auto;
-		min-height: 0;
-	}
+		:global(.fluent-multi-splitter-pane:not(.fluent-multi-splitter-pane--minimized) > .card) {
+			flex: 1 1 auto;
+			min-height: 0;
+		}
 
-	:global(.fluent-multi-splitter-pane--minimized) {
-		cursor: pointer;
-		overflow: hidden;
-	}
+		:global(.fluent-multi-splitter-pane--minimized) {
+			cursor: pointer;
+			overflow: hidden;
+		}
 
-	/* Rail-title rotation hook: any element marked [data-multisplitter-rail-title]
+		/* Rail-title rotation hook: any element marked [data-multisplitter-rail-title]
 	 * inside a minimized pane rotates to vertical writing. */
-	:global(.fluent-multi-splitter-pane--minimized [data-multisplitter-rail-title]) {
-		writing-mode: sideways-rl;
-	}
-	:global(.fluent-multi-splitter-pane--minimized [data-multisplitter-rail-title] i),
-	:global(.fluent-multi-splitter-pane--minimized [data-multisplitter-rail-title] svg) {
-		writing-mode: initial;
-	}
+		:global(.fluent-multi-splitter-pane--minimized [data-multisplitter-rail-title]) {
+			writing-mode: sideways-rl;
+		}
+		:global(.fluent-multi-splitter-pane--minimized [data-multisplitter-rail-title] i),
+		:global(.fluent-multi-splitter-pane--minimized [data-multisplitter-rail-title] svg) {
+			writing-mode: initial;
+		}
 
-	/* Auto-adaptation for Card: when a `.card` (the svelte-fluentui Card
+		/* Auto-adaptation for Card: when a `.card` (the svelte-fluentui Card
 	 * component) is rendered inside a minimized pane, fill the rail and
 	 * treat its first child as the rail title — hide the rest. Mirrors
 	 * pa-splitter's `_cards.scss` integration so consumers using <Card>
@@ -272,117 +275,118 @@ Resizable container of two or more `MultiSplitterPane`s separated by draggable, 
 	 * Specificity: three classes on the rail pane + `.card` = (0,4,0),
 	 * beats Card.svelte's own `.card { padding }` rule (0,2,0). */
 
-	/* Common: hide everything in the rail card except the first child. */
-	:global(.fluent-multi-splitter-pane.fluent-multi-splitter-pane--minimized .card > *) {
-		display: none;
-	}
-	:global(.fluent-multi-splitter-pane.fluent-multi-splitter-pane--minimized .card > :first-child) {
-		display: block;
-		white-space: nowrap;
-		margin: 0;
-	}
+		/* Common: hide everything in the rail card except the first child. */
+		:global(.fluent-multi-splitter-pane.fluent-multi-splitter-pane--minimized .card > *) {
+			display: none;
+		}
+		:global(.fluent-multi-splitter-pane.fluent-multi-splitter-pane--minimized .card > :first-child) {
+			display: block;
+			white-space: nowrap;
+			margin: 0;
+		}
 
-	/* Horizontal-splitter rail (narrow + tall) — title rotated vertically.
+		/* Horizontal-splitter rail (narrow + tall) — title rotated vertically.
 	 * Long-axis padding matches Card.svelte's default (`design-unit * 5px`,
 	 * = 20px) so the title's distance from the top edge stays consistent
 	 * between expanded and railed states — toggling minimize doesn't shift
 	 * the icon. Short axis stays narrow to fit the 40px rail. */
-	:global(.fluent-multi-splitter-pane--horizontal.fluent-multi-splitter-pane--minimized .card) {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: flex-start;
-		width: 100%;
-		height: 100%;
-		box-sizing: border-box;
-		padding: calc(var(--design-unit, 4) * 5px) calc(var(--design-unit, 4) * 1px);
-		margin: 0;
-		overflow: hidden;
-	}
-	:global(.fluent-multi-splitter-pane--horizontal.fluent-multi-splitter-pane--minimized .card > :first-child) {
-		writing-mode: sideways-rl;
-	}
-	:global(.fluent-multi-splitter-pane--horizontal.fluent-multi-splitter-pane--minimized .card > :first-child i),
-	:global(.fluent-multi-splitter-pane--horizontal.fluent-multi-splitter-pane--minimized .card > :first-child svg) {
-		writing-mode: initial;
-	}
+		:global(.fluent-multi-splitter-pane--horizontal.fluent-multi-splitter-pane--minimized .card) {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: flex-start;
+			width: 100%;
+			height: 100%;
+			box-sizing: border-box;
+			padding: calc(var(--design-unit, 4) * 5px) calc(var(--design-unit, 4) * 1px);
+			margin: 0;
+			overflow: hidden;
+		}
+		:global(.fluent-multi-splitter-pane--horizontal.fluent-multi-splitter-pane--minimized .card > :first-child) {
+			writing-mode: sideways-rl;
+		}
+		:global(.fluent-multi-splitter-pane--horizontal.fluent-multi-splitter-pane--minimized .card > :first-child i),
+		:global(.fluent-multi-splitter-pane--horizontal.fluent-multi-splitter-pane--minimized .card > :first-child svg) {
+			writing-mode: initial;
+		}
 
-	/* Vertical-splitter rail (wide + short) — title stays horizontal.
+		/* Vertical-splitter rail (wide + short) — title stays horizontal.
 	 * Long-axis padding matches Card.svelte's default so the title's distance
 	 * from the left edge is consistent across expanded/railed states. */
-	:global(.fluent-multi-splitter-pane--vertical.fluent-multi-splitter-pane--minimized .card) {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		justify-content: flex-start;
-		width: 100%;
-		height: 100%;
-		box-sizing: border-box;
-		padding: calc(var(--design-unit, 4) * 1px) calc(var(--design-unit, 4) * 5px);
-		margin: 0;
-		overflow: hidden;
-	}
+		:global(.fluent-multi-splitter-pane--vertical.fluent-multi-splitter-pane--minimized .card) {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: flex-start;
+			width: 100%;
+			height: 100%;
+			box-sizing: border-box;
+			padding: calc(var(--design-unit, 4) * 1px) calc(var(--design-unit, 4) * 5px);
+			margin: 0;
+			overflow: hidden;
+		}
 
-	/* ===== Gutter ===== */
-	:global(.fluent-multi-splitter-gutter) {
-		position: relative;
-		flex: 0 0 auto;
-		background-color: var(--neutral-stroke-divider-rest, #e0e0e0);
-		transition:
-			background-color 0.1s ease,
-			box-shadow 0.1s ease;
-		touch-action: none;
-		outline: none;
-	}
+		/* ===== Gutter ===== */
+		:global(.fluent-multi-splitter-gutter) {
+			position: relative;
+			flex: 0 0 auto;
+			background-color: var(--neutral-stroke-divider-rest, #e0e0e0);
+			transition:
+				background-color 0.1s ease,
+				box-shadow 0.1s ease;
+			touch-action: none;
+			outline: none;
+		}
 
-	.fluent-multi-splitter--horizontal :global(> .fluent-multi-splitter-gutter) {
-		cursor: col-resize;
-		width: var(--fluent-multi-splitter-gutter-size, 6px);
-		height: auto;
-		align-self: stretch;
-	}
+		.fluent-multi-splitter--horizontal :global(> .fluent-multi-splitter-gutter) {
+			cursor: col-resize;
+			width: var(--fluent-multi-splitter-gutter-size, 6px);
+			height: auto;
+			align-self: stretch;
+		}
 
-	.fluent-multi-splitter--vertical :global(> .fluent-multi-splitter-gutter) {
-		cursor: row-resize;
-		width: auto;
-		height: var(--fluent-multi-splitter-gutter-size, 6px);
-		align-self: stretch;
-	}
+		.fluent-multi-splitter--vertical :global(> .fluent-multi-splitter-gutter) {
+			cursor: row-resize;
+			width: auto;
+			height: var(--fluent-multi-splitter-gutter-size, 6px);
+			align-self: stretch;
+		}
 
-	/* Center grip indicator. */
-	:global(.fluent-multi-splitter-gutter::before) {
-		content: "";
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		background-color: var(--neutral-stroke-rest, #d1d1d1);
-		border-radius: 2px;
-		transition: background-color 0.1s ease;
-	}
+		/* Center grip indicator. */
+		:global(.fluent-multi-splitter-gutter::before) {
+			content: "";
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background-color: var(--neutral-stroke-rest, #d1d1d1);
+			border-radius: 2px;
+			transition: background-color 0.1s ease;
+		}
 
-	.fluent-multi-splitter--horizontal :global(> .fluent-multi-splitter-gutter::before) {
-		width: 2px;
-		height: 24px;
-	}
-	.fluent-multi-splitter--vertical :global(> .fluent-multi-splitter-gutter::before) {
-		width: 24px;
-		height: 2px;
-	}
+		.fluent-multi-splitter--horizontal :global(> .fluent-multi-splitter-gutter::before) {
+			width: 2px;
+			height: 24px;
+		}
+		.fluent-multi-splitter--vertical :global(> .fluent-multi-splitter-gutter::before) {
+			width: 24px;
+			height: 2px;
+		}
 
-	:global(.fluent-multi-splitter-gutter:hover) {
-		background-color: var(--accent-fill-rest, #0078d4);
-	}
-	:global(.fluent-multi-splitter-gutter:hover::before) {
-		background-color: var(--neutral-foreground-on-accent-rest, #ffffff);
-	}
-	:global(.fluent-multi-splitter-gutter:focus-visible) {
-		box-shadow: inset 0 0 0 2px var(--accent-fill-rest, #0078d4);
-	}
-	:global(.fluent-multi-splitter-gutter--active) {
-		background-color: var(--accent-fill-rest, #0078d4) !important;
-	}
-	:global(.fluent-multi-splitter-gutter--active::before) {
-		background-color: var(--neutral-foreground-on-accent-rest, #ffffff);
+		:global(.fluent-multi-splitter-gutter:hover) {
+			background-color: var(--accent-fill-rest, #0078d4);
+		}
+		:global(.fluent-multi-splitter-gutter:hover::before) {
+			background-color: var(--neutral-foreground-on-accent-rest, #ffffff);
+		}
+		:global(.fluent-multi-splitter-gutter:focus-visible) {
+			box-shadow: inset 0 0 0 2px var(--accent-fill-rest, #0078d4);
+		}
+		:global(.fluent-multi-splitter-gutter--active) {
+			background-color: var(--accent-fill-rest, #0078d4) !important;
+		}
+		:global(.fluent-multi-splitter-gutter--active::before) {
+			background-color: var(--neutral-foreground-on-accent-rest, #ffffff);
+		}
 	}
 </style>

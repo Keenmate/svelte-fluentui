@@ -9,8 +9,12 @@ Decorative 20px double-chevron (») SVG icon.
 </svg>
 
 <style>
-	.chevron-double-right-icon {
-		width: 20px;
-		fill: var(--neutral-foreground-rest);
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		.chevron-double-right-icon {
+			width: 20px;
+			fill: var(--neutral-foreground-rest);
+		}
 	}
 </style>

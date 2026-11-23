@@ -9,8 +9,12 @@ Decorative 12px chevron (›) used as the NavGroup expand indicator.
 </svg>
 
 <style>
-	.fluent-nav-expand-icon {
-		width: 12px;
-		fill: var(--neutral-foreground-rest);
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		.fluent-nav-expand-icon {
+			width: 12px;
+			fill: var(--neutral-foreground-rest);
+		}
 	}
 </style>

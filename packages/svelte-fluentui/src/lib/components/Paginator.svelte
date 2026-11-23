@@ -152,29 +152,33 @@ First / previous / next / last page buttons with a "Page X of Y" text and an opt
 </div>
 
 <style>
-	.paginator {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.5rem;
-		margin-top: 0.5rem;
-		padding: 0.25rem 0;
-	}
+	@layer reset, variables, component, overrides;
 
-	.summary {
-		font-size: 0.9rem;
-	}
+	@layer component {
+		.paginator {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.5rem;
+			margin-top: 0.5rem;
+			padding: 0.25rem 0;
+		}
 
-	.paginator-nav {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-		padding: 0;
-		margin-inline-start: auto;
-		margin-inline-end: 0;
-	}
+		.summary {
+			font-size: 0.9rem;
+		}
 
-	.pagination-text {
-		margin: 0 0.5rem;
+		.paginator-nav {
+			display: flex;
+			align-items: center;
+			gap: 0.25rem;
+			padding: 0;
+			margin-inline-start: auto;
+			margin-inline-end: 0;
+		}
+
+		.pagination-text {
+			margin: 0 0.5rem;
+		}
 	}
 </style>

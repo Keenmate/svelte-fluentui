@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {Chip, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
+	import {Button, Chip, QuickGrid, Stack, Grid, GridItem, Card} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
 	type Property = {
@@ -88,7 +88,7 @@
 				<Chip text={city} title={city} removeFocusable onRemove={() => remove(city)} />
 			{/each}
 			{#if cities.length === 0}
-				<button type="button" onclick={reset}>Reset</button>
+				<Button onclick={reset}>Reset</Button>
 			{/if}
 		</div>
 

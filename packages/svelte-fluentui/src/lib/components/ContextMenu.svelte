@@ -604,136 +604,140 @@ Wraps content in a right-click zone that opens a menu of `ActionItem` entries (s
 {/each}
 
 <style>
-	/*
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/*
 	 * `display: contents` keeps the wrapper span out of the layout flow —
 	 * children render where they would have without the wrapper. Event
 	 * handlers on the span still catch events that bubble up from the
 	 * children, so `oncontextmenu` works normally.
 	 */
-	.fluent-context-menu-wrapper {
-		display: contents;
-	}
+		.fluent-context-menu-wrapper {
+			display: contents;
+		}
 
-	/*
+		/*
 	 * Custom menu container — replaces fluent-menu so we can freely render
 	 * nested items and expandable sections without wrestling the shadow
 	 * DOM. Styled against FluentUI design tokens so the look still matches
 	 * QuickGrid's context menu and MenuButton's dropdown.
 	 */
-	.fluent-context-menu {
-		position: fixed;
-		top: 0;
-		left: 0;
-		z-index: var(--fluent-z-popover);
-		box-sizing: border-box;
-		max-height: var(--fluent-popup-available-height, none);
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		min-width: 200px;
-		padding: 0.25rem 0;
-		background: var(--neutral-layer-floating, #ffffff);
-		border: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
-		color: var(--neutral-foreground-rest);
-		font-family: var(--body-font);
-		font-size: var(--type-ramp-base-font-size, 14px);
-		line-height: var(--type-ramp-base-line-height, 20px);
-	}
+		.fluent-context-menu {
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: var(--fluent-z-popover);
+			box-sizing: border-box;
+			max-height: var(--fluent-popup-available-height, none);
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			min-width: 200px;
+			padding: 0.25rem 0;
+			background: var(--neutral-layer-floating, #ffffff);
+			border: 1px solid var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
+			border-radius: calc(var(--control-corner-radius, 4) * 1px);
+			box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
+			color: var(--neutral-foreground-rest);
+			font-family: var(--body-font);
+			font-size: var(--type-ramp-base-font-size, 14px);
+			line-height: var(--type-ramp-base-line-height, 20px);
+		}
 
-	/* The surface takes focus only to receive arrow keys; the items show the focus ring. */
-	.fluent-context-menu:focus {
-		outline: none;
-	}
+		/* The surface takes focus only to receive arrow keys; the items show the focus ring. */
+		.fluent-context-menu:focus {
+			outline: none;
+		}
 
-	.fluent-context-menu-item {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		width: 100%;
-		padding: 0.4rem 0.75rem;
-		background: transparent;
-		border: none;
-		color: inherit;
-		font: inherit;
-		text-align: start;
-		cursor: pointer;
-		white-space: nowrap;
-	}
+		.fluent-context-menu-item {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			width: 100%;
+			padding: 0.4rem 0.75rem;
+			background: transparent;
+			border: none;
+			color: inherit;
+			font: inherit;
+			text-align: start;
+			cursor: pointer;
+			white-space: nowrap;
+		}
 
-	.fluent-context-menu-item:hover:not(:disabled) {
-		background: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.03));
-	}
+		.fluent-context-menu-item:hover:not(:disabled) {
+			background: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.03));
+		}
 
-	.fluent-context-menu-item:focus-visible {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer);
-		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
-	}
+		.fluent-context-menu-item:focus-visible {
+			outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--focus-stroke-outer);
+			outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
+		}
 
-	.fluent-context-menu-item:disabled {
-		cursor: not-allowed;
-		color: var(--neutral-foreground-hint);
-		opacity: 0.6;
-	}
+		.fluent-context-menu-item:disabled {
+			cursor: not-allowed;
+			color: var(--neutral-foreground-hint);
+			opacity: 0.6;
+		}
 
-	.fluent-context-menu-item-icon {
-		display: inline-flex;
-		align-items: center;
-		flex-shrink: 0;
-		color: var(--accent-fill-rest);
-	}
+		.fluent-context-menu-item-icon {
+			display: inline-flex;
+			align-items: center;
+			flex-shrink: 0;
+			color: var(--accent-fill-rest);
+		}
 
-	.fluent-context-menu-item-label {
-		flex: 1 1 auto;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
+		.fluent-context-menu-item-label {
+			flex: 1 1 auto;
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
 
-	.fluent-context-menu-section-header {
-		font-weight: 600;
-	}
+		.fluent-context-menu-section-header {
+			font-weight: 600;
+		}
 
-	.fluent-context-menu-chevron {
-		transition: transform 0.15s ease;
-		flex-shrink: 0;
-		opacity: 0.7;
-	}
+		.fluent-context-menu-chevron {
+			transition: transform 0.15s ease;
+			flex-shrink: 0;
+			opacity: 0.7;
+		}
 
-	.fluent-context-menu-section-header.expanded .fluent-context-menu-chevron {
-		transform: rotate(180deg);
-	}
+		.fluent-context-menu-section-header.expanded .fluent-context-menu-chevron {
+			transform: rotate(180deg);
+		}
 
-	.fluent-context-menu-submenu-arrow {
-		flex-shrink: 0;
-		opacity: 0.7;
-	}
+		.fluent-context-menu-submenu-arrow {
+			flex-shrink: 0;
+			opacity: 0.7;
+		}
 
-	.fluent-context-menu-submenu-trigger.active {
-		background: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.03));
-	}
+		.fluent-context-menu-submenu-trigger.active {
+			background: var(--neutral-fill-stealth-hover, rgba(0, 0, 0, 0.03));
+		}
 
-	.fluent-context-menu-divider {
-		height: 1px;
-		background: var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
-		margin: 0.25rem 0;
-	}
+		.fluent-context-menu-divider {
+			height: 1px;
+			background: var(--neutral-stroke-layer-rest, rgba(0, 0, 0, 0.1));
+			margin: 0.25rem 0;
+		}
 
-	.fluent-context-menu-group-label {
-		padding-block: 4px;
-		padding-inline-end: 12px;
-		color: var(--neutral-foreground-hint);
-		font-size: var(--type-ramp-minus-1-font-size);
-		font-weight: 600;
-	}
+		.fluent-context-menu-group-label {
+			padding-block: 4px;
+			padding-inline-end: 12px;
+			color: var(--neutral-foreground-hint);
+			font-size: var(--type-ramp-minus-1-font-size);
+			font-weight: 600;
+		}
 
-	.fluent-context-menu-shortcut {
-		margin-inline-start: auto;
-		padding-inline-start: 16px;
-		color: var(--neutral-foreground-hint);
-		font-size: var(--type-ramp-minus-1-font-size);
-	}
+		.fluent-context-menu-shortcut {
+			margin-inline-start: auto;
+			padding-inline-start: 16px;
+			color: var(--neutral-foreground-hint);
+			font-size: var(--type-ramp-minus-1-font-size);
+		}
 
-	/* Dark theme is handled by the palette tokens (re-declared under [data-theme="dark"]). */
-	/* danger items: _primitives.scss */
+		/* Dark theme is handled by the palette tokens (re-declared under [data-theme="dark"]). */
+		/* danger items: _primitives.scss */
+	}
 </style>

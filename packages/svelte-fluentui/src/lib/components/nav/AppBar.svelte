@@ -215,97 +215,101 @@ Vertical (or horizontal) application bar of `AppBarItem` icon links. Items that 
 {/if}
 
 <style>
-	/* The bar surface. Vertical: a full-height column (the strip takes the space, the "…"
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* The bar surface. Vertical: a full-height column (the strip takes the space, the "…"
 	   button sits at the end); horizontal: a full-width row. */
-	.fluent-appbar {
-		--fluent-appbar-item-size: 68;
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		block-size: 100%;
-		inline-size: fit-content;
-		background: var(--fluent-appbar-background, var(--neutral-layer-2));
-		color: var(--neutral-foreground-rest);
-	}
+		.fluent-appbar {
+			--fluent-appbar-item-size: 68;
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			block-size: 100%;
+			inline-size: fit-content;
+			background: var(--fluent-appbar-background, var(--neutral-layer-2));
+			color: var(--neutral-foreground-rest);
+		}
 
-	.fluent-appbar.horizontal {
-		flex-direction: row;
-		block-size: auto;
-		inline-size: 100%;
-	}
+		.fluent-appbar.horizontal {
+			flex-direction: row;
+			block-size: auto;
+			inline-size: 100%;
+		}
 
-	/* The strip clips; an item that doesn't fit is detected (AppBar's IntersectionObserver)
+		/* The strip clips; an item that doesn't fit is detected (AppBar's IntersectionObserver)
 	   and hidden. Block padding leaves room for the count badge above the first icon. */
-	.fluent-appbar-items {
-		display: flex;
-		flex-direction: column;
-		flex: 1 1 auto;
-		min-block-size: 0;
-		min-inline-size: 0;
-		overflow: hidden;
-		padding-block: var(--fluent-appbar-padding-block, calc(var(--design-unit) * 1px));
-	}
+		.fluent-appbar-items {
+			display: flex;
+			flex-direction: column;
+			flex: 1 1 auto;
+			min-block-size: 0;
+			min-inline-size: 0;
+			overflow: hidden;
+			padding-block: var(--fluent-appbar-padding-block, calc(var(--design-unit) * 1px));
+		}
 
-	.horizontal .fluent-appbar-items {
-		flex-direction: row;
-	}
+		.horizontal .fluent-appbar-items {
+			flex-direction: row;
+		}
 
-	.fluent-appbar-more {
-		flex: none;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		inline-size: calc(var(--fluent-appbar-item-size, 68) * 1px);
-		block-size: var(
-			--fluent-appbar-item-block-size,
-			calc(var(--fluent-appbar-item-size, 68) * 1px - var(--design-unit) * 5px)
-		);
-		margin: 0;
-		padding: 0;
-		border: 0;
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		background: transparent;
-		color: var(--neutral-foreground-rest);
-		cursor: pointer;
-	}
+		.fluent-appbar-more {
+			flex: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			inline-size: calc(var(--fluent-appbar-item-size, 68) * 1px);
+			block-size: var(
+				--fluent-appbar-item-block-size,
+				calc(var(--fluent-appbar-item-size, 68) * 1px - var(--design-unit) * 5px)
+			);
+			margin: 0;
+			padding: 0;
+			border: 0;
+			border-radius: calc(var(--control-corner-radius, 4) * 1px);
+			background: transparent;
+			color: var(--neutral-foreground-rest);
+			cursor: pointer;
+		}
 
-	.horizontal .fluent-appbar-more {
-		align-self: center;
-	}
+		.horizontal .fluent-appbar-more {
+			align-self: center;
+		}
 
-	.fluent-appbar-more:hover,
-	.fluent-appbar-more.active {
-		background-color: var(--neutral-fill-secondary-rest);
-	}
+		.fluent-appbar-more:hover,
+		.fluent-appbar-more.active {
+			background-color: var(--neutral-fill-secondary-rest);
+		}
 
-	/* Overflow popover: the hidden items as tiles, three per row. */
-	.fluent-appbar-popover {
-		--fluent-appbar-count-ring-color: var(--neutral-layer-floating);
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		gap: var(--fluent-appbar-popover-gap, calc(var(--design-unit) * 2px));
-		padding: var(--fluent-appbar-popover-padding, calc(var(--design-unit) * 2px));
-		/* Three tiles per row (+ padding + the 1px surface border). */
-		max-inline-size: calc(
-			var(--fluent-appbar-item-size, 68) * 3px + 2 *
-				var(--fluent-appbar-popover-padding, calc(var(--design-unit) * 2px)) + 2px
-		);
-	}
+		/* Overflow popover: the hidden items as tiles, three per row. */
+		.fluent-appbar-popover {
+			--fluent-appbar-count-ring-color: var(--neutral-layer-floating);
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			gap: var(--fluent-appbar-popover-gap, calc(var(--design-unit) * 2px));
+			padding: var(--fluent-appbar-popover-padding, calc(var(--design-unit) * 2px));
+			/* Three tiles per row (+ padding + the 1px surface border). */
+			max-inline-size: calc(
+				var(--fluent-appbar-item-size, 68) * 3px + 2 *
+					var(--fluent-appbar-popover-padding, calc(var(--design-unit) * 2px)) + 2px
+			);
+		}
 
-	.fluent-appbar-popover :global(.fluent-appbar-popover-search) {
-		inline-size: 100%;
-	}
+		.fluent-appbar-popover :global(.fluent-appbar-popover-search) {
+			inline-size: 100%;
+		}
 
-	.fluent-appbar-popover-items {
-		display: flex;
-		flex-wrap: wrap;
-		padding-block-start: calc(var(--design-unit) * 1px);
-	}
+		.fluent-appbar-popover-items {
+			display: flex;
+			flex-wrap: wrap;
+			padding-block-start: calc(var(--design-unit) * 1px);
+		}
 
-	.fluent-appbar-popover-empty {
-		padding: calc(var(--design-unit) * 2px);
-		color: var(--neutral-foreground-hint);
-		font-size: var(--type-ramp-minus-1-font-size);
+		.fluent-appbar-popover-empty {
+			padding: calc(var(--design-unit) * 2px);
+			color: var(--neutral-foreground-hint);
+			font-size: var(--type-ramp-minus-1-font-size);
+		}
 	}
 </style>

@@ -149,5 +149,9 @@ in the browser top layer. Mount it once, e.g. in the root layout; its only prop 
 {/each}
 
 <style>
-	/* Styles are in src/assets/styles/components/_toast.scss */
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* Styles are in src/assets/styles/components/_toast.scss */
+	}
 </style>

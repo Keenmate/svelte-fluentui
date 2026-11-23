@@ -95,71 +95,75 @@ Theme it with the `--fluent-chip-*` custom properties.
 </span>
 
 <style>
-	.fluent-chip {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--fluent-chip-gap, 0.25rem);
-		padding: var(--fluent-chip-padding-block, 0.125rem) var(--fluent-chip-padding-inline, 0.5rem);
-		background: var(--fluent-chip-bg, var(--neutral-fill-secondary-rest, #f0f0f0));
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		font-size: var(--fluent-chip-font-size, 0.875rem);
-		line-height: var(--fluent-chip-line-height, 1.4);
-		white-space: nowrap;
-		max-width: var(--fluent-chip-max-width, 9.375rem);
-		color: var(--neutral-foreground-rest, #242424);
-		box-sizing: border-box;
-	}
+	@layer reset, variables, component, overrides;
 
-	/* Standalone (above/below): its own 1px border since it doesn't sit inside a
+	@layer component {
+		.fluent-chip {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--fluent-chip-gap, 0.25rem);
+			padding: var(--fluent-chip-padding-block, 0.125rem) var(--fluent-chip-padding-inline, 0.5rem);
+			background: var(--fluent-chip-bg, var(--neutral-fill-secondary-rest, #f0f0f0));
+			border-radius: calc(var(--control-corner-radius, 4) * 1px);
+			font-size: var(--fluent-chip-font-size, 0.875rem);
+			line-height: var(--fluent-chip-line-height, 1.4);
+			white-space: nowrap;
+			max-width: var(--fluent-chip-max-width, 9.375rem);
+			color: var(--neutral-foreground-rest, #242424);
+			box-sizing: border-box;
+		}
+
+		/* Standalone (above/below): its own 1px border since it doesn't sit inside a
 	   field's border, and a little more room to breathe. */
-	.fluent-chip.external {
-		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-		max-width: var(--fluent-chip-external-max-width, 12.5rem);
-	}
+		.fluent-chip.external {
+			border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+			max-width: var(--fluent-chip-external-max-width, 12.5rem);
+		}
 
-	/* Contrast: when the host background equals the chip's default fill (readonly /
+		/* Contrast: when the host background equals the chip's default fill (readonly /
 	   filled fields), swap to a white fill + 1px inset ring so the chip stays visible
 	   without changing height. */
-	.fluent-chip.contrast {
-		background: var(--neutral-fill-input-rest, #ffffff);
-		box-shadow: inset 0 0 0 1px var(--neutral-stroke-rest, #d1d1d1);
-	}
+		.fluent-chip.contrast {
+			background: var(--neutral-fill-input-rest, #ffffff);
+			box-shadow: inset 0 0 0 1px var(--neutral-stroke-rest, #d1d1d1);
+		}
 
-	.fluent-chip-text {
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
+		.fluent-chip-text {
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
 
-	.fluent-chip-remove {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: transparent;
-		border: none;
-		padding: var(--fluent-chip-remove-padding, 0.125rem);
-		cursor: pointer;
-		/* Accent by default — matches Microsoft's chips, and follows the theme accent
+		.fluent-chip-remove {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: transparent;
+			border: none;
+			padding: var(--fluent-chip-remove-padding, 0.125rem);
+			cursor: pointer;
+			/* Accent by default — matches Microsoft's chips, and follows the theme accent
 		   set by the Site settings "Color" combo (--accent-fill-rest). */
-		color: var(--fluent-chip-remove-text, var(--accent-fill-rest, #0078d4));
-		border-radius: var(--fluent-border-radius-sm);
-		flex-shrink: 0;
-		transition:
-			color 0.1s ease,
-			background 0.1s ease;
-	}
+			color: var(--fluent-chip-remove-text, var(--accent-fill-rest, #0078d4));
+			border-radius: var(--fluent-border-radius-sm);
+			flex-shrink: 0;
+			transition:
+				color 0.1s ease,
+				background 0.1s ease;
+		}
 
-	.fluent-chip-remove:hover {
-		background: var(--fluent-chip-remove-bg-hover, var(--neutral-fill-secondary-hover, #e0e0e0));
-		color: var(--fluent-chip-remove-text-hover, var(--accent-fill-hover, #106ebe));
-	}
+		.fluent-chip-remove:hover {
+			background: var(--fluent-chip-remove-bg-hover, var(--neutral-fill-secondary-hover, #e0e0e0));
+			color: var(--fluent-chip-remove-text-hover, var(--accent-fill-hover, #106ebe));
+		}
 
-	/* Keyboard focus on the × (arrow keys from a Combobox / Autocomplete input) rings the whole chip. */
-	.fluent-chip:has(.fluent-chip-remove:focus-visible) {
-		box-shadow: inset 0 0 0 1px var(--accent-fill-rest, #0078d4);
-	}
+		/* Keyboard focus on the × (arrow keys from a Combobox / Autocomplete input) rings the whole chip. */
+		.fluent-chip:has(.fluent-chip-remove:focus-visible) {
+			box-shadow: inset 0 0 0 1px var(--accent-fill-rest, #0078d4);
+		}
 
-	.fluent-chip-remove:focus-visible {
-		outline: 1px solid var(--accent-fill-rest, #0078d4);
-		outline-offset: 1px;
+		.fluent-chip-remove:focus-visible {
+			outline: 1px solid var(--accent-fill-rest, #0078d4);
+			outline-offset: 1px;
+		}
 	}
 </style>

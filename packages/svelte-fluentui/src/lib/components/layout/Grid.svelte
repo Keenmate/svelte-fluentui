@@ -172,109 +172,113 @@ Breakpoints resolve against the viewport, or a container with `container`.
 </div>
 
 <style>
-	.fluent-grid {
-		width: 100%;
-		display: flex;
-		flex-wrap: wrap;
-		box-sizing: border-box;
-	}
+	@layer reset, variables, component, overrides;
 
-	/* CSS grid mode — activated by the `columns` prop. Cells are sized by
+	@layer component {
+		.fluent-grid {
+			width: 100%;
+			display: flex;
+			flex-wrap: wrap;
+			box-sizing: border-box;
+		}
+
+		/* CSS grid mode — activated by the `columns` prop. Cells are sized by
 	   `grid-template-columns`, so flex-basis/max-width rules on children are
 	   inert here and can't steal space based on content width. */
-	.fluent-grid.columns-mode {
-		display: grid;
-		margin: 0;
-	}
+		.fluent-grid.columns-mode {
+			display: grid;
+			margin: 0;
+		}
 
-	/* Spacing variations */
-	.fluent-grid[data-spacing="1"] {
-		width: calc(100% + 8px);
-		margin: -4px;
-	}
+		/* Spacing variations */
+		.fluent-grid[data-spacing="1"] {
+			width: calc(100% + 8px);
+			margin: -4px;
+		}
 
-	.fluent-grid[data-spacing="1"] :global(> *) {
-		padding: 4px;
-	}
+		.fluent-grid[data-spacing="1"] :global(> *) {
+			padding: 4px;
+		}
 
-	.fluent-grid[data-spacing="2"] {
-		width: calc(100% + 16px);
-		margin: -8px;
-	}
+		.fluent-grid[data-spacing="2"] {
+			width: calc(100% + 16px);
+			margin: -8px;
+		}
 
-	.fluent-grid[data-spacing="2"] :global(> *) {
-		padding: 8px;
-	}
+		.fluent-grid[data-spacing="2"] :global(> *) {
+			padding: 8px;
+		}
 
-	.fluent-grid[data-spacing="3"] {
-		width: calc(100% + 24px);
-		margin: -12px;
-	}
+		.fluent-grid[data-spacing="3"] {
+			width: calc(100% + 24px);
+			margin: -12px;
+		}
 
-	.fluent-grid[data-spacing="3"] :global(> *) {
-		padding: 12px;
-	}
+		.fluent-grid[data-spacing="3"] :global(> *) {
+			padding: 12px;
+		}
 
-	.fluent-grid[data-spacing="4"] {
-		width: calc(100% + 32px);
-		margin: -16px;
-	}
+		.fluent-grid[data-spacing="4"] {
+			width: calc(100% + 32px);
+			margin: -16px;
+		}
 
-	.fluent-grid[data-spacing="4"] :global(> *) {
-		padding: 16px;
-	}
+		.fluent-grid[data-spacing="4"] :global(> *) {
+			padding: 16px;
+		}
 
-	.fluent-grid[data-spacing="5"] {
-		width: calc(100% + 40px);
-		margin: -20px;
-	}
+		.fluent-grid[data-spacing="5"] {
+			width: calc(100% + 40px);
+			margin: -20px;
+		}
 
-	.fluent-grid[data-spacing="5"] :global(> *) {
-		padding: 20px;
-	}
+		.fluent-grid[data-spacing="5"] :global(> *) {
+			padding: 20px;
+		}
 
-	.fluent-grid[data-spacing="6"] {
-		width: calc(100% + 48px);
-		margin: -24px;
-	}
+		.fluent-grid[data-spacing="6"] {
+			width: calc(100% + 48px);
+			margin: -24px;
+		}
 
-	.fluent-grid[data-spacing="6"] :global(> *) {
-		padding: 24px;
-	}
+		.fluent-grid[data-spacing="6"] :global(> *) {
+			padding: 24px;
+		}
 
-	.fluent-grid[data-spacing="7"] {
-		width: calc(100% + 56px);
-		margin: -28px;
-	}
+		.fluent-grid[data-spacing="7"] {
+			width: calc(100% + 56px);
+			margin: -28px;
+		}
 
-	.fluent-grid[data-spacing="7"] :global(> *) {
-		padding: 28px;
-	}
+		.fluent-grid[data-spacing="7"] :global(> *) {
+			padding: 28px;
+		}
 
-	.fluent-grid[data-spacing="8"] {
-		width: calc(100% + 64px);
-		margin: -32px;
-	}
+		.fluent-grid[data-spacing="8"] {
+			width: calc(100% + 64px);
+			margin: -32px;
+		}
 
-	.fluent-grid[data-spacing="8"] :global(> *) {
-		padding: 32px;
-	}
+		.fluent-grid[data-spacing="8"] :global(> *) {
+			padding: 32px;
+		}
 
-	.fluent-grid[data-spacing="9"] {
-		width: calc(100% + 72px);
-		margin: -36px;
-	}
+		.fluent-grid[data-spacing="9"] {
+			width: calc(100% + 72px);
+			margin: -36px;
+		}
 
-	.fluent-grid[data-spacing="9"] :global(> *) {
-		padding: 36px;
-	}
+		.fluent-grid[data-spacing="9"] :global(> *) {
+			padding: 36px;
+		}
 
-	.fluent-grid[data-spacing="10"] {
-		width: calc(100% + 80px);
-		margin: -40px;
-	}
+		.fluent-grid[data-spacing="10"] {
+			width: calc(100% + 80px);
+			margin: -40px;
+		}
 
-	.fluent-grid[data-spacing="10"] :global(> *) {
-		padding: 40px;
+		.fluent-grid[data-spacing="10"] :global(> *) {
+			padding: 40px;
+		}
 	}
 </style>

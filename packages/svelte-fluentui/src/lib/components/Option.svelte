@@ -122,56 +122,60 @@ A single listbox row for `Select`, `Combobox` and `Listbox` (plain themed `<div 
 </div>
 
 <style>
-	/* One row of a listbox. Sized/typed against FluentUI design tokens so it
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* One row of a listbox. Sized/typed against FluentUI design tokens so it
 	 * matches the trigger and the rest of the library. Scoped styles live here
 	 * (not in each parent) so the same look applies wherever an Option renders —
 	 * portalled popover, inline multi-select list, etc. */
-	.fluent-option {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		width: 100%;
-		box-sizing: border-box;
-		flex-shrink: 0;
-		min-height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
-		font-family: inherit;
-		font-size: var(--type-ramp-base-font-size, 14px);
-		line-height: var(--type-ramp-base-line-height, 20px);
-		color: var(--neutral-foreground-rest, #242424);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		cursor: pointer;
-		user-select: none;
-	}
+		.fluent-option {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			width: 100%;
+			box-sizing: border-box;
+			flex-shrink: 0;
+			min-height: calc((var(--base-height-multiplier, 8) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+			padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
+			font-family: inherit;
+			font-size: var(--type-ramp-base-font-size, 14px);
+			line-height: var(--type-ramp-base-line-height, 20px);
+			color: var(--neutral-foreground-rest, #242424);
+			border-radius: calc(var(--control-corner-radius, 4) * 1px);
+			cursor: pointer;
+			user-select: none;
+		}
 
-	.fluent-option:hover:not([disabled]),
-	.fluent-option[data-highlighted]:not([disabled]) {
-		background: var(--neutral-fill-stealth-hover, #f0f0f0);
-	}
+		.fluent-option:hover:not([disabled]),
+		.fluent-option[data-highlighted]:not([disabled]) {
+			background: var(--neutral-fill-stealth-hover, #f0f0f0);
+		}
 
-	.fluent-option[aria-selected="true"] {
-		background: var(--neutral-fill-secondary-rest, #f5f5f5);
-		font-weight: 600;
-	}
+		.fluent-option[aria-selected="true"] {
+			background: var(--neutral-fill-secondary-rest, #f5f5f5);
+			font-weight: 600;
+		}
 
-	.fluent-option[aria-selected="true"]:hover:not([disabled]),
-	.fluent-option[aria-selected="true"][data-highlighted]:not([disabled]) {
-		background: var(--neutral-fill-secondary-hover, #ebebeb);
-	}
+		.fluent-option[aria-selected="true"]:hover:not([disabled]),
+		.fluent-option[aria-selected="true"][data-highlighted]:not([disabled]) {
+			background: var(--neutral-fill-secondary-hover, #ebebeb);
+		}
 
-	.fluent-option[disabled] {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
+		.fluent-option[disabled] {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
 
-	/* Parents (Combobox) hide non-matching rows by toggling this attribute. */
-	.fluent-option[data-filtered-out] {
-		display: none !important;
-	}
+		/* Parents (Combobox) hide non-matching rows by toggling this attribute. */
+		.fluent-option[data-filtered-out] {
+			display: none !important;
+		}
 
-	.option-icon {
-		display: inline-flex;
-		align-items: center;
-		flex-shrink: 0;
+		.option-icon {
+			display: inline-flex;
+			align-items: center;
+			flex-shrink: 0;
+		}
 	}
 </style>

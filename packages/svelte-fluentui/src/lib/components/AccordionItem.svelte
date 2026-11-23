@@ -155,175 +155,179 @@ A single collapsible panel inside an `<Accordion>` (also works standalone via `b
 </div>
 
 <style>
-	.fluent-accordion-item {
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		background: var(--neutral-fill-layer-rest, #ffffff);
-		color: var(--neutral-foreground-rest, #242424);
-		border: calc(var(--stroke-width, 1) * 1px) solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		border-radius: calc(var(--layer-corner-radius, 8) * 1px);
-		font: inherit;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-accordion-item__heading {
-		display: grid;
-		position: relative;
-		grid-template-columns: auto 1fr auto auto;
-		align-items: center;
-	}
+	@layer component {
+		.fluent-accordion-item {
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			background: var(--neutral-fill-layer-rest, #ffffff);
+			color: var(--neutral-foreground-rest, #242424);
+			border: calc(var(--stroke-width, 1) * 1px) solid var(--neutral-stroke-layer-rest, #e0e0e0);
+			border-radius: calc(var(--layer-corner-radius, 8) * 1px);
+			font: inherit;
+		}
 
-	/* Keep every cell on a single row: the chevron can sit in any column
+		.fluent-accordion-item__heading {
+			display: grid;
+			position: relative;
+			grid-template-columns: auto 1fr auto auto;
+			align-items: center;
+		}
+
+		/* Keep every cell on a single row: the chevron can sit in any column
 	   (see toggle-start) without grid auto-flow bumping it to a new row. */
-	.fluent-accordion-item__heading > * {
-		grid-row: 1;
-	}
+		.fluent-accordion-item__heading > * {
+			grid-row: 1;
+		}
 
-	.fluent-accordion-item__start {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		grid-column: 1;
-		padding-inline-start: calc(var(--design-unit, 4) * 2 * 1px);
-	}
+		.fluent-accordion-item__start {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			grid-column: 1;
+			padding-inline-start: calc(var(--design-unit, 4) * 2 * 1px);
+		}
 
-	.fluent-accordion-item__button {
-		grid-column: 2;
-		appearance: none;
-		border: none;
-		background: none;
-		outline: none;
-		margin: calc(var(--design-unit, 4) * 3 * 1px) 0;
-		padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
-		text-align: start;
-		color: inherit;
-		cursor: pointer;
-		font: inherit;
-	}
+		.fluent-accordion-item__button {
+			grid-column: 2;
+			appearance: none;
+			border: none;
+			background: none;
+			outline: none;
+			margin: calc(var(--design-unit, 4) * 3 * 1px) 0;
+			padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
+			text-align: start;
+			color: inherit;
+			cursor: pointer;
+			font: inherit;
+		}
 
-	.fluent-accordion-item__button::before {
-		content: "";
-		position: absolute;
-		inset: calc(var(--stroke-width, 1) * -1px);
-		cursor: pointer;
-	}
+		.fluent-accordion-item__button::before {
+			content: "";
+			position: absolute;
+			inset: calc(var(--stroke-width, 1) * -1px);
+			cursor: pointer;
+		}
 
-	.fluent-accordion-item__button:focus-visible::before {
-		outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--neutral-foreground-rest, #242424);
-		outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
-		border-radius: calc(var(--layer-corner-radius, 8) * 1px);
-	}
+		.fluent-accordion-item__button:focus-visible::before {
+			outline: calc(var(--focus-stroke-width, 2) * 1px) solid var(--neutral-foreground-rest, #242424);
+			outline-offset: calc(var(--focus-stroke-width, 2) * -1px);
+			border-radius: calc(var(--layer-corner-radius, 8) * 1px);
+		}
 
-	.fluent-accordion-item.expanded .fluent-accordion-item__button:focus-visible::before {
-		border-end-start-radius: 0;
-		border-end-end-radius: 0;
-	}
+		.fluent-accordion-item.expanded .fluent-accordion-item__button:focus-visible::before {
+			border-end-start-radius: 0;
+			border-end-end-radius: 0;
+		}
 
-	.fluent-accordion-item__end {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		grid-column: 3;
-	}
+		.fluent-accordion-item__end {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			grid-column: 3;
+		}
 
-	.fluent-accordion-item__icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		grid-column: 4;
-		pointer-events: none;
-		background: var(--neutral-fill-stealth-rest-on-neutral-fill-layer-rest, transparent);
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		fill: currentcolor;
-		color: inherit;
-		width: calc((var(--base-height-multiplier, 10) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		height: calc((var(--base-height-multiplier, 10) + var(--density, 0)) * var(--design-unit, 4) * 1px);
-		margin: calc(var(--design-unit, 4) * 2 * 1px);
-	}
+		.fluent-accordion-item__icon {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			grid-column: 4;
+			pointer-events: none;
+			background: var(--neutral-fill-stealth-rest-on-neutral-fill-layer-rest, transparent);
+			border-radius: calc(var(--control-corner-radius, 4) * 1px);
+			fill: currentcolor;
+			color: inherit;
+			width: calc((var(--base-height-multiplier, 10) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+			height: calc((var(--base-height-multiplier, 10) + var(--density, 0)) * var(--design-unit, 4) * 1px);
+			margin: calc(var(--design-unit, 4) * 2 * 1px);
+		}
 
-	.fluent-accordion-item__heading:hover .fluent-accordion-item__icon {
-		background: var(
-			--neutral-fill-stealth-hover-on-neutral-fill-layer-rest,
-			var(--neutral-fill-stealth-hover, transparent)
-		);
-	}
+		.fluent-accordion-item__heading:hover .fluent-accordion-item__icon {
+			background: var(
+				--neutral-fill-stealth-hover-on-neutral-fill-layer-rest,
+				var(--neutral-fill-stealth-hover, transparent)
+			);
+		}
 
-	.fluent-accordion-item__heading:active .fluent-accordion-item__icon {
-		background: var(
-			--neutral-fill-stealth-active-on-neutral-fill-layer-rest,
-			var(--neutral-fill-stealth-active, transparent)
-		);
-	}
+		.fluent-accordion-item__heading:active .fluent-accordion-item__icon {
+			background: var(
+				--neutral-fill-stealth-active-on-neutral-fill-layer-rest,
+				var(--neutral-fill-stealth-active, transparent)
+			);
+		}
 
-	.fluent-accordion-item__chevron {
-		transition: transform 0.2s ease;
-	}
+		.fluent-accordion-item__chevron {
+			transition: transform 0.2s ease;
+		}
 
-	.fluent-accordion-item.expanded .fluent-accordion-item__chevron {
-		transform: rotate(180deg);
-	}
+		.fluent-accordion-item.expanded .fluent-accordion-item__chevron {
+			transform: rotate(180deg);
+		}
 
-	/* Toggle on the leading (left in LTR) side: reorder the grid so the icon
+		/* Toggle on the leading (left in LTR) side: reorder the grid so the icon
 	   comes first, with no collision against the start slot. */
-	.fluent-accordion-item__heading.toggle-start {
-		grid-template-columns: auto auto 1fr auto;
-	}
-	.fluent-accordion-item__heading.toggle-start .fluent-accordion-item__icon {
-		grid-column: 1;
-		/* The chevron now provides the left separation, so drop its inner-facing
+		.fluent-accordion-item__heading.toggle-start {
+			grid-template-columns: auto auto 1fr auto;
+		}
+		.fluent-accordion-item__heading.toggle-start .fluent-accordion-item__icon {
+			grid-column: 1;
+			/* The chevron now provides the left separation, so drop its inner-facing
 		   margin to sit closer to the following start slot / heading. */
-		margin-inline-end: calc(var(--design-unit, 4) * 1px);
-	}
-	.fluent-accordion-item__heading.toggle-start .fluent-accordion-item__start {
-		grid-column: 2;
-		/* Redundant here: the leading indent is owned by the chevron, not the
+			margin-inline-end: calc(var(--design-unit, 4) * 1px);
+		}
+		.fluent-accordion-item__heading.toggle-start .fluent-accordion-item__start {
+			grid-column: 2;
+			/* Redundant here: the leading indent is owned by the chevron, not the
 		   start slot (which is no longer against the card edge). */
-		padding-inline-start: 0;
-	}
-	.fluent-accordion-item__heading.toggle-start .fluent-accordion-item__button {
-		grid-column: 3;
-	}
-	.fluent-accordion-item__heading.toggle-start .fluent-accordion-item__end {
-		grid-column: 4;
-		/* The end slot is now the rightmost cell (the chevron moved to the
+			padding-inline-start: 0;
+		}
+		.fluent-accordion-item__heading.toggle-start .fluent-accordion-item__button {
+			grid-column: 3;
+		}
+		.fluent-accordion-item__heading.toggle-start .fluent-accordion-item__end {
+			grid-column: 4;
+			/* The end slot is now the rightmost cell (the chevron moved to the
 		   leading edge), so it must supply the trailing inset the chevron's
 		   margin used to provide against the card edge. */
-		padding-inline-end: calc(var(--design-unit, 4) * 2 * 1px);
-	}
+			padding-inline-end: calc(var(--design-unit, 4) * 2 * 1px);
+		}
 
-	/* Animated collapse via grid-template-rows 0fr -> 1fr. */
-	.fluent-accordion-item__region-wrapper {
-		display: grid;
-		grid-template-rows: 0fr;
-		transition: grid-template-rows 0.2s ease;
-	}
-
-	.fluent-accordion-item.expanded .fluent-accordion-item__region-wrapper {
-		grid-template-rows: 1fr;
-	}
-
-	.fluent-accordion-item__region {
-		overflow: hidden;
-		min-height: 0;
-	}
-
-	.fluent-accordion-item.expanded .fluent-accordion-item__region {
-		padding: calc(var(--design-unit, 4) * 2 * 1px);
-		border-top: calc(var(--stroke-width, 1) * 1px) solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		background: var(--neutral-fill-layer-alt-rest, transparent);
-		border-end-start-radius: calc((var(--layer-corner-radius, 8) - var(--stroke-width, 1)) * 1px);
-		border-end-end-radius: calc((var(--layer-corner-radius, 8) - var(--stroke-width, 1)) * 1px);
-	}
-
-	.fluent-accordion-item.disabled .fluent-accordion-item__button {
-		cursor: not-allowed;
-		opacity: 0.6;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.fluent-accordion-item__chevron,
+		/* Animated collapse via grid-template-rows 0fr -> 1fr. */
 		.fluent-accordion-item__region-wrapper {
-			transition: none;
+			display: grid;
+			grid-template-rows: 0fr;
+			transition: grid-template-rows 0.2s ease;
+		}
+
+		.fluent-accordion-item.expanded .fluent-accordion-item__region-wrapper {
+			grid-template-rows: 1fr;
+		}
+
+		.fluent-accordion-item__region {
+			overflow: hidden;
+			min-height: 0;
+		}
+
+		.fluent-accordion-item.expanded .fluent-accordion-item__region {
+			padding: calc(var(--design-unit, 4) * 2 * 1px);
+			border-top: calc(var(--stroke-width, 1) * 1px) solid var(--neutral-stroke-layer-rest, #e0e0e0);
+			background: var(--neutral-fill-layer-alt-rest, transparent);
+			border-end-start-radius: calc((var(--layer-corner-radius, 8) - var(--stroke-width, 1)) * 1px);
+			border-end-end-radius: calc((var(--layer-corner-radius, 8) - var(--stroke-width, 1)) * 1px);
+		}
+
+		.fluent-accordion-item.disabled .fluent-accordion-item__button {
+			cursor: not-allowed;
+			opacity: 0.6;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.fluent-accordion-item__chevron,
+			.fluent-accordion-item__region-wrapper {
+				transition: none;
+			}
 		}
 	}
 </style>

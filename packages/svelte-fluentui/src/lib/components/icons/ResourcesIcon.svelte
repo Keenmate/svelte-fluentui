@@ -31,16 +31,20 @@ Decorative 24px "resources" (grid) SVG icon; filled in the accent colour when `a
 {/if}
 
 <style>
-	.resources-icon,
-	.resources-icon-active {
-		width: 24px;
-	}
+	@layer reset, variables, component, overrides;
 
-	.resources-icon-active {
-		fill: var(--accent-fill-rest);
-	}
+	@layer component {
+		.resources-icon,
+		.resources-icon-active {
+			width: 24px;
+		}
 
-	.resources-icon {
-		fill: var(--neutral-foreground-rest);
+		.resources-icon-active {
+			fill: var(--accent-fill-rest);
+		}
+
+		.resources-icon {
+			fill: var(--neutral-foreground-rest);
+		}
 	}
 </style>

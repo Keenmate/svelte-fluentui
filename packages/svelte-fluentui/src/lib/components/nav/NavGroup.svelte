@@ -96,12 +96,16 @@ Expandable group of nav rows inside a `NavMenu`; the header toggles `expanded`.
 </NavItem>
 
 <style>
-	.fluent-collapsible-region-container {
-		height: auto;
-		overflow: hidden;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-nav-menu {
-		width: 100%;
+	@layer component {
+		.fluent-collapsible-region-container {
+			height: auto;
+			overflow: hidden;
+		}
+
+		.fluent-nav-menu {
+			width: 100%;
+		}
 	}
 </style>

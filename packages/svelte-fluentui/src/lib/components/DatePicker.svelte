@@ -402,44 +402,48 @@ Date input with a calendar popup; `value` is a `Date` (or `null`).
 </div>
 
 <style>
-	.fluent-datepicker {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
+	@layer reset, variables, component, overrides;
 
-	.datepicker-wrapper {
-		position: relative;
-	}
+	@layer component {
+		.fluent-datepicker {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
 
-	.datepicker-popup {
-		padding: 1rem;
-	}
+		.datepicker-wrapper {
+			position: relative;
+		}
 
-	.end-buttons {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
-	}
+		.datepicker-popup {
+			padding: 1rem;
+		}
 
-	.calendar-button {
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.25rem;
-		color: var(--neutral-foreground-rest);
-		border-radius: var(--fluent-border-radius-md);
-	}
+		.end-buttons {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.25rem;
+		}
 
-	.calendar-button:hover:not(:disabled) {
-		background: var(--neutral-fill-secondary-hover);
-	}
+		.calendar-button {
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.25rem;
+			color: var(--neutral-foreground-rest);
+			border-radius: var(--fluent-border-radius-md);
+		}
 
-	.calendar-button:disabled {
-		cursor: not-allowed;
-		opacity: 0.5;
+		.calendar-button:hover:not(:disabled) {
+			background: var(--neutral-fill-secondary-hover);
+		}
+
+		.calendar-button:disabled {
+			cursor: not-allowed;
+			opacity: 0.5;
+		}
 	}
 </style>

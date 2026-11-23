@@ -165,25 +165,29 @@ On/off toggle wrapping `<fluent-switch>`; `bind:checked` is a boolean.
 </span>
 
 <style>
-	:global(fluent-switch::part(label)) {
-		display: none;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-switch-wrapper {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
+	@layer component {
+		:global(fluent-switch::part(label)) {
+			display: none;
+		}
 
-	/* "top" position: label stacks above the switch. Label keeps its
+		.fluent-switch-wrapper {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		/* "top" position: label stacks above the switch. Label keeps its
 	   value-label styling — only the wrapper layout changes. */
-	.fluent-switch-wrapper[data-label-position="top"] {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.25rem;
-	}
+		.fluent-switch-wrapper[data-label-position="top"] {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.25rem;
+		}
 
-	.switch-message {
-		margin-inline-start: 0.5rem;
+		.switch-message {
+			margin-inline-start: 0.5rem;
+		}
 	}
 </style>

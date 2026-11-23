@@ -5,41 +5,42 @@
 
 @use "../tokens" as *;
 @use "primitives";
+@layer component {
+	.fluent-validation-summary {
+		background: color-mix(in srgb, var(--fluent-color-danger-foreground, #d13438) 8%, transparent);
+		border-inline-start: 3px solid var(--fluent-color-danger-foreground, #d13438);
+		padding: 0.6rem 0.9rem;
+		border-radius: $border-radius-md;
+		color: var(--neutral-foreground-rest, #424242);
 
-.fluent-validation-summary {
-	background: color-mix(in srgb, var(--fluent-color-danger-foreground, #d13438) 8%, transparent);
-	border-inline-start: 3px solid var(--fluent-color-danger-foreground, #d13438);
-	padding: 0.6rem 0.9rem;
-	border-radius: $border-radius-md;
-	color: var(--neutral-foreground-rest, #424242);
+		&__title {
+			font-weight: 600;
+			margin-bottom: 0.4rem;
+			color: var(--fluent-color-danger-foreground, #d13438);
+		}
 
-	&__title {
-		font-weight: 600;
-		margin-bottom: 0.4rem;
-		color: var(--fluent-color-danger-foreground, #d13438);
-	}
+		&__list {
+			margin: 0;
+			padding-inline-start: 1.1rem;
+			list-style: disc;
+		}
 
-	&__list {
-		margin: 0;
-		padding-inline-start: 1.1rem;
-		list-style: disc;
-	}
+		&__item {
+			margin: 0.15rem 0;
+			line-height: 1.4;
+		}
 
-	&__item {
-		margin: 0.15rem 0;
-		line-height: 1.4;
-	}
-
-	&__link {
-		color: var(--fluent-color-danger-foreground, #d13438);
-		text-decoration: underline;
-		cursor: pointer;
-	}
-	&__link:hover {
-		text-decoration: none;
-	}
-	&__link:focus-visible {
-		@include primitives.focus-ring(2px);
-		border-radius: $border-radius-sm;
+		&__link {
+			color: var(--fluent-color-danger-foreground, #d13438);
+			text-decoration: underline;
+			cursor: pointer;
+		}
+		&__link:hover {
+			text-decoration: none;
+		}
+		&__link:focus-visible {
+			@include primitives.focus-ring(2px);
+			border-radius: $border-radius-sm;
+		}
 	}
 }

@@ -22,11 +22,15 @@ Full-width, non-wrapping flex row with a start margin — a simple region for in
 </div>
 
 <style>
-	.content-region {
-		display: flex;
-		align-items: center;
-		white-space: nowrap;
-		width: 100%;
-		margin-inline-start: calc(var(--design-unit) * 2px);
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		.content-region {
+			display: flex;
+			align-items: center;
+			white-space: nowrap;
+			width: 100%;
+			margin-inline-start: calc(var(--design-unit) * 2px);
+		}
 	}
 </style>

@@ -12,6 +12,7 @@ Major release: pre-public-release API consistency revision. Upgrade guide:
 
 ### Changed — BREAKING
 
+- **CSS: cascade layers.** All library CSS is in `@layer reset, variables, component, overrides` (the Keenmate suite's order): `reboot.css` → `reset`, design tokens / palette → `variables`, the global partials and every component `<style>` → `component`. Any unlayered app rule now beats the library regardless of specificity, and the library no longer overrides layered libraries (e.g. svelte-treeview's checkbox lost its border to the reboot). An unlayered reset in the app (normalize, Pure.css) now beats the components — import it `layer(reset)`. The reboot no longer sets `border: 1px solid black` on `input` / `button` / `select` / `optgroup` / `textarea`; workarounds like `border: revert-layer` can go.
 - **Popups: one positioning helper.** `PositioningRegion` `availableHeight` is removed — the region always publishes `--fluent-popup-available-height` (was `--available-height`), plus `--fluent-popup-available-width` and `--fluent-popup-anchor-width`. Select and Combobox dropdowns cap at `300px` by default like Autocomplete (they took all the room available); `maxDropdownHeight` sets the now public `--fluent-select-dropdown-max-height` / `--fluent-combobox-dropdown-max-height` / `--fluent-autocomplete-dropdown-max-height`.
 - **Built-in text comes from one svelte-i18n dictionary.** Every text a component renders on its own
   (aria-labels, tooltips, placeholders, empty / loading messages, pager text, …) is a

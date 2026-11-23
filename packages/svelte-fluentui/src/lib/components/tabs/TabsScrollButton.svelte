@@ -46,7 +46,10 @@
 </button>
 
 <style>
-	/*
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/*
 	 * Scroll arrow buttons — absolute-positioned over the strip edges so
 	 * toggling their visibility does NOT change the tablist's client width.
 	 *
@@ -59,53 +62,54 @@
 	 *
 	 * Orientation comes from the Tabs root class (`:global` — it's in the parent).
 	 */
-	.fluent-tabs-scroll-btn {
-		position: absolute;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: color-mix(in srgb, var(--neutral-layer-1, #fff) 85%, transparent);
-		backdrop-filter: blur(4px);
-		border: none;
-		color: var(--neutral-foreground-rest);
-		cursor: pointer;
-		padding: 0;
-		z-index: 2;
-	}
+		.fluent-tabs-scroll-btn {
+			position: absolute;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: color-mix(in srgb, var(--neutral-layer-1, #fff) 85%, transparent);
+			backdrop-filter: blur(4px);
+			border: none;
+			color: var(--neutral-foreground-rest);
+			cursor: pointer;
+			padding: 0;
+			z-index: 2;
+		}
 
-	:global(.fluent-tabs-horizontal) .fluent-tabs-scroll-btn {
-		top: 0;
-		bottom: 0;
-		width: 32px;
-	}
+		:global(.fluent-tabs-horizontal) .fluent-tabs-scroll-btn {
+			top: 0;
+			bottom: 0;
+			width: 32px;
+		}
 
-	:global(.fluent-tabs-horizontal) .fluent-tabs-scroll-btn-start {
-		inset-inline-start: 0;
-	}
+		:global(.fluent-tabs-horizontal) .fluent-tabs-scroll-btn-start {
+			inset-inline-start: 0;
+		}
 
-	:global(.fluent-tabs-horizontal) .fluent-tabs-scroll-btn-end {
-		inset-inline-end: 0;
-	}
+		:global(.fluent-tabs-horizontal) .fluent-tabs-scroll-btn-end {
+			inset-inline-end: 0;
+		}
 
-	/* The chevrons point toward their side; mirror them in RTL. */
-	:global(.fluent-tabs-horizontal) .fluent-tabs-scroll-btn:dir(rtl) svg {
-		transform: scaleX(-1);
-	}
+		/* The chevrons point toward their side; mirror them in RTL. */
+		:global(.fluent-tabs-horizontal) .fluent-tabs-scroll-btn:dir(rtl) svg {
+			transform: scaleX(-1);
+		}
 
-	:global(.fluent-tabs-vertical) .fluent-tabs-scroll-btn {
-		inset-inline: 0;
-		height: 32px;
-	}
+		:global(.fluent-tabs-vertical) .fluent-tabs-scroll-btn {
+			inset-inline: 0;
+			height: 32px;
+		}
 
-	:global(.fluent-tabs-vertical) .fluent-tabs-scroll-btn-start {
-		top: 0;
-	}
+		:global(.fluent-tabs-vertical) .fluent-tabs-scroll-btn-start {
+			top: 0;
+		}
 
-	:global(.fluent-tabs-vertical) .fluent-tabs-scroll-btn-end {
-		bottom: 0;
-	}
+		:global(.fluent-tabs-vertical) .fluent-tabs-scroll-btn-end {
+			bottom: 0;
+		}
 
-	.fluent-tabs-scroll-btn:hover {
-		background: var(--neutral-fill-stealth-hover);
+		.fluent-tabs-scroll-btn:hover {
+			background: var(--neutral-fill-stealth-hover);
+		}
 	}
 </style>

@@ -143,149 +143,154 @@ One `AppBar` entry: an icon link (a button when it has no `href`) with a label a
 {/if}
 
 <style>
-	/* Item box, link, label and hover (moved from the global Blazor compat CSS in 2.0).
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		/* Item box, link, label and hover (moved from the global Blazor compat CSS in 2.0).
 	   `--fluent-appbar-item-size` is set on the parent `.fluent-appbar`. */
-	.fluent-appbar-item {
-		flex: none;
-		position: relative;
-		width: calc(var(--fluent-appbar-item-size, 68) * 1px);
-		--fluent-appbar-active-indicator-width: calc(var(--design-unit) * 0.5px);
-		height: var(
-			--fluent-appbar-item-block-size,
-			calc(var(--fluent-appbar-item-size, 68) * 1px - var(--design-unit) * 5px)
-		);
-	}
+		.fluent-appbar-item {
+			flex: none;
+			position: relative;
+			width: calc(var(--fluent-appbar-item-size, 68) * 1px);
+			--fluent-appbar-active-indicator-width: calc(var(--design-unit) * 0.5px);
+			height: var(
+				--fluent-appbar-item-block-size,
+				calc(var(--fluent-appbar-item-size, 68) * 1px - var(--design-unit) * 5px)
+			);
+		}
 
-	.fluent-appbar-item[data-overflowed] {
-		visibility: hidden;
-	}
+		.fluent-appbar-item[data-overflowed] {
+			visibility: hidden;
+		}
 
-	.fluent-appbar-item:hover {
-		background-color: var(--neutral-fill-secondary-rest);
-	}
+		.fluent-appbar-item:hover {
+			background-color: var(--neutral-fill-secondary-rest);
+		}
 
-	.fluent-appbar-item-link {
-		margin: 0;
-		padding: 0;
-		border: 0;
-		background: transparent;
-		font-family: inherit;
-		cursor: pointer;
-		color: inherit;
-		text-decoration: none;
-		font-size: var(--type-ramp-minus-2-font-size);
-		line-height: var(--type-ramp-minus-2-line-height);
-		position: relative;
-		display: block;
-		height: 100%;
-		width: 100%;
-		box-sizing: border-box;
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-	}
+		.fluent-appbar-item-link {
+			margin: 0;
+			padding: 0;
+			border: 0;
+			background: transparent;
+			font-family: inherit;
+			cursor: pointer;
+			color: inherit;
+			text-decoration: none;
+			font-size: var(--type-ramp-minus-2-font-size);
+			line-height: var(--type-ramp-minus-2-line-height);
+			position: relative;
+			display: block;
+			height: 100%;
+			width: 100%;
+			box-sizing: border-box;
+			border-radius: calc(var(--control-corner-radius, 4) * 1px);
+		}
 
-	.fluent-appbar-item-body {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		block-size: 100%;
-		box-sizing: border-box;
-		padding: calc(var(--design-unit) * 1px)
-			calc(var(--fluent-appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
-	}
+		.fluent-appbar-item-body {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			block-size: 100%;
+			box-sizing: border-box;
+			padding: calc(var(--design-unit) * 1px)
+				calc(var(--fluent-appbar-active-indicator-width) + (var(--design-unit) * 1.5px));
+		}
 
-	/* Active indicator: an accent bar on the start edge (vertical) or the bottom (horizontal).
+		/* Active indicator: an accent bar on the start edge (vertical) or the bottom (horizontal).
 	   Not in the overflow popover. */
-	.fluent-appbar-item[data-orientation] .fluent-appbar-item-link.active::before {
-		content: "";
-		position: absolute;
-		background-color: var(--fluent-appbar-indicator-color, var(--accent-fill-rest));
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-	}
+		.fluent-appbar-item[data-orientation] .fluent-appbar-item-link.active::before {
+			content: "";
+			position: absolute;
+			background-color: var(--fluent-appbar-indicator-color, var(--accent-fill-rest));
+			border-radius: calc(var(--control-corner-radius, 4) * 1px);
+		}
 
-	.fluent-appbar-item[data-orientation="vertical"] .fluent-appbar-item-link.active::before {
-		inset-block: 0;
-		inset-inline-start: calc(var(--design-unit) * 0.5px);
-		inline-size: var(--fluent-appbar-active-indicator-width);
-	}
+		.fluent-appbar-item[data-orientation="vertical"] .fluent-appbar-item-link.active::before {
+			inset-block: 0;
+			inset-inline-start: calc(var(--design-unit) * 0.5px);
+			inline-size: var(--fluent-appbar-active-indicator-width);
+		}
 
-	.fluent-appbar-item[data-orientation="horizontal"] .fluent-appbar-item-link.active::before {
-		inset-inline: calc(var(--design-unit) * 2px);
-		inset-block-end: calc(var(--design-unit) * 0.5px);
-		block-size: var(--fluent-appbar-active-indicator-width);
-	}
+		.fluent-appbar-item[data-orientation="horizontal"] .fluent-appbar-item-link.active::before {
+			inset-inline: calc(var(--design-unit) * 2px);
+			inset-block-end: calc(var(--design-unit) * 0.5px);
+			block-size: var(--fluent-appbar-active-indicator-width);
+		}
 
-	[part="label"] {
-		display: block;
-		color: var(--neutral-foreground-rest);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		width: 100%;
-		text-align: center;
-	}
+		[part="label"] {
+			display: block;
+			color: var(--neutral-foreground-rest);
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			width: 100%;
+			text-align: center;
+		}
 
-	/* Rest/active icon pair: an icon snippet may hold two SVGs marked `part="icon-rest"` and
+		/* Rest/active icon pair: an icon snippet may hold two SVGs marked `part="icon-rest"` and
 	   `part="icon-active"`; the active one shows on hover and while the item is active. */
-	.fluent-appbar-item-icon :global(svg[part="icon-active"]) {
-		display: none;
-	}
+		.fluent-appbar-item-icon :global(svg[part="icon-active"]) {
+			display: none;
+		}
 
-	.fluent-appbar-item:is(:hover, .active)
-		.fluent-appbar-item-icon:has(:global(svg[part="icon-active"]))
-		:global(svg[part="icon-rest"]) {
-		display: none;
-	}
+		.fluent-appbar-item:is(:hover, .active)
+			.fluent-appbar-item-icon:has(:global(svg[part="icon-active"]))
+			:global(svg[part="icon-rest"]) {
+			display: none;
+		}
 
-	.fluent-appbar-item:is(:hover, .active) .fluent-appbar-item-icon :global(svg[part="icon-active"]) {
-		display: block;
-	}
+		.fluent-appbar-item:is(:hover, .active) .fluent-appbar-item-icon :global(svg[part="icon-active"]) {
+			display: block;
+		}
 
-	.fluent-appbar-item-icon {
-		position: relative;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-	}
+		.fluent-appbar-item-icon {
+			position: relative;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
 
-	/* Counter badge on the icon's top end corner (flips in RTL). Anchored by its
+		/* Counter badge on the icon's top end corner (flips in RTL). Anchored by its
 	   start edge, so it overlaps the corner by a fixed amount and longer counts
 	   ("99+") grow outward instead of covering the icon — as in Teams / Outlook.
 	   Restyle via the component-scoped --fluent-appbar-count-* variables. */
-	.fluent-appbar-item-count {
-		position: absolute;
-		inset-block-start: var(--fluent-appbar-count-offset-block, -6px);
-		inset-inline-start: calc(100% - var(--fluent-appbar-count-overlap, 8px));
-		/* Numbers read the same in RTL: keep "99+" from turning into "+99". */
-		direction: ltr;
-		unicode-bidi: isolate;
-		z-index: var(--fluent-z-raised);
-		box-sizing: border-box;
-		min-inline-size: var(--fluent-appbar-count-size, 16px);
-		block-size: var(--fluent-appbar-count-size, 16px);
-		padding-inline: var(--fluent-appbar-count-padding-inline, 4px);
-		border-radius: var(--fluent-appbar-count-radius, 9999px);
-		background-color: var(--fluent-appbar-count-bg, var(--fluent-color-danger));
-		color: var(--fluent-appbar-count-text, var(--fluent-color-danger-contrast));
-		box-shadow: 0 0 0 1px var(--fluent-appbar-count-ring-color, var(--fluent-appbar-background, var(--neutral-layer-2)));
-		font-size: var(--fluent-appbar-count-font-size, 10px);
-		font-weight: var(--fluent-appbar-count-font-weight, 600);
-		line-height: var(--fluent-appbar-count-size, 16px);
-		text-align: center;
-		white-space: nowrap;
-		pointer-events: none;
-	}
+		.fluent-appbar-item-count {
+			position: absolute;
+			inset-block-start: var(--fluent-appbar-count-offset-block, -6px);
+			inset-inline-start: calc(100% - var(--fluent-appbar-count-overlap, 8px));
+			/* Numbers read the same in RTL: keep "99+" from turning into "+99". */
+			direction: ltr;
+			unicode-bidi: isolate;
+			z-index: var(--fluent-z-raised);
+			box-sizing: border-box;
+			min-inline-size: var(--fluent-appbar-count-size, 16px);
+			block-size: var(--fluent-appbar-count-size, 16px);
+			padding-inline: var(--fluent-appbar-count-padding-inline, 4px);
+			border-radius: var(--fluent-appbar-count-radius, 9999px);
+			background-color: var(--fluent-appbar-count-bg, var(--fluent-color-danger));
+			color: var(--fluent-appbar-count-text, var(--fluent-color-danger-contrast));
+			box-shadow: 0 0 0 1px
+				var(--fluent-appbar-count-ring-color, var(--fluent-appbar-background, var(--neutral-layer-2)));
+			font-size: var(--fluent-appbar-count-font-size, 10px);
+			font-weight: var(--fluent-appbar-count-font-weight, 600);
+			line-height: var(--fluent-appbar-count-size, 16px);
+			text-align: center;
+			white-space: nowrap;
+			pointer-events: none;
+		}
 
-	/* Full count for the accessible name; visually hidden. */
-	.fluent-appbar-item-count-text {
-		position: absolute;
-		inline-size: 1px;
-		block-size: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
+		/* Full count for the accessible name; visually hidden. */
+		.fluent-appbar-item-count-text {
+			position: absolute;
+			inline-size: 1px;
+			block-size: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
 	}
 </style>

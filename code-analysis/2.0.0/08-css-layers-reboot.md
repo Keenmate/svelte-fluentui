@@ -68,3 +68,26 @@ border on every input); a workaround like `.x { border: revert-layer }` can be r
 
 Related: svelte-treeview `docs/theming.md` → "The unlayered-reset footgun" (the same advice from the
 other side).
+
+## Status
+
+- 2026-11-23: done — full layering, user's call ("full layer"), modelled on svelte-treeview's `main.css`
+  (pure-admin has no layers). Order `@layer reset, variables, component, overrides;`:
+  - `reboot.css` → `reset`, `border: 1px solid black` dropped;
+  - `fluent-ui/constructed-stylesheet.scss` (FluentUI token defaults), the token blocks of `theme.scss`
+    and the palette of `fluent-blazor-compat.scss` → `variables`;
+  - every other global partial and all 60 component `<style>` blocks → `component`. The components had
+    to move too: unlayered they would beat the layered partials they currently lose to by specificity.
+    In the same layer everything competes exactly as before.
+  - Each component `<style>` repeats the order statement: Vite injected a component's CSS before
+    `reboot.css`, and the first layer seen fixes the order (`component` would have been the lowest).
+  - Docs: Pure.css (CDN, unlayered normalize) imported `layer(reset)` in `app.html` — unlayered it beat
+    the headings' margins; four demos used native `<button>`s that only looked right with the reboot border
+    → `Button`. Getting started has an "Element reset and cascade layers" card.
+  - Verified: screenshots of all 70 docs pages, light + dark, before vs after — only intended diffs
+    (native range inputs 2px shorter without the border, demo buttons now `Button`) plus the known noisy
+    pages; full e2e 432 passed / 2 skipped / 3 failed — all in popup-tabs indicator tests, which fail more
+    often on the pre-layer code (8/30 vs 4/30). New `e2e/css-layers.spec.ts`.
+  - Left: 13 `!important` in `nav.scss` / `_toast.scss` / `theme.scss` (internal states: disabled nav,
+    mobile toast, theme-switch transitions) — inside a layer they beat an app's `!important`; replace
+    with specificity when someone needs to override them.

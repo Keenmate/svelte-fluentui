@@ -25,98 +25,100 @@ $control-radius: calc(var(--control-corner-radius, 4) * 1px);
 	outline-offset: $offset;
 }
 
-.fluent-focus-ring:focus-visible {
-	@include focus-ring;
-}
+@layer component {
+	.fluent-focus-ring:focus-visible {
+		@include focus-ring;
+	}
 
-/* ---------- Required indicator ---------- */
-.fluent-required-indicator,
-.fluent-field__required {
-	color: var(--fluent-color-danger-foreground, #d13438);
-}
+	/* ---------- Required indicator ---------- */
+	.fluent-required-indicator,
+	.fluent-field__required {
+		color: var(--fluent-color-danger-foreground, #d13438);
+	}
 
-.fluent-required-indicator {
-	margin-inline-start: 0.25rem;
-}
+	.fluent-required-indicator {
+		margin-inline-start: 0.25rem;
+	}
 
-/* ---------- Field control box ----------
+	/* ---------- Field control box ----------
    Rest / hover / focus (accent bottom edge) / filled / disabled / readonly, and
    `embedded` (no frame of its own — the host, e.g. a QuickGrid cell, draws it).
    Focus states: the element's own `:focus-visible`, `.focused` (JS-tracked),
    `.open` (its popup is showing), or `--focus-within` modifier → `:focus-within`.
    The accent edge is an inset shadow, so the underline thickens without
    shifting the content by 1px. */
-.fluent-field-control {
-	box-sizing: border-box;
-	min-height: $control-height;
-	padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
-	background: var(--neutral-fill-input-rest, #ffffff);
-	border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-	border-radius: $control-radius;
-	transition:
-		border-color 0.1s ease,
-		background 0.1s ease,
-		box-shadow 0.1s ease;
-}
+	.fluent-field-control {
+		box-sizing: border-box;
+		min-height: $control-height;
+		padding: 0 calc(var(--design-unit, 4) * 2 * 1px);
+		background: var(--neutral-fill-input-rest, #ffffff);
+		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+		border-radius: $control-radius;
+		transition:
+			border-color 0.1s ease,
+			background 0.1s ease,
+			box-shadow 0.1s ease;
+	}
 
-.fluent-field-control:hover:not(:disabled, .disabled, .readonly, .embedded) {
-	background: var(--neutral-fill-input-hover, #f5f5f5);
-}
+	.fluent-field-control:hover:not(:disabled, .disabled, .readonly, .embedded) {
+		background: var(--neutral-fill-input-hover, #f5f5f5);
+	}
 
-.fluent-field-control:is(:focus-visible, .focused, .open, .fluent-field-control--focus-within:focus-within):not(
-		:disabled,
-		.disabled,
-		.embedded
-	) {
-	border-bottom-color: var(--accent-fill-rest, #0078d4);
-	box-shadow: inset 0 -1px 0 0 var(--accent-fill-rest, #0078d4);
-}
+	.fluent-field-control:is(:focus-visible, .focused, .open, .fluent-field-control--focus-within:focus-within):not(
+			:disabled,
+			.disabled,
+			.embedded
+		) {
+		border-bottom-color: var(--accent-fill-rest, #0078d4);
+		box-shadow: inset 0 -1px 0 0 var(--accent-fill-rest, #0078d4);
+	}
 
-.fluent-field-control.filled {
-	background: var(--neutral-fill-secondary-rest, #f5f5f5);
-	border: none;
-	border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-	border-radius: $control-radius $control-radius 0 0;
-}
+	.fluent-field-control.filled {
+		background: var(--neutral-fill-secondary-rest, #f5f5f5);
+		border: none;
+		border-bottom: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+		border-radius: $control-radius $control-radius 0 0;
+	}
 
-.fluent-field-control.filled:hover:not(:disabled, .disabled, .readonly, .embedded) {
-	background: var(--neutral-fill-secondary-hover, #ebebeb);
-}
+	.fluent-field-control.filled:hover:not(:disabled, .disabled, .readonly, .embedded) {
+		background: var(--neutral-fill-secondary-hover, #ebebeb);
+	}
 
-.fluent-field-control.filled:is(:focus-visible, .focused, .open, .fluent-field-control--focus-within:focus-within):not(
-		:disabled,
-		.disabled,
-		.embedded
-	) {
-	border-bottom-color: var(--accent-fill-rest, #0078d4);
-	box-shadow: 0 1px 0 0 var(--accent-fill-rest, #0078d4);
-}
+	.fluent-field-control.filled:is(
+			:focus-visible,
+			.focused,
+			.open,
+			.fluent-field-control--focus-within:focus-within
+		):not(:disabled, .disabled, .embedded) {
+		border-bottom-color: var(--accent-fill-rest, #0078d4);
+		box-shadow: 0 1px 0 0 var(--accent-fill-rest, #0078d4);
+	}
 
-// Doubled class: beats a component's own `cursor` (class + Svelte hash).
-.fluent-field-control.fluent-field-control:is(:disabled, .disabled) {
-	opacity: 0.4;
-	cursor: not-allowed;
-}
+	// Doubled class: beats a component's own `cursor` (class + Svelte hash).
+	.fluent-field-control.fluent-field-control:is(:disabled, .disabled) {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
 
-/* Readonly: value shows but can't be changed. Not dimmed (unlike disabled); a
+	/* Readonly: value shows but can't be changed. Not dimmed (unlike disabled); a
    neutral-secondary fill + default cursor signal it's inert. */
-.fluent-field-control.readonly:not(.embedded) {
-	background: var(--neutral-fill-secondary-rest, #f5f5f5);
-	cursor: default;
-}
+	.fluent-field-control.readonly:not(.embedded) {
+		background: var(--neutral-fill-secondary-rest, #f5f5f5);
+		cursor: default;
+	}
 
-.fluent-field-control.embedded {
-	width: 100%;
-	height: 100%;
-	min-height: 0;
-	padding: 0;
-	border: none;
-	border-radius: 0;
-	background: transparent;
-	box-shadow: none;
-}
+	.fluent-field-control.embedded {
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+		padding: 0;
+		border: none;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+	}
 
-/* ---------- Popup surface ----------
+	/* ---------- Popup surface ----------
    Every popup (listboxes, Autocomplete, picker panels, menus) sits on Fluent's
    floating layer with the flyout shadow. Rows inside use the stealth fills
    (`--neutral-fill-stealth-hover`, like Option): in dark mode
@@ -124,81 +126,82 @@ $control-radius: calc(var(--control-corner-radius, 4) * 1px);
    Inside a PositioningRegion the popup is capped to the room left to the viewport
    edge (`--fluent-popup-available-height`, helpers/floating.ts) and scrolls; a
    component with its own cap (the listboxes) overrides `max-height`. */
-.fluent-popup-surface,
-.fluent-popup-elevation {
-	z-index: var(--fluent-z-popover);
-	box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
-	box-sizing: border-box;
-	max-height: var(--fluent-popup-available-height, none);
-	overflow-y: auto;
-}
+	.fluent-popup-surface,
+	.fluent-popup-elevation {
+		z-index: var(--fluent-z-popover);
+		box-shadow: var(--elevation-shadow-flyout, 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12));
+		box-sizing: border-box;
+		max-height: var(--fluent-popup-available-height, none);
+		overflow-y: auto;
+	}
 
-.fluent-popup-surface {
-	background: var(--neutral-layer-floating, #ffffff);
-	border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
-	border-radius: $control-radius;
-}
+	.fluent-popup-surface {
+		background: var(--neutral-layer-floating, #ffffff);
+		border: 1px solid var(--neutral-stroke-rest, #d1d1d1);
+		border-radius: $control-radius;
+	}
 
-/* ---------- Field clear (×) button ----------
+	/* ---------- Field clear (×) button ----------
    The `showClear` button of Select, Combobox, Autocomplete, DatePicker and
    TimePicker, just before the chevron / picker icon. Rendered only while there is
    something to clear and, like `<fluent-search>`'s, visible only while the field
    (`.fluent-field-clear-host`) is hovered or has focus. Out of the Tab order. */
-.fluent-field-clear {
-	opacity: 0;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	padding: 4px;
-	border: none;
-	border-radius: var(--fluent-border-radius-sm);
-	background: transparent;
-	color: var(--neutral-foreground-hint, #717171);
-	cursor: pointer;
-	transition:
-		opacity 0.1s ease,
-		background 0.1s ease,
-		color 0.1s ease;
-}
-
-.fluent-field-clear-host:is(:hover, :focus-within) .fluent-field-clear {
-	opacity: 1;
-}
-
-.fluent-field-clear:hover {
-	background: var(--neutral-fill-secondary-hover, #e0e0e0);
-	color: var(--neutral-foreground-rest, #242424);
-}
-
-/* ---------- Danger menu item ----------
-   `danger: true` items in ContextMenu, MenuButton and QuickGrid's context menu.
-   Dark theme comes from the palette tokens. */
-.fluent-context-menu .fluent-context-menu-item.danger,
-.fluent-menu-button-menu fluent-menu-item.danger,
-.context-menu fluent-menu-item.danger {
-	color: var(--fluent-color-danger-foreground, #d13438);
-}
-
-.fluent-context-menu .fluent-context-menu-item.danger:hover:not(:disabled),
-.fluent-menu-button-menu fluent-menu-item.danger:hover,
-.context-menu fluent-menu-item.danger:hover {
-	background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
-}
-
-/* ---------- Keyframes ---------- */
-@keyframes fluent-spin {
-	to {
-		transform: rotate(360deg);
+	.fluent-field-clear {
+		opacity: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		padding: 4px;
+		border: none;
+		border-radius: var(--fluent-border-radius-sm);
+		background: transparent;
+		color: var(--neutral-foreground-hint, #717171);
+		cursor: pointer;
+		transition:
+			opacity 0.1s ease,
+			background 0.1s ease,
+			color 0.1s ease;
 	}
-}
 
-@keyframes fluent-pulse {
-	0%,
-	100% {
+	.fluent-field-clear-host:is(:hover, :focus-within) .fluent-field-clear {
 		opacity: 1;
 	}
-	50% {
-		opacity: 0.4;
+
+	.fluent-field-clear:hover {
+		background: var(--neutral-fill-secondary-hover, #e0e0e0);
+		color: var(--neutral-foreground-rest, #242424);
+	}
+
+	/* ---------- Danger menu item ----------
+   `danger: true` items in ContextMenu, MenuButton and QuickGrid's context menu.
+   Dark theme comes from the palette tokens. */
+	.fluent-context-menu .fluent-context-menu-item.danger,
+	.fluent-menu-button-menu fluent-menu-item.danger,
+	.context-menu fluent-menu-item.danger {
+		color: var(--fluent-color-danger-foreground, #d13438);
+	}
+
+	.fluent-context-menu .fluent-context-menu-item.danger:hover:not(:disabled),
+	.fluent-menu-button-menu fluent-menu-item.danger:hover,
+	.context-menu fluent-menu-item.danger:hover {
+		background: var(--fluent-color-danger-tint, rgba(197, 15, 31, 0.12));
+	}
+
+	/* ---------- Keyframes ---------- */
+	@keyframes fluent-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	@keyframes fluent-pulse {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.4;
+		}
 	}
 }

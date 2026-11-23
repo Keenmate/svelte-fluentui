@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {ContextMenu, Stack, Card, Grid, GridItem, QuickGrid, Slider} from "svelte-fluentui"
+	import {Button, ContextMenu, Stack, Card, Grid, GridItem, QuickGrid, Slider} from "svelte-fluentui"
 	import type {MenuEntry} from "svelte-fluentui"
 	import {References, Meta} from "$lib/components"
 
@@ -303,12 +303,12 @@
 		{#if images.length === 0}
 			<p>
 				<em>All items deleted.</em>
-				<button type="button" onclick={() => images = [
+				<Button onclick={() => images = [
 					{id: 1, title: "Sunrise", color: "#fda4af"},
 					{id: 2, title: "Forest", color: "#86efac"},
 					{id: 3, title: "Ocean", color: "#7dd3fc"},
 					{id: 4, title: "Desert", color: "#fdba74"}
-				]}>Reset</button>
+				]}>Reset</Button>
 			</p>
 		{/if}
 

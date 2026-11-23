@@ -297,69 +297,73 @@ Floating hint shown on hover / focus of the element whose id is `anchor`; positi
 {/if}
 
 <style>
-	.fluent-tooltip {
-		position: fixed;
-		top: 0;
-		left: 0;
-		z-index: var(--fluent-z-tooltip);
-		box-sizing: border-box;
-		border-radius: calc(var(--control-corner-radius, 4) * 1px);
-		border: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		background: var(--neutral-layer-floating, #ffffff);
-		color: var(--neutral-foreground-rest, #242424);
-		padding: 4px 11px 6px 11px;
-		font-family: var(--body-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-		font-size: var(--type-ramp-base-font-size, 14px);
-		line-height: var(--type-ramp-base-line-height, 20px);
-		white-space: nowrap;
-		box-shadow: var(--elevation-shadow-tooltip, 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14));
-		pointer-events: auto;
-		opacity: 0;
-		transform: scale(0.95);
-		transition:
-			opacity 0.1s ease-out,
-			transform 0.1s ease-out;
-	}
+	@layer reset, variables, component, overrides;
 
-	.fluent-tooltip.visible {
-		opacity: 1;
-		transform: scale(1);
-	}
+	@layer component {
+		.fluent-tooltip {
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: var(--fluent-z-tooltip);
+			box-sizing: border-box;
+			border-radius: calc(var(--control-corner-radius, 4) * 1px);
+			border: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
+			background: var(--neutral-layer-floating, #ffffff);
+			color: var(--neutral-foreground-rest, #242424);
+			padding: 4px 11px 6px 11px;
+			font-family: var(--body-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+			font-size: var(--type-ramp-base-font-size, 14px);
+			line-height: var(--type-ramp-base-line-height, 20px);
+			white-space: nowrap;
+			box-shadow: var(--elevation-shadow-tooltip, 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14));
+			pointer-events: auto;
+			opacity: 0;
+			transform: scale(0.95);
+			transition:
+				opacity 0.1s ease-out,
+				transform 0.1s ease-out;
+		}
 
-	.fluent-tooltip.has-max-width {
-		white-space: normal;
-		word-wrap: break-word;
-	}
+		.fluent-tooltip.visible {
+			opacity: 1;
+			transform: scale(1);
+		}
 
-	/* Arrow rendered as a rotated square. Floating UI's `arrow` middleware
+		.fluent-tooltip.has-max-width {
+			white-space: normal;
+			word-wrap: break-word;
+		}
+
+		/* Arrow rendered as a rotated square. Floating UI's `arrow` middleware
 	 * sets the in-axis offset (left/top); the perpendicular axis is anchored
 	 * to the side of the tooltip via the `staticSide` property assigned in
 	 * updatePosition() (e.g. bottom: -5px on a top-placed tooltip). */
-	.fluent-tooltip-arrow {
-		position: absolute;
-		width: 8.5px;
-		height: 8.5px;
-		background: var(--neutral-layer-floating, #ffffff);
-		border: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
-		transform: rotate(45deg);
-	}
+		.fluent-tooltip-arrow {
+			position: absolute;
+			width: 8.5px;
+			height: 8.5px;
+			background: var(--neutral-layer-floating, #ffffff);
+			border: 1px solid var(--neutral-stroke-layer-rest, #e0e0e0);
+			transform: rotate(45deg);
+		}
 
-	/* Hide the borders on the two sides facing into the tooltip body so the
+		/* Hide the borders on the two sides facing into the tooltip body so the
 	 * arrow looks like a triangle pointing outward, not a diamond. */
-	.fluent-tooltip.top .fluent-tooltip-arrow {
-		border-top: none;
-		border-left: none;
-	}
-	.fluent-tooltip.bottom .fluent-tooltip-arrow {
-		border-bottom: none;
-		border-right: none;
-	}
-	.fluent-tooltip.left .fluent-tooltip-arrow {
-		border-left: none;
-		border-bottom: none;
-	}
-	.fluent-tooltip.right .fluent-tooltip-arrow {
-		border-right: none;
-		border-top: none;
+		.fluent-tooltip.top .fluent-tooltip-arrow {
+			border-top: none;
+			border-left: none;
+		}
+		.fluent-tooltip.bottom .fluent-tooltip-arrow {
+			border-bottom: none;
+			border-right: none;
+		}
+		.fluent-tooltip.left .fluent-tooltip-arrow {
+			border-left: none;
+			border-bottom: none;
+		}
+		.fluent-tooltip.right .fluent-tooltip-arrow {
+			border-right: none;
+			border-top: none;
+		}
 	}
 </style>

@@ -124,38 +124,42 @@ Flex-wrap container that hides child badges past `maxVisibleBadgeCount`, optiona
 </div>
 
 <style>
-	.badge-group {
-		display: inline-flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--fluent-badge-group-gap, 0.5rem);
-	}
+	@layer reset, variables, component, overrides;
 
-	/* Toggle styled to match a neutral Badge */
-	.badge-group-toggle {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		font-family: var(--body-font);
-		font-size: var(--type-ramp-minus-1-font-size, 12px);
-		font-weight: 600;
-		line-height: var(--type-ramp-minus-1-line-height, 16px);
-		min-height: 20px;
-		padding: 2px 8px;
-		border: none;
-		border-radius: var(--control-corner-radius, 4px);
-		background-color: var(--neutral-fill-secondary-rest, #f0f0f0);
-		color: var(--neutral-foreground-rest, #242424);
-		cursor: pointer;
-		transition: background-color 100ms ease;
-	}
+	@layer component {
+		.badge-group {
+			display: inline-flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--fluent-badge-group-gap, 0.5rem);
+		}
 
-	.badge-group-toggle:hover {
-		background-color: var(--neutral-fill-secondary-hover, #ebebeb);
-	}
+		/* Toggle styled to match a neutral Badge */
+		.badge-group-toggle {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			font-family: var(--body-font);
+			font-size: var(--type-ramp-minus-1-font-size, 12px);
+			font-weight: 600;
+			line-height: var(--type-ramp-minus-1-line-height, 16px);
+			min-height: 20px;
+			padding: 2px 8px;
+			border: none;
+			border-radius: var(--control-corner-radius, 4px);
+			background-color: var(--neutral-fill-secondary-rest, #f0f0f0);
+			color: var(--neutral-foreground-rest, #242424);
+			cursor: pointer;
+			transition: background-color 100ms ease;
+		}
 
-	.badge-group-toggle:focus-visible {
-		outline: 2px solid var(--focus-stroke-outer, currentColor);
-		outline-offset: 1px;
+		.badge-group-toggle:hover {
+			background-color: var(--neutral-fill-secondary-hover, #ebebeb);
+		}
+
+		.badge-group-toggle:focus-visible {
+			outline: 2px solid var(--focus-stroke-outer, currentColor);
+			outline-offset: 1px;
+		}
 	}
 </style>

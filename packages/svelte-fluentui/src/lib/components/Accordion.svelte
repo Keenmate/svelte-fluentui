@@ -148,11 +148,15 @@ Stack of collapsible panels; owns which `<AccordionItem>`s are expanded.
 </div>
 
 <style>
-	.fluent-accordion {
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		gap: calc(var(--design-unit, 4) * 1px);
-		color: var(--neutral-foreground-rest, #242424);
+	@layer reset, variables, component, overrides;
+
+	@layer component {
+		.fluent-accordion {
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			gap: calc(var(--design-unit, 4) * 1px);
+			color: var(--neutral-foreground-rest, #242424);
+		}
 	}
 </style>

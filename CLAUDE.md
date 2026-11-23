@@ -51,6 +51,7 @@ Monorepo: the library lives in `packages/svelte-fluentui/`, the docs/demo site i
 - FluentUI-specific styles: `packages/svelte-fluentui/src/lib/assets/styles/fluent-ui/`
 - Shared style primitives: `assets/styles/components/_primitives.scss` (`.fluent-field-control`, `.fluent-field-clear`, `.fluent-popup-surface`, `.fluent-required-indicator`, `.fluent-focus-ring`, danger menu items, `fluent-spin` / `fluent-pulse`) — use these instead of copying field/popup/focus styles
 - Reboot (element normalisation) is opt-in since 2.0: `import "svelte-fluentui/reboot.css"` (`src/lib/reboot.css`), not part of the main bundle
+- Cascade layers (Keenmate suite order): `@layer reset, variables, component, overrides;` — reboot in `reset`, tokens / palette in `variables`, global partials AND every component `<style>` in `component` (each `<style>` starts with the order statement, then `@layer component { … }` — new components must too, or their CSS beats every layered rule). Unlayered app CSS beats the library
 - Colours come from the `--fluent-color-<name>(-foreground|-contrast|-tint)` palette; z-index from the `--fluent-z-*` scale (no numeric fallbacks)
 
 ### Key Files

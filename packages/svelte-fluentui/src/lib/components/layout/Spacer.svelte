@@ -29,12 +29,16 @@ Flex spacer: a fixed-width gap, or (without `width`) grows to push siblings apar
 <div {...rest} class={["spacer", className]} class:auto-width={!width} style:--fluent-spacer-width={widthCssVar}></div>
 
 <style lang="scss">
-	.spacer {
-		width: var(--fluent-spacer-width);
+	@layer reset, variables, component, overrides;
 
-		&.auto-width {
-			flex: 1;
-			width: auto;
+	@layer component {
+		.spacer {
+			width: var(--fluent-spacer-width);
+
+			&.auto-width {
+				flex: 1;
+				width: auto;
+			}
 		}
 	}
 </style>

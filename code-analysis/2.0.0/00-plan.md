@@ -257,9 +257,8 @@ tests skipped; both checks clean):
 11. Push (`prod` is 31+ ahead) and version bump to 2.0.0-rc01 via /publish when ready.
     → 2026-11-22: everything pushed (origin/prod = b2dc331). Version bump still pending (only when asked).
 
-**Status 2026-11-22:** questions 1–9 done (6 → 09-positioning-plan.md, all phases done). Next: **10 (housekeeping)**. Also open:
-the reboot-layer fix from `08-css-layers-reboot.md` (`@layer reset`, drop the `border: 1px solid black`
-rule, maybe layer the other global CSS — needs the user's yes), German translations want a
+**Status 2026-11-22:** questions 1–9 done (6 → 09-positioning-plan.md, all phases done). Next: **10 (housekeeping)**. Cascade layers done 2026-11-23 (whole library, see
+`08-css-layers-reboot.md` Status). Also open: German translations want a
 native-speaker review. Full e2e: 435 passed / 2 skipped. Flaky (pre-existing, ~3 in 20 with
 `--repeat-each`): popup-tabs.spec.ts "active indicator sits under the active tab" (ltr / rtl).
 Also done 2026-11-22 (all pushed, origin/prod = 5c9ffe2): field-popup gap 4px (`FIELD_POPUP_OFFSET`, user chose

@@ -88,88 +88,92 @@ Flexbox container laying its children out vertically or horizontally with gap an
 </div>
 
 <style>
-	/* Microsoft FluentUI Blazor Stack styles */
-	.stack-vertical {
-		display: flex;
-		flex-direction: column;
-	}
+	@layer reset, variables, component, overrides;
 
-	.stack-horizontal {
-		display: flex;
-		flex-direction: row;
-	}
+	@layer component {
+		/* Microsoft FluentUI Blazor Stack styles */
+		.stack-vertical {
+			display: flex;
+			flex-direction: column;
+		}
 
-	.stack-vertical[data-reverse="true"] {
-		flex-direction: column-reverse;
-	}
+		.stack-horizontal {
+			display: flex;
+			flex-direction: row;
+		}
 
-	.stack-horizontal[data-reverse="true"] {
-		flex-direction: row-reverse;
-	}
+		.stack-vertical[data-reverse="true"] {
+			flex-direction: column-reverse;
+		}
 
-	/* Vertical alignment (cross-axis for vertical, main-axis for horizontal) */
-	.stack-vertical.vertical-align-start {
-		justify-content: flex-start;
-	}
-	.stack-vertical.vertical-align-center {
-		justify-content: center;
-	}
-	.stack-vertical.vertical-align-end {
-		justify-content: flex-end;
-	}
-	.stack-vertical.vertical-align-stretch {
-		justify-content: stretch;
-	}
-	.stack-vertical.vertical-align-space-between {
-		justify-content: space-between;
-	}
-	.stack-vertical.vertical-align-space-around {
-		justify-content: space-around;
-	}
+		.stack-horizontal[data-reverse="true"] {
+			flex-direction: row-reverse;
+		}
 
-	.stack-horizontal.vertical-align-start {
-		align-items: flex-start;
-	}
-	.stack-horizontal.vertical-align-center {
-		align-items: center;
-	}
-	.stack-horizontal.vertical-align-end {
-		align-items: flex-end;
-	}
-	.stack-horizontal.vertical-align-stretch {
-		align-items: stretch;
-	}
+		/* Vertical alignment (cross-axis for vertical, main-axis for horizontal) */
+		.stack-vertical.vertical-align-start {
+			justify-content: flex-start;
+		}
+		.stack-vertical.vertical-align-center {
+			justify-content: center;
+		}
+		.stack-vertical.vertical-align-end {
+			justify-content: flex-end;
+		}
+		.stack-vertical.vertical-align-stretch {
+			justify-content: stretch;
+		}
+		.stack-vertical.vertical-align-space-between {
+			justify-content: space-between;
+		}
+		.stack-vertical.vertical-align-space-around {
+			justify-content: space-around;
+		}
 
-	/* Horizontal alignment (cross-axis for horizontal, main-axis for vertical) */
-	.stack-horizontal.horizontal-align-start {
-		justify-content: flex-start;
-	}
-	.stack-horizontal.horizontal-align-center {
-		justify-content: center;
-	}
-	.stack-horizontal.horizontal-align-end {
-		justify-content: flex-end;
-	}
-	.stack-horizontal.horizontal-align-stretch {
-		justify-content: stretch;
-	}
-	.stack-horizontal.horizontal-align-space-between {
-		justify-content: space-between;
-	}
-	.stack-horizontal.horizontal-align-space-around {
-		justify-content: space-around;
-	}
+		.stack-horizontal.vertical-align-start {
+			align-items: flex-start;
+		}
+		.stack-horizontal.vertical-align-center {
+			align-items: center;
+		}
+		.stack-horizontal.vertical-align-end {
+			align-items: flex-end;
+		}
+		.stack-horizontal.vertical-align-stretch {
+			align-items: stretch;
+		}
 
-	.stack-vertical.horizontal-align-start {
-		align-items: flex-start;
-	}
-	.stack-vertical.horizontal-align-center {
-		align-items: center;
-	}
-	.stack-vertical.horizontal-align-end {
-		align-items: flex-end;
-	}
-	.stack-vertical.horizontal-align-stretch {
-		align-items: stretch;
+		/* Horizontal alignment (cross-axis for horizontal, main-axis for vertical) */
+		.stack-horizontal.horizontal-align-start {
+			justify-content: flex-start;
+		}
+		.stack-horizontal.horizontal-align-center {
+			justify-content: center;
+		}
+		.stack-horizontal.horizontal-align-end {
+			justify-content: flex-end;
+		}
+		.stack-horizontal.horizontal-align-stretch {
+			justify-content: stretch;
+		}
+		.stack-horizontal.horizontal-align-space-between {
+			justify-content: space-between;
+		}
+		.stack-horizontal.horizontal-align-space-around {
+			justify-content: space-around;
+		}
+
+		.stack-vertical.horizontal-align-start {
+			align-items: flex-start;
+		}
+		.stack-vertical.horizontal-align-center {
+			align-items: center;
+		}
+		.stack-vertical.horizontal-align-end {
+			align-items: flex-end;
+		}
+		.stack-vertical.horizontal-align-stretch {
+			align-items: stretch;
+		}
 	}
 </style>
