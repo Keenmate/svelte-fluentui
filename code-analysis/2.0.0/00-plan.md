@@ -266,8 +266,8 @@ Also done 2026-11-22 (all pushed, origin/prod = 5c9ffe2): field-popup gap 4px (`
 it over Fluent's 8px; `--fluent-popup-offset` override); inline chip row no longer makes Autocomplete /
 Combobox 1.6px taller; `minSelectionCount` (Autocomplete, Combobox / Select multiple) + Select `required`
 (validation stand-in input) and Combobox-multiple `required` fixed, with "Required & minimum selection"
-demos on all three docs pages. Possible small fix: `.prettierrc` `endOfLine: "auto"` (CRLF checkout makes
-`npm run lint` report 149 files) — offered, not done.
+demos on all three docs pages. `.prettierrc` `endOfLine: "auto"` added 2026-11-23 (CRLF checkout made `npm run lint` report 149
+files; now clean).
 
 Deferred (see 06-quickgrid-plan.md for QuickGrid ones): per-row deriveds in QuickGrid for non-virtual
 teardown cost; variable row heights with `virtualize`; NavMenu menuitem+link double tab stop (needs a
